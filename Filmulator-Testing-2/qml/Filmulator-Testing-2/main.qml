@@ -6,7 +6,7 @@ import QtQuick.Controls.Styles 1.1
 
 ApplicationWindow {
     id: mainwindow
-    title: "Filmulator"
+    title: qsTr("Filmulator")
     minimumHeight: 600
     minimumWidth:800
 
@@ -27,25 +27,27 @@ ApplicationWindow {
             style: headerTabViewStyle
 
             Tab {
-                title: "Import"
+                title: qsTr("Import")
             }
 
             Tab {
-                title: "Organize"
+                title: qsTr("Organize")
                 Organize {}
             }
 
             Tab {
                 id: editortab
                 property string location: ""
-                title: "Filmulate"
+                property real rolling: 0
+                title: qsTr("Filmulate")
                 Edit {
                     location: editortab.location
+                    index: editortab.rolling
                 }
             }
 
             Tab {
-                title: "Output"
+                title: qsTr("Output")
             }
         }
         Rectangle {
@@ -64,11 +66,24 @@ ApplicationWindow {
                     id: filelocation
                     color: "#FFFFFF"
                     anchors.fill: parent
-                    text: "Enter file path here"
+                    text: qsTr("Enter file path here")
                     onAccepted: {
                         editortab.location = filelocation.text
                     }
                 }
+            }
+            Slider {
+                width: 500
+                height: 30
+                minimumValue: -5
+                maximumValue: 5
+                stepSize: 1/3
+                value: 0
+                onValueChanged: {
+                    filmProvider.setExposureComp(value)
+                    editortab.rolling = (editortab.rolling + 1)%10
+                }
+                updateValueWhileDragging: false
             }
         }
     }

@@ -27,7 +27,8 @@ SOURCES += main.cpp \
     core/postprocess.cpp \
     core/read_args.cpp \
     core/time_diff.cpp \
-    core/filmimageprovider.cpp
+    core/filmimageprovider.cpp \
+    database/sqlmodel.cpp
 
 # Installation path
 # target.path =
@@ -43,7 +44,8 @@ HEADERS += \
     core/filmsim.hpp \
     core/lut.hpp \
     core/matrix.hpp \
-    core/filmimageprovider.h
+    core/filmimageprovider.h \
+    database/sqlmodel.h
 
 
 QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
@@ -51,3 +53,5 @@ QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
 QMAKE_LFLAGS += -O3 -fopenmp
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
+
+QT += sql

@@ -4,3 +4,7 @@ import QtQuick.Controls.Styles 1.1
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
 
+Rectangle {
+    color: "#800080"
+    anchors.fill: parent
+}

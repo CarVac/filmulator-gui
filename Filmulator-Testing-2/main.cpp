@@ -3,12 +3,40 @@
 //#include <QtWidgets/QApplication>
 #include <QtQml>
 #include "core/filmimageprovider.h"
+#include <QtSql>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlTableModel>
+#include <QTranslator>
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine("qml/Filmulator-Testing-2/main.qml");
-    engine.addImageProvider(QLatin1String("filmy"), new FilmImageProvider);
+
+    QTranslator translator;
+    translator.load("filmulatortr_la");
+    app.installTranslator(&translator);
+
+    FilmImageProvider *filmProvider = new FilmImageProvider;
+
+//    engine.addImageProvider(QLatin1String("filmy"), new FilmImageProvider);
+    engine.addImageProvider(QLatin1String("filmy"), filmProvider);
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("/home/carvac/filmulator/sql/photodb1");
+        //point at database location.
+    bool ok = db.open();
+    if(ok)
+        qDebug("Database opened");
+    else
+        qDebug("Database not opened");
+
+    QSqlTableModel *model1 = new QSqlTableModel;
+    model1->setTable("locations");
+
+    engine.rootContext()->setContextProperty("filmProvider",filmProvider);
+
+
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
     if (!window ) {
@@ -17,12 +45,6 @@ int main(int argc, char *argv[])
     }
     window->show();
     qDebug("hi");
-
-    /*
-    QtQuick2ApplicationViewer viewer;
-    viewer.setMainQmlFile(QStringLiteral("qml/Filmulator-Testing-2/main.qml"));
-    viewer.showExpanded();
-    */
 
     return app.exec();
 }

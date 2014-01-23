@@ -3,11 +3,13 @@
 #include <unistd.h>
 
 FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
+    QObject(0),
     QQuickImageProvider(type, QQuickImageProvider::ForceAsynchronousImageLoading)
 {
 }
 
 FilmImageProvider::FilmImageProvider() :
+    QObject(0),
     QQuickImageProvider(QQuickImageProvider::Image,
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
@@ -20,6 +22,8 @@ FilmImageProvider::~FilmImageProvider()
 QImage FilmImageProvider::requestImage(const QString &id,
                                        QSize *size, const QSize &requestedSize)
 {
+    QString tempID = id;
+    tempID.remove(tempID.length()-1,1);
     //Get home directory
     int myuid = getuid();
     passwd *mypasswd = getpwuid(myuid);
@@ -35,8 +39,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
     bool tiff = false;
     bool jpeg_in = false;
     bool tonecurve_out = false;
-    input_filename_list.push_back(id.toStdString());
-    input_exposure_concentration.push_back(0);
+    input_filename_list.push_back(tempID.toStdString());
+    cout << "Exposure compensation: " << exposurecomp << endl;
+    input_exposure_concentration.push_back(exposurecomp);
 
     //Set up things to be read in from the configuration file
     float initial_developer_concentration;
@@ -126,9 +131,15 @@ QImage FilmImageProvider::requestImage(const QString &id,
         QRgb *line = (QRgb *)output.scanLine(i);
         for(int j = 0; j < ncols; j++)
         {
-            *line = QColor(output_r(i,j),output_g(i,j),output_b(i,j)).rgb();
+            *line = QColor(min(255,output_r(i,j)),min(255,output_g(i,j)),min(255,output_b(i,j))).rgb();
             line++;
         }
     }
     return output;
 }
+
+void FilmImageProvider::setExposureComp(float exposure)
+{
+    exposurecomp = exposure;
+}
+
