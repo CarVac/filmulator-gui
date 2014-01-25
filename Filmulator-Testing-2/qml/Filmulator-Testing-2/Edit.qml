@@ -72,8 +72,8 @@ SplitView {
             text: "+"
             action: Action {
                 onTriggered: {
-                    largeview.width *= 1.5;
-                    largeview.height *= 1.5;
+                    largeview.width *= 1.3;
+                    largeview.height *= 1.3;
                 }
             }
         }
@@ -86,8 +86,8 @@ SplitView {
             text: "-"
             action: Action {
                 onTriggered: {
-                    largeview.width = largeview.width/1.5;
-                    largeview.height = largeview.height/1.5;
+                    largeview.width = largeview.width/1.3;
+                    largeview.height = largeview.height/1.3;
                 }
             }
         }

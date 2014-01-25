@@ -59,8 +59,10 @@ bool imload(std::vector<string> input_filename_list,
             return true;
         }
     }
-    input_image *= pow(2,-input_exposure_compensation[0]);
-    // This line filters out non-HDR images.
+    //The next line is commented out because this was moved outside of imload.
+    //input_image *= pow(2,-input_exposure_compensation[0]);
+
+    // This line filters for HDR stacks. If it's an HDR, then it continues.
     if(input_filename_list.size()==1)
     {
         return false;
@@ -83,7 +85,8 @@ bool imload(std::vector<string> input_filename_list,
     float exposure_weight = 1;
     //This next variable is for making sure that the images actually are in
     //increasing order of brightness.
-    float last_exposure_factor = pow(2,-input_exposure_compensation[0]);
+    //float last_exposure_factor = pow(2,-input_exposure_compensation[0]);
+    float last_exposure_factor = 1;
     for ( int i=1; i < input_filename_list.size(); i++)
     {
         cout << "Reading image " << input_filename_list[i] << "." << endl;

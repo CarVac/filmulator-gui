@@ -16,8 +16,11 @@ public:
     ~FilmImageProvider();
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
     Q_INVOKABLE void setExposureComp(float exposure);
+    Q_INVOKABLE void invalidateInputImage();
 protected:
     float exposurecomp;
+    matrix<float> input_image_cache;
+    bool input_image_valid;
 
 public slots:
 };
