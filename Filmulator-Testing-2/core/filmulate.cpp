@@ -24,25 +24,28 @@
 
 //Function-------------------------------------------------------------------------
 matrix<float> filmulate(matrix<float> &input_image,
-        float initial_developer_concentration,
-        float reservoir_size,
-        float developer_thickness,
-        float crystals_per_pixel,
-        float initial_crystal_radius,
-        float initial_silver_salt_density,
-        float developer_consumption_const,
-        float crystal_growth_const,
-        float silver_salt_consumption_const,
-        float total_development_time,
-        int agitate_count,
-        int development_resolution,
-        float film_area,
-        float sigma_const,
-        float layer_mix_const,
-        float layer_time_divisor,
-        int rolloff_boundary)
+        filmulateParams filmParams)
 {
-    //Timers
+    //Extract parameters from struct
+    float initial_developer_concentration = filmParams.initial_developer_concentration;
+    float reservoir_size = filmParams.reservoir_size;
+    float developer_thickness = filmParams.developer_thickness;
+    float crystals_per_pixel = filmParams.crystals_per_pixel;
+    float initial_crystal_radius = filmParams.initial_crystal_radius;
+    float initial_silver_salt_density = filmParams.initial_silver_salt_density;
+    float developer_consumption_const = filmParams.developer_consumption_const;
+    float crystal_growth_const = filmParams.crystal_growth_const;
+    float silver_salt_consumption_const = filmParams.silver_salt_consumption_const;
+    int total_development_time = filmParams.total_development_time;
+    int agitate_count = filmParams.agitate_count;
+    float development_resolution = filmParams.development_resolution;
+    float film_area = filmParams.film_area;
+    float sigma_const = filmParams.sigma_const;
+    float layer_mix_const = filmParams.layer_mix_const;
+    float layer_time_divisor = filmParams.layer_time_divisor;
+    int rolloff_boundary = filmParams.rolloff_boundary;
+
+    //Set up timers
     struct timeval initialize_start, development_start, develop_start,
                    diffuse_start, agitate_start, layer_mix_start;
     double develop_dif = 0, diffuse_dif = 0, agitate_dif = 0, layer_mix_dif= 0;           

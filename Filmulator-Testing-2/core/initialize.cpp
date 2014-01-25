@@ -20,17 +20,10 @@
 #include <fstream>
 
 void initialize(string input_configuration,
-        float &initial_developer_concentration, float &reservoir_size,
-        float &developer_thickness, float &crystals_per_pixel,
-        float &initial_crystal_radius, float &initial_silver_salt_density,
-        float &developer_consumption_const, float &crystal_growth_const,
-        float &silver_salt_consumption_const, int &total_development_time,
-        int &agitate_count, float &development_resolution, float &film_area,
-        float &sigma_const, float &layer_mix_const, float &layer_time_divisor,
-        float &std_cutoff, int &rolloff_boundary)
+        filmulateParams &filmParams)
 {
     ifstream infile;
-    char temp[100];
+    char temp[100]; //Throw away first column (variable names)
     infile.open(input_configuration.c_str(),ios::in);
     
     if (!infile)
@@ -38,25 +31,25 @@ void initialize(string input_configuration,
         cerr << "Can't open input file " << input_configuration << endl;
         exit(1);
     }
-    
-    infile >> temp >> initial_developer_concentration;
-    infile >> temp >> reservoir_size;
-    infile >> temp >> developer_thickness;
-    infile >> temp >> crystals_per_pixel;
-    infile >> temp >> initial_crystal_radius;
-    infile >> temp >> initial_silver_salt_density;
-    infile >> temp >> developer_consumption_const;
-    infile >> temp >> crystal_growth_const;
-    infile >> temp >> silver_salt_consumption_const;
-    infile >> temp >> total_development_time;
-    infile >> temp >> agitate_count;
-    infile >> temp >> development_resolution;
-    infile >> temp >> film_area;
-    infile >> temp >> sigma_const;
-    infile >> temp >> layer_mix_const;
-    infile >> temp >> layer_time_divisor;
-    infile >> temp >> std_cutoff;
-    infile >> temp >> rolloff_boundary;
+
+    infile >> temp >> filmParams.initial_developer_concentration;
+    infile >> temp >> filmParams.reservoir_size;
+    infile >> temp >> filmParams.developer_thickness;
+    infile >> temp >> filmParams.crystals_per_pixel;
+    infile >> temp >> filmParams.initial_crystal_radius;
+    infile >> temp >> filmParams.initial_silver_salt_density;
+    infile >> temp >> filmParams.developer_consumption_const;
+    infile >> temp >> filmParams.crystal_growth_const;
+    infile >> temp >> filmParams.silver_salt_consumption_const;
+    infile >> temp >> filmParams.total_development_time;
+    infile >> temp >> filmParams.agitate_count;
+    infile >> temp >> filmParams.development_resolution;
+    infile >> temp >> filmParams.film_area;
+    infile >> temp >> filmParams.sigma_const;
+    infile >> temp >> filmParams.layer_mix_const;
+    infile >> temp >> filmParams.layer_time_divisor;
+    infile >> temp >> filmParams.std_cutoff;
+    infile >> temp >> filmParams.rolloff_boundary;
     
     
     infile.close();

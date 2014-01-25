@@ -21,9 +21,9 @@ protected:
     float exposurecomp;
     matrix<float> input_image_cache;
     bool input_image_valid;
+    filmulateParams filmParams;
 
 public slots:
 };
-
 
 #endif // FILMIMAGEPROVIDER_H

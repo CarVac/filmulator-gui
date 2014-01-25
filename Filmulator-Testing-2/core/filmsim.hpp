@@ -45,24 +45,29 @@
 
 using namespace std;
 
+struct filmulateParams {
+    float initial_developer_concentration;
+    float reservoir_size;
+    float developer_thickness;
+    float crystals_per_pixel;
+    float initial_crystal_radius;
+    float initial_silver_salt_density;
+    float developer_consumption_const;
+    float crystal_growth_const;
+    float silver_salt_consumption_const;
+    int total_development_time;
+    int agitate_count;
+    float development_resolution;
+    float film_area;
+    float sigma_const;
+    float layer_mix_const;
+    float layer_time_divisor;
+    float std_cutoff;
+    int rolloff_boundary;
+};
+
 matrix<float> filmulate(matrix<float> &input_image,
-        float initial_developer_concentration,
-        float reservoir_size,
-        float developer_thickness,
-        float crystals_per_pixel,
-        float initial_crystal_radius,
-        float initial_silver_salt_density,
-        float developer_consumption_const,
-        float crystal_growth_const,
-        float silver_salt_consumption_const,
-        float total_development_time,
-        int agitate_count,
-        int development_resolution,
-        float film_area,
-        float sigma_const,
-        float layer_mix_const,
-        float layer_time_divisor,
-        int rolloff_boundary);
+                        filmulateParams filmParams);
 
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         int rolloff_boundary);
@@ -120,14 +125,7 @@ void imwrite(matrix<float> &densityr, matrix<float> &densityg,
         matrix<float> &densityb, string outputfilename, bool sixteen_bit);
 
 void initialize(string input_configuration,
-        float &initial_developer_concentration, float &reservoir_size,
-        float &developer_thickness, float &crystals_per_pixel,
-        float &initial_crystal_radius, float &initial_silver_salt_density,
-        float &developer_consumption_const, float &crystal_growth_const,
-        float &silver_salt_consumption_const, int &total_development_time,
-        int &agitate_count, float &development_resolution, float &film_area,
-        float &sigma_const, float &layer_mix_const, float &layer_time_divisor,
-        float &std_cutoff, int &rolloff_boundary);
+                filmulateParams &filmParams);
 
 bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
         float &exposure_weight, float initial_exposure_comp,

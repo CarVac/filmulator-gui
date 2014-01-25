@@ -49,45 +49,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
     cout << "Exposure compensation: " << exposurecomp << endl;
     input_exposure_compensation.push_back(exposurecomp);
 
-    //Set up things to be read in from the configuration file
-    float initial_developer_concentration;
-    float reservoir_size;
-    float developer_thickness;
-    float crystals_per_pixel;
-    float initial_crystal_radius;
-    float initial_silver_salt_density;
-    float developer_consumption_const;
-    float crystal_growth_const;
-    float silver_salt_consumption_const;
-    int total_development_time;
-    int agitate_count;
-    float development_resolution;
-    float film_area;
-    float sigma_const;
-    float layer_mix_const;
-    float layer_time_divisor;
-    float std_cutoff;
-    int rolloff_boundary;
-
-    initialize(input_configuration,
-               initial_developer_concentration,
-               reservoir_size,
-               developer_thickness,
-               crystals_per_pixel,
-               initial_crystal_radius,
-               initial_silver_salt_density,
-               developer_consumption_const,
-               crystal_growth_const,
-               silver_salt_consumption_const,
-               total_development_time,
-               agitate_count,
-               development_resolution,
-               film_area,
-               sigma_const,
-               layer_mix_const,
-               layer_time_divisor,
-               std_cutoff,
-               rolloff_boundary);
+    //Read in from the configuration file
+    initialize(filmParams);
+    std_cutoff = filmParams.std_cutoff;
 
     //Load the image and demosaic it.
     Exiv2::ExifData exifData;
@@ -114,24 +78,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
 
     //Here we do the film simulation on the image...
-    matrix<float> output_density = filmulate(input_image,
-                                             initial_developer_concentration,
-                                             reservoir_size,
-                                             developer_thickness,
-                                             crystals_per_pixel,
-                                             initial_crystal_radius,
-                                             initial_silver_salt_density,
-                                             developer_consumption_const,
-                                             crystal_growth_const,
-                                             silver_salt_consumption_const,
-                                             total_development_time,
-                                             agitate_count,
-                                             development_resolution,
-                                             film_area,
-                                             sigma_const,
-                                             layer_mix_const,
-                                             layer_time_divisor,
-                                             rolloff_boundary);
+    matrix<float> output_density = filmulate(input_image, filmParams);
 
     //Postprocessing: normalize and apply tone curve
     int nrows = output_density.nr();
