@@ -73,19 +73,6 @@ ApplicationWindow {
                     }
                 }
             }
-            Slider {
-                width: 500
-                height: 30
-                minimumValue: -5
-                maximumValue: 5
-                stepSize: 1/3
-                value: 0
-                onValueChanged: {
-                    filmProvider.setExposureComp(value)
-                    editortab.rolling = (editortab.rolling + 1)%10
-                }
-                updateValueWhileDragging: false
-            }
         }
     }
 

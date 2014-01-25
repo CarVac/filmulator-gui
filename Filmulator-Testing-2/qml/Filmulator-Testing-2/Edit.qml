@@ -114,5 +114,19 @@ SplitView {
         color: "brown"
         width: 150
         Layout.maximumWidth: 500
+
+        Slider {
+            width: parent.width
+            height: 30
+            minimumValue: -5
+            maximumValue: 5
+            stepSize: 1/3
+            value: 0
+            onValueChanged: {
+                filmProvider.setExposureComp(value)
+                editortab.rolling = (editortab.rolling + 1)%10
+            }
+            updateValueWhileDragging: true
+        }
     }
 }
