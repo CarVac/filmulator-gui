@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
 //    engine.addImageProvider(QLatin1String("filmy"), new FilmImageProvider);
     engine.addImageProvider(QLatin1String("filmy"), filmProvider);
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/home/carvac/filmulator/sql/photodb1");
+    /*QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("/home/omer/filmulator/sql/photodb1");
         //point at database location.
     bool ok = db.open();
     if(ok)
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         qDebug("Database not opened");
 
     QSqlTableModel *model1 = new QSqlTableModel;
-    model1->setTable("locations");
+    model1->setTable("locations");*/
 
     engine.rootContext()->setContextProperty("filmProvider",filmProvider);
 
