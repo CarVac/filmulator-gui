@@ -14,6 +14,7 @@ FilmImageProvider::FilmImageProvider() :
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     input_image_valid = false;
+    filmulated_image_valid = false;
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -23,6 +24,12 @@ FilmImageProvider::~FilmImageProvider()
 void FilmImageProvider::invalidateInputImage()
 {
     input_image_valid = false;
+}
+
+void FilmImageProvider::invalidateFilmulation()
+{
+    filmulated_image_valid = false;
+    cout << "invalidated filmulation" << endl;
 }
 
 QImage FilmImageProvider::requestImage(const QString &id,
@@ -40,8 +47,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     std::vector<std::string> input_filename_list;
     std::vector<float> input_exposure_compensation;
     int highlights = 0;
-    bool set_whitepoint = false;
-    float whitepoint = 5;
+    bool set_whitepoint = true;
     bool tiff = false;
     bool jpeg_in = false;
     bool tonecurve_out = false;
@@ -50,8 +56,8 @@ QImage FilmImageProvider::requestImage(const QString &id,
     input_exposure_compensation.push_back(exposurecomp);
 
     //Read in from the configuration file
-    initialize(filmParams);
-    std_cutoff = filmParams.std_cutoff;
+    initialize(input_configuration, filmParams);
+    float std_cutoff = filmParams.std_cutoff;
 
     //Load the image and demosaic it.
     Exiv2::ExifData exifData;
@@ -73,12 +79,22 @@ QImage FilmImageProvider::requestImage(const QString &id,
         input_image = input_image_cache;
     }
 
-    input_image *= pow(2, input_exposure_compensation[0]);
+    matrix<float> output_density;
+    if (!filmulated_image_valid)
+    {
+        input_image *= pow(2, input_exposure_compensation[0]);
 
-    exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
+        //Here we do the film simulation on the image...
+        output_density = filmulate(input_image, filmParams);
 
-    //Here we do the film simulation on the image...
-    matrix<float> output_density = filmulate(input_image, filmParams);
+        filmulated_image_cache = output_density;
+        filmulated_image_valid = true;
+    }
+    else
+    {
+        qDebug("Using cached filmulation");
+        output_density = filmulated_image_cache;
+    }
 
     //Postprocessing: normalize and apply tone curve
     int nrows = output_density.nr();
@@ -109,3 +125,7 @@ void FilmImageProvider::setExposureComp(float exposure)
     exposurecomp = exposure;
 }
 
+void FilmImageProvider::setWhitepoint(float whitepointIn)
+{
+    whitepoint = whitepointIn;
+}

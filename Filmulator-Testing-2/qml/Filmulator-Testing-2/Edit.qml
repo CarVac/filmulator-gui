@@ -124,6 +124,21 @@ SplitView {
             value: 0
             onValueChanged: {
                 filmProvider.setExposureComp(value)
+                filmProvider.invalidateFilmulation();
+                editortab.rolling = (editortab.rolling + 1)%10
+            }
+            updateValueWhileDragging: true
+        }
+        Slider {
+            width: parent.width
+            height: 30
+            y: parent.y + 20
+            minimumValue: 0
+            maximumValue: 5/1000
+            stepSize: 0.1/1000
+            value: 2/1000
+            onValueChanged: {
+                filmProvider.setWhitepoint(value)
                 editortab.rolling = (editortab.rolling + 1)%10
             }
             updateValueWhileDragging: true
