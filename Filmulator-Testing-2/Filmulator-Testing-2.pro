@@ -28,7 +28,7 @@ SOURCES += main.cpp \
     core/read_args.cpp \
     core/time_diff.cpp \
     core/filmimageprovider.cpp \
-    #database/sqlmodel.cpp
+    database/sqlmodel.cpp
 
 # Installation path
 # target.path =
@@ -48,9 +48,9 @@ HEADERS += \
     database/sqlmodel.h
 
 
-QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
+QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -O3 -fopenmp
+QMAKE_LFLAGS += -O3 -fopenmp -flto
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
 
