@@ -5,6 +5,8 @@
 #include <QColor>
 #include <QImage>
 #include <QQuickImageProvider>
+#include <QMutex>
+#include <QMutexLocker>
 #include "filmsim.hpp"
 
 class FilmImageProvider : public QObject, public QQuickImageProvider
@@ -20,6 +22,7 @@ public:
     Q_INVOKABLE void invalidateInputImage();
     Q_INVOKABLE void invalidateFilmulation();
 protected:
+    QMutex mutex;
     float exposurecomp;
     matrix<float> input_image_cache;
     matrix<float> filmulated_image_cache;

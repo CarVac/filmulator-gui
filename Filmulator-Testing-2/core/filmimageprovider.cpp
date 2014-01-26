@@ -23,11 +23,13 @@ FilmImageProvider::~FilmImageProvider()
 
 void FilmImageProvider::invalidateInputImage()
 {
+    QMutexLocker locker(&mutex);
     input_image_valid = false;
 }
 
 void FilmImageProvider::invalidateFilmulation()
 {
+    QMutexLocker locker(&mutex);
     filmulated_image_valid = false;
     cout << "invalidated filmulation" << endl;
 }
@@ -63,9 +65,13 @@ QImage FilmImageProvider::requestImage(const QString &id,
     float std_cutoff = filmParams.std_cutoff;
 
     //Load the image and demosaic it.
+    mutex.lock();
+        bool input_image_valid_copy = input_image_valid;
+        input_image_valid = ~input_image_valid;
+    mutex.unlock();
     Exiv2::ExifData exifData;
     matrix<float> input_image;
-    if (!input_image_valid)
+    if (!input_image_valid_copy)
     {
         if(imload(input_filename_list, input_exposure_compensation,
                   input_image, tiff, jpeg_in, exifData, highlights))
@@ -74,16 +80,18 @@ QImage FilmImageProvider::requestImage(const QString &id,
             return QImage(0,0,QImage::Format_ARGB32);
         }
         input_image_cache = input_image;
-        input_image_valid = true;
     }
     else
     {
         qDebug("Using cached demosaic");
         input_image = input_image_cache;
     }
-
+    mutex.lock();
+        bool filmulated_image_valid_copy = filmulated_image_valid;
+        filmulated_image_valid = ~filmulated_image_valid;
+    mutex.unlock();
     matrix<float> output_density;
-    if (!filmulated_image_valid)
+    if (!filmulated_image_valid_copy)
     {
         input_image *= pow(2, input_exposure_compensation[0]);
 
@@ -91,7 +99,6 @@ QImage FilmImageProvider::requestImage(const QString &id,
         output_density = filmulate(input_image, filmParams);
 
         filmulated_image_cache = output_density;
-        filmulated_image_valid = true;
     }
     else
     {
