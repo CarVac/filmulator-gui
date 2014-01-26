@@ -143,7 +143,6 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
         //Here we mix the layer among itself, which grants us the
         // local contrast increases.
         diffuse(developer_concentration,
-                reservoir_developer_concentration,
                 sigma_const,
                 pixels_per_millimeter,
                 timestep);

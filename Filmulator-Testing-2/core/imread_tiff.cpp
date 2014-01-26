@@ -21,7 +21,6 @@
 bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
 		Exiv2::ExifData &exifData)
 {
-    dout << "Input tiff name: " << input_image_filename << endl;
     TIFFSetWarningHandler(NULL);
     TIFF* tif = TIFFOpen(input_image_filename.c_str(), "r");
     if (!tif)
@@ -47,10 +46,10 @@ bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
 	if(bits_per_sample == 16)
 	{
 	  buf16 = (unsigned short *)_TIFFmalloc(TIFFScanlineSize(tif));
-	  for (int row = 0; row < imagelength; row++)
+      for ( unsigned int row = 0; row < imagelength; row++)
 	  {
 	      TIFFReadScanline(tif, buf16, row);
-		  for(int col = 0; col < imagewidth; col++)
+          for( unsigned int col = 0; col < imagewidth; col++)
 		  {
 			  returnmatrix(row,col*3    ) = buf16[col*num_chan    ];
 			  returnmatrix(row,col*3 + 1) = buf16[col*num_chan + 1];
@@ -62,10 +61,10 @@ bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
 	else
 	{
 	  buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif));
-	  for (int row = 0; row < imagelength; row++)
+      for ( unsigned int row = 0; row < imagelength; row++)
 	  {
 	      TIFFReadScanline(tif, buf8, row);
-		  for(int col = 0; col < imagewidth; col++)
+          for( unsigned int col = 0; col < imagewidth; col++)
 		  {
 			  returnmatrix(row,col*3    ) = buf8[col*num_chan    ];
 			  returnmatrix(row,col*3    ) *= 257;

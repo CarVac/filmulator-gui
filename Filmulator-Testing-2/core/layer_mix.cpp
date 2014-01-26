@@ -38,7 +38,6 @@ void layer_mix(matrix<float> &developer_concentration,
     //layer_time_divisor adjusts the ratio between the timestep used to compute
     //the diffuse within the layer and this diffuse.
     float layer_mix = pow(layer_mix_const,timestep/layer_time_divisor);
-    dout << "layer mix: " << layer_mix << endl;
 
     //layer_mix is the proportion of developer that stays in the layer.
 
@@ -75,6 +74,5 @@ void layer_mix(matrix<float> &developer_concentration,
 
     //Now, we subtract how much went into the layer from the reservoir.
     reservoir_developer_concentration -= reservoir_concentration_change;
-    dout << "reservoir: " << reservoir_developer_concentration << endl;
     return;
 }

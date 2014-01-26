@@ -70,7 +70,7 @@ bool imload(std::vector<string> input_filename_list,
 
     //This line sanitizes the input; if the input exposure compensations are
     //not in increasing order (or at least identical) it rejects them.
-    for ( int i=1; i < input_exposure_compensation.size(); i++)
+    for ( unsigned int i=1; i < input_exposure_compensation.size(); i++)
     {
         if (input_exposure_compensation[i-1] > input_exposure_compensation[i])
         {
@@ -87,7 +87,7 @@ bool imload(std::vector<string> input_filename_list,
     //increasing order of brightness.
     //float last_exposure_factor = pow(2,-input_exposure_compensation[0]);
     float last_exposure_factor = 1;
-    for ( int i=1; i < input_filename_list.size(); i++)
+    for ( unsigned int i=1; i < input_filename_list.size(); i++)
     {
         cout << "Reading image " << input_filename_list[i] << "." << endl;
 		if(tiff)

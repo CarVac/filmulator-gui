@@ -33,8 +33,6 @@ void postprocess(matrix<float> &output_density, bool set_whitepoint,
         float max_image = max(output_density);
         float max_allowed = mean_val + std_cutoff*std;
 
-        dout << "mean_val: " << mean_val << endl;
-
         if(max_image < max_allowed)
             output_max = max_image;
         else

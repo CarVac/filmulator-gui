@@ -21,7 +21,6 @@
 bool imread_jpeg(string input_image_filename, matrix<float> &returnmatrix,
 		Exiv2::ExifData &exifData)
 {
-    dout << "Input jpeg name: " << input_image_filename << endl;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     JSAMPROW row_pointer[1];

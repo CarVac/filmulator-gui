@@ -85,7 +85,6 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
     int temp_max_channel;
     int clip_thresh = 61000;//If any channel exceeds this value, we start
                             // to roll off its weight.
-    int clip_rolloff = 1000;//Length of averaging rolloff for transition.
     float exp_weight_factor;//This will store the weighting for the rolloff.
     int colr, colg, colb;//hold indices for red, green, and blue columns
     for (int col = 0; col < numcols/3; col++)

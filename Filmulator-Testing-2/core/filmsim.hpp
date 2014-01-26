@@ -85,7 +85,6 @@ void develop(matrix<float> &crystal_radius,
         float timestep);
 
 void diffuse(matrix<float> &developer_concentration,
-        const float reservoir_developer_concentration,
         float sigma_const,
         float pixels_per_millimeter,
         float timestep);
