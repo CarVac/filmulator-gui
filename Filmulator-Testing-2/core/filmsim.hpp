@@ -66,8 +66,8 @@ struct filmulateParams {
     int rolloff_boundary;
 };
 
-matrix<float> filmulate(matrix<float> &input_image,
-                        filmulateParams filmParams);
+bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
+               bool &abort, filmulateParams filmParams);
 
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         int rolloff_boundary);

@@ -23,8 +23,8 @@
 
 
 //Function-------------------------------------------------------------------------
-matrix<float> filmulate(matrix<float> &input_image,
-        filmulateParams filmParams)
+bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
+               bool &abort, filmulateParams filmParams)
 {
     //Extract parameters from struct
     float initial_developer_concentration = filmParams.initial_developer_concentration;
@@ -61,6 +61,9 @@ matrix<float> filmulate(matrix<float> &input_image,
     active_crystals_per_pixel = exposure(input_image, crystals_per_pixel,
             rolloff_boundary);
     input_image.free();
+
+    if(abort)
+        return 1;
  
     //We set the crystal radius to a small seed value for each color.
     matrix<float> crystal_radius;
@@ -113,7 +116,10 @@ matrix<float> filmulate(matrix<float> &input_image,
         cout << "====== Developing..." << setw(3)<< 100*i/(development_resolution+1)
             << "% complete ======" <<endl;
         gettimeofday(&develop_start,NULL);
-        
+
+        if(abort)
+            return 1;
+
         //This is where we perform the chemical reaction part.
         //The crystals grow.
         //The developer in the active layer is consumed.
@@ -129,6 +135,9 @@ matrix<float> filmulate(matrix<float> &input_image,
         
         develop_dif += time_diff(develop_start);
         gettimeofday(&diffuse_start,NULL);
+
+        if(abort)
+            return 1;
 
         //Now, we are going to perform the diffusion part.
         //Here we mix the layer among itself, which grants us the
@@ -196,12 +205,15 @@ matrix<float> filmulate(matrix<float> &input_image,
     //The output is crystal_radius^2 * active_crystals_per_pixel
     struct timeval mult_start;
     gettimeofday(&mult_start,NULL);
-    matrix<float> output_density;
+
+    if(abort)
+        return 1;
+
     output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;
     tout << "Output density time: "<<time_diff(mult_start) << endl;
 #ifdef DOUT
     debug_out.close();
 #endif
-	return output_density;
+    return 0;
 }
 

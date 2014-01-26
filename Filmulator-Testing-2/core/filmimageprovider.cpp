@@ -1,6 +1,7 @@
 #include "filmimageprovider.h"
 #include <pwd.h>
 #include <unistd.h>
+#define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     QObject(0),
@@ -25,20 +26,25 @@ void FilmImageProvider::invalidateInputImage()
 {
     QMutexLocker locker(&mutex);
     input_image_valid = false;
+    if(time_diff(request_start_time) > TIMEOUT)
+        abort = true;
 }
 
 void FilmImageProvider::invalidateFilmulation()
 {
     QMutexLocker locker(&mutex);
     filmulated_image_valid = false;
-    cout << "invalidated filmulation" << endl;
+    if(time_diff(request_start_time) > TIMEOUT)
+        abort = true;
 }
 
 QImage FilmImageProvider::requestImage(const QString &id,
                                        QSize *size, const QSize &requestedSize)
 {
-    struct timeval request_start;
-    gettimeofday(&request_start,NULL);
+    mutex.lock();
+        gettimeofday(&request_start_time,NULL);
+        abort = false;
+    mutex.unlock();
 
     QString tempID = id;
     tempID.remove(tempID.length()-1,1);
@@ -64,6 +70,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
     initialize(input_configuration, filmParams);
     float std_cutoff = filmParams.std_cutoff;
 
+    if(abort)
+        return emptyImage();
+
     //Load the image and demosaic it.
     mutex.lock();
         bool input_image_valid_copy = input_image_valid;
@@ -86,6 +95,10 @@ QImage FilmImageProvider::requestImage(const QString &id,
         qDebug("Using cached demosaic");
         input_image = input_image_cache;
     }
+
+    if(abort)
+        return emptyImage();
+
     mutex.lock();
         bool filmulated_image_valid_copy = filmulated_image_valid;
         filmulated_image_valid = ~filmulated_image_valid;
@@ -96,7 +109,8 @@ QImage FilmImageProvider::requestImage(const QString &id,
         input_image *= pow(2, input_exposure_compensation[0]);
 
         //Here we do the film simulation on the image...
-        output_density = filmulate(input_image, filmParams);
+        if(filmulate(input_image, output_density, abort, filmParams))
+            return emptyImage();
 
         filmulated_image_cache = output_density;
     }
@@ -105,6 +119,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
         qDebug("Using cached filmulation");
         output_density = filmulated_image_cache;
     }
+
+    if(abort)
+        return emptyImage();
 
     //Postprocessing: normalize and apply tone curve
     int nrows = output_density.nr();
@@ -115,6 +132,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
     postprocess(output_density,set_whitepoint, whitepoint, tonecurve_out,
                 std_cutoff, output_r, output_g, output_b);
+
+    if(abort)
+        return emptyImage();
 
     //Normally, here we'd output the file. Instead, we write it to the QImage.
     QImage output = QImage(ncols,nrows,QImage::Format_ARGB32);
@@ -129,7 +149,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     }
 
     tout << "Request time: "
-            << time_diff(request_start) << " seconds" << endl;
+            << time_diff(request_start_time) << " seconds" << endl;
     return output;
 }
 
@@ -141,4 +161,10 @@ void FilmImageProvider::setExposureComp(float exposure)
 void FilmImageProvider::setWhitepoint(float whitepointIn)
 {
     whitepoint = whitepointIn;
+}
+
+QImage FilmImageProvider::emptyImage()
+{
+    QImage output;
+    return output;
 }

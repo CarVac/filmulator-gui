@@ -24,12 +24,16 @@ public:
 protected:
     QMutex mutex;
     float exposurecomp;
+    struct timeval request_start_time;
     matrix<float> input_image_cache;
     matrix<float> filmulated_image_cache;
     bool input_image_valid;
     bool filmulated_image_valid;
+    bool abort;
     filmulateParams filmParams;
     float whitepoint;
+
+    QImage emptyImage();
 
 public slots:
 };
