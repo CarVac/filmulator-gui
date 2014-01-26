@@ -35,6 +35,9 @@ void FilmImageProvider::invalidateFilmulation()
 QImage FilmImageProvider::requestImage(const QString &id,
                                        QSize *size, const QSize &requestedSize)
 {
+    struct timeval request_start;
+    gettimeofday(&request_start,NULL);
+
     QString tempID = id;
     tempID.remove(tempID.length()-1,1);
     //Get home directory
@@ -117,6 +120,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
             line++;
         }
     }
+
+    tout << "Request time: "
+            << time_diff(request_start) << " seconds" << endl;
     return output;
 }
 
