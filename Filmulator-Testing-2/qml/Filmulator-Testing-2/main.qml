@@ -43,6 +43,8 @@ ApplicationWindow {
                 Edit {
                     location: editortab.location
                     index: editortab.rolling
+                    exposureComp: editortab.exposureComp
+                    whitepoint: editortab.whitepoint
                 }
             }
 
@@ -69,6 +71,8 @@ ApplicationWindow {
                     text: qsTr("Enter file path here")
                     onAccepted: {
                         editortab.location = filelocation.text
+                        //filmProvider.exposureComp = editortab.exposureComp;
+                        filmProvider.whitepoint = editortab.whitepoint;
                     }
                 }
             }

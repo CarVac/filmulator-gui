@@ -7,6 +7,8 @@ SplitView {
     orientation: Qt.Horizontal
     property string location
     property int index
+    property real exposureComp: 0
+    property real whitepoint: 2/1000
 
     Rectangle {
         id: photobox
@@ -146,12 +148,13 @@ SplitView {
             flickableDirection: Qt.Vertical
             anchors.fill: parent
             Slider {
+                id: exposureCompSlider
                 width: parent.width
                 height: 30
                 minimumValue: -5
                 maximumValue: 5
                 stepSize: 1/3
-                value: 0
+                value: exposureComp
                 onValueChanged: {
                     filmProvider.exposureComp = value
                     editortab.rolling = (editortab.rolling + 1)%10
@@ -159,13 +162,14 @@ SplitView {
                 updateValueWhileDragging: true
             }
             Slider {
+                id: whitepointSlider
                 width: parent.width
                 height: 30
                 y: parent.y + 20
                 minimumValue: 0.1/1000
                 maximumValue: 5/1000
                 stepSize: 0.1/1000
-                value: 2/1000
+                value: whitepoint
                 onValueChanged: {
                     filmProvider.whitepoint = value
                     editortab.rolling = (editortab.rolling + 1)%10
