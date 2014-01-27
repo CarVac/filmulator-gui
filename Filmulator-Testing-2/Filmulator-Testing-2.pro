@@ -37,7 +37,8 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    Organize.qml
+    Organize.qml \
+    qml/Filmulator-Testing-2/gui_components/SSlider.qml
 
 HEADERS += \
     core/filmsim.hpp \
