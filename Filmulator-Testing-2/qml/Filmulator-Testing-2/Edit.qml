@@ -22,6 +22,11 @@ SplitView {
             contentHeight: Math.max(largeview1.height*largeview1.scale,this.height);
             flickableDirection: Flickable.HorizontalAndVerticalFlick
             clip: true
+            property real fitScale: Math.min(flicky.width/largeview1.width,flicky.height/largeview1.height)
+            property real oldCenterX
+            property real centerX: (contentX + largeview1.width*Math.min(largeview1.scale,fitScale)/2)/largeview1.scale
+            property real oldCenterY
+            property real centerY: (contentY + largeview1.height*Math.min(largeview1.scale,fitScale)/2)/largeview1.scale
             Rectangle {
                 id: largeview
                 //scale: largeview1.scale
@@ -55,6 +60,25 @@ SplitView {
             }
         }
         Button {
+            id: fitscreen
+            width: 30
+            height: 30
+            x: parent.width-120
+            y: 0
+            text: qsTr("Fit")
+            action: Action {
+                onTriggered: {
+                    if(largeview1.width != 0 && largeview1.height != 0) {
+                        largeview1.scale = flicky.fitScale
+                    }
+                    else {
+                        largeview1.scale = 1
+                    }
+                }
+            }
+        }
+
+        Button {
             id: fullzoom
             width: 30
             height: 30
@@ -63,9 +87,11 @@ SplitView {
             text: "1:1"
             action: Action {
                 onTriggered: {
-                    largeview1.scale = 1
-                    //largeview.width = largeview1.sourceSize.width
-                    //largeview.height = largeview1.sourceSize.height
+                    flicky.oldCenterX = flicky.centerX;
+                    flicky.oldCenterY = flicky.centerY;
+                    largeview1.scale = 1;
+                    flicky.contentX = flicky.oldCenterX*1 - largeview1.width*Math.min(1,flicky.fitScale)/2;
+                    flicky.contentY = flicky.oldCenterY*1 - largeview1.height*Math.min(1,flicky.fitScale)/2;
                 }
             }
         }
@@ -79,9 +105,11 @@ SplitView {
             text: "+"
             action: Action {
                 onTriggered: {
+                    flicky.oldCenterX = flicky.centerX;
+                    flicky.oldCenterY = flicky.centerY;
                     largeview1.scale *= 1.2
-                    //largeview.width *= 1.3;
-                    //largeview.height *= 1.3;
+                    flicky.contentX = flicky.oldCenterX*largeview1.scale - largeview1.width*Math.min(largeview1.scale,flicky.fitScale)/2;
+                    flicky.contentY = flicky.oldCenterY*largeview1.scale - largeview1.height*Math.min(largeview1.scale,flicky.fitScale)/2;
                 }
             }
         }
@@ -94,9 +122,11 @@ SplitView {
             text: "-"
             action: Action {
                 onTriggered: {
+                    flicky.oldCenterX = flicky.centerX;
+                    flicky.oldCenterY = flicky.centerY;
                     largeview1.scale /= 1.2;
-                    //largeview.width = largeview.width/1.3;
-                    //largeview.height = largeview.height/1.3;
+                    flicky.contentX = flicky.oldCenterX*largeview1.scale - largeview1.width*Math.min(largeview1.scale,flicky.fitScale)/2;
+                    flicky.contentY = flicky.oldCenterY*largeview1.scale - largeview1.height*Math.min(largeview1.scale,flicky.fitScale)/2;
                 }
             }
         }
@@ -108,12 +138,12 @@ SplitView {
             y: 0
             color: "black"
             Text {
-                text: qsTr("width: ") + largeview.width + qsTr(" height: ") + largeview.height
+                text: qsTr("xcorner: ") + flicky.contentX + qsTr(" ycorner: ") + flicky.contentY
                 color: "white"
             }
             Text {
                 y: 15
-                text: qsTr("contentwidth: ")+flicky.contentWidth+qsTr(" contentheight: ")+flicky.contentHeight
+                text: qsTr("xcenter: ")+flicky.centerX+qsTr(" ycenter: ")+flicky.centerY
                 color: "white"
             }
         }
@@ -124,7 +154,7 @@ SplitView {
         width: 150
         Layout.maximumWidth: 500
         Flickable {
-            flickableDirection: Qt.Horizontal
+            flickableDirection: Qt.Vertical
             anchors.fill: parent
             Slider {
                 width: parent.width
