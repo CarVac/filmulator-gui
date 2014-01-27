@@ -24,7 +24,7 @@
 
 //Function-------------------------------------------------------------------------
 bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
-               bool &abort, filmulateParams filmParams)
+               filmulateParams filmParams, Interface* interface)
 {
     //Extract parameters from struct
     float initial_developer_concentration = filmParams.initial_developer_concentration;
@@ -62,9 +62,9 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
             rolloff_boundary);
     input_image.free();
 
-    if(abort)
+    if(interface->checkAbort())
         return 1;
- 
+
     //We set the crystal radius to a small seed value for each color.
     matrix<float> crystal_radius;
     crystal_radius.set_size(nrows,ncols*3);
@@ -104,21 +104,16 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
          << " seconds" << endl;
     gettimeofday(&development_start,NULL);
 
-#ifdef DOUT
-    ofstream debug_out;
-    debug_out.open("debug_output.txt",ios::out);
-#endif
-
     //Now we begin the main development/diffusion loop, which approximates the
     //differential equation of film development.
     for(int i = 0; i <= development_resolution; i++)
     {
-        cout << "====== Developing..." << setw(3)<< 100*i/(development_resolution+1)
-            << "% complete ======" <<endl;
-        gettimeofday(&develop_start,NULL);
-
-        if(abort)
+        if(interface->checkAbort())
             return 1;
+
+        interface->updateProgress(float(i)/float(development_resolution));
+
+        gettimeofday(&develop_start,NULL);
 
         //This is where we perform the chemical reaction part.
         //The crystals grow.
@@ -136,7 +131,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
         develop_dif += time_diff(develop_start);
         gettimeofday(&diffuse_start,NULL);
 
-        if(abort)
+        if(interface->checkAbort())
             return 1;
 
         //Now, we are going to perform the diffusion part.
@@ -175,18 +170,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
                     pixels_per_millimeter);
        
         agitate_dif += time_diff(agitate_start);
-#ifdef DOUT
-        float mean_developer_concentration = mean(developer_concentration);
-        float mean_crystal_radius = mean(crystal_radius);
-        float mean_silver_salt_density = mean(silver_salt_density);
-        debug_out << mean_developer_concentration << ","
-                  << mean_crystal_radius << ","
-                  << mean_silver_salt_density << ","
-                  << reservoir_developer_concentration << endl;
-        dout << "After agitate: developer concentration = " << mean_developer_concentration << endl;
-#endif
     }
-    cout<< "====== Development  100% complete ======" << endl;
     tout<<"Development time: "<<time_diff(development_start)<<" seconds"<<endl;
     tout << "Develop time: " << develop_dif << " seconds" << endl;
     tout << "Diffuse time: " << diffuse_dif << " seconds" << endl;
@@ -205,7 +189,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
     struct timeval mult_start;
     gettimeofday(&mult_start,NULL);
 
-    if(abort)
+    if(interface->checkAbort())
         return 1;
 
     output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;

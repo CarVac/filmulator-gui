@@ -27,7 +27,7 @@ bool imread_jpeg(string input_image_filename, matrix<float> &returnmatrix,
     FILE* jpeg = fopen(input_image_filename.c_str(), "r");
     if (!jpeg)
 	{
-		cout << endl << "Could not read input file!" << endl;
+        cerr << endl << "Could not read input file!" << endl;
         return true;
 	}
 	/* here we set up the standard libjpeg error handler */

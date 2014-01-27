@@ -1,12 +1,14 @@
 #include "filmimageprovider.h"
 #include <pwd.h>
 #include <unistd.h>
+#include <QTimer>
 #define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     QObject(0),
     QQuickImageProvider(type, QQuickImageProvider::ForceAsynchronousImageLoading)
 {
+    valid = none;
 }
 
 FilmImageProvider::FilmImageProvider() :
@@ -14,157 +16,153 @@ FilmImageProvider::FilmImageProvider() :
     QQuickImageProvider(QQuickImageProvider::Image,
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
-    input_image_valid = false;
-    filmulated_image_valid = false;
+    valid = none;
 }
 
 FilmImageProvider::~FilmImageProvider()
 {
 }
 
-void FilmImageProvider::invalidateInputImage()
-{
-    QMutexLocker locker(&mutex);
-    input_image_valid = false;
-    if(time_diff(request_start_time) > TIMEOUT)
-        abort = true;
-}
-
-void FilmImageProvider::invalidateFilmulation()
-{
-    QMutexLocker locker(&mutex);
-    filmulated_image_valid = false;
-    if(time_diff(request_start_time) > TIMEOUT)
-        abort = true;
-}
-
 QImage FilmImageProvider::requestImage(const QString &id,
                                        QSize *size, const QSize &requestedSize)
 {
-    mutex.lock();
-        gettimeofday(&request_start_time,NULL);
-        abort = false;
-    mutex.unlock();
+    gettimeofday(&request_start_time,NULL);
+    QImage output = emptyImage();
+    cout << "Exposure compensation: " << exposureComp << endl;
 
-    QString tempID = id;
-    tempID.remove(tempID.length()-1,1);
-    //Get home directory
-    int myuid = getuid();
-    passwd *mypasswd = getpwuid(myuid);
-    std::string input_configuration = std::string(mypasswd->pw_dir) +
-            "/.filmulator/configuration.txt";
-
-    //Set up various thingys that are normally command line args
-    std::vector<std::string> input_filename_list;
-    std::vector<float> input_exposure_compensation;
-    int highlights = 0;
-    bool set_whitepoint = true;
-    bool tiff = false;
-    bool jpeg_in = false;
-    bool tonecurve_out = false;
-    input_filename_list.push_back(tempID.toStdString());
-    cout << "Exposure compensation: " << exposurecomp << endl;
-    input_exposure_compensation.push_back(exposurecomp);
-
-    //Read in from the configuration file
-    initialize(input_configuration, filmParams);
-    float std_cutoff = filmParams.std_cutoff;
-
-    if(abort)
-        return emptyImage();
-
-    //Load the image and demosaic it.
-    mutex.lock();
-        bool input_image_valid_copy = input_image_valid;
-        input_image_valid = ~input_image_valid;
-    mutex.unlock();
-    Exiv2::ExifData exifData;
-    matrix<float> input_image;
-    if (!input_image_valid_copy)
+    switch (valid)
     {
-        if(imload(input_filename_list, input_exposure_compensation,
-                  input_image, tiff, jpeg_in, exifData, highlights))
+        case none:
         {
-            qDebug("Error loading images");
-            return QImage(0,0,QImage::Format_ARGB32);
+            mutex.lock();
+                valid = demosaic;
+            mutex.unlock();
+            QString tempID = id;
+            tempID.remove(tempID.length()-1,1);
+            std::vector<std::string> input_filename_list;
+            input_filename_list.push_back(tempID.toStdString());
+            std::vector<float> input_exposure_compensation;
+            input_exposure_compensation.push_back(exposureComp);
+
+            bool tiff_in = false;
+            bool jpeg_in = false;
+            int highlights = 0;
+            if(imload(input_filename_list, input_exposure_compensation,
+                      input_image, tiff_in, jpeg_in, exifData, highlights))
+            {
+                qDebug("Error loading images");
+                mutex.lock();
+                        valid = none;
+                mutex.unlock();
+                return emptyImage();
+            }
         }
-        input_image_cache = input_image;
-    }
-    else
-    {
-        qDebug("Using cached demosaic");
-        input_image = input_image_cache;
-    }
+       case demosaic:
+       {
+            if(checkAbort(demosaic))
+                return emptyImage();
+            mutex.lock();
+                    valid = filmulation;
+            mutex.unlock();
+            matrix<float> compImage = input_image * pow(2, exposureComp);
+            //Read in from the configuration file
+            //Get home directory
+            int myuid = getuid();
+            passwd *mypasswd = getpwuid(myuid);
+            std::string input_configuration = std::string(mypasswd->pw_dir) +
+                    "/.filmulator/configuration.txt";
+            initialize(input_configuration, filmParams);
 
-    if(abort)
-        return emptyImage();
-
-    mutex.lock();
-        bool filmulated_image_valid_copy = filmulated_image_valid;
-        filmulated_image_valid = ~filmulated_image_valid;
-    mutex.unlock();
-    matrix<float> output_density;
-    if (!filmulated_image_valid_copy)
-    {
-        input_image *= pow(2, input_exposure_compensation[0]);
-
-        //Here we do the film simulation on the image...
-        if(filmulate(input_image, output_density, abort, filmParams))
-            return emptyImage();
-
-        filmulated_image_cache = output_density;
-    }
-    else
-    {
-        qDebug("Using cached filmulation");
-        output_density = filmulated_image_cache;
-    }
-
-    if(abort)
-        return emptyImage();
-
-    //Postprocessing: normalize and apply tone curve
-    int nrows = output_density.nr();
-    int ncols = output_density.nc()/3;
-    matrix<int> output_r(nrows,ncols);
-    matrix<int> output_g(nrows,ncols);
-    matrix<int> output_b(nrows,ncols);
-
-    postprocess(output_density,set_whitepoint, whitepoint, tonecurve_out,
-                std_cutoff, output_r, output_g, output_b);
-
-    if(abort)
-        return emptyImage();
-
-    //Normally, here we'd output the file. Instead, we write it to the QImage.
-    QImage output = QImage(ncols,nrows,QImage::Format_ARGB32);
-    for(int i = 0; i < nrows; i++)
-    {
-        QRgb *line = (QRgb *)output.scanLine(i);
-        for(int j = 0; j < ncols; j++)
+            //Here we do the film simulation on the image...
+            if(filmulate(compImage, filmulated_image, filmParams, this))
+                return emptyImage();//filmulate returns 1 if it detected an abort
+        }
+        case filmulation:
         {
-            *line = QColor(min(255,output_r(i,j)),min(255,output_g(i,j)),min(255,output_b(i,j))).rgb();
-            line++;
-        }
-    }
+            if(checkAbort(filmulation))
+                return emptyImage();
+            mutex.lock();
+                valid = curveOne;
+            mutex.unlock();
+            //Postprocessing: normalize and apply tone curve
+            bool set_whitepoint = true;
+            bool tonecurve_out = false;
+            float std_cutoff = 0;
 
-    tout << "Request time: "
-            << time_diff(request_start_time) << " seconds" << endl;
+            int nrows = filmulated_image.nr();
+            int ncols = filmulated_image.nc()/3;
+            output_r.set_size(nrows,ncols);
+            output_g.set_size(nrows,ncols);
+            output_b.set_size(nrows,ncols);
+
+            postprocess(filmulated_image,set_whitepoint, whitepoint, tonecurve_out,
+                        std_cutoff, output_r, output_g, output_b);
+        }
+        case curveOne:
+        {
+            int nrows = output_r.nr();
+            int ncols = output_r.nc();
+            if(checkAbort(curveOne))
+                return emptyImage();
+            //Normally, here we'd output the file. Instead, we write it to the QImage.
+            output = QImage(ncols,nrows,QImage::Format_ARGB32);
+            for(int i = 0; i < nrows; i++)
+            {
+                QRgb *line = (QRgb *)output.scanLine(i);
+                for(int j = 0; j < ncols; j++)
+                {
+                    *line = QColor(min(255,output_r(i,j)),min(255,output_g(i,j)),min(255,output_b(i,j))).rgb();
+                    line++;
+                }
+            }
+
+            tout << "Request time: "
+                    << time_diff(request_start_time) << " seconds" << endl;
+        }
+    }//End switch
+    setProgress(1);
     return output;
 }
 
 void FilmImageProvider::setExposureComp(float exposure)
 {
-    exposurecomp = exposure;
+    QMutexLocker locker(&mutex);
+    exposureComp = exposure;
+    if (valid > demosaic)
+            valid = demosaic;
+    emit exposureCompChanged();
 }
 
 void FilmImageProvider::setWhitepoint(float whitepointIn)
 {
+    QMutexLocker locker (&mutex);
     whitepoint = whitepointIn;
+    if (valid > filmulation)
+        valid = filmulation;
+    emit whitepointChanged();
+}
+
+void FilmImageProvider::setProgress(float percentDone_in)
+{
+    progress = percentDone_in;
+    emit progressChanged();
+}
+
+void FilmImageProvider::updateProgress(float percentDone_in)//Percent filmulation
+{
+    progress = 0.2 + percentDone_in*0.6;
+    emit progressChanged();
 }
 
 QImage FilmImageProvider::emptyImage()
 {
-    QImage output;
-    return output;
+    return QImage(0,0,QImage::Format_ARGB32);
+}
+
+bool FilmImageProvider::checkAbort(Valid currStep)
+{
+    if (valid < currStep && time_diff(request_start_time) > 0.1)
+        return true;
+    else
+        return false;
 }

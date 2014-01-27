@@ -332,9 +332,7 @@ const matrix<T> matrix<T>::mult(const U value) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols,result)
+#pragma omp parallel for shared(result)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			result.data[row*num_cols + col] = 
@@ -359,9 +357,7 @@ const matrix<T> matrix<T>::divide(const U value) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols,result)
+#pragma omp parallel for shared(result)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			result.data[row*num_cols + col] = 

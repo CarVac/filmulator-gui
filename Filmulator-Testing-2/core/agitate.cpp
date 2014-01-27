@@ -22,7 +22,6 @@ void agitate ( matrix<float> &developer_concentration,
     float developer_thickness, float &reservoir_developer_concentration,
     float reservoir_size, float pixels_per_millimeter )
 {
-    cout << "Agitating" << endl;
     int npixels = developer_concentration.nc()*
         developer_concentration.nr();
     float total_developer = sum(developer_concentration)*

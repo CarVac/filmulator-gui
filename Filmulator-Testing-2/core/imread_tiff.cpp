@@ -25,7 +25,7 @@ bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
     TIFF* tif = TIFFOpen(input_image_filename.c_str(), "r");
     if (!tif)
 	{
-		cout << endl << "Could not read input file!" << endl;
+        cerr << endl << "Could not read input file!" << endl;
         return true;
 	}
 	uint32 imagelength;

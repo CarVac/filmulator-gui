@@ -43,7 +43,7 @@ bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
     TIFF *out = TIFFOpen(outputfilename.c_str(),"w");
     if (!out)
     {
-        cout << "Can't open file for writing" << endl;
+        cerr << "Can't open file for writing" << endl;
         return 1;
     }	
     TIFFSetField(out, TIFFTAG_IMAGEWIDTH, xsize);  

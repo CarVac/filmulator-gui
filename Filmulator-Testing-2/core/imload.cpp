@@ -35,7 +35,7 @@ bool imload(std::vector<string> input_filename_list,
 	{
         if(imread_tiff(input_filename_list[0], input_image, exifData))
         {
-            cout << "Could not open image " << input_filename_list[0] <<
+            cerr << "Could not open image " << input_filename_list[0] <<
                 "; Exiting..." << endl;
             return true;
         }
@@ -45,7 +45,7 @@ bool imload(std::vector<string> input_filename_list,
 	{
 		if(imread_jpeg(input_filename_list[0], input_image, exifData))
 		{
-			cout << "Could not open image " << input_filename_list[0] <<
+            cerr << "Could not open image " << input_filename_list[0] <<
 				"; Exiting..." << endl;
 			return true;
 		}
@@ -54,7 +54,7 @@ bool imload(std::vector<string> input_filename_list,
 	{
         if(imread(input_filename_list[0], input_image, exifData, highlights))
         {
-            cout << "Could not open image " << input_filename_list[0] <<
+            cerr << "Could not open image " << input_filename_list[0] <<
                 "; Exiting..." << endl;
             return true;
         }
@@ -74,7 +74,7 @@ bool imload(std::vector<string> input_filename_list,
     {
         if (input_exposure_compensation[i-1] > input_exposure_compensation[i])
         {
-            cout << "HDR exposures must be in ascending order of brightness. Exiting" << endl;
+            tout << "HDR exposures must be in ascending order of brightness. Exiting" << endl;
             return true;
         }
     }
@@ -89,12 +89,11 @@ bool imload(std::vector<string> input_filename_list,
     float last_exposure_factor = 1;
     for ( unsigned int i=1; i < input_filename_list.size(); i++)
     {
-        cout << "Reading image " << input_filename_list[i] << "." << endl;
 		if(tiff)
 		{
 			if(imread_tiff(input_filename_list[i], temp_image, exifData))
 			{
-				cout << "Could not open image " << input_filename_list[i] <<
+                cerr << "Could not open image " << input_filename_list[i] <<
 					"; Exiting..." << endl;
 				return true;
 			}
@@ -103,7 +102,7 @@ bool imload(std::vector<string> input_filename_list,
         {
             if(imread(input_filename_list[i], temp_image, exifData, 0))
             {
-                cout << "Could not open image " << input_filename_list[i] <<
+                cerr << "Could not open image " << input_filename_list[i] <<
                     "; Exiting..." << endl;
                 return true;
             }
@@ -112,7 +111,7 @@ bool imload(std::vector<string> input_filename_list,
         if(input_image.nr()!=temp_image.nr() ||
                 input_image.nc()!=temp_image.nc())
         {
-            cout << "Image " << input_filename_list[i] <<
+            cerr << "Image " << input_filename_list[i] <<
                 " has mismatching image size;" << endl << "Exiting..." <<
                 endl;
             return true;

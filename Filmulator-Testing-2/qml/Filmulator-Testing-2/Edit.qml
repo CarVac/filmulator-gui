@@ -91,22 +91,11 @@ SplitView {
                 }
             }
         }
-        Rectangle {
-            id: dims
-            width: 300
-            height: 30
-            x: 0
-            y: 0
-            color: "black"
-            Text {
-                text: qsTr("width: ") + largeview.width + qsTr(" height: ") + largeview.height
-                color: "white"
-            }
-            Text {
-                y: 15
-                text: qsTr("outeraspect: " ) + largeview.aspectRatio + qsTr(" imageaspect: " ) + largeview1.aspectRatio
-                color: "white"
-            }
+        ProgressBar {
+            indeterminate: false;
+            orientation: Qt.Horizontal;
+            visible: true;
+            value: filmProvider.progress;
         }
     }
     Rectangle {
@@ -123,8 +112,7 @@ SplitView {
             stepSize: 1/3
             value: 0
             onValueChanged: {
-                filmProvider.setExposureComp(value)
-                filmProvider.invalidateFilmulation();
+                filmProvider.exposureComp = value
                 editortab.rolling = (editortab.rolling + 1)%10
             }
             updateValueWhileDragging: true
@@ -132,13 +120,13 @@ SplitView {
         Slider {
             width: parent.width
             height: 30
-            y: parent.y + 20
+            y: parent.y + 40
             minimumValue: 0
             maximumValue: 5/1000
             stepSize: 0.1/1000
             value: 2/1000
             onValueChanged: {
-                filmProvider.setWhitepoint(value)
+                filmProvider.whitepoint = value
                 editortab.rolling = (editortab.rolling + 1)%10
             }
             updateValueWhileDragging: true

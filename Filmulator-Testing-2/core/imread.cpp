@@ -40,11 +40,10 @@ bool imread(string input_image_filename, matrix<float> &returnmatrix,
     PARAM.use_camera_wb = 1;//Use camera WB setting (-w)
     PARAM.highlight = highlights;//Set highlight recovery (-H #)
 
-    cout << "Processing file: " << input_image_filename << "..." << endl;
     const char *cstr = input_image_filename.c_str();
     if(0 != image_processor.open_file(cstr))
     {
-        cout << "Could not read input file!" << endl;
+        cerr << "Could not read input file!" << endl;
         return true;
     }
     
