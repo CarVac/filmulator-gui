@@ -7,8 +7,8 @@ SplitView {
     orientation: Qt.Horizontal
     property string location
     property int index
-    property real exposureComp: 0
-    property real whitepoint: 2/1000
+    property real exposureComp
+    property real whitepoint
 
     Rectangle {
         id: photobox
