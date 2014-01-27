@@ -162,7 +162,7 @@ SplitView {
                 width: parent.width
                 height: 30
                 y: parent.y + 20
-                minimumValue: 0
+                minimumValue: 0.1/1000
                 maximumValue: 5/1000
                 stepSize: 0.1/1000
                 value: 2/1000
