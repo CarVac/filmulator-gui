@@ -33,7 +33,6 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
 //First order of business is to determine the relative brightness of the two
 //images (we don't trust the exposure compensation value given by the user to
 //be correct or even if it is, perfectly accurate).
-    cout << "Merging exposures..." << endl;
     int numrows = input_image.nr();
     int numcols = input_image.nc();
     double init_exp_factor = pow(2,-initial_exposure_comp);
@@ -71,7 +70,7 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
     //error.
     if(exp_factor > (last_exposure_factor*1.05))
     {
-        cout << "Image " << filename << " is darker than the previous image. Exiting..." << endl;
+        cerr << "Image " << filename << " is darker than the previous image. Exiting..." << endl;
         return true;
     }
     //Now we merge the exposures.
@@ -80,12 +79,9 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
     //The first exposure factor should be the biggest, so the greater the
     //ratio the more the weighting should be.
     float new_exp_weight = init_exp_factor/exp_factor;
-    cout << "new_exp_weight: " << new_exp_weight << endl;
-    cout << "exposure_weight: " << exposure_weight << endl;
     int temp_max_channel;
     int clip_thresh = 61000;//If any channel exceeds this value, we start
                             // to roll off its weight.
-    int clip_rolloff = 1000;//Length of averaging rolloff for transition.
     float exp_weight_factor;//This will store the weighting for the rolloff.
     int colr, colg, colb;//hold indices for red, green, and blue columns
     for (int col = 0; col < numcols/3; col++)

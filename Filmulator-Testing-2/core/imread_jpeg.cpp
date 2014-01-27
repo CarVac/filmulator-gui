@@ -21,14 +21,13 @@
 bool imread_jpeg(string input_image_filename, matrix<float> &returnmatrix,
 		Exiv2::ExifData &exifData)
 {
-    dout << "Input jpeg name: " << input_image_filename << endl;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     JSAMPROW row_pointer[1];
     FILE* jpeg = fopen(input_image_filename.c_str(), "r");
     if (!jpeg)
 	{
-		cout << endl << "Could not read input file!" << endl;
+        cerr << endl << "Could not read input file!" << endl;
         return true;
 	}
 	/* here we set up the standard libjpeg error handler */

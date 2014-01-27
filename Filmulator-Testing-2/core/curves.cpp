@@ -53,13 +53,6 @@ int tonecurve(int input)
     double y_out = (ay*t_value*t_value + by*t_value + cy)*65535;
 	int output = (int)(y_out); // TODO: Something else should go here
     
-    //Uncomment for some debug points on the control curve.
-//    if (input%1000 == 1)
-//    {
-//        cout << "input/65535 = " << double(input)/65535 << endl;
-//        cout << "t_value = " << t_value << endl;
-//        cout << "output = " << y_out/65535 << endl;
-//    }
 	return output;
 }
 

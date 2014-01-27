@@ -33,14 +33,12 @@ void postprocess(matrix<float> &output_density, bool set_whitepoint,
         float max_image = max(output_density);
         float max_allowed = mean_val + std_cutoff*std;
 
-        dout << "mean_val: " << mean_val << endl;
-
         if(max_image < max_allowed)
             output_max = max_image;
         else
             output_max = max_allowed;
 	}
-	output_density *= 255/output_max;
+    matrix<float> tempMatrix = output_density * 255/output_max;
 
     //Tone curve        
 	LUT lookup;
@@ -52,7 +50,7 @@ void postprocess(matrix<float> &output_density, bool set_whitepoint,
 
     //Here we apply the tone curve.
     //Here, we split the interleaved matrix into three separate ones.
-    apply_tone_curve(lookup,output_density,output_r,output_g,output_b);
+    apply_tone_curve(lookup,tempMatrix,output_r,output_g,output_b);
     tout << "Postprocess time: " 
          << time_diff(postprocess_start) << " seconds" << endl;
 }

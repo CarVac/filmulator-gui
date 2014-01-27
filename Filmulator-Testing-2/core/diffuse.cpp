@@ -35,7 +35,6 @@ void diffuse_x(matrix<float> &developer_concentration,
                float swell_factor);
 
 void diffuse(matrix<float> &developer_concentration, 
-             const float reservoir_developer_concentration,
 		     float sigma_const,
 		     float pixels_per_millimeter,
              float timestep)
@@ -91,12 +90,12 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
     vector<float> htemp(paddedwidth); // stores result of box blur
 
     //This is the running sum used to compute the box blur.
-    float running_sum;
+    float running_sum = 0;
 
     //These are indices for loops.
-    int row;
-    int col;
-    int pass;
+    int row = 0;
+    int col = 0;
+    int pass = 0;
 
 #pragma omp parallel shared(developer_concentration,convlength,convrad,order,\
         length,width,paddedwidth,pad,swell_factor)\

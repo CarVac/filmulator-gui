@@ -69,7 +69,6 @@ ApplicationWindow {
                     text: qsTr("Enter file path here")
                     onAccepted: {
                         editortab.location = filelocation.text
-                        filmProvider.invalidateInputImage()
                     }
                 }
             }

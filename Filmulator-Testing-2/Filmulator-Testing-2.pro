@@ -13,7 +13,6 @@ SOURCES += main.cpp \
     core/develop.cpp \
     core/diffuse.cpp \
     core/exposure.cpp \
-    core/filmulate.cpp \
     core/imload.cpp \
     core/imread.cpp \
     core/imread_jpeg.cpp \
@@ -25,10 +24,10 @@ SOURCES += main.cpp \
     core/merge_exps.cpp \
     core/output_file.cpp \
     core/postprocess.cpp \
-    core/read_args.cpp \
     core/time_diff.cpp \
     core/filmimageprovider.cpp \
-    database/sqlmodel.cpp
+    database/sqlmodel.cpp \
+    core/filmulate.cpp
 
 # Installation path
 # target.path =
@@ -46,7 +45,8 @@ HEADERS += \
     core/lut.hpp \
     core/matrix.hpp \
     core/filmimageprovider.h \
-    database/sqlmodel.h
+    database/sqlmodel.h \
+    core/interface.h
 
 
 QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

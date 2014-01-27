@@ -160,9 +160,7 @@ matrix<T>::matrix(const matrix<T> &toCopy)
 	num_cols = toCopy.num_cols;
 	data = new T[num_rows*num_cols];
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols) 
+#pragma omp parallel for
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			data[row*num_cols + col] = 
@@ -218,9 +216,7 @@ matrix<T>& matrix<T>::operator=(const matrix<T> &toCopy)
 	
 	set_size(toCopy.nr(),toCopy.nc());
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols,toCopy)
+#pragma omp parallel for shared(toCopy)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			data[row*num_cols + col] = 
@@ -232,9 +228,7 @@ template <class T> template<class U>
 matrix<T>& matrix<T>::operator=(const U value)
 {
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols)
+#pragma omp parallel for
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			data[row*num_cols + col] = value;
@@ -324,9 +318,7 @@ const matrix<T> matrix<T>::pointmult(const matrix<U> &rhs) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols,result,rhs)
+#pragma omp parallel for shared(result,rhs)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			result.data[row*num_cols + col] = 
@@ -340,9 +332,7 @@ const matrix<T> matrix<T>::mult(const U value) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols,result)
+#pragma omp parallel for shared(result)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			result.data[row*num_cols + col] = 
@@ -354,9 +344,8 @@ const matrix<T> matrix<T>::mult(const U value) const
 template <class T> template<class U>
 const matrix<T>& matrix<T>::mult_this(const U value)
 {
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols)
+
+#pragma omp parallel for
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			data[row*num_cols + col] *= value;
@@ -368,9 +357,7 @@ const matrix<T> matrix<T>::divide(const U value) const
 {
 	matrix<T> result(num_rows,num_cols);
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols,result)
+#pragma omp parallel for shared(result)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			result.data[row*num_cols + col] = 
@@ -384,9 +371,7 @@ inline void matrix<T>::slow_transpose_to (const matrix<T> &target) const
 {
     assert(target.num_rows == num_cols && target.num_cols == num_rows);
     
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols,target)
+#pragma omp parallel for shared(target)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			target.data[col*num_rows + row] = 
@@ -484,9 +469,7 @@ double matrix<T>::sum()
 {
 	double sum = 0;
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols) reduction(+:sum) 
+#pragma omp parallel for reduction(+:sum)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			sum += data[row*num_cols + col];
@@ -498,9 +481,7 @@ T matrix<T>::max()
 {
     T shared_max;
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel shared(pdata, pnum_cols)
+#pragma omp parallel
     {
 	T max = std::numeric_limits<T>::min();
 #pragma omp for schedule(dynamic)
@@ -553,9 +534,7 @@ double matrix<T>::variance()
 	double size = num_rows*num_cols;
 	double variance = 0;
 
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel for shared(pdata,pnum_cols) reduction(+:variance)
+#pragma omp parallel for reduction(+:variance)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)
 			 variance += pow(data[row*num_cols+col]-m,2);

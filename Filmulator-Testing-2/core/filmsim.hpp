@@ -16,6 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
+
+#ifndef FILMSIM_H
+#define FILMSIM_H
+
 #include "tiffio.h"
 #include <iostream>
 #include <fstream>
@@ -28,6 +32,7 @@
 #include "libraw/libraw.h"
 #include "matrix.hpp"
 #include <sys/time.h>
+#include "interface.h"
 
 #ifdef DOUT
 #define dout cout
@@ -67,7 +72,7 @@ struct filmulateParams {
 };
 
 bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
-               bool &abort, filmulateParams filmParams);
+               filmulateParams filmParams, Interface* interface);
 
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         int rolloff_boundary);
@@ -85,7 +90,6 @@ void develop(matrix<float> &crystal_radius,
         float timestep);
 
 void diffuse(matrix<float> &developer_concentration,
-        const float reservoir_developer_concentration,
         float sigma_const,
         float pixels_per_millimeter,
         float timestep);
@@ -171,3 +175,5 @@ void postprocess(matrix<float> &output_density, bool set_whitepoint,
                         float whitepoint, bool tonecurve_out, float std_cutoff,
                         matrix<int> &output_r, matrix<int> &output_g,
                         matrix<int> &output_b);
+
+#endif // FILMSIM_H
