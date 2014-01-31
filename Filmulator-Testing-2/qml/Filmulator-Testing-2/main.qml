@@ -39,6 +39,9 @@ ApplicationWindow {
                 id: editortab
                 property string location: ""
                 property real rolling: 0
+                property real exposureComp: 0
+                property real whitepoint: 2/1000
+
                 title: qsTr("Filmulate")
                 Edit {
                     location: editortab.location
@@ -71,7 +74,7 @@ ApplicationWindow {
                     text: qsTr("Enter file path here")
                     onAccepted: {
                         editortab.location = filelocation.text
-                        //filmProvider.exposureComp = editortab.exposureComp;
+                        filmProvider.exposureComp = editortab.exposureComp;
                         filmProvider.whitepoint = editortab.whitepoint;
                     }
                 }
