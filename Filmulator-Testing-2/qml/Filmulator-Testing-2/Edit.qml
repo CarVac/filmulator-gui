@@ -1,6 +1,7 @@
 import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
+import "gui_components"
 
 SplitView {
     anchors.fill: parent
@@ -142,7 +143,7 @@ SplitView {
     }
     Rectangle {
         id: tools
-        color: "brown"
+        color: "#404040"
         width: 150
         Layout.maximumWidth: 500
         Flickable {
@@ -176,6 +177,14 @@ SplitView {
                     editortab.rolling = (editortab.rolling + 1)%10
                 }
                 updateValueWhileDragging: true
+            }
+            ToolSlider {
+                id: hi
+                title: qsTr("Tool a")
+                minimumValue: -10
+                maximumValue: 10
+                stepSize: 1
+                y: parent.y+40
             }
         }
     }
