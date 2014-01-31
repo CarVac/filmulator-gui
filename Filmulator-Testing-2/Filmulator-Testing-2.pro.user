@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.0.0, 2014-01-26T17:08:05. -->
+<!-- Written by QtCreator 3.0.0, 2014-01-30T02:11:17. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -54,7 +54,7 @@
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 5.2.0 GCC 64bit</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 5.2.0 GCC 64bit</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.520.gcc_64.essentials_kit</value>
-   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
+   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">

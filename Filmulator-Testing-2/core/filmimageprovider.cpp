@@ -9,6 +9,11 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     QQuickImageProvider(type, QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     valid = none;
+    blackpoint = 0;
+    lutR.setUnity();
+    lutG.setUnity();
+    lutB.setUnity();
+    filmLikeLUT.setUnity();
 }
 
 FilmImageProvider::FilmImageProvider() :
@@ -17,6 +22,11 @@ FilmImageProvider::FilmImageProvider() :
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     valid = none;
+    blackpoint = 0;
+    lutR.setUnity();
+    lutG.setUnity();
+    lutB.setUnity();
+    filmLikeLUT.setUnity();
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -32,7 +42,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
     switch (valid)
     {
-        case none:
+        case none://Do demosiac
         {
             mutex.lock();
                 valid = demosaic;
@@ -57,7 +67,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
                 return emptyImage();
             }
         }
-       case demosaic:
+       case demosaic://Do filmulation
        {
             if(checkAbort(demosaic))
                 return emptyImage();
@@ -77,41 +87,48 @@ QImage FilmImageProvider::requestImage(const QString &id,
             if(filmulate(compImage, filmulated_image, filmParams, this))
                 return emptyImage();//filmulate returns 1 if it detected an abort
         }
-        case filmulation:
+        case filmulation://Do whitepoint_blackpoint
         {
             if(checkAbort(filmulation))
                 return emptyImage();
             mutex.lock();
-                valid = curveOne;
+                valid = whiteblack;
             mutex.unlock();
-            //Postprocessing: normalize and apply tone curve
-            bool set_whitepoint = true;
-            bool tonecurve_out = false;
-            float std_cutoff = 0;
-
-            int nrows = filmulated_image.nr();
-            int ncols = filmulated_image.nc()/3;
-            output_r.set_size(nrows,ncols);
-            output_g.set_size(nrows,ncols);
-            output_b.set_size(nrows,ncols);
-
-            postprocess(filmulated_image,set_whitepoint, whitepoint, tonecurve_out,
-                        std_cutoff, output_r, output_g, output_b);
+            whitepoint_blackpoint(filmulated_image, contrast_image, whitepoint,
+                                  blackpoint);
         }
-        case curveOne:
+        case whiteblack: // Do color_curve
         {
-            int nrows = output_r.nr();
-            int ncols = output_r.nc();
-            if(checkAbort(curveOne))
+            if(checkAbort(whiteblack))
+                return emptyImage();
+            mutex.lock();
+                valid = colorcurve;
+            mutex.unlock();
+            color_curves(contrast_image, color_curve_image, lutR, lutG, lutB);
+        }
+        case colorcurve://Do flim-like curve
+        {
+            if(checkAbort(colorcurve))
+                return emptyImage();
+            mutex.lock();
+                valid = filmlikecurve;
+            mutex.unlock();
+            film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
+        }
+        case filmlikecurve: //output
+        {
+            int nrows = film_curve_image.nr();
+            int ncols = film_curve_image.nc();
+            if(checkAbort(filmlikecurve))
                 return emptyImage();
             //Normally, here we'd output the file. Instead, we write it to the QImage.
             output = QImage(ncols,nrows,QImage::Format_ARGB32);
             for(int i = 0; i < nrows; i++)
             {
                 QRgb *line = (QRgb *)output.scanLine(i);
-                for(int j = 0; j < ncols; j++)
+                for(int j = 0; j < ncols; j = j + 3)
                 {
-                    *line = QColor(min(255,output_r(i,j)),min(255,output_g(i,j)),min(255,output_b(i,j))).rgb();
+                    *line = QColor(film_curve_image(i,j)/256,film_curve_image(i,j+1)/256,film_curve_image(i,j+2)/256).rgb();
                     line++;
                 }
             }

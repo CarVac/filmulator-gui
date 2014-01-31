@@ -16,27 +16,59 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
-#define maxval 65536
+#define MAXVAL 65536
+#include <algorithm>
+
+using namespace std;
 
 class LUT
 {
 private:
-	int table[maxval];
+    unsigned short table[MAXVAL];
+    bool unity;
+    bool linear;
+    float slope;
+    float y_intercept;
+    float brightest;
+    float darkest;
 public:
-	void fill(int (*tonecurve)(int))
+    void setLinear(float slope_in, float y_intercept_in,
+                   float brightest_in, float darkest_in)
+    {
+        linear = true;
+        unity = false;
+        slope = slope_in;
+        y_intercept = y_intercept_in;
+        brightest = brightest_in;
+        darkest = darkest_in;
+    }
+
+    void setUnity()
+    {
+        linear = false;
+        unity = true;
+    }
+
+    bool isUnity()
+    {
+        return unity;
+    }
+
+    void fill(unsigned short (*tonecurve)(unsigned short))
 	{
-		for(int i = 0; i < maxval; i++)
+        linear = false;
+        unity = false;
+
+        for(int i = 0; i < MAXVAL; i++)
 			table[i] = (*tonecurve)(i);
 	}
 	
-	int operator[](float index)
+    unsigned short operator[](unsigned short index)
 	{
-		if (index > (maxval-1))
-		    return table[maxval-1];
-		if (index < 0)
-		{
-		    return table[0];
-		}//Implicit else because everything in if must return*/
-		return table[(int)index];
+        if (unity)
+            return index;
+        if (linear)
+            return min(max((index*slope)+y_intercept,darkest),brightest);
+        return table[index];
 	}
 };

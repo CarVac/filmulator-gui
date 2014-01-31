@@ -9,7 +9,7 @@
 #include <QMutexLocker>
 #include "filmsim.hpp"
 
-enum Valid {none, demosaic, filmulation, curveOne};
+enum Valid {none, demosaic, filmulation, whiteblack, colorcurve, filmlikecurve};
 
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
@@ -42,6 +42,10 @@ protected:
     float exposureComp;
     float progress;
     float whitepoint;
+    float blackpoint;
+
+    LUT lutR, lutG, lutB;
+    LUT filmLikeLUT;
 
     filmulateParams filmParams;
 
@@ -52,8 +56,9 @@ protected:
     matrix<float> input_image;
     Exiv2::ExifData exifData;
     matrix<float> filmulated_image;
-    matrix<float> curveOne_image;
-    matrix<int> output_r, output_b, output_g;
+    matrix<unsigned short> contrast_image;
+    matrix<unsigned short> color_curve_image;
+    matrix<unsigned short> film_curve_image;
 
     QImage emptyImage();
 
