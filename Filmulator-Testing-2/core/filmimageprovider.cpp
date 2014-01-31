@@ -96,6 +96,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
             mutex.unlock();
             whitepoint_blackpoint(filmulated_image, contrast_image, whitepoint,
                                   blackpoint);
+            cout << "after whiteblack" << endl;
         }
         case whiteblack: // Do color_curve
         {
@@ -105,6 +106,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
                 valid = colorcurve;
             mutex.unlock();
             color_curves(contrast_image, color_curve_image, lutR, lutG, lutB);
+            cout << "after color curves" << endl;
         }
         case colorcurve://Do flim-like curve
         {
@@ -114,6 +116,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
                 valid = filmlikecurve;
             mutex.unlock();
             film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
+            cout << "after film like curve" << endl;
         }
         case filmlikecurve: //output
         {
@@ -122,7 +125,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
             if(checkAbort(filmlikecurve))
                 return emptyImage();
             //Normally, here we'd output the file. Instead, we write it to the QImage.
-            output = QImage(ncols,nrows,QImage::Format_ARGB32);
+            output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
             for(int i = 0; i < nrows; i++)
             {
                 QRgb *line = (QRgb *)output.scanLine(i);
