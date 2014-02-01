@@ -105,5 +105,10 @@ void RGBTone (unsigned short& r, unsigned short& g, unsigned short& b, LUT &look
 
     r = lookup[rold];
     b = lookup[bold];
-    g = b + ((r - b) * (gold - bold) / (rold - bold));
+    float rf = r;
+    float bf = b;
+    float roldf = rold;
+    float goldf = gold;
+    float boldf = bold;
+    g = bf + ((rf - bf) * (goldf - boldf) / (roldf - boldf));
 }
