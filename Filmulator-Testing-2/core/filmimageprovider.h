@@ -35,6 +35,7 @@ public:
     bool checkAbort(){return checkAbort(filmulation);}
 
     void updateProgress(float);
+    Q_INVOKABLE void invalidateImage();
 
 protected:
     QMutex mutex;

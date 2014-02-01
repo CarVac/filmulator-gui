@@ -50,6 +50,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
             tempID.remove(tempID.length()-1,1);
             std::vector<std::string> input_filename_list;
             input_filename_list.push_back(tempID.toStdString());
+            cout << "Opening " << input_filename_list[0] << endl;
             std::vector<float> input_exposure_compensation;
             input_exposure_compensation.push_back(exposureComp);
 
@@ -139,6 +140,12 @@ QImage FilmImageProvider::requestImage(const QString &id,
     setProgress(1);
     *size = output.size();
     return output;
+}
+
+void FilmImageProvider::invalidateImage()
+{
+    QMutexLocker locker(&mutex);
+    valid = none;
 }
 
 void FilmImageProvider::setExposureComp(float exposure)

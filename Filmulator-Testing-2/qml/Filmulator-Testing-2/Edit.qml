@@ -11,6 +11,8 @@ SplitView {
     property real exposureComp
     property real whitepoint
 
+    onLocationChanged: filmProvider.invalidateImage()
+
     Rectangle {
         id: photobox
         color: "black"
