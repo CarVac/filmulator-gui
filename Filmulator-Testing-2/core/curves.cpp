@@ -62,47 +62,39 @@ void film_like_curve(matrix<unsigned short> &input,
     int ysize = input.nr();
     output.set_size(ysize,xsize);
 
-    //Here I set up indices for reading the interlaced colors.
-    int ir, ig, ib;
-
-#pragma omp parallel shared(lookup, input, output,xsize, ysize)\
-                            private(ir, ig, ib)
+#pragma omp parallel shared(lookup, input, output,xsize, ysize)
     {
 #pragma omp for schedule(dynamic) nowait
-	for (int i = 0; i < xsize; i++)
-	{
-        //Setting up the indices for the colors.
-        ir = i*3;
-        ig = ir + 1;
-        ib = ir + 2;
-		for(int j = 0; j < ysize; j ++)
-		{
-            unsigned short r = input(j,ir);
-            unsigned short g = input(j,ig);
-            unsigned short b = input(j,ib);
+    for (int i = 0; i < ysize; i++)
+    {
+        for(int j = 0; j < xsize; j = j + 3 )
+        {
+            unsigned short r = input(i,j);
+            unsigned short g = input(i,j+1);
+            unsigned short b = input(i,j+2);
 
-			if (r >= g)
-			{
-				if      (g > b) RGBTone (r, g, b, lookup); // Case1: r>= g>  b
-				else if (b > r) RGBTone (b, r, g, lookup); // Case2: b>  r>= g
-				else if (b > g) RGBTone (r, b, g, lookup); // Case3: r>= b>  g
-				else							           // Case4: r>= g== b
-				{                             
-				    r = lookup[r];
-				    g = lookup[g];
-				    b = g;
-				}
-			}
-			else
-			{
-				if      (r >= b) RGBTone (g, r, b, lookup); // Case5: g>  r>= b
-				else if (b >  g) RGBTone (b, g, r, lookup); // Case6: b>  g>  r
-				else             RGBTone (g, b, r, lookup); // Case7: g>= b>  r
-			}
-            output(j,ir) = r;
-            output(j,ig) = g;
-            output(j,ib) = b;
-		}
+            if (r >= g)
+            {
+                if      (g > b) RGBTone (r, g, b, lookup); // Case1: r>= g>  b
+                else if (b > r) RGBTone (b, r, g, lookup); // Case2: b>  r>= g
+                else if (b > g) RGBTone (r, b, g, lookup); // Case3: r>= b>  g
+                else							           // Case4: r>= g== b
+                {
+                    r = lookup[r];
+                    g = lookup[g];
+                    b = g;
+                }
+            }
+            else
+            {
+                if      (r >= b) RGBTone (g, r, b, lookup); // Case5: g>  r>= b
+                else if (b >  g) RGBTone (b, g, r, lookup); // Case6: b>  g>  r
+                else             RGBTone (g, b, r, lookup); // Case7: g>= b>  r
+            }
+            output(i,j) = r;
+            output(i,j+1) = g;
+            output(i,j+2) = b;
+        }
     }
     }
 }
