@@ -23,11 +23,12 @@ SOURCES += main.cpp \
     core/layer_mix.cpp \
     core/merge_exps.cpp \
     core/output_file.cpp \
-    core/postprocess.cpp \
     core/time_diff.cpp \
     core/filmimageprovider.cpp \
     database/sqlmodel.cpp \
-    core/filmulate.cpp
+    core/filmulate.cpp \
+    core/whitepoint_blackpoint.cpp \
+    core/color_curves.cpp
 
 # Installation path
 # target.path =

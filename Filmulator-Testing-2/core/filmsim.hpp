@@ -145,15 +145,12 @@ bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
 bool imwrite_jpeg(matrix<int> &output_r, matrix<int> &output_g,
         matrix<int> &output_b, string outputfilename, Exiv2::ExifData exifData);
         
-int flatcurve(int input);
+float default_tonecurve(float input);
 
-int tonecurve(int input);
+void film_like_curve(matrix<unsigned short> &input,
+                      matrix<unsigned short> &output, LUT &lookup);
 
-void apply_tone_curve(LUT &lookup,matrix<float> &output_density,
-					  matrix<int> &output_r,matrix<int> &output_g,
-					  matrix<int> &output_b);
-
-void RGBTone (float& r, float& g, float& b, LUT &lookup);
+void RGBTone (unsigned short& r, unsigned short& g, unsigned short& b, LUT &lookup);
 
 JSAMPLE dither_round(int full_int);
 
@@ -171,9 +168,10 @@ void output_file(matrix<int> &output_r, matrix<int> &ouput_g,
                         vector<string> input_filename_list, bool jpeg_out,
                         Exiv2::ExifData exifData);
 
-void postprocess(matrix<float> &output_density, bool set_whitepoint,
-                        float whitepoint, bool tonecurve_out, float std_cutoff,
-                        matrix<int> &output_r, matrix<int> &output_g,
-                        matrix<int> &output_b);
+void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
+                           float whitepoint, float blackpoint);
 
+
+void color_curves(matrix<unsigned short> &input, matrix<unsigned short> &output,
+                LUT lutR, LUT lutG, LUT lutB);
 #endif // FILMSIM_H
