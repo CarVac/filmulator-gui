@@ -184,6 +184,7 @@ SplitView {
                 minimumValue: -10
                 maximumValue: 10
                 stepSize: 1
+                value: 0
                 y: parent.y+40
             }
         }

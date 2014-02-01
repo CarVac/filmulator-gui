@@ -40,6 +40,11 @@ Rectangle {
         height: 20 - __padding
         x: parent.width - this.width - __padding
         y: __padding
+        Text {
+            id: valueText
+            color: "white"
+            text: range.position
+        }
     }
 
     //TODO: Replace RangeModel with something not internal and undocumented.
@@ -51,12 +56,12 @@ Rectangle {
         property real stepSize: 0.0
         property real posAtMin: __padding
         property real posAtMax: toolSlider.width - handle.width - __padding
-        property real position: (posAtMax-posAtMin)*(value-minValue)/(maxValue-minValue)
+        property real position: __padding
 
-        onPositionChanged: value = valueOfPosition(position);
+        onPositionChanged: {value = valueOfPosition(position);}
 
         function valueOfPosition(inPosition) {
-            return (maxValue-minValue)*(inPosition-posAtMin)/(posAtMax-posAtMin)
+            return (this.maxValue-this.minValue)*(inPosition-this.posAtMin)/(this.posAtMax-this.posAtMin)
         }
     }
 
@@ -78,7 +83,7 @@ Rectangle {
 
         function updatePos() {
             if (updateValueWhileDragging && !mouseArea.drag.active)
-                range.position = x - __padding
+                range.position = x// - __padding
         }
 
         onXChanged: updatePos();
