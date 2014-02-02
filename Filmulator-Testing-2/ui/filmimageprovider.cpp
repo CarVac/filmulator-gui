@@ -27,6 +27,13 @@ FilmImageProvider::FilmImageProvider() :
     lutG.setUnity();
     lutB.setUnity();
     filmLikeLUT.setUnity();
+    for(int i = 0; i < 10; i++)
+    {
+        lumaHistogram[i] = 0;
+        rHistogram[i] = 0;
+        rHistogram[i] = 0;
+        rHistogram[i] = 0;
+    }
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -38,6 +45,8 @@ QImage FilmImageProvider::requestImage(const QString &id,
 {
     gettimeofday(&request_start_time,NULL);
     QImage output = emptyImage();
+    QString tempID = id;
+    tempID.remove(tempID.length()-1,1);
 
     switch (valid)
     {
@@ -46,8 +55,6 @@ QImage FilmImageProvider::requestImage(const QString &id,
             mutex.lock();
                 valid = demosaic;
             mutex.unlock();
-            QString tempID = id;
-            tempID.remove(tempID.length()-1,1);
             std::vector<std::string> input_filename_list;
             input_filename_list.push_back(tempID.toStdString());
             cout << "Opening " << input_filename_list[0] << endl;
@@ -132,20 +139,13 @@ QImage FilmImageProvider::requestImage(const QString &id,
                     line++;
                 }
             }
-
-            tout << "Request time: "
-                    << time_diff(request_start_time) << " seconds" << endl;
         }
     }//End switch
+    updateHistograms();
+    tout << "Request time: " << time_diff(request_start_time) << " seconds" << endl;
     setProgress(1);
     *size = output.size();
     return output;
-}
-
-void FilmImageProvider::invalidateImage()
-{
-    QMutexLocker locker(&mutex);
-    valid = none;
 }
 
 void FilmImageProvider::setExposureComp(float exposure)
@@ -176,6 +176,17 @@ void FilmImageProvider::updateProgress(float percentDone_in)//Percent filmulatio
 {
     progress = 0.2 + percentDone_in*0.6;
     emit progressChanged();
+}
+
+void FilmImageProvider::invalidateImage()
+{
+    QMutexLocker locker(&mutex);
+    valid = none;
+}
+
+float FilmImageProvider::getHistogramPoint(long long * hist, long long maximum, int i)
+{
+    return float(min(hist[i],maximum))/float(maximum); //maximum is the max of all elements except 0 and 127
 }
 
 QImage FilmImageProvider::emptyImage()
