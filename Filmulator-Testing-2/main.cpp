@@ -2,7 +2,7 @@
 #include "qtquick2applicationviewer.h"
 //#include <QtWidgets/QApplication>
 #include <QtQml>
-#include "core/filmimageprovider.h"
+#include "ui/filmimageprovider.h"
 #include <QtSql>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlTableModel>

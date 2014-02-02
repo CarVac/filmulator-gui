@@ -2,7 +2,7 @@
 
 void FilmImageProvider::updateHistograms()
 {
-    for(int i = 0; i < 65535; i++)
+    for(int i = 0; i < 128; i++)
     {
         lumaHistogram[i] = 0;
         rHistogram[i] = 0;
