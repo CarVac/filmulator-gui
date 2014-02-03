@@ -145,7 +145,16 @@ bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
 bool imwrite_jpeg(matrix<int> &output_r, matrix<int> &output_g,
         matrix<int> &output_b, string outputfilename, Exiv2::ExifData exifData);
         
-float default_tonecurve(float input);
+float default_tonecurve(float input, bool enabled);
+
+float shadows_highlights (float input, float shadowsX, float shadowsY,
+                   float highlightsX, float highlightsY);
+
+float slopeFromT (float t, float A, float B, float C);
+
+float xFromT (float t, float A, float B, float C, float D);
+
+float yFromT (float t, float E, float F, float G, float H);
 
 void film_like_curve(matrix<unsigned short> &input,
                       matrix<unsigned short> &output, LUT &lookup);

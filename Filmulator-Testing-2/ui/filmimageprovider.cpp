@@ -13,7 +13,13 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     lutR.setUnity();
     lutG.setUnity();
     lutB.setUnity();
-    filmLikeLUT.setUnity();
+    //filmLikeLUT.setUnity();
+    defaultToneCurveEnabled = true;
+    shadowsX = 0.25;
+    shadowsY = 0.9;
+    highlightsX = 0.75;
+    highlightsY = 0.1;
+    filmLikeLUT.fill(this);
 }
 
 FilmImageProvider::FilmImageProvider() :
@@ -26,14 +32,13 @@ FilmImageProvider::FilmImageProvider() :
     lutR.setUnity();
     lutG.setUnity();
     lutB.setUnity();
-    filmLikeLUT.setUnity();
-    for(int i = 0; i < 10; i++)
-    {
-        lumaHistogram[i] = 0;
-        rHistogram[i] = 0;
-        rHistogram[i] = 0;
-        rHistogram[i] = 0;
-    }
+    defaultToneCurveEnabled = true;
+    shadowsX = 0.25;
+    shadowsY = 0.25;
+    highlightsX = 0.75;
+    highlightsY = 0.25;
+    filmLikeLUT.fill(this);
+    //filmLikeLUT.setUnity();
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -210,4 +215,12 @@ bool FilmImageProvider::checkAbort(Valid currStep)
         return true;
     else
         return false;
+}
+
+unsigned short FilmImageProvider::lookup(unsigned short in)
+{
+    return 65535*default_tonecurve(
+                shadows_highlights(float(in)/65535.0,shadowsX,shadowsY,
+                                   highlightsX,highlightsY)
+                ,defaultToneCurveEnabled);
 }

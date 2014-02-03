@@ -18,6 +18,7 @@
  */
 #define MAXVAL 65536
 #include <algorithm>
+#include "interface.h"
 
 using namespace std;
 
@@ -54,13 +55,13 @@ public:
         return unity;
     }
 
-    void fill(unsigned short (*tonecurve)(unsigned short))
+    void fill(Interface *interface)
 	{
         linear = false;
         unity = false;
 
         for(int i = 0; i < MAXVAL; i++)
-			table[i] = (*tonecurve)(i);
+            table[i] = interface->lookup(i);
 	}
 	
     unsigned short operator[](unsigned short index)

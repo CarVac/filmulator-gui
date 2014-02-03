@@ -39,6 +39,7 @@ public:
 
     bool checkAbort(Valid currStep);
     bool checkAbort(){return checkAbort(filmulation);}
+    unsigned short lookup(unsigned short in);
 
     void updateProgress(float);
     Q_INVOKABLE void invalidateImage();
@@ -57,6 +58,8 @@ protected:
     float whitepoint;
     float blackpoint;
     int hist;
+    bool defaultToneCurveEnabled;
+    float shadowsX, shadowsY, highlightsX, highlightsY;
 
     LUT lutR, lutG, lutB;
     LUT filmLikeLUT;
