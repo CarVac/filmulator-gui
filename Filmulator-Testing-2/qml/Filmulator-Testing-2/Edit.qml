@@ -25,22 +25,22 @@ SplitView {
             y: 30
             width: parent.width
             height: parent.height-30
-            contentWidth: Math.max(largeview1.width*largeview1.scale,this.width);
-            contentHeight: Math.max(largeview1.height*largeview1.scale,this.height);
+            contentWidth: Math.max(largeview2.width*largeview2.scale,this.width);
+            contentHeight: Math.max(largeview2.height*largeview2.scale,this.height);
             flickableDirection: Flickable.HorizontalAndVerticalFlick
             clip: true
-            property real fitScaleX: flicky.width/largeview1.width
-            property real fitScaleY: flicky.height/largeview1.height
+            property real fitScaleX: flicky.width/largeview2.width
+            property real fitScaleY: flicky.height/largeview2.height
             property real fitScale: Math.min(fitScaleX, fitScaleY)
 
             //The centers are the coordinates in display space of the center of the image.
-            property real centerX: (contentX + largeview1.width*Math.min(largeview1.scale,fitScaleX)/2)/largeview1.scale
-            property real centerY: (contentY + largeview1.height*Math.min(largeview1.scale,fitScaleY)/2)/largeview1.scale
+            property real centerX: (contentX + largeview2.width*Math.min(largeview2.scale,fitScaleX)/2)/largeview2.scale
+            property real centerY: (contentY + largeview2.height*Math.min(largeview2.scale,fitScaleY)/2)/largeview2.scale
             Rectangle {
                 id: largeview
                 //scale: largeview1.scale
-                width: Math.max(largeview1.width*largeview1.scale,parent.width);
-                height: Math.max(largeview1.height*largeview1.scale,parent.height);
+                width: Math.max(largeview2.width*largeview2.scale,parent.width);
+                height: Math.max(largeview2.height*largeview2.scale,parent.height);
                 //property real aspectRatio: (this.height != 0) ? this.width / this.height : 0
                 transformOrigin: Item.TopLeft
                 color: "#000000"
@@ -53,6 +53,7 @@ SplitView {
                     layer.mipmap: true
                     property real realWidth: width * scale
                     property real realHeight: height * scale
+                    scale: largeview2.scale
                     //property real aspectRatio: (this.sourceSize.height != 0) ? this.sourceSize.width/this.sourceSize.height : 0
                     onStatusChanged: if(largeview1.status == Image.Ready) {
                                          //this.aspectRatio = (this.sourceSize.height != 0) ? this.sourceSize.width/this.sourceSize.height : 0
@@ -65,7 +66,6 @@ SplitView {
                 Image {
                     anchors.centerIn: parent
                     id: largeview2
-                    scale: largeview1.scale
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     layer.mipmap: true
@@ -86,16 +86,16 @@ SplitView {
                 var oldContentX = flicky.contentX
                 var oldContentY = flicky.contentY
                 if (wheel.angleDelta.y > 0) {
-                    factorX = Math.min(0.2, Math.max((flicky.fitScaleX/largeview1.scale)-1, 0.0));
-                    factorY = Math.min(0.2, Math.max((flicky.fitScaleY/largeview1.scale)-1, 0.0));
-                    largeview1.scale *= 1.2;
+                    factorX = Math.min(0.2, Math.max((flicky.fitScaleX/largeview2.scale)-1, 0.0));
+                    factorY = Math.min(0.2, Math.max((flicky.fitScaleY/largeview2.scale)-1, 0.0));
+                    largeview2.scale *= 1.2;
                     flicky.contentX = oldContentX*1.2 + wheel.x*0.2 - wheelCapture.width/2*factorX;
                     flicky.contentY = oldContentY*1.2 + wheel.y*0.2 - wheelCapture.height/2*factorY;
                 }
                 else {
-                    factorX = Math.max(-1/6, Math.min((largeview1.scale/(1.2*flicky.fitScaleX))-1, 0));
-                    factorY = Math.max(-1/6, Math.min((largeview1.scale/(1.2*flicky.fitScaleY))-1, 0));
-                    largeview1.scale /= 1.2;
+                    factorX = Math.max(-1/6, Math.min((largeview2.scale/(1.2*flicky.fitScaleX))-1, 0));
+                    factorY = Math.max(-1/6, Math.min((largeview2.scale/(1.2*flicky.fitScaleY))-1, 0));
+                    largeview2.scale /= 1.2;
                     flicky.contentX = oldContentX/1.2 - wheel.x/6 - wheelCapture.width/2*factorX;
                     flicky.contentY = oldContentY/1.2 - wheel.y/6 - wheelCapture.height/2*factorY;
                     flicky.returnToBounds()
@@ -112,11 +112,11 @@ SplitView {
             text: qsTr("Fit")
             action: Action {
                 onTriggered: {
-                    if(largeview1.width != 0 && largeview1.height != 0) {
-                        largeview1.scale = flicky.fitScale
+                    if(largeview2.width != 0 && largeview2.height != 0) {
+                        largeview2.scale = flicky.fitScale
                     }
                     else {
-                        largeview1.scale = 1
+                        largeview2.scale = 1
                     }
                     flicky.returnToBounds()
                 }
@@ -134,9 +134,9 @@ SplitView {
                 onTriggered: {
                     var oldCenterX = flicky.centerX;
                     var oldCenterY = flicky.centerY;
-                    largeview1.scale = 1;
-                    flicky.contentX = oldCenterX*1 - largeview1.width*Math.min(1,flicky.fitScaleX)/2;
-                    flicky.contentY = oldCenterY*1 - largeview1.height*Math.min(1,flicky.fitScaleY)/2;
+                    largeview2.scale = 1;
+                    flicky.contentX = oldCenterX*1 - largeview2.width*Math.min(1,flicky.fitScaleX)/2;
+                    flicky.contentY = oldCenterY*1 - largeview2.height*Math.min(1,flicky.fitScaleY)/2;
                 }
             }
         }
@@ -152,9 +152,9 @@ SplitView {
                 onTriggered: {
                     var oldCenterX = flicky.centerX;
                     var oldCenterY = flicky.centerY;
-                    largeview1.scale *= 1.2
-                    flicky.contentX = oldCenterX*largeview1.scale - largeview1.width*Math.min(largeview1.scale,flicky.fitScaleX)/2;
-                    flicky.contentY = oldCenterY*largeview1.scale - largeview1.height*Math.min(largeview1.scale,flicky.fitScaleY)/2;
+                    largeview2.scale *= 1.2
+                    flicky.contentX = oldCenterX*largeview2.scale - largeview2.width*Math.min(largeview2.scale,flicky.fitScaleX)/2;
+                    flicky.contentY = oldCenterY*largeview2.scale - largeview2.height*Math.min(largeview2.scale,flicky.fitScaleY)/2;
                 }
             }
         }
@@ -169,10 +169,10 @@ SplitView {
                 onTriggered: {
                     var oldCenterX = flicky.centerX;
                     var oldCenterY = flicky.centerY;
-                    largeview1.scale /= 1.2;
-                    var tempScale = Math.max(largeview1.scale, flicky.fitScale)
-                    flicky.contentX = oldCenterX*tempScale - largeview1.width*Math.min(tempScale,flicky.fitScaleX)/2;
-                    flicky.contentY = oldCenterY*tempScale - largeview1.height*Math.min(tempScale,flicky.fitScaleY)/2;
+                    largeview2.scale /= 1.2;
+                    var tempScale = Math.max(largeview2.scale, flicky.fitScale)
+                    flicky.contentX = oldCenterX*tempScale - largeview2.width*Math.min(tempScale,flicky.fitScaleX)/2;
+                    flicky.contentY = oldCenterY*tempScale - largeview2.height*Math.min(tempScale,flicky.fitScaleY)/2;
                     flicky.returnToBounds();
                 }
             }
