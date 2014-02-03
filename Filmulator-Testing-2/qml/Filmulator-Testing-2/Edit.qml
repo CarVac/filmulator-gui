@@ -211,6 +211,7 @@ SplitView {
         shadowY: editorsplit.shadowY
         highlightY: editorsplit.highlightY
         filmSize: editorsplit.filmSize
+        defaultCurve: editorsplit.defaultCurve
 
     }
 }

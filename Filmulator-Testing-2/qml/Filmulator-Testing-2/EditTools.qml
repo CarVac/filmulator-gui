@@ -117,14 +117,21 @@ Rectangle {
 
 
         Item {
+            id: toolListItem
+            width: parent.width
             Flickable {
                 id: toolList
-                anchors.fill: parent
+                //anchors.fill: parent
+                width: parent.width
+                height: parent.height
                 flickableDirection: Qt.Vertical
-                Column {
-                    spacing: 10
-                    anchors.fill: parent
-
+                clip: true
+                contentWidth: contentItem.childrenRect.width
+                contentHeight: contentItem.childrenRect.height
+                ColumnLayout {
+                    spacing: 0
+                    //anchors.fill: parent
+                    width: toolListItem.width
                     CheckBox{
                         id: defaultToneCurveCheckBox
                         text: qsTr("Default Tone Curve")
@@ -214,7 +221,7 @@ Rectangle {
                     }
                 }
             }
-            /*MouseArea {
+            MouseArea {
                 id: wheelstealer
                 //This is to prevent scrolling from adjusting sliders.
                 anchors.fill: toolList
@@ -226,15 +233,15 @@ Rectangle {
                 acceptedButtons: Qt.NoButton
                 onWheel: {
                     if (wheel.angleDelta.y > 0) {
-                        toolList.flick(-30,30)
-                        console.log("up")
+                        //up
+                        toolList.flick(0,300);
                     }
                     else {
-                        toolList.flick(30,-30)
-                        console.log("down")
+                        //down
+                        toolList.flick(0,-300);
                     }
                 }
-            }*/
+            }
         }
     }
 }
