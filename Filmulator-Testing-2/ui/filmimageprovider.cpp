@@ -36,7 +36,7 @@ FilmImageProvider::FilmImageProvider() :
     shadowsX = 0.25;
     shadowsY = 0.25;
     highlightsX = 0.75;
-    highlightsY = 0.25;
+    highlightsY = 0.75;
     filmLikeLUT.fill(this);
     //filmLikeLUT.setUnity();
 }
@@ -102,6 +102,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         }
         case filmulation://Do whitepoint_blackpoint
         {
+            setProgress(0.8);
             if(checkAbort(filmulation))
                 return emptyImage();
             mutex.lock();
@@ -112,6 +113,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         }
         case whiteblack: // Do color_curve
         {
+            setProgress(0.85);
             if(checkAbort(whiteblack))
                 return emptyImage();
             mutex.lock();
@@ -121,6 +123,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         }
         case colorcurve://Do flim-like curve
         {
+            setProgress(0.9);
             if(checkAbort(colorcurve))
                 return emptyImage();
             mutex.lock();
@@ -130,6 +133,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         }
         case filmlikecurve: //output
         {
+            setProgress(0.95);
             int nrows = film_curve_image.nr();
             int ncols = film_curve_image.nc();
             if(checkAbort(filmlikecurve))
@@ -220,7 +224,7 @@ bool FilmImageProvider::checkAbort(Valid currStep)
 unsigned short FilmImageProvider::lookup(unsigned short in)
 {
     return 65535*default_tonecurve(
-                shadows_highlights(float(in)/65535.0,shadowsX,shadowsY,
+                 shadows_highlights(float(in)/65535.0,shadowsX,shadowsY,
                                    highlightsX,highlightsY)
                 ,defaultToneCurveEnabled);
 }
