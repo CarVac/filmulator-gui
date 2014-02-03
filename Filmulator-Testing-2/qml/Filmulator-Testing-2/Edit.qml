@@ -80,7 +80,35 @@ SplitView {
         MouseArea {
             id: wheelCapture
             anchors.fill: flicky
-            acceptedButtons: Qt.NoButton
+            acceptedButtons: Qt.RightButton
+            onDoubleClicked: {
+                if(largeview2.scale < flicky.fitScale || largeview2.scale == 1) {
+                    largeview2.scale = flicky.fitScale
+                    flicky.returnToBounds()
+                }
+                else {
+                    var zoomFactor = 1/largeview2.scale
+                    var factorX
+                    var factorY
+                    var oldContentX = flicky.contentX
+                    var oldContentY = flicky.contentY
+                    if (zoomFactor < 1) {
+                        largeview2.scale = 1
+                        flicky.contentX = oldContentX*zoomFactor + mouse.x*(1-zoomFactor)
+                        flicky.contentY = oldContentY*zoomFactor + mouse.y*(1-zoomFactor)
+                        flicky.returnToBounds()
+                    }
+                    else {//zoomfactor > 1, or, you are zooming in
+                        factorX = Math.min(zoomFactor-1, Math.max((flicky.fitScaleX/largeview2.scale)-1, 0))
+                        factorY = Math.min(zoomFactor-1, Math.max((flicky.fitScaleY/largeview2.scale)-1, 0))
+                        largeview2.scale = 1
+                        flicky.contentX = oldContentX*zoomFactor + mouse.x*(zoomFactor-1) - 2.5*wheelCapture.width*factorX;
+                        flicky.contentY = oldContentY*zoomFactor + mouse.y*(zoomFactor-1) - 2.5*wheelCapture.height*factorY;
+                        flicky.returnToBounds()
+                    }
+                }
+            }
+
             onWheel: {
                 //We recognize that flicky and wheelCapture have the same size and position, thus
                 // mouse has the same coordinates in both.
