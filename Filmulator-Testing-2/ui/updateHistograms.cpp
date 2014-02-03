@@ -9,14 +9,16 @@ void FilmImageProvider::updateHistograms()
         gHistogram[i] = 0;
         bHistogram[i] = 0;
     }
-    for(int i = 0; i < contrast_image.nr(); i = i + 5)
-        for(int j = 0; j < contrast_image.nc(); j = j + 15)
+    for(int i = 0; i < film_curve_image.nr(); i = i + 5)
+        for(int j = 0; j < film_curve_image.nc(); j = j + 15)
         {
-            unsigned short luma = 0.2126*contrast_image(i,j)+0.7151*contrast_image(i,j+1)+0.0722*contrast_image(i,j+2);
+            unsigned short luma = 0.2126*film_curve_image(i,j)
+                                 +0.7151*film_curve_image(i,j+1)
+                                 +0.0722*film_curve_image(i,j+2);
             lumaHistogram[luma/512]++;
-            rHistogram[contrast_image(i,j)/512]++;
-            gHistogram[contrast_image(i,j+1)/512]++;
-            bHistogram[contrast_image(i,j+2)/512]++;
+            rHistogram[film_curve_image(i,j)/512]++;
+            gHistogram[film_curve_image(i,j+1)/512]++;
+            bHistogram[film_curve_image(i,j+2)/512]++;
         }
     maxBinLuma = 0;
     maxBinR = 0;
