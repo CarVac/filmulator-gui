@@ -88,26 +88,17 @@ SplitView {
                 }
                 else {
                     var zoomFactor = 1/largeview2.scale
-                    var oldContentX = flicky.contentX
-                    var oldContentY = flicky.contentY
-                    if (zoomFactor < 1) {
-                        largeview2.scale = 1
-                        flicky.contentX = oldContentX*zoomFactor + mouse.x*(1-zoomFactor)
-                        flicky.contentY = oldContentY*zoomFactor + mouse.y*(1-zoomFactor)
-                        flicky.returnToBounds()
-                    }
-                    else {//zoomfactor > 1, or, you are zooming in
-                        var oldMouseX = mouse.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-largeview2.width*largeview2.scale))
-                        var oldMouseY = mouse.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-largeview2.height*largeview2.scale))
 
-                        largeview2.scale = 1
+                    var oldMouseX = mouse.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-largeview2.width*largeview2.scale))
+                    var oldMouseY = mouse.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-largeview2.height*largeview2.scale))
 
-                        //for the following, the last largeview2.scale is now 1, so we just leave it off.
-                        flicky.contentX = oldMouseX*zoomFactor - mouse.x + Math.max(0,0.5*(flicky.width-largeview2.width))
-                        flicky.contentY = oldMouseY*zoomFactor - mouse.y + Math.max(0,0.5*(flicky.height-largeview2.height))
+                    largeview2.scale = 1
 
-                        flicky.returnToBounds()
-                    }
+                    //for the following, the last largeview2.scale is now 1, so we just leave it off.
+                    flicky.contentX = oldMouseX*zoomFactor - mouse.x + Math.max(0,0.5*(flicky.width-largeview2.width))
+                    flicky.contentY = oldMouseY*zoomFactor - mouse.y + Math.max(0,0.5*(flicky.height-largeview2.height))
+
+                    flicky.returnToBounds()
                 }
             }
 
@@ -223,7 +214,7 @@ SplitView {
             color: "white"
             text: flicky.contentX
         }
-}
+    }
     EditTools {
         index: index
         exposureComp: editorsplit.exposureComp
