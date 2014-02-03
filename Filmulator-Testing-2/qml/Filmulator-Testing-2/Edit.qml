@@ -201,177 +201,171 @@ SplitView {
         width: 250
         Layout.maximumWidth: 500
         Layout.minimumWidth: 250
-        Flickable {
-            flickableDirection: Qt.Vertical
+
+        SplitView{
             anchors.fill: parent
-            Column {
-                spacing: 10
-                anchors.fill: parent
+            orientation: Qt.Vertical
 
-                Canvas {
-                    id:canvas
-                    width:parent.width
-                    height:100
-                    property int lineWidth: 1
-                    property real alpha: 1.0
-                    property int hist: filmProvider.hist
-                    antialiasing: true
+            Canvas {
+                id:canvas
+                width:parent.width
+                Layout.minimumHeight: 50
+                height:150
+                property int lineWidth: 1
+                property real alpha: 1.0
+                property int hist: filmProvider.hist
+                antialiasing: true
 
-                    onWidthChanged:requestPaint();
-                    onHistChanged: requestPaint();
+                onWidthChanged:requestPaint();
+                onHistChanged: requestPaint();
 
-                    onPaint: {
-                        var ctx = canvas.getContext('2d');
-                        ctx.save();
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.globalAlpha = canvas.alpha;
-                        ctx.lineWidth = canvas.lineWidth;
-                        var myGradient = ctx.createLinearGradient(0,0,canvas.width,0);
-                        var hist = canvas.hist;
+                onPaint: {
+                    var ctx = canvas.getContext('2d');
+                    ctx.save();
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.globalAlpha = canvas.alpha;
+                    ctx.lineWidth = canvas.lineWidth;
+                    var myGradient = ctx.createLinearGradient(0,0,canvas.width,0);
+                    var hist = canvas.hist;
 
-                        var startx = 10;
-                        var endx = canvas.width - 10;
-                        var graphwidth = endx - startx;
-                        var starty = canvas.height - 10;
-                        var endy = 10;
-                        var graphheight = starty - endy;
-                        var histPoint = 0;
-                        var maxValue = 128.0
+                    var startx = 10;
+                    var endx = canvas.width - 10;
+                    var graphwidth = endx - startx;
+                    var starty = canvas.height - 10;
+                    var endy = 10;
+                    var graphheight = starty - endy;
+                    var histPoint = 0;
+                    var maxValue = 128.0
 
-                        //rCurve
-                        ctx.beginPath()
-                        ctx.moveTo(startx,starty);
-                        for(var i = 0; i < maxValue; i++)
-                        {
-                            histPoint = filmProvider.getRHistogramPoint(i);
-                            ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    //rCurve
+                    ctx.beginPath()
+                    ctx.moveTo(startx,starty);
+                    for(var i = 0; i < maxValue; i++)
+                    {
+                        histPoint = filmProvider.getRHistogramPoint(i);
+                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    }
+                    ctx.lineTo(endx,starty);
+                    ctx.lineTo(startx,starty);
+                    ctx.closePath();
+                    myGradient.addColorStop(1,"red");
+                    myGradient.addColorStop(0,'rgb(180,0,0)');
+                    ctx.fillStyle = myGradient;
+                    ctx.fill();
+
+                    //gCurve
+                    ctx.beginPath()
+                    ctx.moveTo(startx,starty);
+                    for(var i = 0; i < maxValue; i++)
+                    {
+                        histPoint = filmProvider.getGHistogramPoint(i);
+                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    }
+                    ctx.lineTo(endx,starty);
+                    ctx.lineTo(startx,starty);
+                    ctx.closePath();
+                    myGradient.addColorStop(1,"green");
+                    myGradient.addColorStop(0,'rgb(0,180,0)');
+                    ctx.fillStyle = myGradient;
+                    ctx.fill();
+
+                    //bCurve
+                    ctx.beginPath()
+                    ctx.moveTo(startx,starty);
+                    for(var i = 0; i < maxValue; i++)
+                    {
+                        histPoint = filmProvider.getBHistogramPoint(i);
+                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    }
+                    ctx.lineTo(endx,starty);
+                    ctx.lineTo(startx,starty);
+                    ctx.closePath();
+                    myGradient.addColorStop(1,"blue");
+                    myGradient.addColorStop(0,'rgb(0,0,180)');
+                    ctx.fillStyle = myGradient;
+                    ctx.fill();
+
+                    //Luma curve
+                    ctx.beginPath();
+                    ctx.moveTo(startx,starty);
+                    for(var i = 0; i < maxValue; i++)
+                    {
+                        histPoint = filmProvider.getLumaHistogramPoint(i);
+                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    }
+                    ctx.lineTo(endx,starty);
+                    ctx.lineTo(startx,starty);
+                    ctx.closePath();
+                    myGradient.addColorStop(1,"white");
+                    myGradient.addColorStop(0,'rgb(180,180,180)');
+                    ctx.fillStyle = myGradient;
+                    ctx.fill()
+
+                    ctx.strokeStyle = "#000000";
+                    ctx.strokeRect(startx,endy,graphwidth,graphheight);
+
+                    ctx.restore();
+                }
+            }
+
+
+            Item {
+                Flickable {
+                    id: toolList
+                    anchors.fill: parent
+                    flickableDirection: Qt.Vertical
+                    Column {
+                        spacing: 0
+                        anchors.fill: parent
+
+                        ToolSlider {
+                            id: exposureCompSlider
+                            title: qsTr("Exposure Compensation")
+                            minimumValue: -5
+                            maximumValue: 5
+                            stepSize: 1/3
+                            value: exposureComp
+                            onValueChanged: {
+                                filmProvider.exposureComp = value
+                                editortab.rolling = (editortab.rolling + 1) % 10
+                            }
                         }
-                        ctx.lineTo(endx,starty);
-                        ctx.lineTo(startx,starty);
-                        ctx.closePath();
-                        myGradient.addColorStop(1,"red");
-                        myGradient.addColorStop(0,'rgb(180,0,0)');
-                        ctx.fillStyle = myGradient;
-                        ctx.fill();
 
-                        //gCurve
-                        ctx.beginPath()
-                        ctx.moveTo(startx,starty);
-                        for(var i = 0; i < maxValue; i++)
-                        {
-                            histPoint = filmProvider.getGHistogramPoint(i);
-                            ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                        ToolSlider {
+                            id: whitepointSlider
+                            title: qsTr("White Clipping Point")
+                            minimumValue: 0.1/1000
+                            maximumValue: 5/1000
+                            value: whitepoint
+                            valueText: value*1000
+                            onValueChanged: {
+                                filmProvider.whitepoint = value
+                                editortab.rolling = (editortab.rolling + 1) % 10
+                            }
                         }
-                        ctx.lineTo(endx,starty);
-                        ctx.lineTo(startx,starty);
-                        ctx.closePath();
-                        myGradient.addColorStop(1,"green");
-                        myGradient.addColorStop(0,'rgb(0,180,0)');
-                        ctx.fillStyle = myGradient;
-                        ctx.fill();
-
-                        //bCurve
-                        ctx.beginPath()
-                        ctx.moveTo(startx,starty);
-                        for(var i = 0; i < maxValue; i++)
-                        {
-                            histPoint = filmProvider.getBHistogramPoint(i);
-                            ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                        }
-                        ctx.lineTo(endx,starty);
-                        ctx.lineTo(startx,starty);
-                        ctx.closePath();
-                        myGradient.addColorStop(1,"blue");
-                        myGradient.addColorStop(0,'rgb(0,0,180)');
-                        ctx.fillStyle = myGradient;
-                        ctx.fill();
-
-                        //Luma curve
-                        ctx.beginPath();
-                        ctx.moveTo(startx,starty);
-                        for(var i = 0; i < maxValue; i++)
-                        {
-                            histPoint = filmProvider.getLumaHistogramPoint(i);
-                            ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                        }
-                        ctx.lineTo(endx,starty);
-                        ctx.lineTo(startx,starty);
-                        ctx.closePath();
-                        myGradient.addColorStop(1,"white");
-                        myGradient.addColorStop(0,'rgb(180,180,180)');
-                        ctx.fillStyle = myGradient;
-                        ctx.fill()
-
-                        ctx.strokeStyle = "#000000";
-                        ctx.strokeRect(startx,endy,graphwidth,graphheight);
-
-                        ctx.restore();
                     }
                 }
-
-
-                RowLayout{
-                    width: parent.width
-                    spacing: 10
-                    Text{
-                        text: "Exposure Comp"
+                /*MouseArea {
+                    id: wheelstealer
+                    //This is to prevent scrolling from adjusting sliders.
+                    anchors.fill: toolList
+                    Rectangle {
+                        anchors.fill: toolList
+                        color: "white"
                     }
-                    Slider {
-                        id: exposureCompSlider
-                        width: parent.width
-                        height: 30
-                        minimumValue: -5
-                        maximumValue: 5
-                        stepSize: 1/3
-                        value: exposureComp
-                        onValueChanged: {
-                            filmProvider.exposureComp = value
-                            editortab.rolling = (editortab.rolling + 1)%10
+
+                    acceptedButtons: Qt.NoButton
+                    onWheel: {
+                        if (wheel.angleDelta.y > 0) {
+                            toolList.flick(-30,30)
+                            console.log("up")
                         }
-                        updateValueWhileDragging: true
-                        Layout.fillWidth: true
-                    }
-                    Text{
-                        text: exposureComp
-                    }
-                }
-
-                RowLayout{
-                    spacing: 10
-
-                    Text{
-                        text:"White"
-                    }
-                    Slider {
-                        id: whitepointSlider
-                        width: parent.width
-                        height: 30
-                        //y: parent.y + 20
-                        minimumValue: 0.1/1000
-                        maximumValue: 5/1000
-                        stepSize: 0.1/1000
-                        value: whitepoint
-                        onValueChanged: {
-                            filmProvider.whitepoint = (5.1/1000) - value
-                            editortab.rolling = (editortab.rolling + 1)%10
+                        else {
+                            toolList.flick(30,-30)
+                            console.log("down")
                         }
-                        updateValueWhileDragging: true
-                        Layout.fillWidth: true
                     }
-                    Text{
-                        text:whitepoint
-                    }
-                }
-
-                ToolSlider {
-                    id: hi
-                    title: qsTr("Tool a")
-                    minimumValue: -10
-                    maximumValue: 10
-                    stepSize: 1
-                    value: 0
-                    //y: parent.y+40
-                }
+                }*/
             }
         }
     }
