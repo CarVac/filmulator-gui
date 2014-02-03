@@ -200,6 +200,7 @@ SplitView {
         color: "#404040"
         width: 250
         Layout.maximumWidth: 500
+        Layout.minimumWidth: 250
         Flickable {
             flickableDirection: Qt.Vertical
             anchors.fill: parent
@@ -308,35 +309,60 @@ SplitView {
                     }
                 }
 
-                Slider {
-                    id: exposureCompSlider
+
+                RowLayout{
                     width: parent.width
-                    height: 30
-                    minimumValue: -5
-                    maximumValue: 5
-                    stepSize: 1/3
-                    value: exposureComp
-                    onValueChanged: {
-                        filmProvider.exposureComp = value
-                        editortab.rolling = (editortab.rolling + 1)%10
+                    spacing: 10
+                    Text{
+                        text: "Exposure Comp"
                     }
-                    updateValueWhileDragging: true
-                }
-                Slider {
-                    id: whitepointSlider
-                    width: parent.width
-                    height: 30
-                    //y: parent.y + 20
-                    minimumValue: 0.1/1000
-                    maximumValue: 5/1000
-                    stepSize: 0.1/1000
-                    value: whitepoint
-                    onValueChanged: {
-                        filmProvider.whitepoint = value
-                        editortab.rolling = (editortab.rolling + 1)%10
+                    Slider {
+                        id: exposureCompSlider
+                        width: parent.width
+                        height: 30
+                        minimumValue: -5
+                        maximumValue: 5
+                        stepSize: 1/3
+                        value: exposureComp
+                        onValueChanged: {
+                            filmProvider.exposureComp = value
+                            editortab.rolling = (editortab.rolling + 1)%10
+                        }
+                        updateValueWhileDragging: true
+                        Layout.fillWidth: true
                     }
-                    updateValueWhileDragging: true
+                    Text{
+                        text: exposureComp
+                    }
                 }
+
+                RowLayout{
+                    spacing: 10
+
+                    Text{
+                        text:"White"
+                    }
+                    Slider {
+                        id: whitepointSlider
+                        width: parent.width
+                        height: 30
+                        //y: parent.y + 20
+                        minimumValue: 0.1/1000
+                        maximumValue: 5/1000
+                        stepSize: 0.1/1000
+                        value: whitepoint
+                        onValueChanged: {
+                            filmProvider.whitepoint = (5.1/1000) - value
+                            editortab.rolling = (editortab.rolling + 1)%10
+                        }
+                        updateValueWhileDragging: true
+                        Layout.fillWidth: true
+                    }
+                    Text{
+                        text:whitepoint
+                    }
+                }
+
                 ToolSlider {
                     id: hi
                     title: qsTr("Tool a")
