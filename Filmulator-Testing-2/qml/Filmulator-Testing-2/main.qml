@@ -41,12 +41,14 @@ ApplicationWindow {
                 property real rolling: 0
                 property real exposureComp: 0
                 property real whitepoint: 2/1000
+                property real filmSize: 864
 
                 title: qsTr("Filmulate")
                 Edit {
                     location: editortab.location
                     index: editortab.rolling
                     exposureComp: editortab.exposureComp
+                    filmSize: editortab.filmSize
                     whitepoint: editortab.whitepoint
                 }
             }

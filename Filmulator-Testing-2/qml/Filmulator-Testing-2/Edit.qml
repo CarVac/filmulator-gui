@@ -11,6 +11,7 @@ SplitView {
     property int index
     property real exposureComp
     property real whitepoint
+    property real filmSize
 
     onLocationChanged: filmProvider.invalidateImage()
 
@@ -49,6 +50,7 @@ SplitView {
                     source:"image://filmy/"+location+index
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
+                    layer.mipmap: true
                     property real realWidth: width * scale
                     property real realHeight: height * scale
                     //property real aspectRatio: (this.sourceSize.height != 0) ? this.sourceSize.width/this.sourceSize.height : 0
@@ -66,6 +68,7 @@ SplitView {
                     scale: largeview1.scale
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
+                    layer.mipmap: true
                 }
             }
         }
@@ -100,10 +103,10 @@ SplitView {
             }
         }
 
-        Button {
+        ToolButton {
             id: fitscreen
-            width: 30
-            height: 30
+            //width: 30
+            //height: 30
             x: parent.width-120
             y: 0
             text: qsTr("Fit")
@@ -120,10 +123,10 @@ SplitView {
             }
         }
 
-        Button {
+        ToolButton {
             id: fullzoom
-            width: 30
-            height: 30
+            //width: 30
+            //height: 30
             x: parent.width-90
             y: 0
             text: "1:1"
@@ -138,10 +141,10 @@ SplitView {
             }
         }
 
-        Button {
+        ToolButton {
             id: zoomin
-            width: 30
-            height: 30
+            //width: 30
+            //height: 30
             x: parent.width-60
             y: 0
             text: "+"
@@ -155,10 +158,10 @@ SplitView {
                 }
             }
         }
-        Button {
+        ToolButton {
             id: zoomout
-            width:30
-            height:30
+            //width:30
+            //height:30
             x: parent.width-30
             y: 0
             text: "-"
@@ -327,6 +330,19 @@ SplitView {
                             value: exposureComp
                             onValueChanged: {
                                 filmProvider.exposureComp = value
+                                editortab.rolling = (editortab.rolling + 1) % 10
+                            }
+                        }
+
+                        ToolSlider {
+                            id: filmSizeSlider
+                            title: qsTr("Film Area")
+                            minimumValue: 10
+                            maximumValue: 300
+                            value: Math.sqrt(filmSize)
+                            valueText: value*value
+                            onValueChanged: {
+                                filmProvider.filmSize = value*value
                                 editortab.rolling = (editortab.rolling + 1) % 10
                             }
                         }

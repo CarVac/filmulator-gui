@@ -16,6 +16,7 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 {
     Q_OBJECT
     Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
+    Q_PROPERTY(float filmSize READ getFilmSize WRITE setFilmSize NOTIFY filmSizeChanged)
     Q_PROPERTY(float whitepoint READ getWhitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
     Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
     Q_PROPERTY(int hist READ getHist NOTIFY histogramsUpdated)//Dummy variable to cause histogram updates
@@ -26,10 +27,12 @@ public:
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
 
     void setExposureComp(float exposureIn);
+    void setFilmSize(float filmSizeIn);
     void setWhitepoint(float whitepointIn);
     void setProgress(float progressIn);
 
     float getExposureComp(){return exposureComp;}
+    float getFilmSize(){return filmSize;}
     float getWhitepoint(){return whitepoint;}
     float getProgress(){return progress;}
     int getHist(){return hist;}
@@ -49,6 +52,7 @@ protected:
     QMutex mutex;
 
     float exposureComp;
+    float filmSize;
     float progress;
     float whitepoint;
     float blackpoint;
@@ -86,6 +90,7 @@ protected:
 
 signals:
     void exposureCompChanged();
+    void filmSizeChanged();
     void whitepointChanged();
     void progressChanged();
     void histogramsUpdated();
