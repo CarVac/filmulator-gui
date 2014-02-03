@@ -11,7 +11,11 @@ SplitView {
     property int index
     property real exposureComp
     property real whitepoint
+    property real blackpoint
+    property real shadowY
+    property real highlightY
     property real filmSize
+    property bool defaultCurve
 
     onLocationChanged: filmProvider.invalidateImage()
 
@@ -318,8 +322,18 @@ SplitView {
                     anchors.fill: parent
                     flickableDirection: Qt.Vertical
                     Column {
-                        spacing: 0
+                        spacing: 10
                         anchors.fill: parent
+
+                        CheckBox{
+                            id: defaultToneCurveCheckBox
+                            text: qsTr("Default Tone Curve")
+                            checked: defaultCurve
+                            onClicked: {
+                                filmProvider.defaultToneCurveEnabled = checked
+                                editortab.rolling = (editortab.rolling + 1) % 10
+                            }
+                        }
 
                         ToolSlider {
                             id: exposureCompSlider
@@ -343,6 +357,45 @@ SplitView {
                             valueText: value*value
                             onValueChanged: {
                                 filmProvider.filmSize = value*value
+                                editortab.rolling = (editortab.rolling + 1) % 10
+                            }
+                        }
+
+                        ToolSlider {
+                            id: blackpointSlider
+                            title: qsTr("Black Clipping Point")
+                            minimumValue: 0.1/1000
+                            maximumValue: 5/1000
+                            value: blackpoint
+                            valueText: value*1000
+                            onValueChanged: {
+                                filmProvider.blackpoint = value
+                                editortab.rolling = (editortab.rolling + 1) % 10
+                            }
+                        }
+
+                        ToolSlider {
+                            id: shadowSlider
+                            title: qsTr("Shadow Brightness")
+                            minimumValue: 0
+                            maximumValue: 1
+                            value: shadowsY
+                            valueText: value*1000
+                            onValueChanged: {
+                                filmProvider.shadowsY = value
+                                editortab.rolling = (editortab.rolling + 1) % 10
+                            }
+                        }
+
+                        ToolSlider {
+                            id: highlightSlider
+                            title: qsTr("Highlight Brightness")
+                            minimumValue: 0
+                            maximumValue: 1
+                            value: highlightsY
+                            valueText: value*1000
+                            onValueChanged: {
+                                filmProvider.highlightsY = value
                                 editortab.rolling = (editortab.rolling + 1) % 10
                             }
                         }

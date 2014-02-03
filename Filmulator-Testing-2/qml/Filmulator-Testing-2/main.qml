@@ -41,7 +41,11 @@ ApplicationWindow {
                 property real rolling: 0
                 property real exposureComp: 0
                 property real whitepoint: 2/1000
+                property real blackpoint: 0
+                property real shadowsY: 0.25
+                property real highlightsY: 0.75
                 property real filmSize: 864
+                property bool defaultCurve: true
 
                 title: qsTr("Filmulate")
                 Edit {
@@ -50,6 +54,10 @@ ApplicationWindow {
                     exposureComp: editortab.exposureComp
                     filmSize: editortab.filmSize
                     whitepoint: editortab.whitepoint
+                    blackpoint: editortab.blackpoint
+                    shadowY: editortab.shadowsY
+                    highlightY: editortab.highlightsY
+                    defaultCurve: editortab.defaultCurve
                 }
             }
 

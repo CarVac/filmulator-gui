@@ -129,6 +129,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
             mutex.lock();
                 valid = filmlikecurve;
             mutex.unlock();
+            filmLikeLUT.fill(this);
             film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
         }
         case filmlikecurve: //output
@@ -183,6 +184,42 @@ void FilmImageProvider::setWhitepoint(float whitepointIn)
     if (valid > filmulation)
         valid = filmulation;
     emit whitepointChanged();
+}
+
+void FilmImageProvider::setBlackpoint(float blackpointIn)
+{
+    QMutexLocker locker (&mutex);
+    blackpoint = blackpointIn;
+    if (valid > filmulation)
+        valid = filmulation;
+    emit blackpointChanged();
+}
+
+void FilmImageProvider::setShadowsY(float shadowsYIn)
+{
+    QMutexLocker locker (&mutex);
+    shadowsY = shadowsYIn;
+    if (valid > filmulation)
+        valid = filmulation;
+    emit shadowsYChanged();
+}
+
+void FilmImageProvider::setHighlightsY(float highlightsYIn)
+{
+    QMutexLocker locker (&mutex);
+    highlightsY = highlightsYIn;
+    if (valid > filmulation)
+        valid = filmulation;
+    emit highlightsYChanged();
+}
+
+void FilmImageProvider::setDefaultToneCurveEnabled(bool enabledIn)
+{
+    QMutexLocker locker (&mutex);
+    defaultToneCurveEnabled = enabledIn;
+    if (valid > filmulation)
+        valid = filmulation;
+    emit defaultToneCurveEnabledChanged();
 }
 
 void FilmImageProvider::setProgress(float percentDone_in)

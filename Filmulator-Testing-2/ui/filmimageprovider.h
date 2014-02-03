@@ -18,6 +18,10 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
     Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
     Q_PROPERTY(float filmSize READ getFilmSize WRITE setFilmSize NOTIFY filmSizeChanged)
     Q_PROPERTY(float whitepoint READ getWhitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
+    Q_PROPERTY(float blackpoint READ getBlackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
+    Q_PROPERTY(float shadowsY READ getShadowsY WRITE setShadowsY NOTIFY shadowsYChanged)
+    Q_PROPERTY(float highlightsY READ getHighlightsY WRITE setHighlightsY NOTIFY highlightsYChanged)
+    Q_PROPERTY(bool defaultToneCurveEnabled READ getDefaultToneCurveEnabled WRITE setDefaultToneCurveEnabled NOTIFY defaultToneCurveEnabledChanged)
     Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
     Q_PROPERTY(int hist READ getHist NOTIFY histogramsUpdated)//Dummy variable to cause histogram updates
 public:
@@ -29,11 +33,19 @@ public:
     void setExposureComp(float exposureIn);
     void setFilmSize(float filmSizeIn);
     void setWhitepoint(float whitepointIn);
+    void setBlackpoint(float blackpointIn);
+    void setShadowsY(float shadowsYIn);
+    void setHighlightsY(float highlightsYIn);
+    void setDefaultToneCurveEnabled(bool enabledIn);
     void setProgress(float progressIn);
 
     float getExposureComp(){return exposureComp;}
     float getFilmSize(){return filmSize;}
     float getWhitepoint(){return whitepoint;}
+    float getBlackpoint(){return blackpoint;}
+    float getShadowsY(){return shadowsY;}
+    float getHighlightsY(){return highlightsY;}
+    bool getDefaultToneCurveEnabled(){return defaultToneCurveEnabled;}
     float getProgress(){return progress;}
     int getHist(){return hist;}
 
@@ -95,6 +107,10 @@ signals:
     void exposureCompChanged();
     void filmSizeChanged();
     void whitepointChanged();
+    void blackpointChanged();
+    void shadowsYChanged();
+    void highlightsYChanged();
+    void defaultToneCurveEnabledChanged();
     void progressChanged();
     void histogramsUpdated();
 
