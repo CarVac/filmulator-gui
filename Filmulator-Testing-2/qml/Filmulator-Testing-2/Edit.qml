@@ -244,54 +244,6 @@ SplitView {
                     var histPoint = 0;
                     var maxValue = 128.0
 
-                    //rCurve
-                    ctx.beginPath()
-                    ctx.moveTo(startx,starty);
-                    for(var i = 0; i < maxValue; i++)
-                    {
-                        histPoint = filmProvider.getRHistogramPoint(i);
-                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                    }
-                    ctx.lineTo(endx,starty);
-                    ctx.lineTo(startx,starty);
-                    ctx.closePath();
-                    myGradient.addColorStop(1,"red");
-                    myGradient.addColorStop(0,'rgb(180,0,0)');
-                    ctx.fillStyle = myGradient;
-                    ctx.fill();
-
-                    //gCurve
-                    ctx.beginPath()
-                    ctx.moveTo(startx,starty);
-                    for(var i = 0; i < maxValue; i++)
-                    {
-                        histPoint = filmProvider.getGHistogramPoint(i);
-                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                    }
-                    ctx.lineTo(endx,starty);
-                    ctx.lineTo(startx,starty);
-                    ctx.closePath();
-                    myGradient.addColorStop(1,"green");
-                    myGradient.addColorStop(0,'rgb(0,180,0)');
-                    ctx.fillStyle = myGradient;
-                    ctx.fill();
-
-                    //bCurve
-                    ctx.beginPath()
-                    ctx.moveTo(startx,starty);
-                    for(var i = 0; i < maxValue; i++)
-                    {
-                        histPoint = filmProvider.getBHistogramPoint(i);
-                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                    }
-                    ctx.lineTo(endx,starty);
-                    ctx.lineTo(startx,starty);
-                    ctx.closePath();
-                    myGradient.addColorStop(1,"blue");
-                    myGradient.addColorStop(0,'rgb(0,0,180)');
-                    ctx.fillStyle = myGradient;
-                    ctx.fill();
-
                     //Luma curve
                     ctx.beginPath();
                     ctx.moveTo(startx,starty);
@@ -307,6 +259,45 @@ SplitView {
                     myGradient.addColorStop(0,'rgb(180,180,180)');
                     ctx.fillStyle = myGradient;
                     ctx.fill()
+
+                    //rCurve
+                    ctx.beginPath()
+                    ctx.moveTo(startx,starty);
+                    for(var i = 0; i < maxValue; i++)
+                    {
+                        histPoint = filmProvider.getRHistogramPoint(i);
+                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    }
+                    ctx.lineTo(endx,starty);
+                    ctx.closePath();
+                    ctx.strokeStyle = "#FF0000";
+                    ctx.stroke();
+
+                    //gCurve
+                    ctx.beginPath()
+                    ctx.moveTo(startx,starty);
+                    for(var i = 0; i < maxValue; i++)
+                    {
+                        histPoint = filmProvider.getGHistogramPoint(i);
+                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    }
+                    ctx.lineTo(endx,starty);
+                    ctx.closePath();
+                    ctx.strokeStyle = "#00FF00";
+                    ctx.stroke();
+
+                    //bCurve
+                    ctx.beginPath()
+                    ctx.moveTo(startx,starty);
+                    for(var i = 0; i < maxValue; i++)
+                    {
+                        histPoint = filmProvider.getBHistogramPoint(i);
+                        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                    }
+                    ctx.lineTo(endx,starty);
+                    ctx.closePath();
+                    ctx.strokeStyle = "#0000FF"
+                    ctx.stroke();
 
                     ctx.strokeStyle = "#000000";
                     ctx.strokeRect(startx,endy,graphwidth,graphheight);
