@@ -148,7 +148,7 @@ Rectangle {
                         minimumValue: -5
                         maximumValue: 5
                         stepSize: 1/3
-                        value: exposureComp
+                        defaultValue: exposureComp
                         onValueChanged: {
                             filmProvider.exposureComp = value
                             editortab.rolling = (editortab.rolling + 1) % 10
@@ -160,8 +160,10 @@ Rectangle {
                         title: qsTr("Film Area")
                         minimumValue: 10
                         maximumValue: 300
-                        value: Math.sqrt(filmSize)
-                        valueText: value*value
+                        defaultValue: Math.sqrt(filmSize)
+                        //The following thresholds are 24mmx65mm and twice 6x9cm film's
+                        // areas, respectively.
+                        valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
                         onValueChanged: {
                             filmProvider.filmSize = value*value
                             editortab.rolling = (editortab.rolling + 1) % 10
@@ -173,7 +175,7 @@ Rectangle {
                         title: qsTr("Black Clipping Point")
                         minimumValue: 0
                         maximumValue: 5/1000
-                        value: blackpoint
+                        defaultValue: blackpoint
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.blackpoint = value
@@ -186,7 +188,7 @@ Rectangle {
                         title: qsTr("Shadow Brightness")
                         minimumValue: 0
                         maximumValue: 1
-                        value: shadowsY
+                        defaultValue: shadowsY
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.shadowsY = value
@@ -199,7 +201,7 @@ Rectangle {
                         title: qsTr("Highlight Brightness")
                         minimumValue: 0
                         maximumValue: 1
-                        value: highlightsY
+                        defaultValue: highlightsY
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.highlightsY = value
@@ -212,7 +214,7 @@ Rectangle {
                         title: qsTr("White Clipping Point")
                         minimumValue: 0.1/1000
                         maximumValue: 5/1000
-                        value: whitepoint
+                        defaultValue: whitepoint
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.whitepoint = value
@@ -225,11 +227,6 @@ Rectangle {
                 id: wheelstealer
                 //This is to prevent scrolling from adjusting sliders.
                 anchors.fill: toolList
-                Rectangle {
-                    anchors.fill: toolList
-                    color: "white"
-                }
-
                 acceptedButtons: Qt.NoButton
                 onWheel: {
                     if (wheel.angleDelta.y > 0) {
