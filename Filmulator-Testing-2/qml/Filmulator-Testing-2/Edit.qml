@@ -88,8 +88,6 @@ SplitView {
                 }
                 else {
                     var zoomFactor = 1/largeview2.scale
-                    var factorX
-                    var factorY
                     var oldContentX = flicky.contentX
                     var oldContentY = flicky.contentY
                     if (zoomFactor < 1) {
@@ -99,38 +97,33 @@ SplitView {
                         flicky.returnToBounds()
                     }
                     else {//zoomfactor > 1, or, you are zooming in
-                        factorX = Math.min(zoomFactor-1, Math.max((flicky.fitScaleX/largeview2.scale)-1, 0))
-                        factorY = Math.min(zoomFactor-1, Math.max((flicky.fitScaleY/largeview2.scale)-1, 0))
+                        var oldMouseX = mouse.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-largeview2.width*largeview2.scale))
+                        var oldMouseY = mouse.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-largeview2.height*largeview2.scale))
+
                         largeview2.scale = 1
-                        flicky.contentX = oldContentX*zoomFactor + mouse.x*(zoomFactor-1) - 2.5*wheelCapture.width*factorX;
-                        flicky.contentY = oldContentY*zoomFactor + mouse.y*(zoomFactor-1) - 2.5*wheelCapture.height*factorY;
+
+                        //for the following, the last largeview2.scale is now 1, so we just leave it off.
+                        flicky.contentX = oldMouseX*zoomFactor - mouse.x + Math.max(0,0.5*(flicky.width-largeview2.width))
+                        flicky.contentY = oldMouseY*zoomFactor - mouse.y + Math.max(0,0.5*(flicky.height-largeview2.height))
+
                         flicky.returnToBounds()
                     }
                 }
             }
 
             onWheel: {
-                //We recognize that flicky and wheelCapture have the same size and position, thus
-                // mouse has the same coordinates in both.
-                //var mouseX = (flicky.contentX + point.x*Math.min(largeview1.scale, flicky.fitScaleX))/largeview1.scale
-                //var mouseY = (flicky.contentY + point.x*Math.min(largeview1.scale, flicky.fitScaleX))/largeview1.scale
-                var factorX
-                var factorY
-                var oldContentX = flicky.contentX
-                var oldContentY = flicky.contentY
+                var oldMouseX = wheel.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-largeview2.width*largeview2.scale))
+                var oldMouseY = wheel.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-largeview2.height*largeview2.scale))
+                var zoomFactor = 1.2
                 if (wheel.angleDelta.y > 0) {
-                    factorX = Math.min(0.2, Math.max((flicky.fitScaleX/largeview2.scale)-1, 0.0));
-                    factorY = Math.min(0.2, Math.max((flicky.fitScaleY/largeview2.scale)-1, 0.0));
-                    largeview2.scale *= 1.2;
-                    flicky.contentX = oldContentX*1.2 + wheel.x*0.2 - wheelCapture.width/2*factorX;
-                    flicky.contentY = oldContentY*1.2 + wheel.y*0.2 - wheelCapture.height/2*factorY;
+                    largeview2.scale *= zoomFactor;
+                    flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max(0,0.5*(flicky.width-largeview2.width*largeview2.scale))
+                    flicky.contentY = oldMouseY*zoomFactor - wheel.y + Math.max(0,0.5*(flicky.height-largeview2.height*largeview2.scale))
                 }
                 else {
-                    factorX = Math.max(-1/6, Math.min((largeview2.scale/(1.2*flicky.fitScaleX))-1, 0));
-                    factorY = Math.max(-1/6, Math.min((largeview2.scale/(1.2*flicky.fitScaleY))-1, 0));
-                    largeview2.scale /= 1.2;
-                    flicky.contentX = oldContentX/1.2 - wheel.x/6 - wheelCapture.width/2*factorX;
-                    flicky.contentY = oldContentY/1.2 - wheel.y/6 - wheelCapture.height/2*factorY;
+                    largeview2.scale /= zoomFactor;
+                    flicky.contentX = oldMouseX/zoomFactor - wheel.x + Math.max(0,0.5*(flicky.width-largeview2.width*largeview2.scale))
+                    flicky.contentY = oldMouseY/zoomFactor - wheel.y + Math.max(0,0.5*(flicky.height-largeview2.height*largeview2.scale))
                     flicky.returnToBounds()
                 }
             }
