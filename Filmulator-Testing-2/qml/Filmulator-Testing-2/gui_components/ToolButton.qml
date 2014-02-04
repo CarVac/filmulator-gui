@@ -6,12 +6,12 @@ Item {
     id: surround
     property alias text: button.text
     property alias action: button.action
-    width: 30
-    height: 30
+    implicitWidth: 30
+    implicitHeight: 30
     Button {
         id: button
-        width: 26
-        height: 26
+        width: parent.width - 4
+        height: parent.height - 4
         x: 2
         y: 2
         style: ButtonStyle {

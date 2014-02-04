@@ -3,6 +3,7 @@ import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
 import QtQuick.Controls.Styles 1.1
+import "gui_components"
 
 ApplicationWindow {
     id: mainwindow
@@ -65,12 +66,37 @@ ApplicationWindow {
                 title: qsTr("Output")
             }
         }
+
         Rectangle {
             id: queue
             color: "lightgreen"
             height: 100
             Layout.minimumHeight: 50
-            Rectangle {
+
+            ToolButton {
+                id: openButton
+                anchors.centerIn: parent
+                text: qsTr("Open")
+                width: 80
+                height: 40
+                action: Action {
+                    onTriggered: {
+                        openDialog.open()
+                    }
+                }
+            }
+
+            FileDialog {
+                id: openDialog
+                title: qsTr("Select a raw file")
+                onAccepted: {
+                    editortab.location = fileUrl
+                    filmProvider.exposureComp = editortab.exposureComp
+                    filmProvider.whitepoint = editortab.whitepoint
+                }
+            }
+
+/*            Rectangle {
                 id: textentryholder
                 color: "#101010"
                 height: 20
@@ -88,7 +114,7 @@ ApplicationWindow {
                         filmProvider.whitepoint = editortab.whitepoint;
                     }
                 }
-            }
+            }*/
         }
     }
 

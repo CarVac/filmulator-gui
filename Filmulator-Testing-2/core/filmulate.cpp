@@ -83,7 +83,6 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
     //Now, we set up the reservoir.
     //Because we don't want the film area to influence the brightness, we
     // increase the reservoir size in proportion.
-    cout << film_area << endl;
 #define FILMSIZE 864;//36x24mm
     reservoir_size *= film_area/FILMSIZE;
     float reservoir_developer_concentration = initial_developer_concentration;

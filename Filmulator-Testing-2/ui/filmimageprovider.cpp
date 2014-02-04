@@ -52,6 +52,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     QImage output = emptyImage();
     QString tempID = id;
     tempID.remove(tempID.length()-1,1);
+    tempID.remove(0,7);
 
     switch (valid)
     {

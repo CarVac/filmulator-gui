@@ -70,7 +70,7 @@ Rectangle {
         width: 26
         height: 26
         x: toolSlider.width-width-__padding
-        y: padding
+        y: __padding
         text: "[]"
         action: Action {
             onTriggered: {
