@@ -95,7 +95,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
             std::string input_configuration = std::string(mypasswd->pw_dir) +
                     "/.filmulator/configuration.txt";
             initialize(input_configuration, filmParams);
-            filmParams.film_area = filmSize;
+            filmParams.film_area = filmArea;
 
             //Here we do the film simulation on the image...
             if(filmulate(compImage, filmulated_image, filmParams, this))
@@ -169,10 +169,10 @@ void FilmImageProvider::setExposureComp(float exposure)
     emit exposureCompChanged();
 }
 
-void FilmImageProvider::setFilmSize(float filmSizeIn)
+void FilmImageProvider::setFilmArea(float filmAreaIn)
 {
     QMutexLocker locker (&mutex);
-    filmSize = filmSizeIn;
+    filmArea = filmAreaIn;
     if (valid > demosaic)
         valid = demosaic;
     emit filmSizeChanged();

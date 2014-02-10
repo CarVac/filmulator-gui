@@ -50,19 +50,19 @@
 
 using namespace std;
 
-struct filmulateParams {
+struct filmulateParams {//TODO: adjust variable names.
     float initial_developer_concentration;
-    float reservoir_size;
-    float developer_thickness;
+    float reservoir_size;//reservoir_thickness
+    float developer_thickness;//active_layer_thickness
     float crystals_per_pixel;
     float initial_crystal_radius;
     float initial_silver_salt_density;
     float developer_consumption_const;
     float crystal_growth_const;
     float silver_salt_consumption_const;
-    int total_development_time;
+    int total_development_time;//to float
     int agitate_count;
-    float development_resolution;
+    float development_resolution;//to int
     float film_area;
     float sigma_const;
     float layer_mix_const;

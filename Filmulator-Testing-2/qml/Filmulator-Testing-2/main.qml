@@ -29,6 +29,7 @@ ApplicationWindow {
 
             Tab {
                 title: qsTr("Import")
+                Import {}
             }
 
             Tab {

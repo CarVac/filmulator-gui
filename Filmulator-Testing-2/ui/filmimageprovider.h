@@ -16,7 +16,7 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 {
     Q_OBJECT
     Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
-    Q_PROPERTY(float filmSize READ getFilmSize WRITE setFilmSize NOTIFY filmSizeChanged)
+    Q_PROPERTY(float filmArea READ getFilmArea WRITE setFilmArea NOTIFY filmAreaChanged)
     Q_PROPERTY(float whitepoint READ getWhitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
     Q_PROPERTY(float blackpoint READ getBlackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
     Q_PROPERTY(float shadowsY READ getShadowsY WRITE setShadowsY NOTIFY shadowsYChanged)
@@ -31,7 +31,7 @@ public:
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
 
     void setExposureComp(float exposureIn);
-    void setFilmSize(float filmSizeIn);
+    void setFilmArea(float filmAreaIn);
     void setWhitepoint(float whitepointIn);
     void setBlackpoint(float blackpointIn);
     void setShadowsY(float shadowsYIn);
@@ -40,7 +40,7 @@ public:
     void setProgress(float progressIn);
 
     float getExposureComp(){return exposureComp;}
-    float getFilmSize(){return filmSize;}
+    float getFilmArea(){return filmArea;}
     float getWhitepoint(){return whitepoint;}
     float getBlackpoint(){return blackpoint;}
     float getShadowsY(){return shadowsY;}
@@ -65,7 +65,7 @@ protected:
     QMutex mutex;
 
     float exposureComp;
-    float filmSize;
+    float filmArea;
     float progress;
     float whitepoint;
     float blackpoint;
@@ -105,7 +105,7 @@ protected:
 
 signals:
     void exposureCompChanged();
-    void filmSizeChanged();
+    void filmAreaChanged();
     void whitepointChanged();
     void blackpointChanged();
     void shadowsYChanged();

@@ -58,6 +58,6 @@ QMAKE_LFLAGS += -O3 -fopenmp -flto
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
 
-QT += sql printsupport widgets
+QT += sql printsupport widgets core
 
 RESOURCES +=
