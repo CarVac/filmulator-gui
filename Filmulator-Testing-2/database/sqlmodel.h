@@ -9,18 +9,18 @@
 class SqlModel : public QSqlRelationalTableModel
 {
     Q_OBJECT
-    Q_PROPERTY(unsigned int minCaptureTime   READ getMinCaptureTime   WRITE setMinCaptureTime   NOTIFY minCaptureTimeChanged);
-    Q_PROPERTY(unsigned int maxCaptureTime   READ getMaxCaptureTime   WRITE setMaxCaptureTime   NOTIFY maxCaptureTimeChanged);
-    Q_PROPERTY(unsigned int minImportTime    READ getMinImportTime    WRITE setMinImportTime    NOTIFY minImportTimeChanged);
-    Q_PROPERTY(unsigned int maxImportTime    READ getMaxImportTime    WRITE setMaxImportTime    NOTIFY maxImportTimeChanged);
-    Q_PROPERTY(unsigned int minProcessedTime READ getMinProcessedTime WRITE setMinProcessedTime NOTIFY minProcessedTimeChanged);
-    Q_PROPERTY(unsigned int maxProcessedTime READ getMaxProcessedTime WRITE setMaxProcessedTime NOTIFY maxProcessedTimeChanged);
-    Q_PROPERTY(int minRating READ getMinRating WRITE setMinRating NOTIFY minRatingChanged);
-    Q_PROPERTY(int maxRating READ getMaxRating WRITE setMaxRating NOTIFY maxRatingChanged);
-    Q_PROPERTY(int captureSort   READ getCaptureSort   WRITE setCaptureSort   NOTIFY captureSortChanged);
-    Q_PROPERTY(int importSort    READ getImportSort    WRITE setImportSort    NOTIFY importSortChanged);
-    Q_PROPERTY(int processedSort READ getProcessedSort WRITE setProcessedSort NOTIFY processedSortChanged);
-    Q_PROPERTY(int ratingSort    READ getRatingSort    WRITE setRatingSort    NOTIFY ratingSortChanged);
+    Q_PROPERTY(unsigned int minCaptureTime   READ getMinCaptureTime   WRITE setMinCaptureTime   NOTIFY minCaptureTimeChanged)
+    Q_PROPERTY(unsigned int maxCaptureTime   READ getMaxCaptureTime   WRITE setMaxCaptureTime   NOTIFY maxCaptureTimeChanged)
+    Q_PROPERTY(unsigned int minImportTime    READ getMinImportTime    WRITE setMinImportTime    NOTIFY minImportTimeChanged)
+    Q_PROPERTY(unsigned int maxImportTime    READ getMaxImportTime    WRITE setMaxImportTime    NOTIFY maxImportTimeChanged)
+    Q_PROPERTY(unsigned int minProcessedTime READ getMinProcessedTime WRITE setMinProcessedTime NOTIFY minProcessedTimeChanged)
+    Q_PROPERTY(unsigned int maxProcessedTime READ getMaxProcessedTime WRITE setMaxProcessedTime NOTIFY maxProcessedTimeChanged)
+    Q_PROPERTY(int minRating READ getMinRating WRITE setMinRating NOTIFY minRatingChanged)
+    Q_PROPERTY(int maxRating READ getMaxRating WRITE setMaxRating NOTIFY maxRatingChanged)
+    Q_PROPERTY(int captureSort   READ getCaptureSort   WRITE setCaptureSort   NOTIFY captureSortChanged)
+    Q_PROPERTY(int importSort    READ getImportSort    WRITE setImportSort    NOTIFY importSortChanged)
+    Q_PROPERTY(int processedSort READ getProcessedSort WRITE setProcessedSort NOTIFY processedSortChanged)
+    Q_PROPERTY(int ratingSort    READ getRatingSort    WRITE setRatingSort    NOTIFY ratingSortChanged)
 
 public:
     explicit SqlModel(QObject *parent = 0);

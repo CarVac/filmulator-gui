@@ -24,12 +24,12 @@ SOURCES += main.cpp \
     core/merge_exps.cpp \
     core/output_file.cpp \
     core/time_diff.cpp \
-    database/sqlmodel.cpp \
     core/filmulate.cpp \
     core/whitepoint_blackpoint.cpp \
     core/color_curves.cpp \
     ui/filmimageprovider.cpp \
-    ui/updateHistograms.cpp
+    ui/updateHistograms.cpp \
+    database/sqlmodel.cpp
 
 # Installation path
 # target.path =
