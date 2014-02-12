@@ -29,7 +29,9 @@ SOURCES += main.cpp \
     core/color_curves.cpp \
     ui/filmimageprovider.cpp \
     ui/updateHistograms.cpp \
-    database/sqlmodel.cpp
+    database/sqlmodel.cpp \
+    database/dbsetup.cpp \
+    database/sqlproperties.cpp
 
 # Installation path
 # target.path =
@@ -49,7 +51,8 @@ HEADERS += \
     core/matrix.hpp \
     database/sqlmodel.h \
     core/interface.h \
-    ui/filmimageprovider.h
+    ui/filmimageprovider.h \
+    database/filmulatordb.h
 
 
 QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

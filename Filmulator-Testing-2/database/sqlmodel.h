@@ -1,8 +1,7 @@
 #ifndef SQLMODEL_H
 #define SQLMODEL_H
 
-#include <QtSql/QSqlRelationalTableModel>
-#include <QtSql/QSqlDatabase>
+#include <QtSql>
 #include <QDir>
 #include <QFile>
 
@@ -28,7 +27,7 @@ public:
     void organizeQuery();
 //    void queueSetup();
 
-//    Q_INVOKABLE void importDirectory(QString dir);//only works if organize.
+    Q_INVOKABLE void importDirectory(QString dir);//only works if organize.
 
     void setMinCaptureTime(unsigned int captureTimeIn);
     void setMaxCaptureTime(unsigned int captureTimeIn);
@@ -64,6 +63,7 @@ signals:
     void minProcessedTimeChanged();
     void maxProcessedTimeChanged();
     void minRatingChanged();
+    void maxRatingChanged();
     void captureSortChanged();
     void importSortChanged();
     void processedSortChanged();
@@ -72,7 +72,6 @@ signals:
 public slots:
 
 protected:
-    QSqlDatabase __db;
     bool __organizeModel;
     bool __queueModel;
     unsigned int minCaptureTime;
