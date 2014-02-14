@@ -6,6 +6,43 @@ import QtQuick.Dialogs 1.1
 import "gui_components"
 
 Rectangle {
+    id: importRoot
     color: "#800080"
     anchors.fill: parent
+    property string folderPath: ""
+
+    onFolderPathChanged: {
+        importDelay.start()
+    }
+
+    Timer {
+        id: importDelay
+        interval: 250
+        onTriggered: {
+            organizeModel.importDirectory(folderPath)
+        }
+    }
+
+    ToolButton {
+        id: openDirButton
+        anchors.centerIn: parent
+        text: qsTr("Import Directory")
+        width: 200
+        height: 40
+        action: Action{
+            onTriggered: {
+                importDialog.open()
+            }
+        }
+    }
+
+    FileDialog {
+        id: importDialog
+        title: qsTr("Select a directory to import")
+        selectFolder: true
+        onAccepted: {
+            importRoot.folderPath = folder
+            //organizeModel.importDirectory(folder)
+        }
+    }
 }

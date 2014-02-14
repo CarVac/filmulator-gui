@@ -55,9 +55,9 @@ HEADERS += \
     database/filmulatordb.h
 
 
-QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto
+QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -O3 -fopenmp -flto
+QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp -flto
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
 

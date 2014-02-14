@@ -175,7 +175,7 @@ void FilmImageProvider::setFilmArea(float filmAreaIn)
     filmArea = filmAreaIn;
     if (valid > demosaic)
         valid = demosaic;
-    emit filmSizeChanged();
+    emit filmAreaChanged();
 }
 
 void FilmImageProvider::setWhitepoint(float whitepointIn)

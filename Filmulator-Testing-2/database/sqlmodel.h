@@ -5,7 +5,7 @@
 #include <QDir>
 #include <QFile>
 
-class SqlModel : public QSqlRelationalTableModel
+class SqlModel : public QSqlQueryModel//QSqlRelationalTableModel
 {
     Q_OBJECT
     Q_PROPERTY(unsigned int minCaptureTime   READ getMinCaptureTime   WRITE setMinCaptureTime   NOTIFY minCaptureTimeChanged)
@@ -23,7 +23,7 @@ class SqlModel : public QSqlRelationalTableModel
 
 public:
     explicit SqlModel(QObject *parent = 0);
-    void organizeSetup();
+    bool organizeSetup();
     void organizeQuery();
 //    void queueSetup();
 

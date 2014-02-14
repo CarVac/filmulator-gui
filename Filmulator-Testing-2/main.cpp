@@ -2,7 +2,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml>
 #include "qtquick2applicationviewer.h"
-#include <QtSql>
+#include <QtSql/QSqlDatabase>
 #include <QTranslator>
 #include "ui/filmimageprovider.h"
 #include "database/sqlmodel.h"
@@ -26,12 +26,15 @@ int main(int argc, char *argv[])
 
     //Prepare database connection.
     //This should create a new db file if there was none.
-    QSqlDatabase db = new QSqlDatabase;
+    qDebug() << QSqlDatabase::drivers();
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    qDebug() << db.isValid();
     setupDB(&db);
 
 
-    SqlModel organizeModel = new SqlModel;
-    organizeModel.organizeSetup();
+    SqlModel *organizeModel = new SqlModel;
+    organizeModel->organizeSetup();
+    engine.rootContext()->setContextProperty("organizeModel",organizeModel);
 
 
 

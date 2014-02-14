@@ -2,22 +2,27 @@
 #include <QDebug>
 #include <iostream>
 #include <QtSql/QSqlQuery>
+#include <QStringList>
+#include <exiv2/exiv2.hpp>
+#include <QCryptographicHash>
 
 using namespace std;
 
 SqlModel::SqlModel(QObject *parent) :
-    QSqlRelationalTableModel(parent)
+    QSqlQueryModel(parent)
+//    QSqlRelationalTableModel(parent)
 {
 }
 
-void SqlModel::organizeSetup()
+bool SqlModel::organizeSetup()
 {
-    if (__queuemodel)
+    if (__queueModel)
     {
-        return NULL;
+        return true;
     }
     __organizeModel = true;
     __queueModel = false;
+    return false;
 }
 
 void SqlModel::organizeQuery()
@@ -35,39 +40,49 @@ void SqlModel::organizeQuery()
     std::string queryString = "SELECT * ";
     queryString.append("FROM SearchTable, FileTable, ProcessingTable ");
     queryString.append("WHERE ");
-    queryString.append("SearchTable.id = ProcessingTable.id ");
-    queryString.append("AND SearchTable.sourceHash = FileTable.id ");
+    queryString.append("SearchTable.searchID = ProcessingTable.procID ");
+    queryString.append("AND SearchTable.sourceHash = FileTable.fileID ");
 
     //Here we do the filtering.
     //For unsigned ones, if the max____Time is 0, then we don't filter.
     //For signed ones, if the max____ is <0, then we don't filter.
+
+
     if (maxCaptureTime != 0)
     {
-        queryString.append("AND SearchTable.captureTime <= " +
-                           std::string(maxCaptureTime) + " ");
-        queryString.append("AND SearchTable.captureTime >= " +
-                           std::string(minCaptureTime) + " ");
+        queryString.append("AND SearchTable.captureTime <= ");
+        queryString.append(std::to_string(maxCaptureTime));
+        queryString.append(" ");
+        queryString.append("AND SearchTable.captureTime >= ");
+        queryString.append(std::to_string(minCaptureTime));
+        queryString.append(" ");
     }
     if (maxImportTime != 0)
     {
-        queryString.append("AND SearchTable.importTime <= " +
-                           std::string(maxImportTime) + " ");
-        queryString.append("AND SearchTable.importTime >= " +
-                           std::string(minImportTime) + " ");
+        queryString.append("AND SearchTable.importTime <= ");
+        queryString.append(std::to_string(maxImportTime));
+        queryString.append(" ");
+        queryString.append("AND SearchTable.importTime >= ");
+        queryString.append(std::to_string(minImportTime));
+        queryString.append(" ");
     }
     if (maxProcessedTime != 0)
     {
-        queryString.append("AND SearchTable.lastProcessedTime <= " +
-                           std::string(maxProcessedTime) + " ");
-        queryString.append("AND SearchTable.lastProcessedTime >= " +
-                           std::string(minProcessedTime) + " ");
+        queryString.append("AND SearchTable.lastProcessedTime <= ");
+        queryString.append(std::to_string(maxProcessedTime));
+        queryString.append(" ");
+        queryString.append("AND SearchTable.lastProcessedTime >= ");
+        queryString.append(std::to_string(minProcessedTime));
+        queryString.append(" ");
     }
     if (maxRating >= 0)
     {
-        queryString.append("AND SearchTable.rating <= " +
-                           std::string(maxRating) + " ");
-        queryString.append("AND SearchTable.rating >= " +
-                           std::string(minRating) + " ");
+        queryString.append("AND SearchTable.rating <= ");
+        queryString.append(std::to_string(maxRating));
+        queryString.append(" ");
+        queryString.append("AND SearchTable.rating >= ");
+        queryString.append(std::to_string(minRating));
+        queryString.append(" ");
     }
 
     //Now we go to the ordering.
@@ -100,5 +115,56 @@ void SqlModel::organizeQuery()
         queryString.append("SearchTable.filename DESC;");
     }
 
-    setQuery(queryString);
+    setQuery(QString::fromStdString(queryString));
+}
+
+void SqlModel::importDirectory(QString dir)
+{
+    //This function reads in a directory and puts the raws into the database.
+    QString tempDir = dir;
+    tempDir.remove(7,5000);
+    if(tempDir == QString("file://"))
+    {
+        tempDir = dir;
+        tempDir.remove(0,7);
+    }
+    else
+    {
+        tempDir = dir;
+    }
+    std::cout << "importing directory " << qPrintable(tempDir) << std::endl;
+    QDir directory = QDir(tempDir);
+    directory.setFilter(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    directory.setSorting(QDir::Name);
+    QFileInfoList dirList = directory.entryInfoList();
+    for(int i=0; i < dirList.size(); i++)
+    {
+        importDirectory(dirList.at(i).absoluteFilePath());
+    }
+    directory.setFilter(QDir::Files | QDir::NoSymLinks);
+    QStringList nameFilters;
+    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW";
+    directory.setNameFilters(nameFilters);
+    QFileInfoList fileList = directory.entryInfoList();
+    for(int i = 0; i < fileList.size(); i++)
+    {
+        std::cout << qPrintable(fileList.at(i).absoluteFilePath()) << std::endl;
+        QCryptographicHash hash(QCryptographicHash::Md5);
+        QFile file(fileList.at(i).absoluteFilePath());
+        if(!file.open(QIODevice::ReadOnly))
+        {
+            std::cout << "File couldn't be opened." << std::endl;
+        }
+        while(!file.atEnd())
+        {
+            hash.addData(file.read(8192));
+        }
+        std::cout << qPrintable(hash.result().toHex()) << std::endl;
+        /*const char *cstr = fileList.at(i).absoluteFilePath().toStdString().c_str();
+        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(cstr);
+        assert(image.get() != 0);
+        image->readMetadata();
+        Exiv2::ExifData exifData = image->exifData();*/
+
+    }
 }
