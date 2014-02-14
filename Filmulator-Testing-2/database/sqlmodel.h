@@ -10,6 +10,8 @@
 //b) setData()
 //c) insertRows()
 //d) removeRows()
+//e) maybe data()
+//f) ???
 
 //Look at "Using C++ Models with Qt Quick Views to figure out what else we need.
 //It seems that by subclassing QSqlQueryModel we may not need to notify when doing queries...
