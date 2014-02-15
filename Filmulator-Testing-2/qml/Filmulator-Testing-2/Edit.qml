@@ -83,6 +83,7 @@ SplitView {
             acceptedButtons: Qt.RightButton
             onDoubleClicked: {
                 if(largeview2.scale < flicky.fitScale || largeview2.scale == 1) {
+                    flicky.cancelFlick()
                     largeview2.scale = flicky.fitScale
                     flicky.returnToBounds()
                 }
