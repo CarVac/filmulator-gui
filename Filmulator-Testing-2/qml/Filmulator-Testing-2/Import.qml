@@ -41,7 +41,7 @@ Rectangle {
         title: qsTr("Select a directory to import")
         selectFolder: true
         onAccepted: {
-            importRoot.folderPath = folder
+            importRoot.folderPath = fileUrl
             //organizeModel.importDirectory(folder)
         }
     }
