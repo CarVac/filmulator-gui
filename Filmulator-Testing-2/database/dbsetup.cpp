@@ -40,6 +40,7 @@ void setupDB(QSqlDatabase *db)
                "longitude real,"
                "importTime integer,"//unix time
                "lastProcessedTime integer"//unix time
+               ");"
                );
 
     //2. The table which carries more file info, like exifs and thumbnail locations.
@@ -54,6 +55,7 @@ void setupDB(QSqlDatabase *db)
                "focalLength real,"
                "width integer,"
                "height integer"
+               ");"
                );
 
     //3. The table which holds processing parameters.
@@ -82,5 +84,6 @@ void setupDB(QSqlDatabase *db)
                "blackpoint real,"
                "shadowsY real,"
                "highlightsY real"
+               ");"
                );
 }
