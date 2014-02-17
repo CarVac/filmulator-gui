@@ -1,12 +1,12 @@
+#include <QDir>
 #include <QtGui/QGuiApplication>
-#include "qtquick2applicationviewer.h"
-//#include <QtWidgets/QApplication>
 #include <QtQml>
-#include "ui/filmimageprovider.h"
-#include <QtSql>
+#include "qtquick2applicationviewer.h"
 #include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlTableModel>
 #include <QTranslator>
+#include "ui/filmimageprovider.h"
+#include "database/sqlmodel.h"
+#include "database/filmulatordb.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,24 +17,25 @@ int main(int argc, char *argv[])
     translator.load("filmulatortr_la");
     app.installTranslator(&translator);
 
+    //Prepare image provider object
     FilmImageProvider *filmProvider = new FilmImageProvider;
-
-//    engine.addImageProvider(QLatin1String("filmy"), new FilmImageProvider);
+    //Connect it as an image provider so that qml can get the photos
     engine.addImageProvider(QLatin1String("filmy"), filmProvider);
-
-    /*QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/home/omer/filmulator/sql/photodb1");
-        //point at database location.
-    bool ok = db.open();
-    if(ok)
-        qDebug("Database opened");
-    else
-        qDebug("Database not opened");
-
-    QSqlTableModel *model1 = new QSqlTableModel;
-    model1->setTable("locations");*/
-
+    //Connect it as a Q_OBJECT so that qml can run methods
     engine.rootContext()->setContextProperty("filmProvider",filmProvider);
+
+    //Prepare database connection.
+    //This should create a new db file if there was none.
+    qDebug() << QSqlDatabase::drivers();
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    qDebug() << db.isValid();
+    setupDB(&db);
+
+
+    SqlModel *organizeModel = new SqlModel;
+    organizeModel->organizeSetup();
+    engine.rootContext()->setContextProperty("organizeModel",organizeModel);
+
 
 
     QObject *topLevel = engine.rootObjects().value(0);

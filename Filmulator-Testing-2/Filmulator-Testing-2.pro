@@ -24,12 +24,14 @@ SOURCES += main.cpp \
     core/merge_exps.cpp \
     core/output_file.cpp \
     core/time_diff.cpp \
-    database/sqlmodel.cpp \
     core/filmulate.cpp \
     core/whitepoint_blackpoint.cpp \
     core/color_curves.cpp \
     ui/filmimageprovider.cpp \
-    ui/updateHistograms.cpp
+    ui/updateHistograms.cpp \
+    database/sqlmodel.cpp \
+    database/dbsetup.cpp \
+    database/sqlproperties.cpp
 
 # Installation path
 # target.path =
@@ -49,15 +51,16 @@ HEADERS += \
     core/matrix.hpp \
     database/sqlmodel.h \
     core/interface.h \
-    ui/filmimageprovider.h
+    ui/filmimageprovider.h \
+    database/filmulatordb.h
 
 
-QMAKE_CXXFLAGS += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto
+QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -O3 -fopenmp -flto
+QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp -flto
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
 
-QT += sql printsupport widgets
+QT += sql printsupport widgets core
 
 RESOURCES +=

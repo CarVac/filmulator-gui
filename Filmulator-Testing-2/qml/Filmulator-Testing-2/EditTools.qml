@@ -165,7 +165,7 @@ Rectangle {
                         // areas, respectively.
                         valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
                         onValueChanged: {
-                            filmProvider.filmSize = value*value
+                            filmProvider.filmArea = value*value
                             editortab.rolling = (editortab.rolling + 1) % 10
                         }
                     }
