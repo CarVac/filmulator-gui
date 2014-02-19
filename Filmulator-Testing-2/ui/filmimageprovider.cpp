@@ -149,11 +149,15 @@ QImage FilmImageProvider::requestImage(const QString &id,
                 {
                     *line = QColor(film_curve_image(i,j)/256,film_curve_image(i,j+1)/256,film_curve_image(i,j+2)/256).rgb();
                     line++;
+
                 }
             }
         }
     }//End switch
-    updateHistograms();
+
+    updateShortHistogram(finalHist, film_curve_image, histFinal);
+    emit histFinalChanged();//This must be run immediately after updateHistFinal in order to notify QML.
+
     tout << "Request time: " << time_diff(request_start_time) << " seconds" << endl;
     setProgress(1);
     *size = output.size();
@@ -241,9 +245,11 @@ void FilmImageProvider::invalidateImage()
     valid = none;
 }
 
-float FilmImageProvider::getHistogramPoint(long long * hist, long long maximum, int i)
+float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i)
 {
-    return float(min(hist[i],maximum))/float(maximum); //maximum is the max of all elements except 0 and 127
+    //index is 0 for L, 1 for R, 2 for G, and 3 for B.
+    assert((index < 4) && (index >= 0));
+    return float(min(hist.allHist[i*4+index],hist.histMax[index]))/float(hist.histMax[index]); //maximum is the max of all elements except 0 and 127
 }
 
 QImage FilmImageProvider::emptyImage()

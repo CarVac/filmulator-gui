@@ -29,7 +29,8 @@ Rectangle {
             height:250
             property int lineWidth: 1
             property real alpha: 1.0
-            property int hist: filmProvider.hist
+            property int hist: filmProvider.histFinal
+            property int padding: 10
             antialiasing: true
 
             onWidthChanged:requestPaint();
@@ -44,10 +45,10 @@ Rectangle {
                 var myGradient = ctx.createLinearGradient(0,0,canvas.width,0);
                 var hist = canvas.hist;
 
-                var startx = 10;
-                var endx = canvas.width - 10;
+                var startx = canvas.padding;
+                var endx = canvas.width - canvas.padding;
                 var graphwidth = endx - startx;
-                var starty = canvas.height - 10;
+                var starty = canvas.height - canvas.padding;
                 var endy = 10;
                 var graphheight = starty - endy;
                 var histPoint = 0;
@@ -58,7 +59,7 @@ Rectangle {
                 ctx.moveTo(startx,starty);
                 for(var i = 0; i < maxValue; i++)
                 {
-                    histPoint = filmProvider.getLumaHistogramPoint(i);
+                    histPoint = filmProvider.getHistFinalPoint(0,i);
                     ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
                 }
                 ctx.lineTo(endx,starty);
@@ -74,7 +75,7 @@ Rectangle {
                 ctx.moveTo(startx,starty);
                 for(var i = 0; i < maxValue; i++)
                 {
-                    histPoint = filmProvider.getRHistogramPoint(i);
+                    histPoint = filmProvider.getHistFinalPoint(1,i);
                     ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
                 }
                 ctx.lineTo(endx,starty);
@@ -87,7 +88,7 @@ Rectangle {
                 ctx.moveTo(startx,starty);
                 for(var i = 0; i < maxValue; i++)
                 {
-                    histPoint = filmProvider.getGHistogramPoint(i);
+                    histPoint = filmProvider.getHistFinalPoint(2,i);
                     ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
                 }
                 ctx.lineTo(endx,starty);
@@ -100,7 +101,7 @@ Rectangle {
                 ctx.moveTo(startx,starty);
                 for(var i = 0; i < maxValue; i++)
                 {
-                    histPoint = filmProvider.getBHistogramPoint(i);
+                    histPoint = filmProvider.getHistFinalPoint(3,i);
                     ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
                 }
                 ctx.lineTo(endx,starty);
