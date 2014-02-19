@@ -2,6 +2,7 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <QTimer>
+#include <cmath>
 #define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
@@ -251,20 +252,32 @@ void FilmImageProvider::invalidateImage()
     valid = none;
 }
 
-float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i)
+float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i, int isLog)
 {
     //index is 0 for L, 1 for R, 2 for G, and 3 for B.
     assert((index < 4) && (index >= 0));
     switch (index)
     {
     case 0: //luminance
-        return float(min(hist.lHist[i],hist.lHistMax))/float(hist.lHistMax);
+        if (!isLog)
+            return float(min(hist.lHist[i],hist.lHistMax))/float(hist.lHistMax);
+        else
+            return max(0.0,min(log(hist.lHist[i]),log(hist.lHistMax))/log(hist.lHistMax));
     case 1: //red
-        return float(min(hist.rHist[i],hist.rHistMax))/float(hist.rHistMax);
+        if (!isLog)
+            return float(min(hist.rHist[i],hist.rHistMax))/float(hist.rHistMax);
+        else
+            return max(0.0,min(log(hist.rHist[i]),log(hist.rHistMax))/log(hist.rHistMax));
     case 2: //green
-        return float(min(hist.gHist[i],hist.gHistMax))/float(hist.gHistMax);
+        if (!isLog)
+            return float(min(hist.gHist[i],hist.gHistMax))/float(hist.gHistMax);
+        else
+            return max(0.0,min(log(hist.gHist[i]),log(hist.gHistMax))/log(hist.gHistMax));
     case 3: //blue
-        return float(min(hist.bHist[i],hist.bHistMax))/float(hist.bHistMax);
+        if (!isLog)
+            return float(min(hist.bHist[i],hist.bHistMax))/float(hist.bHistMax);
+        else
+            return max(0.0,min(log(hist.bHist[i]),log(hist.bHistMax))/log(hist.bHistMax));
     }
     //xHistMax is the maximum height of any bin except the extremes.
 

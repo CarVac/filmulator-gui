@@ -72,8 +72,8 @@ public:
 
     void updateProgress(float);
     Q_INVOKABLE void invalidateImage();
-    Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i);}
-    Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i);}
+    Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,0);}
+    Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,1);}
 
 
 protected:
@@ -109,7 +109,7 @@ protected:
     histogram postFilmHist;
     int histPostFilm;//dummy to signal histogram updates
 
-    float getHistogramPoint(histogram &hist, int index, int i);
+    float getHistogramPoint(histogram &hist, int index, int i, int isLog);
     QImage emptyImage();
 
     void updateShortHistogram(histogram &hist, const matrix<unsigned short> image, int &roll);

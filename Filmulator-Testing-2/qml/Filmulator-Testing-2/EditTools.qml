@@ -173,15 +173,16 @@ Rectangle {
 
                     Canvas {
                         id: postFilmHistoCanvas
-                        width: filmSizeSlider.width
+                        width: toolListItem.width
                         height: 150
+                        Layout.maximumWidth: 500
                         property int lineWidth: 1
                         property real alpha: 1.0
                         property int hist: filmProvider.histPostFilm
                         property int padding: 5
                         antialiasing: true
 
-                        onWidthChanged:requestPaint();
+                        onWidthChanged: requestPaint();
                         onHistChanged: requestPaint();
 
                         onPaint: {
