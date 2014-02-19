@@ -57,109 +57,232 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
     switch (valid)
     {
-        case none://Do demosiac
-        {
-            mutex.lock();
-                valid = demosaic;
-            mutex.unlock();
-            std::vector<std::string> input_filename_list;
-            input_filename_list.push_back(tempID.toStdString());
-            cout << "Opening " << input_filename_list[0] << endl;
-            std::vector<float> input_exposure_compensation;
-            input_exposure_compensation.push_back(exposureComp);
+    case none://Do demosiac
+    {
+        //Mark that demosaicing has started.
+        mutex.lock();
+        valid = demosaic;
+        mutex.unlock();
 
-            bool tiff_in = false;
-            bool jpeg_in = false;
-            int highlights = 0;
-            if(imload(input_filename_list, input_exposure_compensation,
-                      input_image, tiff_in, jpeg_in, exifData, highlights))
+        //Here we trim the 'file://' from the url
+        std::vector<std::string> input_filename_list;
+        input_filename_list.push_back(tempID.toStdString());
+        cout << "Opening " << input_filename_list[0] << endl;
+
+        //We set the exposure comp from the Q_PROPERTY here.
+        std::vector<float> input_exposure_compensation;
+        input_exposure_compensation.push_back(exposureComp);
+
+        //Only raws.
+        bool tiff_in = false;
+        bool jpeg_in = false;
+
+        //No highlight recovery.
+        int highlights = 0;
+
+        //Reads in the photo.
+        if(imload(input_filename_list, input_exposure_compensation,
+                  input_image, tiff_in, jpeg_in, exifData, highlights))
+        {
+            qDebug("Error loading images");
+            mutex.lock();
+            valid = none;
+            mutex.unlock();
+            return emptyImage();
+        }
+    }
+    case demosaic://Do filmulation
+    {
+        //If we're about to do work on invalidated demosaicing, we give up.
+        //It'll restart automatically.
+        if(checkAbort(demosaic))
+            return emptyImage();
+
+        //Mark that we've started to filmulate.
+        mutex.lock();
+        valid = filmulation;
+        mutex.unlock();
+
+        //Here we actually apply the exposure compensation.
+        matrix<float> compImage = input_image * pow(2, exposureComp);
+
+        //Read in from the configuration file
+        //Get home directory
+        int myuid = getuid();
+        passwd *mypasswd = getpwuid(myuid);
+        std::string input_configuration = std::string(mypasswd->pw_dir) +
+                "/.filmulator/configuration.txt";
+        initialize(input_configuration, filmParams);
+        filmParams.film_area = filmArea;
+
+        //Here we do the film simulation on the image...
+        if(filmulate(compImage, filmulated_image, filmParams, this))
+            return emptyImage();//filmulate returns 1 if it detected an abort
+
+        //Histogram work
+        updateFloatHistogram(postFilmHist, filmulated_image, .0025, histPostFilm);
+        //cout << mean(filmulated_image) << endl;
+        emit histPostFilmChanged();//must be run to notify QML
+    }
+    case filmulation://Do whitepoint_blackpoint
+    {
+        setProgress(0.8);
+
+        //See if the filmulation has been invalidated.
+        if(checkAbort(filmulation))
+            return emptyImage();
+
+        //Mark that we've begun clipping the image and converting to unsigned short.
+        mutex.lock();
+        valid = whiteblack;
+        mutex.unlock();
+        whitepoint_blackpoint(filmulated_image, contrast_image, whitepoint,
+                              blackpoint);
+    }
+    case whiteblack: // Do color_curve
+    {
+        setProgress(0.85);
+
+        //See if the clipping has been invalidated.
+        if(checkAbort(whiteblack))
+            return emptyImage();
+
+        //Mark that we've begun running the individual color curves.
+        mutex.lock();
+        valid = colorcurve;
+        mutex.unlock();
+        color_curves(contrast_image, color_curve_image, lutR, lutG, lutB);
+    }
+    case colorcurve://Do flim-like curve
+    {
+        setProgress(0.9);
+
+        //See if the color curves applied are now invalid.
+        if(checkAbort(colorcurve))
+            return emptyImage();
+
+        //Mark that we've begun applying the all-color tone curve.
+        mutex.lock();
+        valid = filmlikecurve;
+        mutex.unlock();
+        filmLikeLUT.fill(this);
+        film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
+    }
+    case filmlikecurve: //output
+    {
+        setProgress(0.95);
+
+        //See if the tonecurve has changed since it was applied.
+        if(checkAbort(filmlikecurve))
+            return emptyImage();
+
+        //We would mark our progress, but this is the very last step.
+
+        int nrows = film_curve_image.nr();
+        int ncols = film_curve_image.nc();
+        switch((int) exifData["Exif.Image.Orientation"].value().toLong())
+        {
+        case 3://upside-down
+        {
+            //Yes, some cameras do in fact implement this direction.
+            output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
+            for(int i = 0; i < nrows; i++)
             {
-                qDebug("Error loading images");
-                mutex.lock();
-                        valid = none;
-                mutex.unlock();
-                return emptyImage();
+                // out   in
+                /* 12345 00000
+                 * 00000 00000
+                 * 00000 54321
+                 */
+                //Reversing the row index
+                int r = nrows-1-i;
+                QRgb *line = (QRgb *)output.scanLine(i);
+                for(int j = 0; j < ncols; j = j + 3)
+                {
+                    //Reversing the column index
+                    int c = ncols - 3 - j;
+                    *line = QColor(film_curve_image(r,c)/256,
+                                   film_curve_image(r,c+1)/256,
+                                   film_curve_image(r,c+2)/256).rgb();
+                    line++;
+                }
             }
+            break;
         }
-       case demosaic://Do filmulation
-       {
-            if(checkAbort(demosaic))
-                return emptyImage();
-            mutex.lock();
-                    valid = filmulation;
-            mutex.unlock();
-            matrix<float> compImage = input_image * pow(2, exposureComp);
-            //Read in from the configuration file
-            //Get home directory
-            int myuid = getuid();
-            passwd *mypasswd = getpwuid(myuid);
-            std::string input_configuration = std::string(mypasswd->pw_dir) +
-                    "/.filmulator/configuration.txt";
-            initialize(input_configuration, filmParams);
-            filmParams.film_area = filmArea;
-
-            //Here we do the film simulation on the image...
-            if(filmulate(compImage, filmulated_image, filmParams, this))
-                return emptyImage();//filmulate returns 1 if it detected an abort
-
-            //Histogram work
-            updateFloatHistogram(postFilmHist, filmulated_image, .005, histPostFilm);
-            //cout << mean(filmulated_image) << endl;
-            emit histPostFilmChanged();//must be run to notify QML
-        }
-        case filmulation://Do whitepoint_blackpoint
+        case 6://right side of camera down
         {
-            setProgress(0.8);
-            if(checkAbort(filmulation))
-                return emptyImage();
-            mutex.lock();
-                valid = whiteblack;
-            mutex.unlock();
-            whitepoint_blackpoint(filmulated_image, contrast_image, whitepoint,
-                                  blackpoint);
+            output = QImage(nrows,ncols/3,QImage::Format_ARGB32);
+            for(int j = 0; j < ncols/3; j++)
+            {
+                //index of an output row as a column on the input matrix
+                // out   in
+                /* 123   30000
+                 * 000   20000
+                 * 000   10000
+                 * 000
+                 * 000
+                 */
+                //Remember that the columns are interlaced.
+                int c = j*3;
+                QRgb *line = (QRgb *)output.scanLine(j);
+                for(int i = 0; i < nrows; i++)
+                {
+                    //Also, in this case, the order is reversed for the rows of the input.
+                    int r = nrows-1-i;
+                    *line = QColor(film_curve_image(r,c)/256,
+                                   film_curve_image(r,c+1)/256,
+                                   film_curve_image(r,c+2)/256).rgb();
+                    line++;
+                }
+            }
+            break;
         }
-        case whiteblack: // Do color_curve
+        case 8://right side of camera up
         {
-            setProgress(0.85);
-            if(checkAbort(whiteblack))
-                return emptyImage();
-            mutex.lock();
-                valid = colorcurve;
-            mutex.unlock();
-            color_curves(contrast_image, color_curve_image, lutR, lutG, lutB);
+            output = QImage(nrows,ncols/3,QImage::Format_ARGB32);
+            for(int j = 0; j < ncols/3; j++)
+            {
+                //index of an output row as a column on the input matrix
+                // out   in
+                /* 123   00001
+                 * 000   00002
+                 * 000   00003
+                 * 000
+                 * 000
+                 */
+                //Remember that the columns are interlaced, and scanned in reverse.
+                int c = ncols - 3 - j*3;
+                QRgb *line = (QRgb *)output.scanLine(j);
+                for(int i = 0; i < nrows; i++)
+                {
+                    //Here the order is not reversed for the rows of the input.
+                    int r = i;
+                    *line = QColor(film_curve_image(r,c)/256,
+                                   film_curve_image(r,c+1)/256,
+                                   film_curve_image(r,c+2)/256).rgb();
+                    line++;
+                }
+            }
+            break;
         }
-        case colorcurve://Do flim-like curve
+        default://standard orientation
         {
-            setProgress(0.9);
-            if(checkAbort(colorcurve))
-                return emptyImage();
-            mutex.lock();
-                valid = filmlikecurve;
-            mutex.unlock();
-            filmLikeLUT.fill(this);
-            film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
-        }
-        case filmlikecurve: //output
-        {
-            setProgress(0.95);
-            int nrows = film_curve_image.nr();
-            int ncols = film_curve_image.nc();
-            if(checkAbort(filmlikecurve))
-                return emptyImage();
-            //Normally, here we'd output the file. Instead, we write it to the QImage.
             output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
             for(int i = 0; i < nrows; i++)
             {
                 QRgb *line = (QRgb *)output.scanLine(i);
                 for(int j = 0; j < ncols; j = j + 3)
                 {
-                    *line = QColor(film_curve_image(i,j)/256,film_curve_image(i,j+1)/256,film_curve_image(i,j+2)/256).rgb();
+                    *line = QColor(film_curve_image(i,j)/256,
+                                   film_curve_image(i,j+1)/256,
+                                   film_curve_image(i,j+2)/256).rgb();
                     line++;
 
                 }
             }
         }
-    }//End switch
+        }//End orientation switch
+    }
+    }//End task switch
 
     emit histPostFilmChanged();
     updateShortHistogram(finalHist, film_curve_image, histFinal);
@@ -252,7 +375,7 @@ void FilmImageProvider::invalidateImage()
     valid = none;
 }
 
-float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i, int isLog)
+float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i, LogY isLog)
 {
     //index is 0 for L, 1 for R, 2 for G, and 3 for B.
     assert((index < 4) && (index >= 0));
@@ -300,7 +423,7 @@ bool FilmImageProvider::checkAbort(Valid currStep)
 unsigned short FilmImageProvider::lookup(unsigned short in)
 {
     return 65535*default_tonecurve(
-                 shadows_highlights(float(in)/65535.0,shadowsX,shadowsY,
+                shadows_highlights(float(in)/65535.0,shadowsX,shadowsY,
                                    highlightsX,highlightsY)
                 ,defaultToneCurveEnabled);
 }

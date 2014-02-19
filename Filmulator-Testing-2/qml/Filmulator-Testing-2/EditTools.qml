@@ -156,7 +156,7 @@ Rectangle {
                         }
                     }
 
-                     ToolSlider {
+                    ToolSlider {
                         id: filmSizeSlider
                         title: qsTr("Film Area")
                         minimumValue: 10
@@ -174,7 +174,7 @@ Rectangle {
                     Canvas {
                         id: postFilmHistoCanvas
                         width: toolListItem.width
-                        height: 150
+                        height: 100
                         Layout.maximumWidth: 500
                         property int lineWidth: 1
                         property real alpha: 1.0
@@ -268,7 +268,7 @@ Rectangle {
                             height: parent.height
                             width: 1
                             color: "white"
-                            x: parent.padding + blackpointSlider.value/.005*(parent.width-2*parent.padding)
+                            x: parent.padding + filmProvider.blackpoint/.0025*(parent.width-2*parent.padding)
                         }
 
                         Rectangle {
@@ -276,18 +276,18 @@ Rectangle {
                             height: parent.height
                             width: 1
                             color: "white"
-                            x: parent.padding + whitepointSlider.value/.005*(parent.width-2*parent.padding)
+                            x: parent.padding + filmProvider.whitepoint/.0025*(parent.width-2*parent.padding)
                         }
                     }
-                   ToolSlider {
+                    ToolSlider {
                         id: blackpointSlider
                         title: qsTr("Black Clipping Point")
                         minimumValue: 0
-                        maximumValue: 1/1000
+                        maximumValue: 1.4
                         defaultValue: blackpoint
-                        valueText: value*1000
+                        valueText: value*value
                         onValueChanged: {
-                            filmProvider.blackpoint = value
+                            filmProvider.blackpoint = value*value/1000
                             editortab.rolling = (editortab.rolling + 1) % 10
                         }
                     }
@@ -296,7 +296,7 @@ Rectangle {
                         id: whitepointSlider
                         title: qsTr("White Clipping Point")
                         minimumValue: 0.1/1000
-                        maximumValue: 5/1000
+                        maximumValue: 2.5/1000
                         defaultValue: whitepoint
                         valueText: value*1000
                         onValueChanged: {

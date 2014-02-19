@@ -13,6 +13,8 @@
 
 enum Valid {none, demosaic, filmulation, whiteblack, colorcurve, filmlikecurve};
 
+enum LogY {no, yes};
+
 struct histogram {
     long long lHist[128];
     long long rHist[128];
@@ -72,8 +74,8 @@ public:
 
     void updateProgress(float);
     Q_INVOKABLE void invalidateImage();
-    Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,0);}
-    Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,1);}
+    Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,LogY::no);}
+    Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
 
 
 protected:
@@ -109,7 +111,7 @@ protected:
     histogram postFilmHist;
     int histPostFilm;//dummy to signal histogram updates
 
-    float getHistogramPoint(histogram &hist, int index, int i, int isLog);
+    float getHistogramPoint(histogram &hist, int index, int i, LogY isLog);
     QImage emptyImage();
 
     void updateShortHistogram(histogram &hist, const matrix<unsigned short> image, int &roll);
