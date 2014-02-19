@@ -23,32 +23,32 @@ Rectangle {
         orientation: Qt.Vertical
 
         Canvas {
-            id:canvas
+            id:mainHistoCanvas
             width:parent.width
             Layout.minimumHeight: 50
             height:250
             property int lineWidth: 1
             property real alpha: 1.0
             property int hist: filmProvider.histFinal
-            property int padding: 10
+            property int padding: 5
             antialiasing: true
 
             onWidthChanged:requestPaint();
             onHistChanged: requestPaint();
 
             onPaint: {
-                var ctx = canvas.getContext('2d');
+                var ctx = this.getContext('2d');
                 ctx.save();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.globalAlpha = canvas.alpha;
-                ctx.lineWidth = canvas.lineWidth;
-                var myGradient = ctx.createLinearGradient(0,0,canvas.width,0);
-                var hist = canvas.hist;
+                ctx.clearRect(0, 0, this.width, this.height);
+                ctx.globalAlpha = this.alpha;
+                ctx.lineWidth = this.lineWidth;
+                var myGradient = ctx.createLinearGradient(0,0,this.width,0);
+                var hist = this.hist;
 
-                var startx = canvas.padding;
-                var endx = canvas.width - canvas.padding;
+                var startx = this.padding;
+                var endx = this.width - this.padding;
                 var graphwidth = endx - startx;
-                var starty = canvas.height - canvas.padding;
+                var starty = this.height - this.padding;
                 var endy = 10;
                 var graphheight = starty - endy;
                 var histPoint = 0;
@@ -156,7 +156,7 @@ Rectangle {
                         }
                     }
 
-                    ToolSlider {
+                     ToolSlider {
                         id: filmSizeSlider
                         title: qsTr("Film Area")
                         minimumValue: 10
@@ -171,11 +171,118 @@ Rectangle {
                         }
                     }
 
-                    ToolSlider {
+                    Canvas {
+                        id: postFilmHistoCanvas
+                        width: filmSizeSlider.width
+                        height: 150
+                        property int lineWidth: 1
+                        property real alpha: 1.0
+                        property int hist: filmProvider.histPostFilm
+                        property int padding: 5
+                        antialiasing: true
+
+                        onWidthChanged:requestPaint();
+                        onHistChanged: requestPaint();
+
+                        onPaint: {
+                            var ctx = this.getContext('2d');
+                            ctx.save();
+                            ctx.clearRect(0, 0, this.width, this.height);
+                            ctx.globalAlpha = this.alpha;
+                            ctx.lineWidth = this.lineWidth;
+                            var myGradient = ctx.createLinearGradient(0,0,this.width,0);
+                            var hist = this.hist;
+
+                            var startx = this.padding;
+                            var endx = this.width - this.padding;
+                            var graphwidth = endx - startx;
+                            var starty = this.height - this.padding;
+                            var endy = 10;
+                            var graphheight = starty - endy;
+                            var histPoint = 0;
+                            var maxValue = 128.0
+
+                            //Luma curve
+                            ctx.beginPath();
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPostFilmPoint(0,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.lineTo(startx,starty);
+                            ctx.closePath();
+                            myGradient.addColorStop(1,"white");
+                            myGradient.addColorStop(0,'rgb(180,180,180)');
+                            ctx.fillStyle = myGradient;
+                            ctx.fill()
+
+                            //rCurve
+                            ctx.beginPath()
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPostFilmPoint(1,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.closePath();
+                            ctx.strokeStyle = "#FF0000";
+                            ctx.stroke();
+
+                            //gCurve
+                            ctx.beginPath()
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPostFilmPoint(2,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.closePath();
+                            ctx.strokeStyle = "#00FF00";
+                            ctx.stroke();
+
+                            //bCurve
+                            ctx.beginPath()
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPostFilmPoint(3,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.closePath();
+                            ctx.strokeStyle = "#0000FF"
+                            ctx.stroke();
+
+                            ctx.strokeStyle = "#000000";
+                            ctx.strokeRect(startx,endy,graphwidth,graphheight);
+
+                            ctx.restore();
+                        }
+                        Rectangle {
+                            id: blackpointLine
+                            height: parent.height
+                            width: 1
+                            color: "white"
+                            x: parent.padding + blackpointSlider.value/.005*(parent.width-2*parent.padding)
+                        }
+
+                        Rectangle {
+                            id: whitepointLine
+                            height: parent.height
+                            width: 1
+                            color: "white"
+                            x: parent.padding + whitepointSlider.value/.005*(parent.width-2*parent.padding)
+                        }
+                    }
+                   ToolSlider {
                         id: blackpointSlider
                         title: qsTr("Black Clipping Point")
                         minimumValue: 0
-                        maximumValue: 5/1000
+                        maximumValue: 1/1000
                         defaultValue: blackpoint
                         valueText: value*1000
                         onValueChanged: {
@@ -183,6 +290,20 @@ Rectangle {
                             editortab.rolling = (editortab.rolling + 1) % 10
                         }
                     }
+
+                    ToolSlider {
+                        id: whitepointSlider
+                        title: qsTr("White Clipping Point")
+                        minimumValue: 0.1/1000
+                        maximumValue: 5/1000
+                        defaultValue: whitepoint
+                        valueText: value*1000
+                        onValueChanged: {
+                            filmProvider.whitepoint = value
+                            editortab.rolling = (editortab.rolling + 1) % 10
+                        }
+                    }
+
 
                     ToolSlider {
                         id: shadowSlider
@@ -206,19 +327,6 @@ Rectangle {
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.highlightsY = value
-                            editortab.rolling = (editortab.rolling + 1) % 10
-                        }
-                    }
-
-                    ToolSlider {
-                        id: whitepointSlider
-                        title: qsTr("White Clipping Point")
-                        minimumValue: 0.1/1000
-                        maximumValue: 5/1000
-                        defaultValue: whitepoint
-                        valueText: value*1000
-                        onValueChanged: {
-                            filmProvider.whitepoint = value
                             editortab.rolling = (editortab.rolling + 1) % 10
                         }
                     }

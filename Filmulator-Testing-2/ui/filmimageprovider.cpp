@@ -100,6 +100,11 @@ QImage FilmImageProvider::requestImage(const QString &id,
             //Here we do the film simulation on the image...
             if(filmulate(compImage, filmulated_image, filmParams, this))
                 return emptyImage();//filmulate returns 1 if it detected an abort
+
+            //Histogram work
+            updateFloatHistogram(postFilmHist, filmulated_image, .005, histPostFilm);
+            //cout << mean(filmulated_image) << endl;
+            emit histPostFilmChanged();//must be run to notify QML
         }
         case filmulation://Do whitepoint_blackpoint
         {
@@ -155,6 +160,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         }
     }//End switch
 
+    emit histPostFilmChanged();
     updateShortHistogram(finalHist, film_curve_image, histFinal);
     emit histFinalChanged();//This must be run immediately after updateHistFinal in order to notify QML.
 
@@ -249,7 +255,20 @@ float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i)
 {
     //index is 0 for L, 1 for R, 2 for G, and 3 for B.
     assert((index < 4) && (index >= 0));
-    return float(min(hist.allHist[i*4+index],hist.histMax[index]))/float(hist.histMax[index]); //maximum is the max of all elements except 0 and 127
+    switch (index)
+    {
+    case 0: //luminance
+        return float(min(hist.lHist[i],hist.lHistMax))/float(hist.lHistMax);
+    case 1: //red
+        return float(min(hist.rHist[i],hist.rHistMax))/float(hist.rHistMax);
+    case 2: //green
+        return float(min(hist.gHist[i],hist.gHistMax))/float(hist.gHistMax);
+    case 3: //blue
+        return float(min(hist.bHist[i],hist.bHistMax))/float(hist.bHistMax);
+    }
+    //xHistMax is the maximum height of any bin except the extremes.
+
+    //return float(min(hist.allHist[i*4+index],hist.histMax[index]))/float(hist.histMax[index]); //maximum is the max of all elements except 0 and 127
 }
 
 QImage FilmImageProvider::emptyImage()

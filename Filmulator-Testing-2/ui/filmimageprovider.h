@@ -14,9 +14,15 @@
 enum Valid {none, demosaic, filmulation, whiteblack, colorcurve, filmlikecurve};
 
 struct histogram {
-    long long allHist[512];
+    long long lHist[128];
+    long long rHist[128];
+    long long gHist[128];
+    long long bHist[128];
 
-    long long histMax[4];
+    long long lHistMax;
+    long long rHistMax;
+    long long gHistMax;
+    long long bHistMax;
 };
 
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
@@ -30,7 +36,10 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
     Q_PROPERTY(float highlightsY READ getHighlightsY WRITE setHighlightsY NOTIFY highlightsYChanged)
     Q_PROPERTY(bool defaultToneCurveEnabled READ getDefaultToneCurveEnabled WRITE setDefaultToneCurveEnabled NOTIFY defaultToneCurveEnabledChanged)
     Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
-    Q_PROPERTY(int histFinal READ getHistFinal NOTIFY histFinalChanged)//Dummy variable to cause histogram updates
+
+    //Dummy properties to signal histogram updates
+    Q_PROPERTY(int histFinal READ getHistFinal NOTIFY histFinalChanged)
+    Q_PROPERTY(int histPostFilm READ getHistPostFilm NOTIFY histPostFilmChanged)
 public:
     FilmImageProvider(QQuickImageProvider::ImageType type);
     FilmImageProvider();
@@ -55,6 +64,7 @@ public:
     bool getDefaultToneCurveEnabled(){return defaultToneCurveEnabled;}
     float getProgress(){return progress;}
     int getHistFinal(){return histFinal;}
+    int getHistPostFilm(){return histPostFilm;}
 
     bool checkAbort(Valid currStep);
     bool checkAbort(){return checkAbort(filmulation);}
@@ -63,6 +73,7 @@ public:
     void updateProgress(float);
     Q_INVOKABLE void invalidateImage();
     Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i);}
+    Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i);}
 
 
 protected:
@@ -93,7 +104,10 @@ protected:
     matrix<unsigned short> film_curve_image;
 
     histogram finalHist;
-    int histFinal;
+    int histFinal;//dummy to signal histogram updates
+
+    histogram postFilmHist;
+    int histPostFilm;//dummy to signal histogram updates
 
     float getHistogramPoint(histogram &hist, int index, int i);
     QImage emptyImage();
@@ -112,6 +126,7 @@ signals:
     void defaultToneCurveEnabledChanged();
     void progressChanged();
     void histFinalChanged();
+    void histPostFilmChanged();
 
 public slots:
 
