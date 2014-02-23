@@ -66,9 +66,9 @@ bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
             {
                 for (int i = 0; i < xsize; i++)
                 {
-                    buf[i*3  ] = (unsigned short) output_r(xsize-i,j);
-                    buf[i*3+1] = (unsigned short) output_g(xsize-i,j);
-                    buf[i*3+2] = (unsigned short) output_b(xsize-i,j);
+                    buf[i*3  ] = (unsigned short) output_r(xsize-1-i,j);
+                    buf[i*3+1] = (unsigned short) output_g(xsize-1-i,j);
+                    buf[i*3+2] = (unsigned short) output_b(xsize-1-i,j);
                 }
                 if (TIFFWriteScanline(out, buf, j, 0) <0)
                     break;
@@ -79,9 +79,9 @@ bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
             {
                 for (int i = 0; i < xsize; i++)
                 {
-                    buf[i*3  ] = (unsigned short) output_r(i,ysize-j);
-                    buf[i*3+1] = (unsigned short) output_g(i,ysize-j);
-                    buf[i*3+2] = (unsigned short) output_b(i,ysize-j);
+                    buf[i*3  ] = (unsigned short) output_r(i,ysize-1-j);
+                    buf[i*3+1] = (unsigned short) output_g(i,ysize-1-j);
+                    buf[i*3+2] = (unsigned short) output_b(i,ysize-1-j);
                 }
                 if (TIFFWriteScanline(out, buf, j, 0) <0)
                     break;

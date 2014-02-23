@@ -8,6 +8,8 @@ import "gui_components"
 ApplicationWindow {
     id: mainwindow
     title: qsTr("Filmulator")
+    width: 1024
+    height: 768
     minimumHeight: 600
     minimumWidth:800
 
@@ -94,6 +96,11 @@ ApplicationWindow {
                     editortab.location = fileUrl
                     filmProvider.exposureComp = editortab.exposureComp
                     filmProvider.whitepoint = editortab.whitepoint
+                    filmProvider.blackpoint = editortab.blackpoint
+                    filmProvider.shadowsY = editortab.shadowsY
+                    filmProvider.highlightsY = editortab.highlightsY
+                    filmProvider.filmArea = editortab.filmSize
+
                 }
             }
 
