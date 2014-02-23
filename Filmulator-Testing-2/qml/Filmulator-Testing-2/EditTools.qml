@@ -268,7 +268,7 @@ Rectangle {
                             id: blackpointLine
                             height: parent.height
                             width: 1
-                            color: "white"
+                            color: blackpointSlider.pressed ? "#FF8800" : "white"
                             x: parent.padding + filmProvider.blackpoint/.0025*(parent.width-2*parent.padding)
                         }
 
@@ -276,7 +276,7 @@ Rectangle {
                             id: whitepointLine
                             height: parent.height
                             width: 1
-                            color: "white"
+                            color: whitepointSlider.pressed ? "#FF8800" : "white"
                             x: parent.padding + filmProvider.whitepoint/.0025*(parent.width-2*parent.padding)
                         }
                     }

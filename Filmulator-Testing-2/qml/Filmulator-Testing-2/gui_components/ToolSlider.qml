@@ -14,6 +14,7 @@ Rectangle {
     property alias value: slider.value
     property real defaultValue
     property alias valueText: valueText.text
+    property alias pressed: slider.pressed
 
     property alias tickmarksEnabled: slider.tickmarksEnabled
 
