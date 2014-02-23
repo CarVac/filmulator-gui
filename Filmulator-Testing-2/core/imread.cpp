@@ -29,6 +29,7 @@ bool imread(string input_image_filename, matrix<float> &returnmatrix,
 #define SIZES image_processor.imgdata.sizes
 #define PARAM image_processor.imgdata.params
 #define IMAGE image_processor.imgdata.image
+#define COLOR image_processor.imgdata.color
 
     //Now we'll set demosaic and other processing settings.
     PARAM.user_qual = 10;//10 is AMaZE; -q[#] in dcraw
@@ -46,6 +47,16 @@ bool imread(string input_image_filename, matrix<float> &returnmatrix,
         cerr << "Could not read input file!" << endl;
         return true;
     }
+/*
+    cout << "used these multipliers: " << COLOR.cam_mul[0] << ", "
+            << COLOR.cam_mul[1] << ", "
+               << COLOR.cam_mul[2] << ", "
+                  << COLOR.cam_mul[3] << endl;
+    cout << "Daylight multipliers: " << COLOR.pre_mul[0] << ", "
+            << COLOR.pre_mul[1] << ", "
+               << COLOR.pre_mul[2] << ", "
+                  << COLOR.pre_mul[3] << endl;
+                  */
     
     //This makes IMAGE contains the sensel value and 3 blank values at every
     //location.

@@ -173,9 +173,10 @@ Rectangle {
 
                     Canvas {
                         id: postFilmHistoCanvas
-                        width: toolListItem.width
+                        Layout.fillWidth: true
+                        //It seems that since this is in a layout, you can't bind dimensions or locations.
+                        // Makes sense, given that the layout is supposed to abstract that away.
                         height: 100
-                        Layout.maximumWidth: 500
                         property int lineWidth: 1
                         property real alpha: 1.0
                         property int hist: filmProvider.histPostFilm
@@ -341,11 +342,11 @@ Rectangle {
                 onWheel: {
                     if (wheel.angleDelta.y > 0) {
                         //up
-                        toolList.flick(0,300);
+                        toolList.flick(0,600);
                     }
                     else {
                         //down
-                        toolList.flick(0,-300);
+                        toolList.flick(0,-600);
                     }
                 }
             }
