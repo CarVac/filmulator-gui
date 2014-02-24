@@ -70,7 +70,7 @@ Rectangle {
         id: reset
         width: 26
         height: 26
-        x: toolSlider.width-width-__padding
+        x: toolSlider.width-width-__padding-1
         y: __padding
         text: "[]"
         action: Action {

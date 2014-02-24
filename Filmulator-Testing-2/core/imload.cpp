@@ -24,38 +24,45 @@
 #include "filmsim.hpp"
 
 bool imload(std::vector<string> input_filename_list,
-        std::vector<float> input_exposure_compensation,
-        matrix<float> &input_image,
-		bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights)
+            std::vector<float> input_exposure_compensation,
+            matrix<float> &input_image,
+            bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights,
+            float &wbRMultiplier, float &wbGMultiplier, float &wbBMultiplier)
 {
-// If there is only one filename, then simply read it in and apply exposure
-// compensation. If there are more than one, read the first one (the brightest
-// one) in before moving on.
-	if(tiff)
-	{
+    // If there is only one filename, then simply read it in and apply exposure
+    // compensation. If there are more than one, read the first one (the brightest
+    // one) in before moving on.
+    if(tiff)
+    {
         if(imread_tiff(input_filename_list[0], input_image, exifData))
         {
             cerr << "Could not open image " << input_filename_list[0] <<
-                "; Exiting..." << endl;
+                    "; Exiting..." << endl;
             return true;
         }
-
-	}
-	else if(jpeg_in)
-	{
-		if(imread_jpeg(input_filename_list[0], input_image, exifData))
-		{
-            cerr << "Could not open image " << input_filename_list[0] <<
-				"; Exiting..." << endl;
-			return true;
-		}
-	}
-	else//raw
-	{
-        if(imread(input_filename_list[0], input_image, exifData, highlights))
+        wbRMultiplier = 1;
+        wbGMultiplier = 1;
+        wbBMultiplier = 1;
+    }
+    else if(jpeg_in)
+    {
+        if(imread_jpeg(input_filename_list[0], input_image, exifData))
         {
             cerr << "Could not open image " << input_filename_list[0] <<
-                "; Exiting..." << endl;
+                    "; Exiting..." << endl;
+            return true;
+        }
+        wbRMultiplier = 1;
+        wbGMultiplier = 1;
+        wbBMultiplier = 1;
+    }
+    else//raw
+    {
+        if(imread(input_filename_list[0], input_image, exifData, highlights,
+                  wbRMultiplier,wbGMultiplier,wbBMultiplier))
+        {
+            cerr << "Could not open image " << input_filename_list[0] <<
+                    "; Exiting..." << endl;
             return true;
         }
     }
@@ -81,7 +88,7 @@ bool imload(std::vector<string> input_filename_list,
     //Here we make some temporary variables for reading in a second image.
     matrix<float> temp_image;
     //This next variable is for making weighted averaging when merging
-    //exposures. 
+    //exposures.
     float exposure_weight = 1;
     //This next variable is for making sure that the images actually are in
     //increasing order of brightness.
@@ -89,21 +96,22 @@ bool imload(std::vector<string> input_filename_list,
     float last_exposure_factor = 1;
     for ( unsigned int i=1; i < input_filename_list.size(); i++)
     {
-		if(tiff)
-		{
-			if(imread_tiff(input_filename_list[i], temp_image, exifData))
-			{
-                cerr << "Could not open image " << input_filename_list[i] <<
-					"; Exiting..." << endl;
-				return true;
-			}
-		}
-        else//raw
+        if(tiff)
         {
-            if(imread(input_filename_list[i], temp_image, exifData, 0))
+            if(imread_tiff(input_filename_list[i], temp_image, exifData))
             {
                 cerr << "Could not open image " << input_filename_list[i] <<
-                    "; Exiting..." << endl;
+                        "; Exiting..." << endl;
+                return true;
+            }
+        }
+        else//raw
+        {
+            if(imread(input_filename_list[i], temp_image, exifData, 0,
+                      wbRMultiplier, wbGMultiplier, wbBMultiplier))
+            {
+                cerr << "Could not open image " << input_filename_list[i] <<
+                        "; Exiting..." << endl;
                 return true;
             }
         }
@@ -112,14 +120,14 @@ bool imload(std::vector<string> input_filename_list,
                 input_image.nc()!=temp_image.nc())
         {
             cerr << "Image " << input_filename_list[i] <<
-                " has mismatching image size;" << endl << "Exiting..." <<
-                endl;
+                    " has mismatching image size;" << endl << "Exiting..." <<
+                    endl;
             return true;
         }
         if (merge_exps(input_image, temp_image,
-                exposure_weight, input_exposure_compensation[0],
-                last_exposure_factor, input_filename_list[i],
-                input_exposure_compensation[i]))
+                       exposure_weight, input_exposure_compensation[0],
+                       last_exposure_factor, input_filename_list[i],
+                       input_exposure_compensation[i]))
         {
             return true;
         }

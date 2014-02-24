@@ -21,7 +21,8 @@
 #include "filmsim.hpp"
 
 bool imread(string input_image_filename, matrix<float> &returnmatrix,
-		Exiv2::ExifData &exifData, int highlights)
+        Exiv2::ExifData &exifData, int highlights,
+        float &wbRMultiplier, float &wbGMultiplier, float &wbBMultiplier)
 {
     //Create image processor for reading raws.
     LibRaw image_processor;
@@ -38,7 +39,16 @@ bool imread(string input_image_filename, matrix<float> &returnmatrix,
     PARAM.gamm[0] = 1;
     PARAM.gamm[1] = 1;//Linear gamma (-g 1 1)
     PARAM.ca_correc = 0;//Turn on CA auto correction; disabled for now
-    PARAM.use_camera_wb = 1;//Use camera WB setting (-w)
+    PARAM.output_color = 1;//1: Use sRGB regardless.
+    //PARAM.output_color = 0;//0: Use raw color regardless.
+    PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
+     /*
+    PARAM.user_mul[0] = 1.0;
+    PARAM.user_mul[1] = 1.0;
+    PARAM.user_mul[2] = 1.0;
+    PARAM.user_mul[3] = 1.0;
+     */
+
     PARAM.highlight = highlights;//Set highlight recovery (-H #)
 
     const char *cstr = input_image_filename.c_str();
@@ -47,6 +57,36 @@ bool imread(string input_image_filename, matrix<float> &returnmatrix,
         cerr << "Could not read input file!" << endl;
         return true;
     }
+
+    wbRMultiplier = COLOR.cam_mul[0];
+    cout << wbRMultiplier << endl;
+    wbGMultiplier = COLOR.cam_mul[1];
+    cout << wbGMultiplier << endl;
+    wbBMultiplier = COLOR.cam_mul[2];
+    cout << wbBMultiplier << endl;
+
+    float matrix00 = COLOR.rgb_cam[0][0];
+    float matrix01 = COLOR.rgb_cam[0][1];
+    float matrix02 = COLOR.rgb_cam[0][2];
+    float matrix10 = COLOR.rgb_cam[1][0];
+    float matrix11 = COLOR.rgb_cam[1][1];
+    float matrix12 = COLOR.rgb_cam[1][2];
+    float matrix20 = COLOR.rgb_cam[2][0];
+    float matrix21 = COLOR.rgb_cam[2][1];
+    float matrix22 = COLOR.rgb_cam[2][2];
+    cout << endl << matrix00 << endl;
+    cout << matrix01 << endl;
+    cout << matrix02 << endl;
+    cout << endl;//matrix03 << endl;
+    cout << matrix10 << endl;
+    cout << matrix11 << endl;
+    cout << matrix12 << endl;
+    cout << endl;//matrix13 << endl;
+    cout << matrix20 << endl;
+    cout << matrix21 << endl;
+    cout << matrix22 << endl;
+    cout << endl;//matrix23 << endl;
+
 /*
     cout << "used these multipliers: " << COLOR.cam_mul[0] << ", "
             << COLOR.cam_mul[1] << ", "

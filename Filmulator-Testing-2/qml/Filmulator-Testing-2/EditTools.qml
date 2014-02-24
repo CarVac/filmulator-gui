@@ -17,6 +17,7 @@ Rectangle {
     property real highlightY
     property real filmSize
     property bool defaultCurve
+    property int highlightRecovery
 
     SplitView{
         anchors.fill: parent
@@ -49,7 +50,7 @@ Rectangle {
                 var endx = this.width - this.padding;
                 var graphwidth = endx - startx;
                 var starty = this.height - this.padding;
-                var endy = 10;
+                var endy = this.padding+1;
                 var graphheight = starty - endy;
                 var histPoint = 0;
                 var maxValue = 128.0
@@ -110,7 +111,7 @@ Rectangle {
                 ctx.stroke();
 
                 ctx.strokeStyle = "#000000";
-                ctx.strokeRect(startx,endy,graphwidth,graphheight);
+                ctx.strokeRect(startx,endy-1,graphwidth,graphheight+1);
 
                 ctx.restore();
             }
@@ -157,6 +158,114 @@ Rectangle {
                     }
 
                     ToolSlider {
+                        id: highlightRecoverySlider
+                        title: qsTr("Highlight Recovery")
+                        minimumValue: 0
+                        maximumValue: 9
+                        stepSize: 1
+                        defaultValue: highlightRecovery
+                        onValueChanged: {
+                            filmProvider.highlights = value
+                            editortab.rolling = (editortab.rolling + 1) % 10
+                        }
+                    }
+
+                    Canvas {
+                        id: preFilmHistoCanvas
+                        Layout.fillWidth: true
+                        //It seems that since this is in a layout, you can't bind dimensions or locations.
+                        // Makes sense, given that the layout is supposed to abstract that away.
+                        height: 100
+                        property int lineWidth: 1
+                        property real alpha: 1.0
+                        property int hist: filmProvider.histPreFilm
+                        property int padding: 5
+                        antialiasing: true
+
+                        onWidthChanged: requestPaint();
+                        onHistChanged: requestPaint();
+
+                        onPaint: {
+                            var ctx = this.getContext('2d');
+                            ctx.save();
+                            ctx.clearRect(0, 0, this.width, this.height);
+                            ctx.globalAlpha = this.alpha;
+                            ctx.lineWidth = this.lineWidth;
+                            var myGradient = ctx.createLinearGradient(0,0,this.width,0);
+                            var hist = this.hist;
+
+                            var startx = this.padding;
+                            var endx = this.width - this.padding;
+                            var graphwidth = endx - startx;
+                            var starty = this.height - this.padding;
+                            var endy = this.padding+1;
+                            var graphheight = starty - endy;
+                            var histPoint = 0;
+                            var maxValue = 128.0
+
+                            //Luma curve
+                            ctx.beginPath();
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPreFilmPoint(0,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.lineTo(startx,starty);
+                            ctx.closePath();
+                            myGradient.addColorStop(1,"white");
+                            myGradient.addColorStop(0,'rgb(180,180,180)');
+                            ctx.fillStyle = myGradient;
+                            ctx.fill()
+
+                            //rCurve
+                            ctx.beginPath()
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPreFilmPoint(1,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.closePath();
+                            ctx.strokeStyle = "#FF0000";
+                            ctx.stroke();
+
+                            //gCurve
+                            ctx.beginPath()
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPreFilmPoint(2,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.closePath();
+                            ctx.strokeStyle = "#00FF00";
+                            ctx.stroke();
+
+                            //bCurve
+                            ctx.beginPath()
+                            ctx.moveTo(startx,starty);
+                            for(var i = 0; i < maxValue; i++)
+                            {
+                                histPoint = filmProvider.getHistPreFilmPoint(3,i);
+                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+                            }
+                            ctx.lineTo(endx,starty);
+                            ctx.closePath();
+                            ctx.strokeStyle = "#0000FF"
+                            ctx.stroke();
+
+                            ctx.strokeStyle = "#000000";
+                            ctx.strokeRect(startx,endy-1,graphwidth,graphheight+1);
+
+                            ctx.restore();
+                        }
+                   }
+
+                    ToolSlider {
                         id: filmSizeSlider
                         title: qsTr("Film Area")
                         minimumValue: 10
@@ -199,7 +308,7 @@ Rectangle {
                             var endx = this.width - this.padding;
                             var graphwidth = endx - startx;
                             var starty = this.height - this.padding;
-                            var endy = 10;
+                            var endy = this.padding+1;
                             var graphheight = starty - endy;
                             var histPoint = 0;
                             var maxValue = 128.0
@@ -260,7 +369,7 @@ Rectangle {
                             ctx.stroke();
 
                             ctx.strokeStyle = "#000000";
-                            ctx.strokeRect(startx,endy,graphwidth,graphheight);
+                            ctx.strokeRect(startx,endy-1,graphwidth,graphheight+1);
 
                             ctx.restore();
                         }

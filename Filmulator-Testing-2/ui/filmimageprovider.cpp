@@ -55,10 +55,22 @@ QImage FilmImageProvider::requestImage(const QString &id,
     tempID.remove(tempID.length()-1,1);
     tempID.remove(0,7);
 
+
     switch (valid)
     {
-    case none://Do demosiac
+    case none://Load image into buffer
     {
+        mutex.lock();
+        valid = load;
+        mutex.unlock();
+
+    }
+    case load://Do demosaic
+    {
+        //If we're about to do work on a new image, we give up.
+        if(checkAbort(load))
+            return emptyImage();
+
         //Mark that demosaicing has started.
         mutex.lock();
         valid = demosaic;
@@ -73,16 +85,16 @@ QImage FilmImageProvider::requestImage(const QString &id,
         std::vector<float> input_exposure_compensation;
         input_exposure_compensation.push_back(exposureComp);
 
+
         //Only raws.
         bool tiff_in = false;
         bool jpeg_in = false;
 
-        //No highlight recovery.
-        int highlights = 0;
 
         //Reads in the photo.
         if(imload(input_filename_list, input_exposure_compensation,
-                  input_image, tiff_in, jpeg_in, exifData, highlights))
+                  input_image, tiff_in, jpeg_in, exifData, highlights,
+                  wbRMultiplier,wbGMultiplier,wbBMultiplier))
         {
             qDebug("Error loading images");
             mutex.lock();
@@ -93,18 +105,56 @@ QImage FilmImageProvider::requestImage(const QString &id,
     }
     case demosaic://Do filmulation
     {
+        if(checkAbort(demosaic))
+            return emptyImage();
+
+        //Mark that we've started prefilmulation stuff.
+        mutex.lock();
+        valid = prefilmulation;
+        mutex.unlock();
+
+        //Here we apply the exposure compensation and white balance.
+//        pre_film_image = input_image * pow(2, exposureComp);
+
+        //This sets up the multipliers; we normalize to green.
+        const float mult = pow(2,exposureComp);
+        const float rMult = wbRMultiplier*pow(2,exposureComp)/wbGMultiplier;
+        cout << wbRMultiplier << endl;
+        cout << "rmult: " << rMult << endl;
+        const float gMult = wbGMultiplier*pow(2,exposureComp)/wbGMultiplier;
+        cout << wbGMultiplier << endl;
+        cout << "gmult: " << gMult << endl;
+        const float bMult = wbBMultiplier*pow(2,exposureComp)/wbGMultiplier;
+        cout << wbBMultiplier << endl;
+        cout << "bmult: " << bMult << endl;
+        pre_film_image = input_image;
+#pragma omp parallel for
+        for(int row = 0; row < input_image.nr(); row++)
+        {
+            for (int col = 0; col < input_image.nc(); col += 3)
+            {
+                pre_film_image(row,col+0) *= mult;//rMult;
+                pre_film_image(row,col+1) *= mult;//gMult;
+                pre_film_image(row,col+2) *= mult;//bMult;
+            }
+        }
+
+        updateFloatHistogram(preFilmHist, pre_film_image, 65535, histPreFilm);
+        cout << mean(pre_film_image) << endl;
+        emit histPreFilmChanged();
+
+    }
+    case prefilmulation://Do filmulation
+    {
         //If we're about to do work on invalidated demosaicing, we give up.
         //It'll restart automatically.
-        if(checkAbort(demosaic))
+        if(checkAbort(prefilmulation))
             return emptyImage();
 
         //Mark that we've started to filmulate.
         mutex.lock();
         valid = filmulation;
         mutex.unlock();
-
-        //Here we actually apply the exposure compensation.
-        matrix<float> compImage = input_image * pow(2, exposureComp);
 
         //Read in from the configuration file
         //Get home directory
@@ -116,8 +166,10 @@ QImage FilmImageProvider::requestImage(const QString &id,
         filmParams.film_area = filmArea;
 
         //Here we do the film simulation on the image...
-        if(filmulate(compImage, filmulated_image, filmParams, this))
+        if(filmulate(pre_film_image, filmulated_image, filmParams, this))
+        {
             return emptyImage();//filmulate returns 1 if it detected an abort
+        }
 
         //Histogram work
         updateFloatHistogram(postFilmHist, filmulated_image, .0025, histPostFilm);
@@ -330,6 +382,7 @@ void FilmImageProvider::setBlackpoint(float blackpointIn)
     emit blackpointChanged();
 }
 
+//Y value of shadow control curve point
 void FilmImageProvider::setShadowsY(float shadowsYIn)
 {
     QMutexLocker locker (&mutex);
@@ -339,6 +392,7 @@ void FilmImageProvider::setShadowsY(float shadowsYIn)
     emit shadowsYChanged();
 }
 
+//Y value of highlight control curve point
 void FilmImageProvider::setHighlightsY(float highlightsYIn)
 {
     QMutexLocker locker (&mutex);
@@ -355,6 +409,16 @@ void FilmImageProvider::setDefaultToneCurveEnabled(bool enabledIn)
     if (valid > filmulation)
         valid = filmulation;
     emit defaultToneCurveEnabledChanged();
+}
+
+//Highlight recovery parameter
+void FilmImageProvider::setHighlights(int highlightsIn)
+{
+    QMutexLocker locker (&mutex);
+    highlights = highlightsIn;
+    if (valid > load)
+        valid = load;
+    emit highlightsChanged();
 }
 
 void FilmImageProvider::setProgress(float percentDone_in)
@@ -385,22 +449,22 @@ float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i, Lo
         if (!isLog)
             return float(min(hist.lHist[i],hist.lHistMax))/float(hist.lHistMax);
         else
-            return max(0.0,min(log(hist.lHist[i]),log(hist.lHistMax))/log(hist.lHistMax));
+            return log(hist.lHist[i]+1)/log(hist.lHistMax+1);
     case 1: //red
         if (!isLog)
             return float(min(hist.rHist[i],hist.rHistMax))/float(hist.rHistMax);
         else
-            return max(0.0,min(log(hist.rHist[i]),log(hist.rHistMax))/log(hist.rHistMax));
+            return log(hist.rHist[i]+1)/log(hist.rHistMax+1);
     case 2: //green
         if (!isLog)
             return float(min(hist.gHist[i],hist.gHistMax))/float(hist.gHistMax);
         else
-            return max(0.0,min(log(hist.gHist[i]),log(hist.gHistMax))/log(hist.gHistMax));
+            return log(hist.gHist[i]+1)/log(hist.gHistMax+1);
     case 3: //blue
         if (!isLog)
             return float(min(hist.bHist[i],hist.bHistMax))/float(hist.bHistMax);
         else
-            return max(0.0,min(log(hist.bHist[i]),log(hist.bHistMax))/log(hist.bHistMax));
+            return log(hist.bHist[i]+1)/log(hist.bHistMax+1);
     }
     //xHistMax is the maximum height of any bin except the extremes.
 
