@@ -61,6 +61,6 @@ QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp -flto
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
 
-QT += sql printsupport widgets core
+QT += sql core quick
 
 RESOURCES +=

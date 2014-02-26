@@ -30,48 +30,84 @@ struct histogram {
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
     Q_OBJECT
-    Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
-    Q_PROPERTY(float filmArea READ getFilmArea WRITE setFilmArea NOTIFY filmAreaChanged)
-    Q_PROPERTY(float whitepoint READ getWhitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
-    Q_PROPERTY(float blackpoint READ getBlackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
-    Q_PROPERTY(float shadowsY READ getShadowsY WRITE setShadowsY NOTIFY shadowsYChanged)
-    Q_PROPERTY(float highlightsY READ getHighlightsY WRITE setHighlightsY NOTIFY highlightsYChanged)
-    Q_PROPERTY(bool defaultToneCurveEnabled READ getDefaultToneCurveEnabled WRITE setDefaultToneCurveEnabled NOTIFY defaultToneCurveEnabledChanged)
-    Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
     Q_PROPERTY(int highlights READ getHighlights WRITE setHighlights NOTIFY highlightsChanged)
 
-    //Dummy properties to signal histogram updates
-    Q_PROPERTY(int histFinal READ getHistFinal NOTIFY histFinalChanged)
-    Q_PROPERTY(int histPostFilm READ getHistPostFilm NOTIFY histPostFilmChanged)
-    Q_PROPERTY(int histPreFilm READ getHistPreFilm NOTIFY histPreFilmChanged)
+    Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
+
+    Q_PROPERTY(float develTime READ getDevelTime WRITE setDevelTime NOTIFY develTimeChanged)
+    Q_PROPERTY(int agitateCount READ getAgitateCount WRITE setAgitateCount NOTIFY agitateCountChanged)
+    Q_PROPERTY(int develSteps READ getDevelSteps WRITE setDevelSteps NOTIFY develStepsChanged)
+    Q_PROPERTY(float filmArea READ getFilmArea WRITE setFilmArea NOTIFY filmAreaChanged)
+    Q_PROPERTY(float layerMixConst READ getLayerMixConst WRITE setLayerMixConst NOTIFY layerMixConstChanged)
+
+    Q_PROPERTY(float blackpoint READ getBlackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
+    Q_PROPERTY(float whitepoint READ getWhitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
+    Q_PROPERTY(bool defaultToneCurveEnabled READ getDefaultToneCurveEnabled WRITE setDefaultToneCurveEnabled NOTIFY defaultToneCurveEnabledChanged)
+    Q_PROPERTY(float shadowsY READ getShadowsY WRITE setShadowsY NOTIFY shadowsYChanged)
+    Q_PROPERTY(float highlightsY READ getHighlightsY WRITE setHighlightsY NOTIFY highlightsYChanged)
+
+    Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
+
+/*    //Dummy properties to signal histogram updates
+//    Q_PROPERTY(int histFinal READ getHistFinal NOTIFY histFinalChanged)
+//    Q_PROPERTY(int histPostFilm READ getHistPostFilm NOTIFY histPostFilmChanged)
+//    Q_PROPERTY(int histPreFilm READ getHistPreFilm NOTIFY histPreFilmChanged)*/
 public:
     FilmImageProvider(QQuickImageProvider::ImageType type);
     FilmImageProvider();
     ~FilmImageProvider();
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
 
-    void setExposureComp(float exposureIn);
-    void setFilmArea(float filmAreaIn);
-    void setWhitepoint(float whitepointIn);
-    void setBlackpoint(float blackpointIn);
-    void setShadowsY(float shadowsYIn);
-    void setHighlightsY(float highlightsYIn);
-    void setDefaultToneCurveEnabled(bool enabledIn);
-    void setProgress(float progressIn);
+
+    //Setter methods
+    //After load, during demosaic
     void setHighlights(int highlightsIn);
 
+    //After demosaic, during prefilmulation
+    void setExposureComp(float exposureIn);
+
+    //After prefilmulation, during filmulation
+    void setDevelTime(float develTimeIn);
+    void setAgitateCount(int agitateCountIn);
+    void setDevelSteps(int develStepsIn);
+    void setFilmArea(float filmAreaIn);
+    void setLayerMixConst(float layerMixConstIn);
+
+    //After filmulation, during whiteblack
+    void setBlackpoint(float blackpointIn);
+    void setWhitepoint(float whitepointIn);
+    void setDefaultToneCurveEnabled(bool enabledIn);
+
+    //After whiteblack, during colorcurve
+    //nothing yet
+
+    //After colorcurve, during filmlikecurve
+    void setShadowsY(float shadowsYIn);
+    void setHighlightsY(float highlightsYIn);
+
+    void setProgress(float progressIn);
+
+    //Getter methods
+    int getHighlights(){return highlights;}
+
     float getExposureComp(){return exposureComp;}
+
+    float getDevelTime(){return develTime;}
+    int getAgitateCount(){return agitateCount;}
+    int getDevelSteps(){return develSteps;}
     float getFilmArea(){return filmArea;}
-    float getWhitepoint(){return whitepoint;}
+    float getLayerMixConst(){return layerMixConst;}
+
     float getBlackpoint(){return blackpoint;}
+    float getWhitepoint(){return whitepoint;}
+    bool getDefaultToneCurveEnabled(){return defaultToneCurveEnabled;}
     float getShadowsY(){return shadowsY;}
     float getHighlightsY(){return highlightsY;}
-    bool getDefaultToneCurveEnabled(){return defaultToneCurveEnabled;}
+
     float getProgress(){return progress;}
-    int getHighlights(){return highlights;}
-    int getHistFinal(){return histFinal;}
+/*    int getHistFinal(){return histFinal;}
     int getHistPostFilm(){return histPostFilm;}
-    int getHistPreFilm(){return histPreFilm;}
+    int getHistPreFilm(){return histPreFilm;}*/
 
     bool checkAbort(Valid currStep);
     bool checkAbort(){return checkAbort(filmulation);}
@@ -87,15 +123,24 @@ public:
 protected:
     QMutex mutex;
 
+    int highlights;
+
     float exposureComp;
+
+    float develTime;
+    int agitateCount;
+    int develSteps;
     float filmArea;
-    float progress;
-    float whitepoint;
+    float layerMixConst;
+
     float blackpoint;
+    float whitepoint;
     bool defaultToneCurveEnabled;
     float shadowsX, shadowsY, highlightsX, highlightsY;
-    int highlights;
+
     float wbRMultiplier, wbGMultiplier, wbBMultiplier;
+
+    float progress;
 
     LUT lutR, lutG, lutB;
     LUT filmLikeLUT;
@@ -131,18 +176,28 @@ protected:
     int histIndex(float value, float max);
 
 signals:
+    void highlightsChanged();
+
     void exposureCompChanged();
+
+    void develTimeChanged();
+    void agitateCountChanged();
+    void develStepsChanged();
     void filmAreaChanged();
+    void layerMixConstChanged();
+
     void whitepointChanged();
     void blackpointChanged();
+    void defaultToneCurveEnabledChanged();
     void shadowsYChanged();
     void highlightsYChanged();
-    void defaultToneCurveEnabledChanged();
+
     void progressChanged();
+
+    //Notifications for the histograms
     void histFinalChanged();
     void histPostFilmChanged();
     void histPreFilmChanged();
-    void highlightsChanged();
 
 public slots:
 

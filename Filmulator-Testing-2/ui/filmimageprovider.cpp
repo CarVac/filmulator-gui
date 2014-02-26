@@ -10,16 +10,30 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     QQuickImageProvider(type, QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     valid = none;
-    blackpoint = 0;
+
     lutR.setUnity();
     lutG.setUnity();
     lutB.setUnity();
-    //filmLikeLUT.setUnity();
+
+    highlights = 0;
+
+    exposureComp = 0.0;
+
+    develTime = 100.0;
+    agitateCount = 1;
+    develSteps = 12;
+    filmArea = 864.0;
+    layerMixConst = 0.2;
+
+    blackpoint = 0;
+    whitepoint = .002;
     defaultToneCurveEnabled = true;
+
     shadowsX = 0.25;
     shadowsY = 0.9;
     highlightsX = 0.75;
     highlightsY = 0.1;
+
     filmLikeLUT.fill(this);
 }
 
@@ -29,17 +43,31 @@ FilmImageProvider::FilmImageProvider() :
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     valid = none;
-    blackpoint = 0;
+
     lutR.setUnity();
     lutG.setUnity();
     lutB.setUnity();
+
+    highlights = 0;
+
+    exposureComp = 0.0;
+
+    develTime = 100.0;
+    agitateCount = 1;
+    develSteps = 12;
+    filmArea = 864.0;
+    layerMixConst = 0.2;
+
+    blackpoint = 0;
+    whitepoint = .002;
     defaultToneCurveEnabled = true;
+
     shadowsX = 0.25;
-    shadowsY = 0.25;
+    shadowsY = 0.9;
     highlightsX = 0.75;
-    highlightsY = 0.75;
+    highlightsY = 0.1;
+
     filmLikeLUT.fill(this);
-    //filmLikeLUT.setUnity();
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -103,7 +131,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
             return emptyImage();
         }
     }
-    case demosaic://Do filmulation
+    case demosaic://Do pre-filmulation work.
     {
         if(checkAbort(demosaic))
             return emptyImage();
@@ -140,7 +168,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         }
 
         updateFloatHistogram(preFilmHist, pre_film_image, 65535, histPreFilm);
-        cout << mean(pre_film_image) << endl;
+//        cout << mean(pre_film_image) << endl;
         emit histPreFilmChanged();
 
     }
@@ -156,14 +184,33 @@ QImage FilmImageProvider::requestImage(const QString &id,
         valid = filmulation;
         mutex.unlock();
 
-        //Read in from the configuration file
+/*        //Read in from the configuration file
         //Get home directory
         int myuid = getuid();
         passwd *mypasswd = getpwuid(myuid);
         std::string input_configuration = std::string(mypasswd->pw_dir) +
                 "/.filmulator/configuration.txt";
-        initialize(input_configuration, filmParams);
+        initialize(input_configuration, filmParams);*/
+
+        //Set up filmulation parameters.
+        filmParams.initial_developer_concentration = 1.0;
+        filmParams.reservoir_thickness = 1000.0;
+        filmParams.active_layer_thickness = 0.1;
+        filmParams.crystals_per_pixel = 500.0;
+        filmParams.initial_crystal_radius = 0.00001;
+        filmParams.initial_silver_salt_density = 1.0;
+        filmParams.developer_consumption_const = 2000000.0;
+        filmParams.crystal_growth_const = 0.00001;
+        filmParams.silver_salt_consumption_const = 2000000.0;
+        filmParams.total_development_time = develTime;
+        filmParams.agitate_count = agitateCount;
+        filmParams.development_steps = develSteps;
         filmParams.film_area = filmArea;
+        filmParams.sigma_const = 0.2;
+        filmParams.layer_mix_const = layerMixConst;
+        filmParams.layer_time_divisor = 20;
+        filmParams.rolloff_boundary = 51275;
+
 
         //Here we do the film simulation on the image...
         if(filmulate(pre_film_image, filmulated_image, filmParams, this))
@@ -346,6 +393,19 @@ QImage FilmImageProvider::requestImage(const QString &id,
     return output;
 }
 
+//===After load, during demosaic===
+//Highlight recovery parameter
+void FilmImageProvider::setHighlights(int highlightsIn)
+{
+    QMutexLocker locker (&mutex);
+    highlights = highlightsIn;
+    if (valid > load)
+        valid = load;
+    emit highlightsChanged();
+}
+
+//===After demosaic, during prefilmulation===
+//Exposure compensation of simulated film exposure
 void FilmImageProvider::setExposureComp(float exposure)
 {
     QMutexLocker locker(&mutex);
@@ -355,24 +415,61 @@ void FilmImageProvider::setExposureComp(float exposure)
     emit exposureCompChanged();
 }
 
+//===After prefilmulation, during filmulation===
+//Sets the simulated duration of film development.
+void FilmImageProvider::setDevelTime(float develTimeIn)
+{
+    QMutexLocker locker (&mutex);
+    develTime = develTimeIn;
+    if (valid > prefilmulation)
+        valid = prefilmulation;
+    emit develTimeChanged();
+}
+
+//Sets the number of times the tank is agitated
+void FilmImageProvider::setAgitateCount(int agitateCountIn)
+{
+    QMutexLocker locker (&mutex);
+    agitateCount = agitateCountIn;
+    if (valid > prefilmulation)
+        valid = prefilmulation;
+    emit agitateCountChanged();
+}
+
+//Sets the number of simulation steps for development
+void FilmImageProvider::setDevelSteps(int develStepsIn)
+{
+    QMutexLocker locker (&mutex);
+    develSteps = develStepsIn;
+    if (valid > prefilmulation)
+        valid = prefilmulation;
+    emit develStepsChanged();
+}
+
+//Sets the area of the film being simulated by filmulator
 void FilmImageProvider::setFilmArea(float filmAreaIn)
 {
     QMutexLocker locker (&mutex);
     filmArea = filmAreaIn;
-    if (valid > demosaic)
-        valid = demosaic;
+    if (valid > prefilmulation)
+        valid = prefilmulation;
     emit filmAreaChanged();
 }
 
-void FilmImageProvider::setWhitepoint(float whitepointIn)
+//Sets the amount of developer mixing between the bulk
+// developer reservoir and the active layer against the
+// film.
+void FilmImageProvider::setLayerMixConst(float layerMixConstIn)
 {
     QMutexLocker locker (&mutex);
-    whitepoint = whitepointIn;
-    if (valid > filmulation)
-        valid = filmulation;
-    emit whitepointChanged();
+    layerMixConst = layerMixConstIn;
+    if (valid > prefilmulation)
+        valid = prefilmulation;
+    emit layerMixConstChanged();
 }
 
+//===After filmulation, during whiteblack===
+//Sets the black clipping point right after filmulation
 void FilmImageProvider::setBlackpoint(float blackpointIn)
 {
     QMutexLocker locker (&mutex);
@@ -382,26 +479,17 @@ void FilmImageProvider::setBlackpoint(float blackpointIn)
     emit blackpointChanged();
 }
 
-//Y value of shadow control curve point
-void FilmImageProvider::setShadowsY(float shadowsYIn)
+//Sets the white clipping point right after filmulation
+void FilmImageProvider::setWhitepoint(float whitepointIn)
 {
     QMutexLocker locker (&mutex);
-    shadowsY = shadowsYIn;
+    whitepoint = whitepointIn;
     if (valid > filmulation)
         valid = filmulation;
-    emit shadowsYChanged();
+    emit whitepointChanged();
 }
 
-//Y value of highlight control curve point
-void FilmImageProvider::setHighlightsY(float highlightsYIn)
-{
-    QMutexLocker locker (&mutex);
-    highlightsY = highlightsYIn;
-    if (valid > filmulation)
-        valid = filmulation;
-    emit highlightsYChanged();
-}
-
+//Sets whether or not to use a default tone curve after clipping
 void FilmImageProvider::setDefaultToneCurveEnabled(bool enabledIn)
 {
     QMutexLocker locker (&mutex);
@@ -411,14 +499,27 @@ void FilmImageProvider::setDefaultToneCurveEnabled(bool enabledIn)
     emit defaultToneCurveEnabledChanged();
 }
 
-//Highlight recovery parameter
-void FilmImageProvider::setHighlights(int highlightsIn)
+//===After whiteblack, during colorcurve===
+
+//===After colorcurve, during filmlikecurve===
+//Y value of shadow control curve point
+void FilmImageProvider::setShadowsY(float shadowsYIn)
 {
     QMutexLocker locker (&mutex);
-    highlights = highlightsIn;
-    if (valid > load)
-        valid = load;
-    emit highlightsChanged();
+    shadowsY = shadowsYIn;
+    if (valid > colorcurve)
+        valid = colorcurve;
+    emit shadowsYChanged();
+}
+
+//Y value of highlight control curve point
+void FilmImageProvider::setHighlightsY(float highlightsYIn)
+{
+    QMutexLocker locker (&mutex);
+    highlightsY = highlightsYIn;
+    if (valid > colorcurve)
+        valid = colorcurve;
+    emit highlightsYChanged();
 }
 
 void FilmImageProvider::setProgress(float percentDone_in)

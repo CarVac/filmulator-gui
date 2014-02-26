@@ -28,17 +28,17 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
 {
     //Extract parameters from struct
     float initial_developer_concentration = filmParams.initial_developer_concentration;
-    float reservoir_size = filmParams.reservoir_size;
-    float developer_thickness = filmParams.developer_thickness;
+    float reservoir_thickness = filmParams.reservoir_thickness;
+    float active_layer_thickness = filmParams.active_layer_thickness;
     float crystals_per_pixel = filmParams.crystals_per_pixel;
     float initial_crystal_radius = filmParams.initial_crystal_radius;
     float initial_silver_salt_density = filmParams.initial_silver_salt_density;
     float developer_consumption_const = filmParams.developer_consumption_const;
     float crystal_growth_const = filmParams.crystal_growth_const;
     float silver_salt_consumption_const = filmParams.silver_salt_consumption_const;
-    int total_development_time = filmParams.total_development_time;
+    float total_development_time = filmParams.total_development_time;
     int agitate_count = filmParams.agitate_count;
-    float development_resolution = filmParams.development_resolution;
+    int development_steps = filmParams.development_steps;
     float film_area = filmParams.film_area;
     float sigma_const = filmParams.sigma_const;
     float layer_mix_const = filmParams.layer_mix_const;
@@ -84,7 +84,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
     //Because we don't want the film area to influence the brightness, we
     // increase the reservoir size in proportion.
 #define FILMSIZE 864;//36x24mm
-    reservoir_size *= film_area/FILMSIZE;
+    reservoir_thickness *= film_area/FILMSIZE;
     float reservoir_developer_concentration = initial_developer_concentration;
 
     //This is a value used in diffuse to set the length scale.
@@ -92,12 +92,12 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
 
     //Here we do some math for the control logic for the differential
     //equation approximation computations.
-    float timestep = total_development_time/development_resolution;
+    float timestep = total_development_time/development_steps;
 	int agitate_period;
 	if(agitate_count > 0)
-		agitate_period = floor(development_resolution/agitate_count);
+        agitate_period = floor(development_steps/agitate_count);
     else
-		agitate_period = 3*development_resolution;
+        agitate_period = 3*development_steps;
 	int half_agitate_period = floor(agitate_period/2);
    
     tout << "Initialization time: " << time_diff(initialize_start)
@@ -106,12 +106,12 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
 
     //Now we begin the main development/diffusion loop, which approximates the
     //differential equation of film development.
-    for(int i = 0; i <= development_resolution; i++)
+    for(int i = 0; i <= development_steps; i++)
     {
         if(interface->checkAbort())
             return 1;
 
-        interface->updateProgress(float(i)/float(development_resolution));
+        interface->updateProgress(float(i)/float(development_steps));
 
         gettimeofday(&develop_start,NULL);
 
@@ -125,7 +125,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
         // contrast reduction.
         develop(crystal_radius,crystal_growth_const,active_crystals_per_pixel,
                 silver_salt_density,developer_concentration,
-                developer_thickness,developer_consumption_const,
+                active_layer_thickness,developer_consumption_const,
                 silver_salt_consumption_const,timestep);
         
         develop_dif += time_diff(develop_start);
@@ -149,9 +149,9 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
         // and the reservoir.
         //This keeps the effects from getting too crazy.
         layer_mix(developer_concentration,
-                  developer_thickness,
+                  active_layer_thickness,
                   reservoir_developer_concentration,
-                  reservoir_size,
+                  reservoir_thickness,
                   layer_mix_const,
                   layer_time_divisor,
                   pixels_per_millimeter,
@@ -165,8 +165,8 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
         //at the very beginning or the ends. So, I add half the agitate
         //period to the current cycle count.
         if((i+half_agitate_period) % agitate_period ==0)
-            agitate(developer_concentration, developer_thickness,
-                    reservoir_developer_concentration, reservoir_size,
+            agitate(developer_concentration, active_layer_thickness,
+                    reservoir_developer_concentration, reservoir_thickness,
                     pixels_per_millimeter);
        
         agitate_dif += time_diff(agitate_start);

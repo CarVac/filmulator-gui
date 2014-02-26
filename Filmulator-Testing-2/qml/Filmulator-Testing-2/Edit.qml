@@ -9,15 +9,21 @@ SplitView {
     anchors.fill: parent
     orientation: Qt.Horizontal
     property string location
-//    property int index
-    property real exposureComp
-    property real whitepoint
-    property real blackpoint
-    property real shadowsY
-    property real highlightY
-    property real filmSize
-    property bool defaultCurve
-    property int highlightRecovery
+    property alias exposureComp: editTools.exposureComp
+    property alias defaultExposureComp: editTools.defaultExposureComp
+    property alias whitepoint: editTools.whitepoint
+    property alias defaultWhitepoint: editTools.defaultWhitepoint
+    property alias blackpoint: editTools.blackpoint
+    property alias defaultBlackpoint: editTools.defaultBlackpoint
+    property alias shadowsY: editTools.shadowsY
+    property alias defaultShadowsY: editTools.defaultShadowsY
+    property alias highlightsY: editTools.highlightsY
+    property alias defaultHighlightsY: editTools.defaultHighlightsY
+    property alias filmSize: editTools.filmSize
+    property alias defaultFilmSize: editTools.defaultFilmSize
+    property alias defaultCurve: editTools.defaultCurve
+    property alias highlightRecovery: editTools.highlightRecovery
+    property alias defaultHighlightRecovery: editTools.defaultHighlightRecovery
 
     signal reset()
 
@@ -241,14 +247,6 @@ SplitView {
     }
     EditTools {
         id: editTools
-        exposureComp: root.exposureComp
-        whitepoint: root.whitepoint
-        blackpoint: root.blackpoint
-        shadowsY: root.shadowsY
-        highlightY: root.highlightY
-        filmSize: root.filmSize
-        defaultCurve: root.defaultCurve
-        highlightRecovery: root.highlightRecovery
     }
 
     Component.onCompleted: {

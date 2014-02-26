@@ -52,22 +52,21 @@ using namespace std;
 
 struct filmulateParams {//TODO: adjust variable names.
     float initial_developer_concentration;
-    float reservoir_size;//reservoir_thickness
-    float developer_thickness;//active_layer_thickness
+    float reservoir_thickness;//once reservoir_size
+    float active_layer_thickness;//once developer_thickness
     float crystals_per_pixel;
     float initial_crystal_radius;
     float initial_silver_salt_density;
     float developer_consumption_const;
     float crystal_growth_const;
     float silver_salt_consumption_const;
-    int total_development_time;//to float
+    float total_development_time;//once was int
     int agitate_count;
-    float development_resolution;//to int
+    int development_steps;//once was float; development_resolution
     float film_area;
     float sigma_const;
     float layer_mix_const;
     float layer_time_divisor;
-    float std_cutoff;
     int rolloff_boundary;
 };
 
@@ -77,15 +76,15 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         int rolloff_boundary);
 
-void agitate( matrix<float> &developer_concentration, float developer_thickness,
-        float &reservoir_developer_concentration, float reservoir_size,
+void agitate( matrix<float> &developer_concentration, float active_layer_thickness,
+        float &reservoir_developer_concentration, float reservoir_thickness,
         float pixels_per_millimeter );
 
 void develop(matrix<float> &crystal_radius,
         float crystal_growth_const,
         const matrix<float> &active_crystals_per_pixel,
         matrix<float> &silver_salt_density,
-        matrix<float> &developer_concentration, float developer_thickness,
+        matrix<float> &developer_concentration, float active_layer_thickness,
         float developer_consumption_const, float silver_salt_consumption_const,
         float timestep);
 
@@ -118,9 +117,9 @@ bool imload(std::vector<string> input_filename_list,
         float &wbBMultiplier);
 
 void layer_mix(matrix<float> &developer_concentration,
-               float developer_thickness,
+               float active_layer_thickness,
                float &reservoir_developer_concentration,
-               float reservoir_size,
+               float reservoir_thickness,
                float layer_mix_const,
                float layer_time_divisor,
                float pixels_per_millimeter,

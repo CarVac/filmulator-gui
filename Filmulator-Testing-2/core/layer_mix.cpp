@@ -24,9 +24,9 @@
 // adjacent to the film and the reservoir of inactive developer.
 
 void layer_mix(matrix<float> &developer_concentration,
-               float developer_thickness,
+               float active_layer_thickness,
                float &reservoir_developer_concentration,
-               float reservoir_size,
+               float reservoir_thickness,
                float layer_mix_const,
                float layer_time_divisor,
                float pixels_per_millimeter,
@@ -69,8 +69,8 @@ void layer_mix(matrix<float> &developer_concentration,
     //Now, we must adjust sum to ensure that the parameters
     // are orthogonal. It's sketchy, okay?
     float reservoir_concentration_change =
-        sum * developer_thickness /
-        (pow(pixels_per_millimeter,2) * reservoir_size);
+        sum * active_layer_thickness /
+        (pow(pixels_per_millimeter,2) * reservoir_thickness);
 
     //Now, we subtract how much went into the layer from the reservoir.
     reservoir_developer_concentration -= reservoir_concentration_change;

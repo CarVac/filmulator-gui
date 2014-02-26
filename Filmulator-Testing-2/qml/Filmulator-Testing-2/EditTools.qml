@@ -9,15 +9,26 @@ Rectangle {
     width: 250
     Layout.maximumWidth: 500
     Layout.minimumWidth: 250
-//    property int index
+
+    //Here we set up the properties that let us communicate
+    // both the image-specific settings (on reloading of an
+    // already processed image), as well as default settings
+    // for when the user resets the tool back to 'default'.
     property real exposureComp
+    property real defaultExposureComp
     property real whitepoint
+    property real defaultWhitepoint
     property real blackpoint
+    property real defaultBlackpoint
     property real shadowsY
-    property real highlightY
+    property real defaultShadowsY
+    property real highlightsY
+    property real defaultHighlightsY
     property real filmSize
+    property real defaultFilmSize
     property bool defaultCurve
     property int highlightRecovery
+    property int defaultHighlightRecovery
 
     signal setAllValues()
 
@@ -34,12 +45,15 @@ Rectangle {
             height:250
             property int lineWidth: 1
             property real alpha: 1.0
-            property int hist: filmProvider.histFinal
+//            property int hist: filmProvider.histFinal
             property int padding: 5
             antialiasing: true
 
             onWidthChanged:requestPaint();
-            onHistChanged: requestPaint();
+            Connections {
+                target: filmProvider
+                onHistFinalChanged: mainHistoCanvas.requestPaint();
+            }
 
             onPaint: {
                 var ctx = this.getContext('2d');
@@ -158,7 +172,7 @@ Rectangle {
                         minimumValue: -5
                         maximumValue: 5
                         stepSize: 1/6
-                        defaultValue: 0
+                        defaultValue: root.defaultExposureComp
                         onValueChanged: {
                             filmProvider.exposureComp = value
                             root.updateImage()
@@ -177,7 +191,7 @@ Rectangle {
                         minimumValue: 0
                         maximumValue: 9
                         stepSize: 1
-                        defaultValue: 0
+                        defaultValue: root.defaultHighlightRecovery
                         onValueChanged: {
                             filmProvider.highlights = value
                             root.updateImage()
@@ -198,12 +212,15 @@ Rectangle {
                         height: 30
                         property int lineWidth: 1
                         property real alpha: 1.0
-                        property int hist: filmProvider.histPreFilm
+//                        property int hist: filmProvider.histPreFilm
                         property int padding: 3
                         antialiasing: true
 
                         onWidthChanged: requestPaint();
-                        onHistChanged: requestPaint();
+                        Connections {
+                            target: filmProvider
+                            onHistPreFilmChanged: preFilmHistoCanvas.requestPaint()
+                        }
 
                         onPaint: {
                             var ctx = this.getContext('2d');
@@ -290,7 +307,7 @@ Rectangle {
                         title: qsTr("Film Area")
                         minimumValue: 10
                         maximumValue: 300
-                        defaultValue: 29.39//sqrt of 24x36mm
+                        defaultValue: Math.sqrt(root.defaultFilmSize)
                         //The following thresholds are 24mmx65mm and twice 6x9cm film's
                         // areas, respectively.
                         valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
@@ -314,12 +331,15 @@ Rectangle {
                         height: 30
                         property int lineWidth: 1
                         property real alpha: 1.0
-                        property int hist: filmProvider.histPostFilm
+//                        property int hist: filmProvider.histPostFilm
                         property int padding: 3
                         antialiasing: true
 
                         onWidthChanged: requestPaint();
-                        onHistChanged: requestPaint();
+                        Connections {
+                            target: filmProvider
+                            onHistPostFilmChanged: postFilmHistoCanvas.requestPaint()
+                        }
 
                         onPaint: {
                             var ctx = this.getContext('2d');
@@ -415,12 +435,13 @@ Rectangle {
                             x: parent.padding + filmProvider.whitepoint/.0025*(parent.width-2*parent.padding)
                         }
                     }
+
                     ToolSlider {
                         id: blackpointSlider
                         title: qsTr("Black Clipping Point")
                         minimumValue: 0
                         maximumValue: 1.4
-                        defaultValue: 0
+                        defaultValue: Math.sqrt(root.defaultBlackpoint*1000)
                         valueText: value*value/2
                         onValueChanged: {
                             filmProvider.blackpoint = value*value/1000
@@ -439,7 +460,7 @@ Rectangle {
                         title: qsTr("White Clipping Point")
                         minimumValue: 0.1/1000
                         maximumValue: 2.5/1000
-                        defaultValue: 2/1000
+                        defaultValue: root.defaultWhitepoint
                         valueText: value*500// 1000/2
                         onValueChanged: {
                             filmProvider.whitepoint = value
@@ -459,7 +480,7 @@ Rectangle {
                         title: qsTr("Shadow Brightness")
                         minimumValue: 0
                         maximumValue: 1
-                        defaultValue: shadowsY
+                        defaultValue: root.defaultShadowsY
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.shadowsY = value
@@ -478,7 +499,7 @@ Rectangle {
                         title: qsTr("Highlight Brightness")
                         minimumValue: 0
                         maximumValue: 1
-                        defaultValue: highlightsY
+                        defaultValue: root.defaultHighlightsY
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.highlightsY = value

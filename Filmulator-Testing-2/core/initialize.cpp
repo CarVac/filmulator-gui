@@ -32,7 +32,7 @@ void initialize(string input_configuration,
         exit(1);
     }
 
-    infile >> temp >> filmParams.initial_developer_concentration;
+/*    infile >> temp >> filmParams.initial_developer_concentration;
     infile >> temp >> filmParams.reservoir_size;
     infile >> temp >> filmParams.developer_thickness;
     infile >> temp >> filmParams.crystals_per_pixel;
@@ -50,6 +50,7 @@ void initialize(string input_configuration,
     infile >> temp >> filmParams.layer_time_divisor;
     infile >> temp >> filmParams.std_cutoff;
     infile >> temp >> filmParams.rolloff_boundary;
+    */
     
     
     infile.close();

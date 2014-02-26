@@ -43,25 +43,39 @@ ApplicationWindow {
                 id: editorTab
                 property string location: ""
                 property real exposureComp: 0
+                property real defaultExposureComp: 0
                 property real whitepoint: 2/1000
+                property real defaultWhitepoint: 2/1000
                 property real blackpoint: 0
+                property real defaultBlackpoint: 0
                 property real shadowsY: 0.25
+                property real defaultShadowsY: 0
                 property real highlightsY: 0.75
+                property real defaultHighlightsY: 0.75
                 property real filmSize: 864
+                property real defaultFilmSize: 864
                 property bool defaultCurve: true
                 property int highlightRecovery: 0
+                property int defaultHighlightRecovery: 0
 
                 title: qsTr("Filmulate")
                 Edit {
                     location: editorTab.location
                     exposureComp: editorTab.exposureComp
+                    defaultExposureComp: editorTab.defaultExposureComp
                     filmSize: editorTab.filmSize
+                    defaultFilmSize: editorTab.defaultFilmSize
                     whitepoint: editorTab.whitepoint
+                    defaultWhitepoint: editorTab.defaultWhitepoint
                     blackpoint: editorTab.blackpoint
+                    defaultBlackpoint: editorTab.defaultBlackpoint
                     shadowsY: editorTab.shadowsY
-                    highlightY: editorTab.highlightsY
+                    defaultShadowsY: editorTab.defaultShadowsY
+                    highlightsY: editorTab.highlightsY
+                    defaultHighlightsY: editorTab.defaultHighlightsY
                     defaultCurve: editorTab.defaultCurve
                     highlightRecovery: editorTab.highlightRecovery
+                    defaultHighlightRecovery: editorTab.defaultHighlightRecovery
 
                     Connections {
                         target: openDialog
