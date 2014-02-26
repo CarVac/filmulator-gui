@@ -4,20 +4,24 @@ import QtQuick.Layouts 1.1
 import "gui_components"
 
 Rectangle {
-    id: tools
+    id: root
     color: "#404040"
     width: 250
     Layout.maximumWidth: 500
     Layout.minimumWidth: 250
-    property int index
+//    property int index
     property real exposureComp
     property real whitepoint
     property real blackpoint
-    property real shadowY
+    property real shadowsY
     property real highlightY
     property real filmSize
     property bool defaultCurve
     property int highlightRecovery
+
+    signal setAllValues()
+
+    signal updateImage()
 
     SplitView{
         anchors.fill: parent
@@ -123,7 +127,6 @@ Rectangle {
             width: parent.width
             Flickable {
                 id: toolList
-                //anchors.fill: parent
                 width: parent.width
                 height: parent.height
                 flickableDirection: Qt.Vertical
@@ -132,28 +135,39 @@ Rectangle {
                 contentHeight: contentItem.childrenRect.height
                 ColumnLayout {
                     spacing: 0
-                    //anchors.fill: parent
                     width: toolListItem.width
-                    CheckBox{
+/*                    CheckBox{
                         id: defaultToneCurveCheckBox
                         text: qsTr("Default Tone Curve")
                         checked: defaultCurve
                         onClicked: {
                             filmProvider.defaultToneCurveEnabled = checked
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
                         }
-                    }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                defaultToneCurveCheckBox.checked = defaultCurve
+                            }
+                        }
+                    }*/
 
                     ToolSlider {
                         id: exposureCompSlider
                         title: qsTr("Exposure Compensation")
                         minimumValue: -5
                         maximumValue: 5
-                        stepSize: 1/3
-                        defaultValue: exposureComp
+                        stepSize: 1/6
+                        defaultValue: 0
                         onValueChanged: {
                             filmProvider.exposureComp = value
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                exposureCompSlider.value = exposureComp
+                            }
                         }
                     }
 
@@ -163,10 +177,16 @@ Rectangle {
                         minimumValue: 0
                         maximumValue: 9
                         stepSize: 1
-                        defaultValue: highlightRecovery
+                        defaultValue: 0
                         onValueChanged: {
                             filmProvider.highlights = value
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                highlightRecoverySlider.value = highlightRecovery
+                            }
                         }
                     }
 
@@ -175,11 +195,11 @@ Rectangle {
                         Layout.fillWidth: true
                         //It seems that since this is in a layout, you can't bind dimensions or locations.
                         // Makes sense, given that the layout is supposed to abstract that away.
-                        height: 100
+                        height: 30
                         property int lineWidth: 1
                         property real alpha: 1.0
                         property int hist: filmProvider.histPreFilm
-                        property int padding: 5
+                        property int padding: 3
                         antialiasing: true
 
                         onWidthChanged: requestPaint();
@@ -270,13 +290,19 @@ Rectangle {
                         title: qsTr("Film Area")
                         minimumValue: 10
                         maximumValue: 300
-                        defaultValue: Math.sqrt(filmSize)
+                        defaultValue: 29.39//sqrt of 24x36mm
                         //The following thresholds are 24mmx65mm and twice 6x9cm film's
                         // areas, respectively.
                         valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
                         onValueChanged: {
                             filmProvider.filmArea = value*value
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                filmSizeSlider.value = Math.sqrt(filmSize)
+                            }
                         }
                     }
 
@@ -285,11 +311,11 @@ Rectangle {
                         Layout.fillWidth: true
                         //It seems that since this is in a layout, you can't bind dimensions or locations.
                         // Makes sense, given that the layout is supposed to abstract that away.
-                        height: 100
+                        height: 30
                         property int lineWidth: 1
                         property real alpha: 1.0
                         property int hist: filmProvider.histPostFilm
-                        property int padding: 5
+                        property int padding: 3
                         antialiasing: true
 
                         onWidthChanged: requestPaint();
@@ -394,11 +420,17 @@ Rectangle {
                         title: qsTr("Black Clipping Point")
                         minimumValue: 0
                         maximumValue: 1.4
-                        defaultValue: blackpoint
-                        valueText: value*value
+                        defaultValue: 0
+                        valueText: value*value/2
                         onValueChanged: {
                             filmProvider.blackpoint = value*value/1000
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                blackpointSlider.value = Math.sqrt(blackpoint*1000)
+                            }
                         }
                     }
 
@@ -407,17 +439,23 @@ Rectangle {
                         title: qsTr("White Clipping Point")
                         minimumValue: 0.1/1000
                         maximumValue: 2.5/1000
-                        defaultValue: whitepoint
-                        valueText: value*1000
+                        defaultValue: 2/1000
+                        valueText: value*500// 1000/2
                         onValueChanged: {
                             filmProvider.whitepoint = value
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                whitepointSlider.value = whitepoint
+                            }
                         }
                     }
 
 
                     ToolSlider {
-                        id: shadowSlider
+                        id: shadowBrightnessSlider
                         title: qsTr("Shadow Brightness")
                         minimumValue: 0
                         maximumValue: 1
@@ -425,12 +463,18 @@ Rectangle {
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.shadowsY = value
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                shadowBrightnessSlider.value = shadowsY
+                            }
                         }
                     }
 
                     ToolSlider {
-                        id: highlightSlider
+                        id: highlightBrightnessSlider
                         title: qsTr("Highlight Brightness")
                         minimumValue: 0
                         maximumValue: 1
@@ -438,7 +482,13 @@ Rectangle {
                         valueText: value*1000
                         onValueChanged: {
                             filmProvider.highlightsY = value
-                            editortab.rolling = (editortab.rolling + 1) % 10
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                highlightBrightnessSlider.value = highlightsY
+                            }
                         }
                     }
                 }

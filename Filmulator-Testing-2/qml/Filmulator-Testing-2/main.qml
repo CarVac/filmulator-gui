@@ -40,9 +40,8 @@ ApplicationWindow {
             }
 
             Tab {
-                id: editortab
+                id: editorTab
                 property string location: ""
-                property real rolling: 0
                 property real exposureComp: 0
                 property real whitepoint: 2/1000
                 property real blackpoint: 0
@@ -50,18 +49,24 @@ ApplicationWindow {
                 property real highlightsY: 0.75
                 property real filmSize: 864
                 property bool defaultCurve: true
+                property int highlightRecovery: 0
 
                 title: qsTr("Filmulate")
                 Edit {
-                    location: editortab.location
-                    index: editortab.rolling
-                    exposureComp: editortab.exposureComp
-                    filmSize: editortab.filmSize
-                    whitepoint: editortab.whitepoint
-                    blackpoint: editortab.blackpoint
-                    shadowY: editortab.shadowsY
-                    highlightY: editortab.highlightsY
-                    defaultCurve: editortab.defaultCurve
+                    location: editorTab.location
+                    exposureComp: editorTab.exposureComp
+                    filmSize: editorTab.filmSize
+                    whitepoint: editorTab.whitepoint
+                    blackpoint: editorTab.blackpoint
+                    shadowsY: editorTab.shadowsY
+                    highlightY: editorTab.highlightsY
+                    defaultCurve: editorTab.defaultCurve
+                    highlightRecovery: editorTab.highlightRecovery
+
+                    Connections {
+                        target: openDialog
+                        onAccepted: reset()
+                    }
                 }
             }
 
@@ -93,14 +98,16 @@ ApplicationWindow {
                 id: openDialog
                 title: qsTr("Select a raw file")
                 onAccepted: {
-                    editortab.location = fileUrl
+                    editorTab.location = fileUrl
+                    /*
+                    filmProvider.defaultToneCurveEnabled = editortab.defaultCurve
                     filmProvider.exposureComp = editortab.exposureComp
                     filmProvider.whitepoint = editortab.whitepoint
                     filmProvider.blackpoint = editortab.blackpoint
                     filmProvider.shadowsY = editortab.shadowsY
                     filmProvider.highlightsY = editortab.highlightsY
                     filmProvider.filmArea = editortab.filmSize
-
+                    */
                 }
             }
 
