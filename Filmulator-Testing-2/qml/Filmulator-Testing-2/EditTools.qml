@@ -30,6 +30,8 @@ Rectangle {
     property bool defaultCurve
     property int highlightRecovery
     property int defaultHighlightRecovery
+    property real layerMixConst
+    property real defaultLayerMixConst
 
     signal setAllValues()
 
@@ -167,6 +169,24 @@ Rectangle {
                             target: root
                             onSetAllValues: {
                                 filmSizeSlider.value = Math.sqrt(filmSize)
+                            }
+                        }
+                    }
+
+                    ToolSlider {
+                        id: filmPowerSlider
+                        title: qsTr("Film Power")
+                        minimumValue: 0
+                        maximumValue: 100
+                        defaultValue: 100*(1-root.defaultLayerMixConst)
+                        onValueChanged: {
+                            filmProvider.layerMixConst = 1-value/100;
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                filmSizeSlider.value = 100*(1-layerMixConst)
                             }
                         }
                     }

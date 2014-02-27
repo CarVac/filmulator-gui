@@ -24,6 +24,8 @@ SplitView {
     property alias defaultCurve: editTools.defaultCurve
     property alias highlightRecovery: editTools.highlightRecovery
     property alias defaultHighlightRecovery: editTools.defaultHighlightRecovery
+    property alias layerMixConst: editTools.layerMixConst
+    property alias defaultLayerMixConst: editTools.defaultLayerMixConst
 
     signal reset()
 

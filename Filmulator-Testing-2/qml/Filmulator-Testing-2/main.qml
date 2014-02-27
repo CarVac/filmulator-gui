@@ -57,6 +57,8 @@ ApplicationWindow {
                 property bool defaultCurve: true
                 property int highlightRecovery: 0
                 property int defaultHighlightRecovery: 0
+                property real layerMixConst: 0.2
+                property real defaultLayerMixConst: 0.2
 
                 title: qsTr("Filmulate")
                 Edit {
@@ -76,6 +78,8 @@ ApplicationWindow {
                     defaultCurve: editorTab.defaultCurve
                     highlightRecovery: editorTab.highlightRecovery
                     defaultHighlightRecovery: editorTab.defaultHighlightRecovery
+                    layerMixConst: editorTab.layerMixConst
+                    defaultLayerMixConst: editorTab.defaultLayerMixConst
 
                     Connections {
                         target: openDialog
