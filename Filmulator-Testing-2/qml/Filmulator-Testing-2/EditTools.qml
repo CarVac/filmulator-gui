@@ -174,7 +174,7 @@ Rectangle {
                     }
 
                     ToolSlider {
-                        id: filmPowerSlider
+                        id: filmDramaSlider
                         title: qsTr("Drama")
                         minimumValue: 0
                         maximumValue: 100
@@ -186,7 +186,7 @@ Rectangle {
                         Connections {
                             target: root
                             onSetAllValues: {
-                                filmSizeSlider.value = 100*layerMixConst
+                                filmDramaSlider.value = 100*layerMixConst
                             }
                         }
                     }
@@ -210,6 +210,21 @@ Rectangle {
                         }
 
                         onPaint: Script.generateHistogram(3,this.getContext('2d'),width,height,padding,lineWidth)
+                        Rectangle {
+                            id: blackpointLine
+                            height: parent.height
+                            width: 1
+                            color: blackpointSlider.pressed ? "#FF8800" : "white"
+                            x: parent.padding + filmProvider.blackpoint/.0025*(parent.width-2*parent.padding)
+                        }
+
+                        Rectangle {
+                            id: whitepointLine
+                            height: parent.height
+                            width: 1
+                            color: whitepointSlider.pressed ? "#FF8800" : "white"
+                            x: parent.padding + filmProvider.whitepoint/.0025*(parent.width-2*parent.padding)
+                        }
                     }
 
                     ToolSlider {

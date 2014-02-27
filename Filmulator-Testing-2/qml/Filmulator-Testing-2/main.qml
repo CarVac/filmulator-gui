@@ -49,7 +49,7 @@ ApplicationWindow {
                 property real blackpoint: 0
                 property real defaultBlackpoint: 0
                 property real shadowsY: 0.25
-                property real defaultShadowsY: 0
+                property real defaultShadowsY: 0.25
                 property real highlightsY: 0.75
                 property real defaultHighlightsY: 0.75
                 property real filmSize: 864
