@@ -3,7 +3,7 @@ import QtQuick.Controls 1.1
 import QtQuick.Controls.Styles 1.1
 
 Rectangle {
-    id: toolSlider
+    id: root
     implicitHeight: 30
     implicitWidth: parent.width
     property alias title: label.text
@@ -15,10 +15,13 @@ Rectangle {
     property real defaultValue
     property alias valueText: valueText.text
     property alias pressed: slider.pressed
+    property alias tooltipText: toolTooltip.tooltipText
 
     property alias tickmarksEnabled: slider.tickmarksEnabled
 
     property real __padding: 2
+
+    signal tooltipWanted(string text, int coordX, int coordY)
 
     color: "#303030"
 
@@ -70,7 +73,7 @@ Rectangle {
         id: reset
         width: 26
         height: 26
-        x: toolSlider.width-width-__padding-1
+        x: root.width-width-__padding-1
         y: __padding
         text: "[]"
         action: Action {
@@ -103,6 +106,22 @@ Rectangle {
         anchors.fill: slider
         onDoubleClicked: {
             slider.value = defaultValue
+        }
+    }
+    ToolTip {
+        id: toolTooltip
+        anchors.fill: label
+        Component.onCompleted: {
+            //Forward the tooltipWanted signal to root.
+            toolTooltip.tooltipWanted.connect(root.tooltipWanted)
+        }
+    }
+    ToolTip {
+        id: buttonTooltip
+        anchors.fill: reset
+        tooltipText: qsTr("Reset to default")
+        Component.onCompleted: {
+            buttonTooltip.tooltipWanted.connect(root.tooltipWanted)
         }
     }
 }

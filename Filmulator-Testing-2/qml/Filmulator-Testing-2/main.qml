@@ -6,14 +6,17 @@ import QtQuick.Controls.Styles 1.1
 import "gui_components"
 
 ApplicationWindow {
-    id: mainwindow
+    id: root
     title: qsTr("Filmulator")
     width: 1024
     height: 768
     minimumHeight: 600
     minimumWidth:800
 
+    signal tooltipWanted(string text, int x, int y)
+
     Rectangle {
+        id: fillRect
         anchors.fill: parent
         color: "#FF303030"
     }
@@ -62,6 +65,7 @@ ApplicationWindow {
 
                 title: qsTr("Filmulate")
                 Edit {
+                    id: editItem
                     location: editorTab.location
                     exposureComp: editorTab.exposureComp
                     defaultExposureComp: editorTab.defaultExposureComp
@@ -84,6 +88,9 @@ ApplicationWindow {
                     Connections {
                         target: openDialog
                         onAccepted: reset()
+                    }
+                    Component.onCompleted: {
+                        editItem.tooltipWanted.connect(root.tooltipWanted)
                     }
                 }
             }
@@ -129,7 +136,7 @@ ApplicationWindow {
                 }
             }
 
-/*            Rectangle {
+            /*            Rectangle {
                 id: textentryholder
                 color: "#101010"
                 height: 20
@@ -148,6 +155,90 @@ ApplicationWindow {
                     }
                 }
             }*/
+        }
+    }
+
+
+    //Tooltip handling
+    onTooltipWanted: {
+        tooltipText.text = text
+        tooltipCatcher.xInput = x
+        tooltipCatcher.yInput = y
+        tooltipCatcher.enabled = true
+        tooltipCatcher.visible = true
+    }
+
+    MouseArea {
+        id: tooltipCatcher
+        acceptedButtons: Qt.NoButton
+        anchors.fill: fillRect
+        hoverEnabled: true
+        enabled: false
+        visible: false
+        propagateComposedEvents: true
+        property int xInput
+        property int yInput
+        property Item sourceItem
+
+        onEnabledChanged: {
+            if (enabled) {
+                tooltipCatcher.setPosition(xInput, yInput)
+                tooltipTimer.start()
+            }
+        }
+
+        onPositionChanged: {
+            tooltipCatcher.visible = false
+            tooltipCatcher.enabled = false
+        }
+        onExited: {
+            tooltipCatcher.visible = false
+            tooltipCatcher.enabled = false
+        }
+
+        Timer {
+            id: tooltipTimer
+            interval: 5000
+            onTriggered: {
+                tooltipCatcher.visible = false
+                tooltipCatcher.enabled = false
+            }
+        }
+
+        Rectangle {
+            id: tooltipBox
+            color: "#EE303030"
+            border.color: "#EE808080"
+            border.width: 2
+            radius: 10
+            property int padding: 6
+            property int maxWidth: 250
+            property int minHeight: 30
+            property int posPad: 10
+            width: Math.min(maxWidth,tooltipText.contentWidth+2*padding)
+            height: tooltipText.contentHeight+2*padding
+            Text {
+                id: tooltipText
+                x: parent.padding
+                y: parent.padding
+                width: parent.maxWidth-2*parent.padding
+                wrapMode: Text.WordWrap
+                color: "#FFFFFFFF"
+            }
+        }
+        function setPosition(xIn, yIn) {
+            if (tooltipBox.height + yIn < root.height) {
+                tooltipBox.y = yIn
+            }
+            else {
+                tooltipBox.y = yIn - tooltipBox.height
+            }
+            if (tooltipBox.width + xIn + tooltipBox.posPad < root.width) {
+                tooltipBox.x = xIn + tooltipBox.posPad
+            }
+            else {
+                tooltipBox.x = xIn - tooltipBox.width
+            }
         }
     }
 

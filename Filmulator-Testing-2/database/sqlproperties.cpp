@@ -2,6 +2,8 @@
 #include <QDebug>
 #include <iostream>
 
+//This file is a bunch of methods for changing the SELECT statement.
+
 void SqlModel::setMinCaptureTime(unsigned int captureTimeIn)
 {
     minCaptureTime = captureTimeIn;

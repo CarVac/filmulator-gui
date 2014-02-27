@@ -8,6 +8,7 @@ SplitView {
     id: root
     anchors.fill: parent
     orientation: Qt.Horizontal
+
     property string location
     property alias exposureComp: editTools.exposureComp
     property alias defaultExposureComp: editTools.defaultExposureComp
@@ -28,6 +29,7 @@ SplitView {
     property alias defaultLayerMixConst: editTools.defaultLayerMixConst
 
     signal reset()
+    signal tooltipWanted(string text, int x, int y)
 
     onLocationChanged: filmProvider.invalidateImage()
 
@@ -207,8 +209,6 @@ SplitView {
         }
         ToolButton {
             id: zoomout
-            //width:30
-            //height:30
             x: parent.width-30
             y: 0
             text: "-"
@@ -254,6 +254,9 @@ SplitView {
     }
     EditTools {
         id: editTools
+        Component.onCompleted: {
+            editTools.tooltipWanted.connect(root.tooltipWanted)
+        }
     }
 
     Component.onCompleted: {

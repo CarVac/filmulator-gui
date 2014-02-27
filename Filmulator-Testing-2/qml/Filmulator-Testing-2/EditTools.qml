@@ -37,6 +37,8 @@ Rectangle {
 
     signal updateImage()
 
+    signal tooltipWanted(string text, int x, int y)
+
     SplitView{
         anchors.fill: parent
         orientation: Qt.Vertical
@@ -96,6 +98,7 @@ Rectangle {
                     ToolSlider {
                         id: exposureCompSlider
                         title: qsTr("Exposure Compensation")
+                        tooltipText: qsTr("The degree to over- or under-expose the \"film\". Analogous to exposure of film in-camera.")
                         minimumValue: -5
                         maximumValue: 5
                         stepSize: 1/6
@@ -110,11 +113,15 @@ Rectangle {
                                 exposureCompSlider.value = exposureComp
                             }
                         }
+                        Component.onCompleted: {
+                            exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
                     }
 
                     ToolSlider {
                         id: highlightRecoverySlider
                         title: qsTr("Highlight Recovery")
+                        tooltipText: qsTr("Recover clipped highlights.")
                         minimumValue: 0
                         maximumValue: 9
                         stepSize: 1
@@ -128,6 +135,9 @@ Rectangle {
                             onSetAllValues: {
                                 highlightRecoverySlider.value = highlightRecovery
                             }
+                        }
+                        Component.onCompleted: {
+                            highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
 
@@ -150,11 +160,20 @@ Rectangle {
                         }
 
                         onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth)
+
+                        ToolTip {
+                            id: preFilmTooltip
+                            tooltipText: qsTr("This is a histogram of the input to the film simulation.")
+                            Component.onCompleted: {
+                                preFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
+                            }
+                        }
                    }
 
                     ToolSlider {
                         id: filmSizeSlider
                         title: qsTr("Film Area")
+                        tooltipText: qsTr("Larger values emphasize smaller details; smaller values emphasize large regions.")
                         minimumValue: 10
                         maximumValue: 300
                         defaultValue: Math.sqrt(root.defaultFilmSize)
@@ -171,11 +190,15 @@ Rectangle {
                                 filmSizeSlider.value = Math.sqrt(filmSize)
                             }
                         }
+                        Component.onCompleted: {
+                            filmSizeSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
                     }
 
                     ToolSlider {
                         id: filmDramaSlider
                         title: qsTr("Drama")
+                        tooltipText: qsTr("Pulls down highlights to retain detail.")
                         minimumValue: 0
                         maximumValue: 100
                         defaultValue: 100*root.defaultLayerMixConst
@@ -188,6 +211,9 @@ Rectangle {
                             onSetAllValues: {
                                 filmDramaSlider.value = 100*layerMixConst
                             }
+                        }
+                        Component.onCompleted: {
+                            filmDramaSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
 
@@ -225,11 +251,19 @@ Rectangle {
                             color: whitepointSlider.pressed ? "#FF8800" : "white"
                             x: parent.padding + filmProvider.whitepoint/.0025*(parent.width-2*parent.padding)
                         }
+                        ToolTip {
+                            id: postFilmTooltip
+                            tooltipText: qsTr("This is a histogram of the output from the film simulation.")
+                            Component.onCompleted: {
+                                postFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
+                            }
+                        }
                     }
 
                     ToolSlider {
                         id: blackpointSlider
                         title: qsTr("Black Clipping Point")
+                        tooltipText: qsTr("The threshold for crushing the shadows.")
                         minimumValue: 0
                         maximumValue: 1.4
                         defaultValue: Math.sqrt(root.defaultBlackpoint*1000)
@@ -244,11 +278,15 @@ Rectangle {
                                 blackpointSlider.value = Math.sqrt(blackpoint*1000)
                             }
                         }
+                        Component.onCompleted: {
+                            blackpointSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
                     }
 
                     ToolSlider {
                         id: whitepointSlider
                         title: qsTr("White Clipping Point")
+                        tooltipText: qsTr("The threshold for clipping the highlights. Vaguely analogous to adjusting exposure time in the darkroom.")
                         minimumValue: 0.1/1000
                         maximumValue: 2.5/1000
                         defaultValue: root.defaultWhitepoint
@@ -263,12 +301,16 @@ Rectangle {
                                 whitepointSlider.value = whitepoint
                             }
                         }
+                        Component.onCompleted: {
+                            whitepointSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
                     }
 
 
                     ToolSlider {
                         id: shadowBrightnessSlider
                         title: qsTr("Shadow Brightness")
+                        tooltipText: qsTr("The brightness of the generally darker regions.")
                         minimumValue: 0
                         maximumValue: 1
                         defaultValue: root.defaultShadowsY
@@ -283,11 +325,15 @@ Rectangle {
                                 shadowBrightnessSlider.value = shadowsY
                             }
                         }
+                        Component.onCompleted: {
+                            shadowBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
                     }
 
                     ToolSlider {
                         id: highlightBrightnessSlider
                         title: qsTr("Highlight Brightness")
+                        tooltipText: qsTr("The brightness of the generally lighter regions.")
                         minimumValue: 0
                         maximumValue: 1
                         defaultValue: root.defaultHighlightsY
@@ -301,6 +347,9 @@ Rectangle {
                             onSetAllValues: {
                                 highlightBrightnessSlider.value = highlightsY
                             }
+                        }
+                        Component.onCompleted: {
+                            highlightBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
                 }

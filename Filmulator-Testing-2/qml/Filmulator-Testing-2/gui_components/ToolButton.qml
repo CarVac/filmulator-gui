@@ -3,9 +3,12 @@ import QtQuick.Controls 1.1
 import QtQuick.Controls.Styles 1.1
 
 Item {
-    id: surround
+    id: root
     property alias text: button.text
     property alias action: button.action
+    property alias tooltipText: tooltip.tooltipText
+
+    signal tooltipWanted(string text, int x, int y)
     implicitWidth: 30
     implicitHeight: 30
     Button {
@@ -30,6 +33,14 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 text: control.text
             }
+        }
+    }
+    ToolTip {
+        id: tooltip
+        anchors.fill: button
+        Component.onCompleted: {
+            //Forward the tooltipWanted signal to root.
+            tooltip.tooltipWanted.connect(root.tooltipWanted)
         }
     }
 }
