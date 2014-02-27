@@ -95,6 +95,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     }
     case load://Do demosaic
     {
+        setProgress(0);
         //If we're about to do work on a new image, we give up.
         if(checkAbort(load))
             return emptyImage();
