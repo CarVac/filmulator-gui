@@ -60,7 +60,8 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
     matrix<float> active_crystals_per_pixel;
     active_crystals_per_pixel = exposure(input_image, crystals_per_pixel,
             rolloff_boundary);
-    input_image.free();
+    if(!interface->isGUI())
+        input_image.free();
 
     if(interface->checkAbort())
         return 1;

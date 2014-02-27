@@ -119,6 +119,7 @@ public:
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
 
+    bool isGUI(){return true;}
 
 protected:
     QMutex mutex;
