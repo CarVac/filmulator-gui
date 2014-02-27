@@ -175,18 +175,18 @@ Rectangle {
 
                     ToolSlider {
                         id: filmPowerSlider
-                        title: qsTr("Film Power")
+                        title: qsTr("Drama")
                         minimumValue: 0
                         maximumValue: 100
-                        defaultValue: 100*(1-root.defaultLayerMixConst)
+                        defaultValue: 100*root.defaultLayerMixConst
                         onValueChanged: {
-                            filmProvider.layerMixConst = 1-value/100;
+                            filmProvider.layerMixConst = value/100;
                             root.updateImage()
                         }
                         Connections {
                             target: root
                             onSetAllValues: {
-                                filmSizeSlider.value = 100*(1-layerMixConst)
+                                filmSizeSlider.value = 100*layerMixConst
                             }
                         }
                     }
