@@ -2,6 +2,7 @@ import QtQuick 2.2
 import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 import "gui_components"
+import "generateHistogram.js" as Script
 
 Rectangle {
     id: root
@@ -55,84 +56,8 @@ Rectangle {
                 onHistFinalChanged: mainHistoCanvas.requestPaint();
             }
 
-            onPaint: {
-                var ctx = this.getContext('2d');
-                ctx.save();
-                ctx.clearRect(0, 0, this.width, this.height);
-                ctx.globalAlpha = this.alpha;
-                ctx.lineWidth = this.lineWidth;
-                var myGradient = ctx.createLinearGradient(0,0,this.width,0);
-                var hist = this.hist;
+            onPaint: Script.generateHistogram(1,this.getContext('2d'),width,height,padding,lineWidth)
 
-                var startx = this.padding;
-                var endx = this.width - this.padding;
-                var graphwidth = endx - startx;
-                var starty = this.height - this.padding;
-                var endy = this.padding+1;
-                var graphheight = starty - endy;
-                var histPoint = 0;
-                var maxValue = 128.0
-
-                //Luma curve
-                ctx.beginPath();
-                ctx.moveTo(startx,starty);
-                for(var i = 0; i < maxValue; i++)
-                {
-                    histPoint = filmProvider.getHistFinalPoint(0,i);
-                    ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                }
-                ctx.lineTo(endx,starty);
-                ctx.lineTo(startx,starty);
-                ctx.closePath();
-                myGradient.addColorStop(1,"white");
-                myGradient.addColorStop(0,'rgb(180,180,180)');
-                ctx.fillStyle = myGradient;
-                ctx.fill()
-
-                //rCurve
-                ctx.beginPath()
-                ctx.moveTo(startx,starty);
-                for(var i = 0; i < maxValue; i++)
-                {
-                    histPoint = filmProvider.getHistFinalPoint(1,i);
-                    ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                }
-                ctx.lineTo(endx,starty);
-                ctx.closePath();
-                ctx.strokeStyle = "#FF0000";
-                ctx.stroke();
-
-                //gCurve
-                ctx.beginPath()
-                ctx.moveTo(startx,starty);
-                for(var i = 0; i < maxValue; i++)
-                {
-                    histPoint = filmProvider.getHistFinalPoint(2,i);
-                    ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                }
-                ctx.lineTo(endx,starty);
-                ctx.closePath();
-                ctx.strokeStyle = "#00FF00";
-                ctx.stroke();
-
-                //bCurve
-                ctx.beginPath()
-                ctx.moveTo(startx,starty);
-                for(var i = 0; i < maxValue; i++)
-                {
-                    histPoint = filmProvider.getHistFinalPoint(3,i);
-                    ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                }
-                ctx.lineTo(endx,starty);
-                ctx.closePath();
-                ctx.strokeStyle = "#0000FF"
-                ctx.stroke();
-
-                ctx.strokeStyle = "#000000";
-                ctx.strokeRect(startx,endy-1,graphwidth,graphheight+1);
-
-                ctx.restore();
-            }
         }
 
 
@@ -222,84 +147,7 @@ Rectangle {
                             onHistPreFilmChanged: preFilmHistoCanvas.requestPaint()
                         }
 
-                        onPaint: {
-                            var ctx = this.getContext('2d');
-                            ctx.save();
-                            ctx.clearRect(0, 0, this.width, this.height);
-                            ctx.globalAlpha = this.alpha;
-                            ctx.lineWidth = this.lineWidth;
-                            var myGradient = ctx.createLinearGradient(0,0,this.width,0);
-                            var hist = this.hist;
-
-                            var startx = this.padding;
-                            var endx = this.width - this.padding;
-                            var graphwidth = endx - startx;
-                            var starty = this.height - this.padding;
-                            var endy = this.padding+1;
-                            var graphheight = starty - endy;
-                            var histPoint = 0;
-                            var maxValue = 128.0
-
-                            //Luma curve
-                            ctx.beginPath();
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPreFilmPoint(0,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.lineTo(startx,starty);
-                            ctx.closePath();
-                            myGradient.addColorStop(1,"white");
-                            myGradient.addColorStop(0,'rgb(180,180,180)');
-                            ctx.fillStyle = myGradient;
-                            ctx.fill()
-
-                            //rCurve
-                            ctx.beginPath()
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPreFilmPoint(1,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.closePath();
-                            ctx.strokeStyle = "#FF0000";
-                            ctx.stroke();
-
-                            //gCurve
-                            ctx.beginPath()
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPreFilmPoint(2,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.closePath();
-                            ctx.strokeStyle = "#00FF00";
-                            ctx.stroke();
-
-                            //bCurve
-                            ctx.beginPath()
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPreFilmPoint(3,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.closePath();
-                            ctx.strokeStyle = "#0000FF"
-                            ctx.stroke();
-
-                            ctx.strokeStyle = "#000000";
-                            ctx.strokeRect(startx,endy-1,graphwidth,graphheight+1);
-
-                            ctx.restore();
-                        }
+                        onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth)
                    }
 
                     ToolSlider {
@@ -341,99 +189,7 @@ Rectangle {
                             onHistPostFilmChanged: postFilmHistoCanvas.requestPaint()
                         }
 
-                        onPaint: {
-                            var ctx = this.getContext('2d');
-                            ctx.save();
-                            ctx.clearRect(0, 0, this.width, this.height);
-                            ctx.globalAlpha = this.alpha;
-                            ctx.lineWidth = this.lineWidth;
-                            var myGradient = ctx.createLinearGradient(0,0,this.width,0);
-                            var hist = this.hist;
-
-                            var startx = this.padding;
-                            var endx = this.width - this.padding;
-                            var graphwidth = endx - startx;
-                            var starty = this.height - this.padding;
-                            var endy = this.padding+1;
-                            var graphheight = starty - endy;
-                            var histPoint = 0;
-                            var maxValue = 128.0
-
-                            //Luma curve
-                            ctx.beginPath();
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPostFilmPoint(0,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.lineTo(startx,starty);
-                            ctx.closePath();
-                            myGradient.addColorStop(1,"white");
-                            myGradient.addColorStop(0,'rgb(180,180,180)');
-                            ctx.fillStyle = myGradient;
-                            ctx.fill()
-
-                            //rCurve
-                            ctx.beginPath()
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPostFilmPoint(1,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.closePath();
-                            ctx.strokeStyle = "#FF0000";
-                            ctx.stroke();
-
-                            //gCurve
-                            ctx.beginPath()
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPostFilmPoint(2,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.closePath();
-                            ctx.strokeStyle = "#00FF00";
-                            ctx.stroke();
-
-                            //bCurve
-                            ctx.beginPath()
-                            ctx.moveTo(startx,starty);
-                            for(var i = 0; i < maxValue; i++)
-                            {
-                                histPoint = filmProvider.getHistPostFilmPoint(3,i);
-                                ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
-                            }
-                            ctx.lineTo(endx,starty);
-                            ctx.closePath();
-                            ctx.strokeStyle = "#0000FF"
-                            ctx.stroke();
-
-                            ctx.strokeStyle = "#000000";
-                            ctx.strokeRect(startx,endy-1,graphwidth,graphheight+1);
-
-                            ctx.restore();
-                        }
-                        Rectangle {
-                            id: blackpointLine
-                            height: parent.height
-                            width: 1
-                            color: blackpointSlider.pressed ? "#FF8800" : "white"
-                            x: parent.padding + filmProvider.blackpoint/.0025*(parent.width-2*parent.padding)
-                        }
-
-                        Rectangle {
-                            id: whitepointLine
-                            height: parent.height
-                            width: 1
-                            color: whitepointSlider.pressed ? "#FF8800" : "white"
-                            x: parent.padding + filmProvider.whitepoint/.0025*(parent.width-2*parent.padding)
-                        }
+                        onPaint: Script.generateHistogram(3,this.getContext('2d'),width,height,padding,lineWidth)
                     }
 
                     ToolSlider {
