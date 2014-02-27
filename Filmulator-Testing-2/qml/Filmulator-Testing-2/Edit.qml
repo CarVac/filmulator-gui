@@ -227,10 +227,15 @@ SplitView {
             }
         }
         ProgressBar {
+            id: progressBar
             indeterminate: false;
             orientation: Qt.Horizontal;
             visible: true;
             value: filmProvider.progress;
+            Connections {
+                target: filmProvider
+                onProgressChanged: progressBar.value = filmProvider.progress
+            }
         }
 /*        Text {
             id: text1
