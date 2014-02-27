@@ -30,9 +30,9 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     defaultToneCurveEnabled = true;
 
     shadowsX = 0.25;
-    shadowsY = 0.9;
+    shadowsY = 0.25;
     highlightsX = 0.75;
-    highlightsY = 0.1;
+    highlightsY = 0.75;
 
     filmLikeLUT.fill(this);
 }
@@ -63,9 +63,9 @@ FilmImageProvider::FilmImageProvider() :
     defaultToneCurveEnabled = true;
 
     shadowsX = 0.25;
-    shadowsY = 0.9;
+    shadowsY = 0.25;
     highlightsX = 0.75;
-    highlightsY = 0.1;
+    highlightsY = 0.75;
 
     filmLikeLUT.fill(this);
 }
