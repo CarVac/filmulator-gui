@@ -102,37 +102,46 @@ SplitView {
                         }
                     }
                 }
+                MouseArea {
+                    id: doubleClickCapture
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    onDoubleClicked: {
+                        if(bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
+                            bottomImage.scale = flicky.fitScale
+                            flicky.contentX = 0
+                            flicky.contentY = 0
+                            //flicky.returnToBounds()
+                            flicky.fit = true
+                        }
+                        else {//Currently, zooming in works perfectly from fit.
+                            var zoomFactor = 1/bottomImage.scale
+
+                            var oldContentX = flicky.contentX
+                            var oldContentY = flicky.contentY
+
+                            var oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width-bottomImage.width*bottomImage.scale))
+                            var oldMouseY = mouse.y - Math.max(0, 0.5*(flicky.height-bottomImage.height*bottomImage.scale))
+
+                            bottomImage.scale = 1
+
+                            //for the following, the last bottomImage.scale is now 1, so we just leave it off.
+                            flicky.contentX = oldMouseX*zoomFactor - mouse.x + oldContentX + Math.max(0,0.5*(flicky.width-bottomImage.width))
+                            flicky.contentY = oldMouseY*zoomFactor - mouse.y + oldContentY + Math.max(0,0.5*(flicky.height-bottomImage.height))
+
+                            flicky.returnToBounds()
+                            if (bottomImage.scale == flicky.fitScale){flicky.fit = true}
+                            else {flicky.fit = false}
+                        }
+                    }
+                }
             }
         }
         MouseArea {
             id: wheelCapture
             anchors.fill: flicky
             acceptedButtons: Qt.RightButton
-            onDoubleClicked: {
-                if(bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
-                    flicky.cancelFlick()
-                    bottomImage.scale = flicky.fitScale
-                    flicky.returnToBounds()
-                    flicky.fit = true
-                }
-                else {
-                    var zoomFactor = 1/bottomImage.scale
-
-                    var oldMouseX = mouse.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-bottomImage.width*bottomImage.scale))
-                    var oldMouseY = mouse.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-bottomImage.height*bottomImage.scale))
-
-                    bottomImage.scale = 1
-
-                    //for the following, the last bottomImage.scale is now 1, so we just leave it off.
-                    flicky.contentX = oldMouseX*zoomFactor - mouse.x + Math.max(0,0.5*(flicky.width-bottomImage.width))
-                    flicky.contentY = oldMouseY*zoomFactor - mouse.y + Math.max(0,0.5*(flicky.height-bottomImage.height))
-
-                    flicky.returnToBounds()
-                    if (bottomImage.scale == flicky.fitScale){flicky.fit = true}
-                    else {flicky.fit = false}
-                }
-            }
-
             onWheel: {
                 var oldMouseX = wheel.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-bottomImage.width*bottomImage.scale))
                 var oldMouseY = wheel.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-bottomImage.height*bottomImage.scale))
@@ -141,16 +150,12 @@ SplitView {
                     bottomImage.scale *= zoomFactor;
                     flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max(0,0.5*(flicky.width-bottomImage.width*bottomImage.scale))
                     flicky.contentY = oldMouseY*zoomFactor - wheel.y + Math.max(0,0.5*(flicky.height-bottomImage.height*bottomImage.scale))
-                    if (bottomImage.scale == flicky.fitScale){flicky.fit = true}
-                    else {flicky.fit = false}
                 }
                 else {
                     bottomImage.scale /= zoomFactor;
                     flicky.contentX = oldMouseX/zoomFactor - wheel.x + Math.max(0,0.5*(flicky.width-bottomImage.width*bottomImage.scale))
                     flicky.contentY = oldMouseY/zoomFactor - wheel.y + Math.max(0,0.5*(flicky.height-bottomImage.height*bottomImage.scale))
                     flicky.returnToBounds()
-                    if (bottomImage.scale == flicky.fitScale){flicky.fit = true}
-                    else {flicky.fit = false}
                 }
             }
         }
@@ -237,20 +242,20 @@ SplitView {
                 onProgressChanged: progressBar.value = filmProvider.progress
             }
         }
-/*        Text {
+                Text {
             id: text1
             x: 200
             y: 0
             color: "white"
-            text: flicky.contentX - (flicky.width-topImage.width*topImage.scale)/2
+            text: wheelCapture.mouseX
         }
         Text{
             id: text2
             x: 200
             y: 15
             color: "white"
-            text: flicky.contentX
-        }*/
+            text: wheelCapture.mouseY
+        }
     }
     EditTools {
         id: editTools
