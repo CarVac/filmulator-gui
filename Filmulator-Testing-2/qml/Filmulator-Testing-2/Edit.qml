@@ -242,7 +242,7 @@ SplitView {
                 onProgressChanged: progressBar.value = filmProvider.progress
             }
         }
-                Text {
+/*        Text {
             id: text1
             x: 200
             y: 0
@@ -255,7 +255,7 @@ SplitView {
             y: 15
             color: "white"
             text: wheelCapture.mouseY
-        }
+        }*/
     }
     EditTools {
         id: editTools
