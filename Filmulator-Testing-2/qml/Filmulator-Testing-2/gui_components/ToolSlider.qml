@@ -110,7 +110,7 @@ Rectangle {
     }
     ToolTip {
         id: toolTooltip
-        anchors.fill: root//label
+        anchors.fill: label
         Component.onCompleted: {
             //Forward the tooltipWanted signal to root.
             toolTooltip.tooltipWanted.connect(root.tooltipWanted)
