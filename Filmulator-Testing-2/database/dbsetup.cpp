@@ -1,5 +1,4 @@
-#include <QDir>
-#include <iostream>
+//#include <iostream>
 #include "filmulatordb.h"
 
 void setupDB(QSqlDatabase *db)
@@ -11,17 +10,17 @@ void setupDB(QSqlDatabase *db)
         dir.cd(".filmulator");
     }
     db->setDatabaseName(dir.absoluteFilePath("filmulatorDB"));
-    std::cout << "database path: " << qPrintable(dir.absoluteFilePath("filmulatorDB")) << std::endl;
+//    std::cout << "database path: " << qPrintable(dir.absoluteFilePath("filmulatorDB")) << std::endl;
     //this should create the database if it doesn't already exist.
 
     if(db->open())
     {
-        std::cout << "Database open!" << std::endl;
+//        std::cout << "Database open!" << std::endl;
         //Success
     }
     else
     {
-        std::cout << "what?!?!?!?" << std::endl;
+//        std::cout << "what?!?!?!?" << std::endl;
     }
 
     //We need to set up 3 tables.

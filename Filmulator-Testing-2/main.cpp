@@ -1,4 +1,3 @@
-#include <QDir>
 #include <QtGui/QGuiApplication>
 #include <QtQml>
 #include "qtquick2applicationviewer.h"
@@ -26,9 +25,9 @@ int main(int argc, char *argv[])
 
     //Prepare database connection.
     //This should create a new db file if there was none.
-    qDebug() << QSqlDatabase::drivers();
+//    qDebug() << QSqlDatabase::drivers();
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    qDebug() << db.isValid();
+//    qDebug() << db.isValid();
     setupDB(&db);
 
 
@@ -45,7 +44,6 @@ int main(int argc, char *argv[])
         return -1;
     }
     window->show();
-    qDebug("hi");
 
     return app.exec();
 }

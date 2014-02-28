@@ -1,7 +1,8 @@
 #ifndef SQLMODEL_H
 #define SQLMODEL_H
 
-#include <QtSql>
+#include <QtSql/QSqlQueryModel>
+#include <QtSql/QSqlQuery>
 #include <QDir>
 #include <QFile>
 

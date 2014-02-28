@@ -1,7 +1,5 @@
 #include "sqlmodel.h"
-#include <QDebug>
 #include <iostream>
-#include <QtSql/QSqlQuery>
 #include <QStringList>
 #include <exiv2/exiv2.hpp>
 #include <QCryptographicHash>
