@@ -183,7 +183,7 @@ ApplicationWindow {
         onEnabledChanged: {
             if (enabled) {
                 tooltipCatcher.setPosition(xInput, yInput)
-                tooltipTimer.start()
+                //tooltipTimer.start()
             }
         }
 
@@ -196,14 +196,14 @@ ApplicationWindow {
             tooltipCatcher.enabled = false
         }
 
-        Timer {
+/*        Timer {
             id: tooltipTimer
             interval: 5000
             onTriggered: {
                 tooltipCatcher.visible = false
                 tooltipCatcher.enabled = false
             }
-        }
+        }*/
 
         Rectangle {
             id: tooltipBox
