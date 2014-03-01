@@ -144,8 +144,8 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
 string convert_from_raw(char* raw_filename, int i, string tempdir,
         int highlights);
 
-bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
-        matrix<int> &output_b, string outputfilename, Exiv2::ExifData exifData);
+bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
+                  Exiv2::ExifData exifData);
 
 bool imwrite_jpeg(matrix<int> &output_r, matrix<int> &output_g,
         matrix<int> &output_b, string outputfilename, Exiv2::ExifData exifData);
@@ -177,10 +177,8 @@ int read_args(int argc, char* argv[],string &input_configuration,
                float &whitepoint, bool &jpeg_out, bool &tonecurve_out,
                int &highlights);
 
-void output_file(matrix<int> &output_r, matrix<int> &ouput_g,
-                        matrix<int> &output_b,
-                        vector<string> input_filename_list, bool jpeg_out,
-                        Exiv2::ExifData exifData);
+void output_file(matrix<unsigned short> &output, vector<string> input_filename_list,
+                 bool jpeg_out, Exiv2::ExifData exifData);
 
 void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
                            float whitepoint, float blackpoint);
@@ -188,4 +186,7 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 
 void color_curves(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 LUT lutR, LUT lutG, LUT lutB);
+
+void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
+                  Exiv2::ExifData &exifData);
 #endif // FILMSIM_H

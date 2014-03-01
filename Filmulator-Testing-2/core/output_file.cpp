@@ -18,10 +18,8 @@
  */
 #include "filmsim.hpp"
 
-void output_file(matrix<int> &output_r, matrix<int> &output_g,
-                        matrix<int> &output_b,
-                        vector<string> input_filename_list, bool jpeg_out,
-                        Exiv2::ExifData exifData)
+void output_file(matrix<unsigned short> &output, vector<string> input_filename_list,
+                 bool jpeg_out, Exiv2::ExifData exifData)
 {
     struct timeval write_start;
     gettimeofday(&write_start,NULL);    
@@ -44,13 +42,12 @@ void output_file(matrix<int> &output_r, matrix<int> &output_g,
     
     if (jpeg_out)
     {
-    	imwrite_jpeg(output_r,output_g,output_b,
-     	   output_image_filename,exifData);
+        /*imwrite_jpeg(output_r,output_g,output_b,
+           output_image_filename,exifData);*/
     }
     else
     {
-    	imwrite_tiff(output_r,output_g,output_b,
-     	   output_image_filename,exifData);
+        imwrite_tiff(output, output_image_filename,exifData);
     }
 
     tout << "Write time: " << time_diff(write_start) << " seconds" << endl;

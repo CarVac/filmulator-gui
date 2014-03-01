@@ -31,7 +31,8 @@ SOURCES += main.cpp \
     ui/updateHistograms.cpp \
     database/sqlmodel.cpp \
     database/dbsetup.cpp \
-    database/sqlproperties.cpp
+    database/sqlproperties.cpp \
+    core/rotate_image.cpp
 
 # Installation path
 # target.path =

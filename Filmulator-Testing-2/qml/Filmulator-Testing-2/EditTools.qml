@@ -352,6 +352,16 @@ Rectangle {
                             highlightBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
+                    ToolButton {
+                        id: saveButton
+                        text: qsTr("Save")
+                        action: Action {
+                            onTriggered: {
+                                filmProvider.saveImage = true;
+                                root.updateImage();
+                            }
+                        }
+                    }
                 }
             }
             MouseArea {

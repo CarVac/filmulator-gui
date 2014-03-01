@@ -18,27 +18,15 @@
  */
 #include "filmsim.hpp"
 
-bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
-        matrix<int> &output_b, string outputfilename, Exiv2::ExifData exifData)
+bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
+                  Exiv2::ExifData exifData)
 {
     int xsize, ysize;
+    xsize = output.nc()/3;
+    ysize = output.nr();
 
-    //This is to eliminate a bug whereby some image viewers (specifically
-    // RawTherapee's image browser) rotate portrait images incorrectly.
-    //Here I'm just going to make it read out directly.
-    switch((int) exifData["Exif.Image.Orientation"].value().toLong())
-    {
-        case 6://right side down; camera resting on right hand
-        case 8://left side down; camera hanging from right hand
-            xsize = output_r.nr();
-            ysize = output_r.nc();
-            exifData["Exif.Image.ImageWidth"] = output_r.nr();
-            exifData["Exif.Image.ImageLength"] = output_r.nc();
-            break;
-        default://normal; we ignore all other orientations.
-            xsize = output_r.nc();
-            ysize = output_r.nr();
-    }
+
+
     outputfilename = outputfilename + ".tif";
     TIFF *out = TIFFOpen(outputfilename.c_str(),"w");
     if (!out)
@@ -59,46 +47,16 @@ bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
     tsize_t linebytes = 3 * xsize * 2;//Size in bytes of a line
     unsigned short *buf = NULL;
     buf =(unsigned short *)_TIFFmalloc(linebytes);
-    switch((int) exifData["Exif.Image.Orientation"].value().toLong())
+    for (int j = 0; j < ysize; j++)
     {
-        case 6://right side down
-            for (int j = 0; j < ysize; j++)
-            {
-                for (int i = 0; i < xsize; i++)
-                {
-                    buf[i*3  ] = (unsigned short) output_r(xsize-1-i,j);
-                    buf[i*3+1] = (unsigned short) output_g(xsize-1-i,j);
-                    buf[i*3+2] = (unsigned short) output_b(xsize-1-i,j);
-                }
-                if (TIFFWriteScanline(out, buf, j, 0) <0)
-                    break;
-            }
+        for(int i = 0; i < xsize; i ++)
+        {
+            buf[i*3  ] = output(j,i*3  );
+            buf[i*3+1] = output(j,i*3+1);
+            buf[i*3+2] = output(j,i*3+2);
+        }
+        if (TIFFWriteScanline(out, buf, j, 0) < 0)
             break;
-        case 8://left side down
-            for (int j = 0; j < ysize; j++)
-            {
-                for (int i = 0; i < xsize; i++)
-                {
-                    buf[i*3  ] = (unsigned short) output_r(i,ysize-1-j);
-                    buf[i*3+1] = (unsigned short) output_g(i,ysize-1-j);
-                    buf[i*3+2] = (unsigned short) output_b(i,ysize-1-j);
-                }
-                if (TIFFWriteScanline(out, buf, j, 0) <0)
-                    break;
-            }
-            break;
-        default:
-            for (int j = 0; j < ysize; j++)
-            {
-                for(int i = 0; i < xsize; i ++)
-                {
-                    buf[i*3  ] = (unsigned short) output_r(j,i);
-                    buf[i*3+1] = (unsigned short) output_g(j,i);
-                    buf[i*3+2] = (unsigned short) output_b(j,i);
-                }
-                if (TIFFWriteScanline(out, buf, j, 0) < 0)
-                    break;
-            }
     }
     (void) TIFFClose(out);
 
@@ -108,7 +66,6 @@ bool imwrite_tiff(matrix<int> &output_r, matrix<int> &output_g,
     Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(outputfilename.c_str());
     assert(image.get() != 0);
 
-    exifData["Exif.Image.Orientation"] = 1;//set all images to unrotated
     image->setExifData(exifData);
     image->writeMetadata();
 

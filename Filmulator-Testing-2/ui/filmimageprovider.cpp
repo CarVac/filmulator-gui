@@ -34,6 +34,8 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     highlightsX = 0.75;
     highlightsY = 0.75;
 
+    saveImage = false;
+
     filmLikeLUT.fill(this);
 }
 
@@ -67,6 +69,8 @@ FilmImageProvider::FilmImageProvider() :
     highlightsX = 0.75;
     highlightsY = 0.75;
 
+    saveImage = false;
+
     filmLikeLUT.fill(this);
 }
 
@@ -82,6 +86,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
     QString tempID = id;
     tempID.remove(tempID.length()-1,1);
     tempID.remove(0,7);
+    string inputFilename = tempID.toStdString();
+    std::vector<std::string> input_filename_list;
+    input_filename_list.push_back(inputFilename);
 
 
     switch (valid)
@@ -105,9 +112,6 @@ QImage FilmImageProvider::requestImage(const QString &id,
         valid = demosaic;
         mutex.unlock();
 
-        //Here we trim the 'file://' from the url
-        std::vector<std::string> input_filename_list;
-        input_filename_list.push_back(tempID.toStdString());
         cout << "Opening " << input_filename_list[0] << endl;
 
         //We set the exposure comp from the Q_PROPERTY here.
@@ -277,110 +281,31 @@ QImage FilmImageProvider::requestImage(const QString &id,
             return emptyImage();
 
         //We would mark our progress, but this is the very last step.
+        matrix<unsigned short> rotated_image;
+        rotate_image(film_curve_image,rotated_image,exifData);
 
-        int nrows = film_curve_image.nr();
-        int ncols = film_curve_image.nc();
-        switch((int) exifData["Exif.Image.Orientation"].value().toLong())
+        if(saveImage)
         {
-        case 3://upside-down
-        {
-            //Yes, some cameras do in fact implement this direction.
-            output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
-            for(int i = 0; i < nrows; i++)
-            {
-                // out   in
-                /* 12345 00000
-                 * 00000 00000
-                 * 00000 54321
-                 */
-                //Reversing the row index
-                int r = nrows-1-i;
-                QRgb *line = (QRgb *)output.scanLine(i);
-                for(int j = 0; j < ncols; j = j + 3)
-                {
-                    //Reversing the column index
-                    int c = ncols - 3 - j;
-                    *line = QColor(film_curve_image(r,c)/256,
-                                   film_curve_image(r,c+1)/256,
-                                   film_curve_image(r,c+2)/256).rgb();
-                    line++;
-                }
-            }
-            break;
+            output_file(rotated_image,input_filename_list,false,exifData);
+            mutex.lock();
+                saveImage = false;
+            mutex.unlock();
         }
-        case 6://right side of camera down
-        {
-            output = QImage(nrows,ncols/3,QImage::Format_ARGB32);
-            for(int j = 0; j < ncols/3; j++)
-            {
-                //index of an output row as a column on the input matrix
-                // out   in
-                /* 123   30000
-                 * 000   20000
-                 * 000   10000
-                 * 000
-                 * 000
-                 */
-                //Remember that the columns are interlaced.
-                int c = j*3;
-                QRgb *line = (QRgb *)output.scanLine(j);
-                for(int i = 0; i < nrows; i++)
-                {
-                    //Also, in this case, the order is reversed for the rows of the input.
-                    int r = nrows-1-i;
-                    *line = QColor(film_curve_image(r,c)/256,
-                                   film_curve_image(r,c+1)/256,
-                                   film_curve_image(r,c+2)/256).rgb();
-                    line++;
-                }
-            }
-            break;
-        }
-        case 8://right side of camera up
-        {
-            output = QImage(nrows,ncols/3,QImage::Format_ARGB32);
-            for(int j = 0; j < ncols/3; j++)
-            {
-                //index of an output row as a column on the input matrix
-                // out   in
-                /* 123   00001
-                 * 000   00002
-                 * 000   00003
-                 * 000
-                 * 000
-                 */
-                //Remember that the columns are interlaced, and scanned in reverse.
-                int c = ncols - 3 - j*3;
-                QRgb *line = (QRgb *)output.scanLine(j);
-                for(int i = 0; i < nrows; i++)
-                {
-                    //Here the order is not reversed for the rows of the input.
-                    int r = i;
-                    *line = QColor(film_curve_image(r,c)/256,
-                                   film_curve_image(r,c+1)/256,
-                                   film_curve_image(r,c+2)/256).rgb();
-                    line++;
-                }
-            }
-            break;
-        }
-        default://standard orientation
-        {
-            output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
-            for(int i = 0; i < nrows; i++)
-            {
-                QRgb *line = (QRgb *)output.scanLine(i);
-                for(int j = 0; j < ncols; j = j + 3)
-                {
-                    *line = QColor(film_curve_image(i,j)/256,
-                                   film_curve_image(i,j+1)/256,
-                                   film_curve_image(i,j+2)/256).rgb();
-                    line++;
+        int nrows = rotated_image.nr();
+        int ncols = rotated_image.nc();
 
-                }
+        output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
+        for(int i = 0; i < nrows; i++)
+        {
+            QRgb *line = (QRgb *)output.scanLine(i);
+            for(int j = 0; j < ncols; j = j + 3)
+            {
+                *line = QColor(rotated_image(i,j)/256,
+                               rotated_image(i,j+1)/256,
+                               rotated_image(i,j+2)/256).rgb();
+                line++;
             }
         }
-        }//End orientation switch
     }
     }//End task switch
 
@@ -527,6 +452,12 @@ void FilmImageProvider::setProgress(float percentDone_in)
 {
     progress = percentDone_in;
     emit progressChanged();
+}
+
+void FilmImageProvider::setSaveImage(bool saveImageIn)
+{
+    saveImage = saveImageIn;
+    emit saveImageChanged();
 }
 
 void FilmImageProvider::updateProgress(float percentDone_in)//Percent filmulation
