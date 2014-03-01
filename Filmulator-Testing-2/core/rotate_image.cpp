@@ -99,9 +99,6 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
         default:
             output = input;
     }
-    exifData["Exif.Image.Orientation"] = 1;//set all images to unrotated
-    exifData["Exif.Image.ImageWidth"] = output.nr();
-    exifData["Exif.Image.ImageLength"] = output.nc()/3;
 
     return;
 }
