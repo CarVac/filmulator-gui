@@ -42,14 +42,14 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 {
                     //Reversing the column index
                     int c = ncols - 3 - j;
-                    output(i,j)   = input(r,c  );
-                    output(i,j+1) = input(r,c+1);
-                    output(i,j+2) = input(r,c+2);
+                    output(i,j*3  ) = input(r,c  );
+                    output(i,j*3+1) = input(r,c+1);
+                    output(i,j*3+2) = input(r,c+2);
                 }
             }
             break;
         case 6://right side down
-            output.set_size(ncols,nrows);
+            output.set_size(ncols/3,nrows*3);
             for(int j = 0; j < ncols/3; j++)
                 {
                     //index of an output row as a column on the input matrix
@@ -66,14 +66,14 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                     {
                         //Also, in this case, the order is reversed for the rows of the input.
                         int r = nrows-1-i;
-                        output(i,j  ) = input(r,c  );
-                        output(i,j+1) = input(r,c+1);
-                        output(i,j+2) = input(r,c+2);
+                        output(j,i*3  ) = input(r,c  );
+                        output(j,i*3+1) = input(r,c+1);
+                        output(j,i*3+2) = input(r,c+2);
                     }
                 }
             break;
         case 8://left side down
-            output.set_size(ncols,nrows);
+            output.set_size(ncols/3,nrows*3);
             for(int j = 0; j < ncols/3; j++)
             {
                 //index of an output row as a column on the input matrix
@@ -90,9 +90,9 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 {
                     //Here the order is not reversed for the rows of the input.
                     int r = i;
-                    output(i,j  ) = input(r,c  );
-                    output(i,j+1) = input(r,c+1);
-                    output(i,j+2) = input(r,c+2);
+                    output(j,i*3  ) = input(r,c  );
+                    output(j,i*3+1) = input(r,c+1);
+                    output(j,i*3+2) = input(r,c+2);
                 }
             }
             break;
