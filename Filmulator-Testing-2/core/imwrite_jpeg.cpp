@@ -18,11 +18,11 @@
  */
 #include "filmsim.hpp"
 
-bool imwrite_jpeg(matrix<int> &output_r, matrix<int> &output_g,
-        matrix<int> &output_b, string outputfilename, Exiv2::ExifData exifData)
+bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
+                  Exiv2::ExifData exifData)
 {
-	int xsize = output_r.nc();
-	int ysize = output_r.nr();
+    int xsize = output.nc()/3;
+    int ysize = output.nr();
 	int quality = 95;
 	
 	outputfilename = outputfilename + ".jpg";
@@ -113,9 +113,9 @@ bool imwrite_jpeg(matrix<int> &output_r, matrix<int> &output_g,
 	{
 		for(int i = 0; i < xsize; i ++)
 		{
-			buf[i*3  ] = dither_round(output_r(j,i));
-			buf[i*3+1] = dither_round(output_g(j,i));
-			buf[i*3+2] = dither_round(output_b(j,i));
+            buf[i*3  ] = dither_round(output(j,i*3  ));
+            buf[i*3+1] = dither_round(output(j,i*3+1));
+            buf[i*3+2] = dither_round(output(j,i*3+2));
 		}
 		(void) jpeg_write_scanlines(&cinfo,&buf,1);
 	}

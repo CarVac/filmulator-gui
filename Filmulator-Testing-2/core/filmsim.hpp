@@ -147,8 +147,8 @@ string convert_from_raw(char* raw_filename, int i, string tempdir,
 bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
                   Exiv2::ExifData exifData);
 
-bool imwrite_jpeg(matrix<int> &output_r, matrix<int> &output_g,
-        matrix<int> &output_b, string outputfilename, Exiv2::ExifData exifData);
+bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
+                  Exiv2::ExifData exifData);
         
 float default_tonecurve(float input, bool enabled);
 

@@ -34,7 +34,8 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     highlightsX = 0.75;
     highlightsY = 0.75;
 
-    saveImage = false;
+    saveTiff = false;
+    saveJpeg = false;
 
     filmLikeLUT.fill(this);
 }
@@ -69,7 +70,8 @@ FilmImageProvider::FilmImageProvider() :
     highlightsX = 0.75;
     highlightsY = 0.75;
 
-    saveImage = false;
+    saveTiff = false;
+    saveJpeg = false;
 
     filmLikeLUT.fill(this);
 }
@@ -284,11 +286,19 @@ QImage FilmImageProvider::requestImage(const QString &id,
         matrix<unsigned short> rotated_image;
         rotate_image(film_curve_image,rotated_image,exifData);
 
-        if(saveImage)
+        if(saveTiff)
         {
             output_file(rotated_image,input_filename_list,false,exifData);
             mutex.lock();
-                saveImage = false;
+                saveTiff = false;
+            mutex.unlock();
+        }
+
+        if(saveJpeg)
+        {
+            output_file(rotated_image,input_filename_list,true,exifData);
+            mutex.lock();
+                saveJpeg = false;
             mutex.unlock();
         }
         int nrows = rotated_image.nr();
@@ -454,10 +464,18 @@ void FilmImageProvider::setProgress(float percentDone_in)
     emit progressChanged();
 }
 
-void FilmImageProvider::setSaveImage(bool saveImageIn)
+void FilmImageProvider::setSaveTiff(bool saveTiffIn)
 {
-    saveImage = saveImageIn;
-    emit saveImageChanged();
+    QMutexLocker locker (&mutex);
+    saveTiff = saveTiffIn;
+    emit saveTiffChanged();
+}
+
+void FilmImageProvider::setSaveJpeg(bool saveJpegIn)
+{
+    QMutexLocker locker (&mutex);
+    saveJpeg = saveJpegIn;
+    emit saveJpegChanged();
 }
 
 void FilmImageProvider::updateProgress(float percentDone_in)//Percent filmulation

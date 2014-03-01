@@ -48,7 +48,8 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 
     Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
 
-    Q_PROPERTY(bool saveImage READ getSaveImage WRITE setSaveImage NOTIFY saveImageChanged)
+    Q_PROPERTY(bool saveTiff READ getSaveTiff WRITE setSaveTiff NOTIFY saveTiffChanged)
+    Q_PROPERTY(bool saveJpeg READ getSaveJpeg WRITE setSaveJpeg NOTIFY saveJpegChanged)
 
 /*    //Dummy properties to signal histogram updates
 //    Q_PROPERTY(int histFinal READ getHistFinal NOTIFY histFinalChanged)
@@ -89,7 +90,8 @@ public:
 
     void setProgress(float progressIn);
 
-    void setSaveImage(bool saveImageIn);
+    void setSaveTiff(bool saveTiffIn);
+    void setSaveJpeg(bool saveJpegIn);
 
     //Getter methods
     int getHighlights(){return highlights;}
@@ -109,7 +111,8 @@ public:
     float getHighlightsY(){return highlightsY;}
 
     float getProgress(){return progress;}
-    float getSaveImage(){return saveImage;}
+    float getSaveTiff(){return saveTiff;}
+    float getSaveJpeg(){return saveJpeg;}
 /*    int getHistFinal(){return histFinal;}
     int getHistPostFilm(){return histPostFilm;}
     int getHistPreFilm(){return histPreFilm;}*/
@@ -148,7 +151,8 @@ protected:
 
     float progress;
 
-    bool saveImage;
+    bool saveTiff;
+    bool saveJpeg;
 
     LUT lutR, lutG, lutB;
     LUT filmLikeLUT;
@@ -201,7 +205,8 @@ signals:
     void highlightsYChanged();
 
     void progressChanged();
-    void saveImageChanged();
+    void saveTiffChanged();
+    void saveJpegChanged();
 
     //Notifications for the histograms
     void histFinalChanged();
