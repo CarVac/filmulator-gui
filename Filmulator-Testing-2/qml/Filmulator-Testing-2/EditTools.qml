@@ -33,6 +33,8 @@ Rectangle {
     property int defaultHighlightRecovery
     property real layerMixConst
     property real defaultLayerMixConst
+    property bool caEnabled
+    property bool defaultCaEnabled
 
     signal setAllValues()
 
@@ -101,6 +103,26 @@ Rectangle {
                         id: topSpacer
                         color: "#00000000"
                         height: 3
+                    }
+
+                    CheckBox {
+                        id: caCheckbox
+                        //tooltipText: qsTr("Automatically correct for chromatic aberrations")
+                        text: qsTr("CA correction")
+                        onCheckedChanged: {
+                            filmProvider.caEnabled = checked;
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                caCheckbox.checked = caEnabled;
+                            }
+                        }
+                        Component.onCompleted: {
+                            caCheckbox.tooltipWanted.connect(root.tooltipWanted)
+                            caCheckbax.checked = defalutCaEnabled;
+                        }
                     }
 
                     ToolSlider {

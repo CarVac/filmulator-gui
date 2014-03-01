@@ -27,6 +27,8 @@ SplitView {
     property alias defaultHighlightRecovery: editTools.defaultHighlightRecovery
     property alias layerMixConst: editTools.layerMixConst
     property alias defaultLayerMixConst: editTools.defaultLayerMixConst
+    property alias caEnabled: editTools.caEnabled
+    property alias defaultCaEnabled: editTools.defaultCaEnabled
 
     signal reset()
     signal updateImage()

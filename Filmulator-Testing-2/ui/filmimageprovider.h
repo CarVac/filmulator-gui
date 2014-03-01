@@ -30,6 +30,7 @@ struct histogram {
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
     Q_OBJECT
+    Q_PROPERTY(bool caEnabled READ getCaEnabled WRITE setCaEnabled NOTIFY caEnabledChanged)
     Q_PROPERTY(int highlights READ getHighlights WRITE setHighlights NOTIFY highlightsChanged)
 
     Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -64,6 +65,7 @@ public:
 
     //Setter methods
     //After load, during demosaic
+    void setCaEnabled(bool caEnabledIn);
     void setHighlights(int highlightsIn);
 
     //After demosaic, during prefilmulation
@@ -94,6 +96,7 @@ public:
     void setSaveJpeg(bool saveJpegIn);
 
     //Getter methods
+    bool getCaEnabled(){return caEnabled;}
     int getHighlights(){return highlights;}
 
     float getExposureComp(){return exposureComp;}
@@ -134,6 +137,7 @@ public:
 protected:
     QMutex mutex;
 
+    bool caEnabled;
     int highlights;
 
     float exposureComp;
@@ -191,6 +195,7 @@ protected:
     int histIndex(float value, float max);
 
 signals:
+    void caEnabledChanged();
     void highlightsChanged();
 
     void exposureCompChanged();

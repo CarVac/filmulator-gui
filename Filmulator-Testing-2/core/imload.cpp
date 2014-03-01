@@ -27,7 +27,7 @@ bool imload(std::vector<string> input_filename_list,
             std::vector<float> input_exposure_compensation,
             matrix<float> &input_image,
             bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights,
-            float &wbRMultiplier, float &wbGMultiplier, float &wbBMultiplier)
+            bool caEnabled)
 {
     // If there is only one filename, then simply read it in and apply exposure
     // compensation. If there are more than one, read the first one (the brightest
@@ -40,9 +40,6 @@ bool imload(std::vector<string> input_filename_list,
                     "; Exiting..." << endl;
             return true;
         }
-        wbRMultiplier = 1;
-        wbGMultiplier = 1;
-        wbBMultiplier = 1;
     }
     else if(jpeg_in)
     {
@@ -52,14 +49,11 @@ bool imload(std::vector<string> input_filename_list,
                     "; Exiting..." << endl;
             return true;
         }
-        wbRMultiplier = 1;
-        wbGMultiplier = 1;
-        wbBMultiplier = 1;
     }
     else//raw
     {
         if(imread(input_filename_list[0], input_image, exifData, highlights,
-                  wbRMultiplier,wbGMultiplier,wbBMultiplier))
+                  caEnabled))
         {
             cerr << "Could not open image " << input_filename_list[0] <<
                     "; Exiting..." << endl;
@@ -108,7 +102,7 @@ bool imload(std::vector<string> input_filename_list,
         else//raw
         {
             if(imread(input_filename_list[i], temp_image, exifData, 0,
-                      wbRMultiplier, wbGMultiplier, wbBMultiplier))
+                      caEnabled))
             {
                 cerr << "Could not open image " << input_filename_list[i] <<
                         "; Exiting..." << endl;

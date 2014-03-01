@@ -62,6 +62,8 @@ ApplicationWindow {
                 property int defaultHighlightRecovery: 0
                 property real layerMixConst: 0.2
                 property real defaultLayerMixConst: 0.2
+                property bool caEnabled: false
+                property bool defaultCaEnabled: false
                 signal updateImage()
 
                 title: qsTr("Filmulate")
@@ -85,6 +87,8 @@ ApplicationWindow {
                     defaultHighlightRecovery: editorTab.defaultHighlightRecovery
                     layerMixConst: editorTab.layerMixConst
                     defaultLayerMixConst: editorTab.defaultLayerMixConst
+                    caEnabled: editorTab.caEnabled
+                    defaultCaEnabled: editorTab.defaultCaEnabled
 
                     Connections {
                         target: openDialog

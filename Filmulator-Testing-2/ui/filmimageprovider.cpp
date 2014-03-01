@@ -129,7 +129,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         //Reads in the photo.
         if(imload(input_filename_list, input_exposure_compensation,
                   input_image, tiff_in, jpeg_in, exifData, highlights,
-                  wbRMultiplier,wbGMultiplier,wbBMultiplier))
+                  caEnabled))
         {
             qDebug("Error loading images");
             mutex.lock();
@@ -353,6 +353,17 @@ QImage FilmImageProvider::requestImage(const QString &id,
 }
 
 //===After load, during demosaic===
+
+//Automatic CA correction
+void FilmImageProvider::setCaEnabled(bool caEnabledIn)
+{
+    QMutexLocker locker (&mutex);
+    caEnabled = caEnabledIn;
+    if (valid > load)
+        valid = load;
+    emit caEnabledChanged();
+}
+
 //Highlight recovery parameter
 void FilmImageProvider::setHighlights(int highlightsIn)
 {
