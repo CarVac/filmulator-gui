@@ -8,6 +8,7 @@ Rectangle {
     id: root
     color: "#404040"
     width: 250
+    anchors.margins: 3
     Layout.maximumWidth: 500
     Layout.minimumWidth: 250
 
@@ -74,11 +75,12 @@ Rectangle {
                 height: parent.height
                 flickableDirection: Qt.Vertical
                 clip: true
-                contentWidth: contentItem.childrenRect.width
+                contentWidth: contentItem.childrenRect.width + 6
                 contentHeight: contentItem.childrenRect.height
                 ColumnLayout {
                     spacing: 0
-                    width: toolListItem.width
+                    x: 3
+                    width: toolListItem.width - 6
 /*                    CheckBox{
                         id: defaultToneCurveCheckBox
                         text: qsTr("Default Tone Curve")
@@ -94,6 +96,12 @@ Rectangle {
                             }
                         }
                     }*/
+
+                    Rectangle {
+                        id: topSpacer
+                        color: "#00000000"
+                        height: 3
+                    }
 
                     ToolSlider {
                         id: exposureCompSlider

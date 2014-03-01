@@ -28,9 +28,9 @@ Rectangle {
     Text {
         id: label
         color: "white"
-        width: parent.width - valueBox.width - reset.width- 2*__padding
+        width: parent.width - valueBox.width - reset.width- 4*__padding
         x: __padding
-        y: __padding
+        y: __padding + 1
         elide: Text.ElideRight
     }
     Rectangle {
@@ -38,8 +38,8 @@ Rectangle {
         color: "black"
         width: 60
         height: 20 - __padding
-        x: parent.width - this.width - 30 - __padding
-        y: __padding
+        x: parent.width - this.width - reset.width - 1.5*__padding
+        y: __padding + 1
         Text {
             id: valueText
             anchors.fill: parent
@@ -52,8 +52,8 @@ Rectangle {
     Slider {
         id: slider
         x: __padding
-        y: 20
-        width: parent.width - 2*__padding - 30
+        y: 21
+        width: parent.width - reset.width - 2.5*__padding
         updateValueWhileDragging: true
         value: defaultValue
         style: SliderStyle {
@@ -71,10 +71,10 @@ Rectangle {
     }
     Button {
         id: reset
-        width: 26
-        height: 26
-        x: root.width-width-__padding-1
-        y: __padding
+        width: 28
+        height: 28
+        x: root.width-width-__padding/2
+        y: __padding/2
         text: "[]"
         action: Action {
             onTriggered: {
