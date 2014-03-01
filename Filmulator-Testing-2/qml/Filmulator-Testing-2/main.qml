@@ -62,6 +62,7 @@ ApplicationWindow {
                 property int defaultHighlightRecovery: 0
                 property real layerMixConst: 0.2
                 property real defaultLayerMixConst: 0.2
+                signal updateImage()
 
                 title: qsTr("Filmulate")
                 Edit {
@@ -90,14 +91,9 @@ ApplicationWindow {
                         onAccepted: reset()
                     }
                     Connections {
-                        target: saveTIFFButton
-                        onTriggered: {
-                            editItem.updateImage()
-                        }
-                    }
-                    Connections {
-                        target: saveJPEGButton
-                        onTriggered: {
+                        target: editorTab
+                        onUpdateImage: {
+                            console.log("updating image")
                             editItem.updateImage()
                         }
                     }
@@ -139,10 +135,15 @@ ApplicationWindow {
                 text: qsTr("Save TIFF")
                 width: 80
                 height: 40
+                signal update()
                 action: Action {
                     onTriggered: {
                         filmProvider.saveTiff = true
+                        saveTIFFButton.update()
                     }
+                }
+                Component.onCompleted: {
+                    saveTIFFButton.update.connect(editorTab.updateImage)
                 }
             }
 
@@ -153,10 +154,15 @@ ApplicationWindow {
                 text: qsTr("Save JPEG")
                 width: 80
                 height: 40
+                signal update()
                 action: Action {
                     onTriggered: {
                         filmProvider.saveJpeg = true
+                        saveJPEGButton.update()
                     }
+                }
+                Component.onCompleted: {
+                    saveJPEGButton.update.connect(editorTab.updateImage)
                 }
             }
 

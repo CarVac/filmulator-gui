@@ -307,7 +307,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
         //We would mark our progress, but this is the very last step.
         matrix<unsigned short> rotated_image;
-        rotate_image(film_curve_image,rotated_image,exifData);
+        rotate_image(film_curve_image,rotated_image,rotation);
 
         if(saveTiff)
         {
@@ -564,4 +564,22 @@ unsigned short FilmImageProvider::lookup(unsigned short in)
                 shadows_highlights(float(in)/65535.0,shadowsX,shadowsY,
                                    highlightsX,highlightsY)
                 ,defaultToneCurveEnabled);
+}
+
+void FilmImageProvider::rotateLeft()
+{
+    rotation++;
+    if (rotation > 3)
+    {
+        rotation -= 4;
+    }
+}
+
+void FilmImageProvider::rotateRight()
+{
+    rotation--;
+    if (rotation < 0)
+    {
+        rotation += 4;
+    }
 }

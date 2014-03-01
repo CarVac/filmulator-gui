@@ -19,15 +19,15 @@
 #include "filmsim.hpp"
 
 void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
-                  Exiv2::ExifData &exifData)
+                  int rotation)
 {
     int nrows, ncols;
     nrows = input.nr();
     ncols = input.nc();
 
-    switch((int) exifData["Exif.Image.Orientation"].value().toLong())
+    switch(rotation)
     {
-        case 3://upside down
+        case 2://upside down
             output.set_size(nrows,ncols);
             for(int i = 0; i < nrows; i++)
             {
@@ -42,13 +42,13 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 {
                     //Reversing the column index
                     int c = ncols - 3 - j;
-                    output(i,j*3  ) = input(r,c  );
-                    output(i,j*3+1) = input(r,c+1);
-                    output(i,j*3+2) = input(r,c+2);
+                    output(i,j  ) = input(r,c  );
+                    output(i,j+1) = input(r,c+1);
+                    output(i,j+2) = input(r,c+2);
                 }
             }
             break;
-        case 6://right side down
+        case 3://right side down
             output.set_size(ncols/3,nrows*3);
             for(int j = 0; j < ncols/3; j++)
                 {
@@ -72,7 +72,7 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                     }
                 }
             break;
-        case 8://left side down
+        case 1://left side down
             output.set_size(ncols/3,nrows*3);
             for(int j = 0; j < ncols/3; j++)
             {

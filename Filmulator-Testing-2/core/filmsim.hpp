@@ -188,5 +188,5 @@ void color_curves(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 LUT lutR, LUT lutG, LUT lutB);
 
 void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
-                  Exiv2::ExifData &exifData);
+                  int rotation);
 #endif // FILMSIM_H

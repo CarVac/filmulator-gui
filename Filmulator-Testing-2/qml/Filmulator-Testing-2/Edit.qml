@@ -160,10 +160,39 @@ SplitView {
                 }
             }
         }
+        ToolButton {
+            id: rotateLeft
+            anchors.right: rotateRight.left
+            //x: parent.width - 200
+            y: 0
+            width: 90
+            text: qsTr("Rotate Left")
+            action: Action {
+                onTriggered: {
+                    filmProvider.rotateLeft()
+                    root.updateImage()
+                }
+            }
+        }
+
+        ToolButton {
+            id: rotateRight
+            anchors.right: fitscreen.left
+            y: 0
+            width: 90
+            text: qsTr("Rotate Right")
+            action: Action {
+                onTriggered: {
+                    filmProvider.rotateRight()
+                    root.updateImage()
+                }
+            }
+        }
 
         ToolButton {
             id: fitscreen
-            x: parent.width-120
+            anchors.right: fullzoom.left
+            //x: parent.width-120
             y: 0
             text: qsTr("Fit")
             action: Action {
@@ -181,7 +210,8 @@ SplitView {
         }
         ToolButton {
             id: fullzoom
-            x: parent.width-90
+            anchors.right: zoomin.left
+            //x: parent.width-90
             y: 0
             text: "1:1"
             action: Action {
@@ -198,7 +228,8 @@ SplitView {
         }
         ToolButton {
             id: zoomin
-            x: parent.width-60
+            anchors.right: zoomout.left
+            //x: parent.width-60
             y: 0
             text: "+"
             action: Action {
@@ -215,7 +246,8 @@ SplitView {
         }
         ToolButton {
             id: zoomout
-            x: parent.width-30
+            anchors.right: parent.right
+            //x: parent.width-30
             y: 0
             text: "-"
             action: Action {
