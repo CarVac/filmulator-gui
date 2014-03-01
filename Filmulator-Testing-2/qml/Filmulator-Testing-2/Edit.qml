@@ -29,6 +29,7 @@ SplitView {
     property alias defaultLayerMixConst: editTools.defaultLayerMixConst
 
     signal reset()
+    signal updateImage()
     signal tooltipWanted(string text, int x, int y)
 
     onLocationChanged: filmProvider.invalidateImage()
@@ -81,7 +82,7 @@ SplitView {
                     property int index: 0
                     scale: bottomImage.scale
                     Connections {
-                        target: editTools
+                        target: root
                         onUpdateImage: {
                             topImage.index = (topImage.index + 1) % 10
                         }
@@ -261,6 +262,7 @@ SplitView {
         id: editTools
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)
+            editTools.updateImage.connect(root.updateImage)
         }
     }
 

@@ -352,26 +352,6 @@ Rectangle {
                             highlightBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
-                    ToolButton {
-                        id: saveTIFFButton
-                        text: qsTr("Save TIFF")
-                        action: Action {
-                            onTriggered: {
-                                filmProvider.saveTiff = true;
-                                root.updateImage();
-                            }
-                        }
-                    }
-                    ToolButton {
-                        id: saveJPEGButton
-                        text: qsTr("Save JPEG")
-                        action: Action {
-                            onTriggered: {
-                                filmProvider.saveJpeg = true;
-                                root.updateImage();
-                            }
-                        }
-                    }
                 }
             }
             MouseArea {

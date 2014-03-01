@@ -82,7 +82,9 @@ void setupDB(QSqlDatabase *db)
                "whitepoint real,"
                "blackpoint real,"
                "shadowsY real,"
-               "highlightsY real"
+               "highlightsY real,"
+               "exposureComp real,"
+
                ");"
                );
 }

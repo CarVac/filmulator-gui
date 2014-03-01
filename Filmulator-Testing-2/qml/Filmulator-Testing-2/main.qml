@@ -89,6 +89,19 @@ ApplicationWindow {
                         target: openDialog
                         onAccepted: reset()
                     }
+                    Connections {
+                        target: saveTIFFButton
+                        onTriggered: {
+                            editItem.updateImage()
+                        }
+                    }
+                    Connections {
+                        target: saveJPEGButton
+                        onTriggered: {
+                            editItem.updateImage()
+                        }
+                    }
+
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -108,13 +121,41 @@ ApplicationWindow {
 
             ToolButton {
                 id: openButton
-                anchors.centerIn: parent
+                anchors.right: saveTIFFButton.left
+                anchors.verticalCenter: saveTIFFButton.verticalCenter
                 text: qsTr("Open")
                 width: 80
                 height: 40
                 action: Action {
                     onTriggered: {
                         openDialog.open()
+                    }
+                }
+            }
+
+            ToolButton {
+                id: saveTIFFButton
+                anchors.centerIn: parent
+                text: qsTr("Save TIFF")
+                width: 80
+                height: 40
+                action: Action {
+                    onTriggered: {
+                        filmProvider.saveTiff = true
+                    }
+                }
+            }
+
+            ToolButton {
+                id: saveJPEGButton
+                anchors.left: saveTIFFButton.right
+                anchors.verticalCenter: saveTIFFButton.verticalCenter
+                text: qsTr("Save JPEG")
+                width: 80
+                height: 40
+                action: Action {
+                    onTriggered: {
+                        filmProvider.saveJpeg = true
                     }
                 }
             }
@@ -196,7 +237,7 @@ ApplicationWindow {
             tooltipCatcher.enabled = false
         }
 
-/*        Timer {
+        /*        Timer {
             id: tooltipTimer
             interval: 5000
             onTriggered: {
