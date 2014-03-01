@@ -137,6 +137,29 @@ QImage FilmImageProvider::requestImage(const QString &id,
             mutex.unlock();
             return emptyImage();
         }
+        switch((int) exifData["Exif.Image.Orientation"].value().toLong())
+        {
+        case 3://upside down
+        {
+            rotation = 2;
+            break;
+        }
+        case 6://right side down
+        {
+            rotation = 3;
+            break;
+        }
+        case 8://left side down
+        {
+            rotation = 1;
+            break;
+        }
+        default:
+        {
+            rotation = 0;
+            break;
+        }
+        }
     }
     case demosaic://Do pre-filmulation work.
     {
@@ -149,7 +172,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         mutex.unlock();
 
         //Here we apply the exposure compensation and white balance.
-//        pre_film_image = input_image * pow(2, exposureComp);
+        //        pre_film_image = input_image * pow(2, exposureComp);
 
         //This sets up the multipliers; we normalize to green.
         const float mult = pow(2,exposureComp);
@@ -175,7 +198,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         }
 
         updateFloatHistogram(preFilmHist, pre_film_image, 65535, histPreFilm);
-//        cout << mean(pre_film_image) << endl;
+        //        cout << mean(pre_film_image) << endl;
         emit histPreFilmChanged();
 
     }
@@ -191,7 +214,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         valid = filmulation;
         mutex.unlock();
 
-/*        //Read in from the configuration file
+        /*        //Read in from the configuration file
         //Get home directory
         int myuid = getuid();
         passwd *mypasswd = getpwuid(myuid);
@@ -290,7 +313,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         {
             output_file(rotated_image,input_filename_list,false,exifData);
             mutex.lock();
-                saveTiff = false;
+            saveTiff = false;
             mutex.unlock();
         }
 
@@ -298,7 +321,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         {
             output_file(rotated_image,input_filename_list,true,exifData);
             mutex.lock();
-                saveJpeg = false;
+            saveJpeg = false;
             mutex.unlock();
         }
         int nrows = rotated_image.nr();

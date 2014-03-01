@@ -126,6 +126,8 @@ public:
     Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,LogY::no);}
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
+    Q_INVOKABLE void rotateRight();
+    Q_INVOKABLE void rotateLeft();
 
     bool isGUI(){return true;}
 
@@ -146,6 +148,7 @@ protected:
     float whitepoint;
     bool defaultToneCurveEnabled;
     float shadowsX, shadowsY, highlightsX, highlightsY;
+    int rotation;
 
     float wbRMultiplier, wbGMultiplier, wbBMultiplier;
 
