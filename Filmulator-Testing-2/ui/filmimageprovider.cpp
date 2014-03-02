@@ -188,7 +188,6 @@ QImage FilmImageProvider::requestImage(const QString &id,
         if(checkAbort(prefilmulation))
             return emptyImage();
 
-        cout << "before filmulating" << endl;
         //Mark that we've started to filmulate.
         mutex.lock();
         valid = filmulation;

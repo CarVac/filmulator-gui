@@ -158,7 +158,7 @@ Rectangle {
                         tooltipText: qsTr("Set the tint of light source in Kelvin so filmulator can correct for it")
                         minimumValue: -0.1
                         maximumValue:  0.1
-                        stepSize: 0.001
+                        stepSize: 0.002
                         defaultValue: root.defaultTint
                         onValueChanged: {
                             filmProvider.tint = value
