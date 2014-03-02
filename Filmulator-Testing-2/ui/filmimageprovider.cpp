@@ -175,7 +175,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
         //Here we apply the exposure compensation and white balance.
         matrix<float> exposureImage = input_image * pow(2, exposureComp);
+        cout << "before exposure" << endl;
         white_balance(exposureImage,pre_film_image,temperature,tint);
+        cout << "before histogram" << endl;
 
         updateFloatHistogram(preFilmHist, pre_film_image, 65535, histPreFilm);
         //        cout << mean(pre_film_image) << endl;
@@ -189,6 +191,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         if(checkAbort(prefilmulation))
             return emptyImage();
 
+        cout << "before filmulating" << endl;
         //Mark that we've started to filmulate.
         mutex.lock();
         valid = filmulation;

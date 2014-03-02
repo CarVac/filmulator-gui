@@ -73,5 +73,7 @@ void FilmImageProvider::updateFloatHistogram(histogram &hist, const matrix<float
 
 inline int FilmImageProvider::histIndex(float value, float maximum)
 {
-    return min(127, int(127*value/maximum));
+    if(value<0)
+        cout << "baaaaad" << endl;
+    return max(0,min(127, int(127*value/maximum)));
 }
