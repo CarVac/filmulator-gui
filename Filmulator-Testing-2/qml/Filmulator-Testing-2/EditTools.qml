@@ -135,7 +135,6 @@ Rectangle {
                         tooltipText: qsTr("Set the temperature of light source in Kelvin so filmulator can correct for it")
                         minimumValue: 1500
                         maximumValue: 15000
-                        stepSize: 500
                         defaultValue: root.defaultTemperature
                         onValueChanged: {
                             filmProvider.temperature = value
@@ -158,7 +157,6 @@ Rectangle {
                         tooltipText: qsTr("Set the tint of light source in Kelvin so filmulator can correct for it")
                         minimumValue: -0.1
                         maximumValue:  0.1
-                        stepSize: 0.001
                         defaultValue: root.defaultTint
                         onValueChanged: {
                             filmProvider.tint = value
