@@ -122,9 +122,7 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
             rgb_to_xyz(input(i,j),input(i,j+1),input(i,j+2),
                        inputX    ,inputY      ,inputZ);
             double magnitude = inputX + inputY + inputZ;
-//            double newX = magnitude*(inputX/magnitude + xShift);
             double newX = inputX + magnitude*xShift;
-//            double newY = magnitude*(inputY/magnitude + yShift);
             double newY = inputY + magnitude*yShift;
             double newZ = magnitude - newX - newY;
 

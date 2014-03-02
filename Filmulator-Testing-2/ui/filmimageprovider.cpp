@@ -175,12 +175,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
         //Here we apply the exposure compensation and white balance.
         matrix<float> exposureImage = input_image * pow(2, exposureComp);
-        cout << "before exposure" << endl;
         white_balance(exposureImage,pre_film_image,temperature,tint);
-        cout << "before histogram" << endl;
 
         updateFloatHistogram(preFilmHist, pre_film_image, 65535, histPreFilm);
-        //        cout << mean(pre_film_image) << endl;
         emit histPreFilmChanged();
 
     }
@@ -233,7 +230,6 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
         //Histogram work
         updateFloatHistogram(postFilmHist, filmulated_image, .0025, histPostFilm);
-        //cout << mean(filmulated_image) << endl;
         emit histPostFilmChanged();//must be run to notify QML
     }
     case filmulation://Do whitepoint_blackpoint
