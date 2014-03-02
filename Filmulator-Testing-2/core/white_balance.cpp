@@ -1,8 +1,8 @@
 #include "filmsim.hpp"
 #include <algorithm>
 
-void temp_tone_to_xy(double const temp, double const tone,
-                     double &tempToneX, double &tempToneY)
+void temp_tint_to_xy(double const temp, double const tint,
+                     double &tempTintX, double &tempTintY)
 {
     double tempX;
 
@@ -57,14 +57,30 @@ void temp_tone_to_xy(double const temp, double const tone,
                2*-5.8733867 * tempX +
                  -0.37001483;
     }
-    double normal = -1.0/dYdX;
 
-    //solution of x^2 + y^2 = tone^2; y=normal*x
-    double toneX = sqrt( tone/(1.0+ pow(normal,2) ) );
-    double toneY = normal*tempToneX;
 
-    tempToneX = tempX + toneX;
-    tempToneY = tempY + toneY;
+    cout << "dydx: " << dYdX << endl;
+    if(fabs(dYdX) > 0.01)
+    {
+        double normal = -1.0/dYdX;
+
+        //solution of x^2 + y^2 = tint^2; y=normal*x
+        double tintX = sqrt( pow(tint,2)/(1.0+ pow(normal,2) ) );
+        if (tint < 0)
+            tintX = -tintX;
+        double tintY = normal*tintX;
+
+        tempTintX = tempX + tintX;
+        tempTintY = tempY + tintY;
+    }
+    else
+    {
+        tempTintX = tempX;
+        if(dYdX > 0)
+            tempTintY = tempY - tint;
+        else
+            tempTintY = tempY + tint;
+    }
 
     return;
 }
@@ -80,20 +96,20 @@ void rgb_to_xyz(double  r, double  g, double  b,
 void xyz_to_rgb(double  x, double  y, double  z,
                 double &r, double &g, double &b)
 {
-    r =  3.2406*x + -1.5372*y + -0.4986*z;
-    g = -0.9686*x +  1.8758*y +  0.0415*z;
-    b =  0.0557*x + -0.2040*y +  1.0570*z;
+    r =  3.2406*x + -1.5372*y + -0.4989*z;
+    g = -0.9689*x +  1.8758*y +  0.0415*z;
+    b =  0.0557*x + -0.2041*y +  1.0573*z;
 }
 
 void white_balance ( matrix<float> &input, matrix<float> &output,
                      double temp, double tone )
 {
-    double tempToneX, tempToneY;
-    temp_tone_to_xy(temp,tone,tempToneX,tempToneY);
-    double xShift = (1.0/3.0) - tempToneX;
-    double yShift = (1.0/3.0) - tempToneY;
-    xShift = 0;
-    yShift = 0;
+    double tempTintX, tempTintY;
+    temp_tint_to_xy(temp,tone,tempTintX,tempTintY);
+    double xShift = (1.0/3.0) - tempTintX;
+    double yShift = (1.0/3.0) - tempTintY;
+    cout << "xShift: " << xShift << endl;
+    cout << "yShift: " << yShift << endl;
 
     int nrows = input.nr();
     int ncols = input.nc();
@@ -112,8 +128,9 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
 
             double newR, newG, newB;
             xyz_to_rgb(newX, newY, newZ, newR, newG, newB);
+
             output(i,j  ) = max(newR,0.0);
-            output(i,j+1) = max(newB,0.0);
-            output(i,j+2) = max(newG,0.0);
+            output(i,j+1) = max(newG,0.0);
+            output(i,j+2) = max(newB,0.0);
         }
 }
