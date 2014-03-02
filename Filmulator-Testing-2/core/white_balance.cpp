@@ -58,8 +58,6 @@ void temp_tint_to_xy(double const temp, double const tint,
                  -0.37001483;
     }
 
-
-    cout << "dydx: " << dYdX << endl;
     if(fabs(dYdX) > 0.01)
     {
         double normal = -1.0/dYdX;
@@ -108,13 +106,15 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
     temp_tint_to_xy(temp,tone,tempTintX,tempTintY);
     double xShift = (1.0/3.0) - tempTintX;
     double yShift = (1.0/3.0) - tempTintY;
-    cout << "xShift: " << xShift << endl;
-    cout << "yShift: " << yShift << endl;
 
     int nrows = input.nr();
     int ncols = input.nc();
 
     output.set_size(nrows,ncols);
+
+#pragma omp parallel shared(output, input) firstprivate(nrows,ncols,xShift,yShift)
+        {
+#pragma omp for schedule(dynamic) nowait
     for(int i = 0; i < nrows; i++)
         for(int j = 0; j < ncols; j = j+3)
         {
@@ -133,4 +133,5 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
             output(i,j+1) = max(newG,0.0);
             output(i,j+2) = max(newB,0.0);
         }
+    }
 }
