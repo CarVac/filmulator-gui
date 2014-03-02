@@ -90,7 +90,10 @@ SplitView {
                     Connections {
                         target: root
                         onUpdateImage: {
-                            topImage.index = (topImage.index + 1) % 10
+                            var nextIndex = (topImage.index + 1) % 10
+                            if(topImage.index == nextIndex)
+                                nextIndex = (topImage.index + 2) % 10
+                            topImage.index = nextIndex
                         }
                     }
                     onStatusChanged: if(topImage.status == Image.Ready) {
