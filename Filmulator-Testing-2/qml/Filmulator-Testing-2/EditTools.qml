@@ -35,6 +35,10 @@ Rectangle {
     property real defaultLayerMixConst
     property bool caEnabled
     property bool defaultCaEnabled
+    property real temperature
+    property real defaultTemperature
+    property real tint
+    property real defaultTint
 
     signal setAllValues()
 
@@ -122,6 +126,52 @@ Rectangle {
                         Component.onCompleted: {
                             caCheckbox.tooltipWanted.connect(root.tooltipWanted)
                             caCheckbax.checked = defalutCaEnabled;
+                        }
+                    }
+
+                    ToolSlider {
+                        id: temperatureSlider
+                        title: qsTr("Temperature")
+                        tooltipText: qsTr("Set the temperature of light source in Kelvin so filmulator can correct for it")
+                        minimumValue: 1500
+                        maximumValue: 15000
+                        stepSize: 500
+                        defaultValue: root.defaultTemperature
+                        onValueChanged: {
+                            filmProvider.temperature = value
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                temperatureSlider.value = temperature
+                            }
+                        }
+                        Component.onCompleted: {
+                            exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                    }
+
+                    ToolSlider {
+                        id: tintSlider
+                        title: qsTr("Tint")
+                        tooltipText: qsTr("Set the tint of light source in Kelvin so filmulator can correct for it")
+                        minimumValue: -0.1
+                        maximumValue:  0.1
+                        stepSize: 0.001
+                        defaultValue: root.defaultTint
+                        onValueChanged: {
+                            filmProvider.tint = value
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                tintSlider.value = tint
+                            }
+                        }
+                        Component.onCompleted: {
+                            exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
 

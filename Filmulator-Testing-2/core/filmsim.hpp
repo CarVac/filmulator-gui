@@ -184,4 +184,7 @@ void color_curves(matrix<unsigned short> &input, matrix<unsigned short> &output,
 
 void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                   int rotation);
+
+void white_balance (matrix<float> &input, matrix<float> &output,
+                    double temp, double tone);
 #endif // FILMSIM_H

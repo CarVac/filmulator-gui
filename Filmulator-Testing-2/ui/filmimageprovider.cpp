@@ -172,30 +172,8 @@ QImage FilmImageProvider::requestImage(const QString &id,
         mutex.unlock();
 
         //Here we apply the exposure compensation and white balance.
-        //        pre_film_image = input_image * pow(2, exposureComp);
-
-        //This sets up the multipliers; we normalize to green.
-        const float mult = pow(2,exposureComp);
-        const float rMult = wbRMultiplier*pow(2,exposureComp)/wbGMultiplier;
-        cout << wbRMultiplier << endl;
-        cout << "rmult: " << rMult << endl;
-        const float gMult = wbGMultiplier*pow(2,exposureComp)/wbGMultiplier;
-        cout << wbGMultiplier << endl;
-        cout << "gmult: " << gMult << endl;
-        const float bMult = wbBMultiplier*pow(2,exposureComp)/wbGMultiplier;
-        cout << wbBMultiplier << endl;
-        cout << "bmult: " << bMult << endl;
-        pre_film_image = input_image;
-#pragma omp parallel for
-        for(int row = 0; row < input_image.nr(); row++)
-        {
-            for (int col = 0; col < input_image.nc(); col += 3)
-            {
-                pre_film_image(row,col+0) *= mult;//rMult;
-                pre_film_image(row,col+1) *= mult;//gMult;
-                pre_film_image(row,col+2) *= mult;//bMult;
-            }
-        }
+        matrix<float> exposureImage = input_image * pow(2, exposureComp);
+        white_balance(exposureImage,pre_film_image,temperature,tint);
 
         updateFloatHistogram(preFilmHist, pre_film_image, 65535, histPreFilm);
         //        cout << mean(pre_film_image) << endl;
@@ -383,6 +361,26 @@ void FilmImageProvider::setExposureComp(float exposure)
     if (valid > demosaic)
         valid = demosaic;
     emit exposureCompChanged();
+}
+
+//Temperature of white balance correction
+void FilmImageProvider::setTemperature(double temperatureIn)
+{
+    QMutexLocker locker(&mutex);
+    temperature = temperatureIn;
+    if (valid > demosaic)
+        valid = demosaic;
+    emit temperatureChanged();
+}
+
+//Tint of white balance correction
+void FilmImageProvider::setTint(double tintIn)
+{
+    QMutexLocker locker(&mutex);
+    tint = tintIn;
+    if (valid > demosaic)
+        valid = demosaic;
+    emit tintChanged();
 }
 
 //===After prefilmulation, during filmulation===

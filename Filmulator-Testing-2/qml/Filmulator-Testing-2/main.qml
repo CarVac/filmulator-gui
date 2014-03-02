@@ -64,6 +64,10 @@ ApplicationWindow {
                 property real defaultLayerMixConst: 0.2
                 property bool caEnabled: false
                 property bool defaultCaEnabled: false
+                property real temperature: 6500
+                property real defaultTemperature: 6500
+                property real tint: 0
+                property real defaultTint: 0
                 signal updateImage()
 
                 title: qsTr("Filmulate")
@@ -89,6 +93,10 @@ ApplicationWindow {
                     defaultLayerMixConst: editorTab.defaultLayerMixConst
                     caEnabled: editorTab.caEnabled
                     defaultCaEnabled: editorTab.defaultCaEnabled
+                    temperature: editorTab.temperature
+                    defaultTemperature: editorTab.defaultTemperature
+                    tint: editorTab.tint
+                    defaultTint: editorTab.defaultTint
 
                     Connections {
                         target: openDialog

@@ -32,7 +32,8 @@ SOURCES += main.cpp \
     database/sqlmodel.cpp \
     database/dbsetup.cpp \
     database/sqlproperties.cpp \
-    core/rotate_image.cpp
+    core/rotate_image.cpp \
+    core/white_balance.cpp
 
 # Installation path
 # target.path =

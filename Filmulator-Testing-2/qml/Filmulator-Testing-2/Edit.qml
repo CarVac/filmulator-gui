@@ -29,6 +29,10 @@ SplitView {
     property alias defaultLayerMixConst: editTools.defaultLayerMixConst
     property alias caEnabled: editTools.caEnabled
     property alias defaultCaEnabled: editTools.defaultCaEnabled
+    property alias temperature: editTools.temperature
+    property alias defaultTemperature: editTools.defaultTemperature
+    property alias tint: editTools.tint
+    property alias defaultTint: editTools.defaultTint
 
     signal reset()
     signal updateImage()

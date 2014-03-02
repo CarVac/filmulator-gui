@@ -34,6 +34,8 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
     Q_PROPERTY(int highlights READ getHighlights WRITE setHighlights NOTIFY highlightsChanged)
 
     Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
+    Q_PROPERTY(double temperature READ getTemperature WRITE setTemperature NOTIFY temperatureChanged)
+    Q_PROPERTY(double tint READ getTint WRITE setTint NOTIFY tintChanged)
 
     Q_PROPERTY(float develTime READ getDevelTime WRITE setDevelTime NOTIFY develTimeChanged)
     Q_PROPERTY(int agitateCount READ getAgitateCount WRITE setAgitateCount NOTIFY agitateCountChanged)
@@ -70,6 +72,8 @@ public:
 
     //After demosaic, during prefilmulation
     void setExposureComp(float exposureIn);
+    void setTemperature(double temperatureIn);
+    void setTint(double tintIn);
 
     //After prefilmulation, during filmulation
     void setDevelTime(float develTimeIn);
@@ -100,6 +104,8 @@ public:
     int getHighlights(){return highlights;}
 
     float getExposureComp(){return exposureComp;}
+    double getTemperature(){return temperature;}
+    double getTint(){return tint;}
 
     float getDevelTime(){return develTime;}
     int getAgitateCount(){return agitateCount;}
@@ -141,6 +147,8 @@ protected:
     int highlights;
 
     float exposureComp;
+    double temperature;
+    double tint;
 
     float develTime;
     int agitateCount;
@@ -199,6 +207,8 @@ signals:
     void highlightsChanged();
 
     void exposureCompChanged();
+    void temperatureChanged();
+    void tintChanged();
 
     void develTimeChanged();
     void agitateCountChanged();
