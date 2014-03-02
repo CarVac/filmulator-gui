@@ -79,18 +79,24 @@ SplitView {
                 Image {
                     anchors.centerIn: parent
                     id: topImage
-                    source:"image://filmy/"+root.location+index
+                    source:"image://filmy/"+root.location+indexString
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     layer.mipmap: true
                     property real realWidth: width * scale
                     property real realHeight: height * scale
                     property int index: 0
+                    property string indexString: "000000"
                     scale: bottomImage.scale
                     Connections {
                         target: root
                         onUpdateImage: {
-                            topImage.index = (topImage.index + 1) % 1000000//1 in a million
+                            var num = (topImage.index + 1) % 1000000//1 in a million
+                            topImage.index = num;
+                            var s = num+"";
+                            var size = 6 //6 digit number
+                            while (s.length < size) s = "0" + s;
+                            topImage.indexString = s
                         }
                     }
                     onStatusChanged: if(topImage.status == Image.Ready) {

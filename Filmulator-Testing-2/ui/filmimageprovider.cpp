@@ -86,8 +86,10 @@ QImage FilmImageProvider::requestImage(const QString &id,
     gettimeofday(&request_start_time,NULL);
     QImage output = emptyImage();
     QString tempID = id;
-    tempID.remove(tempID.length()-1,7);
+    cout << id.toStdString() << endl;
+    tempID.remove(tempID.length()-6,6);
     tempID.remove(0,7);
+    cout << tempID.toStdString() << endl;
     string inputFilename = tempID.toStdString();
     std::vector<std::string> input_filename_list;
     input_filename_list.push_back(inputFilename);
