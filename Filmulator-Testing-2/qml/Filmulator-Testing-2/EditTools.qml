@@ -39,6 +39,10 @@ Rectangle {
     property real defaultTemperature
     property real tint
     property real defaultTint
+    property real vibrance
+    property real defaultVibrance
+    property real saturation
+    property real defaultSaturation
 
     signal setAllValues()
 
@@ -430,6 +434,52 @@ Rectangle {
                         }
                         Component.onCompleted: {
                             highlightBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                    }
+
+                    ToolSlider {
+                        id: vibranceSlider
+                        title: qsTr("Vibrance")
+                        tooltipText: qsTr("Make the image more colorful but avoid oversaturating already colorful parts of the image.")
+                        minimumValue: -0.5
+                        maximumValue: 0.5
+                        defaultValue: root.defaultVibrance
+                        valueText: value*200
+                        onValueChanged: {
+                            filmProvider.vibrance = value
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                vibranceSlider.value = vibrance
+                            }
+                        }
+                        Component.onCompleted: {
+                            vibranceSlider.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                    }
+
+                    ToolSlider {
+                        id: saturationSlider
+                        title: qsTr("Saturation")
+                        tooltipText: qsTr("Make all parts of the image more colorful")
+                        minimumValue: -0.5
+                        maximumValue: 0.5
+                        defaultValue: root.defaultSaturation
+                        valueText: value*200
+                        onValueChanged: {
+                            filmProvider.saturation = value
+                            root.updateImage()
+                        }
+                        Connections {
+                            target: root
+                            onSetAllValues: {
+                                saturationSlider.value = saturation
+                            }
+                        }
+                        Component.onCompleted: {
+                            saturationSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
                 }

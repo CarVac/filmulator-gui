@@ -33,6 +33,10 @@ SplitView {
     property alias defaultTemperature: editTools.defaultTemperature
     property alias tint: editTools.tint
     property alias defaultTint: editTools.defaultTint
+    property alias vibrance: editTools.vibrance
+    property alias defaultVibrance: editTools.defaultVibrance
+    property alias saturation: editTools.saturation
+    property alias defaultSaturation: editTools.defaultSaturation
 
     signal reset()
     signal updateImage()

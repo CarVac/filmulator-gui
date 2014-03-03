@@ -34,6 +34,9 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     highlightsX = 0.75;
     highlightsY = 0.75;
 
+    saturation = 0;
+    vibrance = 0;
+
     saveTiff = false;
     saveJpeg = false;
 
@@ -69,6 +72,9 @@ FilmImageProvider::FilmImageProvider() :
     shadowsY = 0.25;
     highlightsX = 0.75;
     highlightsY = 0.75;
+
+    saturation = 0;
+    vibrance = 0;
 
     saveTiff = false;
     saveJpeg = false;
@@ -273,7 +279,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
         valid = filmlikecurve;
         mutex.unlock();
         filmLikeLUT.fill(this);
+        matrix<unsigned short> film_curve_image;
         film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
+        vibrance_saturation(film_curve_image,vibrance_saturation_image,vibrance,saturation);
     }
     case filmlikecurve: //output
     {
@@ -285,7 +293,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
         //We would mark our progress, but this is the very last step.
         matrix<unsigned short> rotated_image;
-        rotate_image(film_curve_image,rotated_image,rotation);
+        rotate_image(vibrance_saturation_image,rotated_image,rotation);
 
         if(saveTiff)
         {
@@ -321,7 +329,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     }//End task switch
 
     emit histPostFilmChanged();
-    updateShortHistogram(finalHist, film_curve_image, histFinal);
+    updateShortHistogram(finalHist, vibrance_saturation_image, histFinal);
     emit histFinalChanged();//This must be run immediately after updateHistFinal in order to notify QML.
 
     tout << "Request time: " << time_diff(request_start_time) << " seconds" << endl;
@@ -488,6 +496,24 @@ void FilmImageProvider::setHighlightsY(float highlightsYIn)
     if (valid > colorcurve)
         valid = colorcurve;
     emit highlightsYChanged();
+}
+
+void FilmImageProvider::setVibrance(float vibranceIn)
+{
+    QMutexLocker locker (&mutex);
+    vibrance = vibranceIn;
+    if (valid > colorcurve)
+        valid = colorcurve;
+    emit vibranceChanged();
+}
+
+void FilmImageProvider::setSaturation(float saturationIn)
+{
+    QMutexLocker locker (&mutex);
+    saturation = saturationIn;
+    if (valid > colorcurve)
+        valid = colorcurve;
+    emit saturationChanged();
 }
 
 void FilmImageProvider::setProgress(float percentDone_in)

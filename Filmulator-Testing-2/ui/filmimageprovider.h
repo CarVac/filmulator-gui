@@ -49,6 +49,9 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
     Q_PROPERTY(float shadowsY READ getShadowsY WRITE setShadowsY NOTIFY shadowsYChanged)
     Q_PROPERTY(float highlightsY READ getHighlightsY WRITE setHighlightsY NOTIFY highlightsYChanged)
 
+    Q_PROPERTY(float vibrance READ getVibrance WRITE setVibrance NOTIFY vibranceChanged)
+    Q_PROPERTY(float saturation READ getSaturation WRITE setSaturation NOTIFY saturationChanged)
+
     Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
 
     Q_PROPERTY(bool saveTiff READ getSaveTiff WRITE setSaveTiff NOTIFY saveTiffChanged)
@@ -94,6 +97,9 @@ public:
     void setShadowsY(float shadowsYIn);
     void setHighlightsY(float highlightsYIn);
 
+    void setVibrance(float vibranceIn);
+    void setSaturation(float saturationIn);
+
     void setProgress(float progressIn);
 
     void setSaveTiff(bool saveTiffIn);
@@ -118,6 +124,9 @@ public:
     bool getDefaultToneCurveEnabled(){return defaultToneCurveEnabled;}
     float getShadowsY(){return shadowsY;}
     float getHighlightsY(){return highlightsY;}
+
+    float getVibrance(){return vibrance;}
+    float getSaturation(){return saturation;}
 
     float getProgress(){return progress;}
     float getSaveTiff(){return saveTiff;}
@@ -160,6 +169,7 @@ protected:
     float whitepoint;
     bool defaultToneCurveEnabled;
     float shadowsX, shadowsY, highlightsX, highlightsY;
+    float vibrance,saturation;
     int rotation;
 
     float wbRMultiplier, wbGMultiplier, wbBMultiplier;
@@ -184,7 +194,7 @@ protected:
     matrix<float> filmulated_image;
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
-    matrix<unsigned short> film_curve_image;
+    matrix<unsigned short> vibrance_saturation_image;
 
     histogram finalHist;
     int histFinal;//dummy to signal histogram updates
@@ -221,6 +231,9 @@ signals:
     void defaultToneCurveEnabledChanged();
     void shadowsYChanged();
     void highlightsYChanged();
+
+    void vibranceChanged();
+    void saturationChanged();
 
     void progressChanged();
     void saveTiffChanged();
