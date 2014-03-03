@@ -104,14 +104,13 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
 {
     double tempTintX, tempTintY;
     temp_tint_to_xy(temp,tone,tempTintX,tempTintY);
-    double xShift = (1.0/3.0) - tempTintX;
-    double yShift = (1.0/3.0) - tempTintY;
+    double xShift = (1.0/3.0)/tempTintX;
+    double yShift = (1.0/3.0)/tempTintY;
 
     int nrows = input.nr();
     int ncols = input.nc();
 
     output.set_size(nrows,ncols);
-
 #pragma omp parallel shared(output, input) firstprivate(nrows,ncols,xShift,yShift)
         {
 #pragma omp for schedule(dynamic) nowait
@@ -122,8 +121,8 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
             rgb_to_xyz(input(i,j),input(i,j+1),input(i,j+2),
                        inputX    ,inputY      ,inputZ);
             double magnitude = inputX + inputY + inputZ;
-            double newX = inputX + magnitude*xShift;
-            double newY = inputY + magnitude*yShift;
+            double newX = inputX*xShift;
+            double newY = inputY*yShift;
             double newZ = magnitude - newX - newY;
 
             double newR, newG, newB;
