@@ -52,7 +52,7 @@ Rectangle {
     Slider {
         id: slider
         x: __padding
-        y: 21
+        y: 20
         width: parent.width - reset.width - 2.5*__padding
         updateValueWhileDragging: true
         value: defaultValue

@@ -91,31 +91,16 @@ Rectangle {
                     spacing: 0
                     x: 3
                     width: toolListItem.width - 6
-/*                    CheckBox{
-                        id: defaultToneCurveCheckBox
-                        text: qsTr("Default Tone Curve")
-                        checked: defaultCurve
-                        onClicked: {
-                            filmProvider.defaultToneCurveEnabled = checked
-                            root.updateImage()
-                        }
-                        Connections {
-                            target: root
-                            onSetAllValues: {
-                                defaultToneCurveCheckBox.checked = defaultCurve
-                            }
-                        }
-                    }*/
 
                     Rectangle {
                         id: topSpacer
-                        color: "#00000000"
+                        color: "#00000000"//transparent
                         height: 3
                     }
 
-                    CheckBox {
+                    ToolCheckbox {
                         id: caCheckbox
-                        //tooltipText: qsTr("Automatically correct for chromatic aberrations")
+                        tooltipText: qsTr("Automatically correct directional color fringing.")
                         text: qsTr("CA correction")
                         onCheckedChanged: {
                             filmProvider.caEnabled = checked;
@@ -129,14 +114,14 @@ Rectangle {
                         }
                         Component.onCompleted: {
                             caCheckbox.tooltipWanted.connect(root.tooltipWanted)
-                            caCheckbax.checked = defalutCaEnabled;
+                            caCheckbox.checked = defaultCaEnabled;
                         }
                     }
 
                     ToolSlider {
                         id: temperatureSlider
                         title: qsTr("Temperature")
-                        tooltipText: qsTr("Set the temperature of light source in Kelvin so filmulator can correct for it")
+                        tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.")
                         minimumValue: 1500
                         maximumValue: 15000
                         stepSize: 10
@@ -152,14 +137,14 @@ Rectangle {
                             }
                         }
                         Component.onCompleted: {
-                            exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
+                            temperatureSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
 
                     ToolSlider {
                         id: tintSlider
                         title: qsTr("Tint")
-                        tooltipText: qsTr("Set the tint of light source in Kelvin so filmulator can correct for it")
+                        tooltipText: qsTr("Correct for a  green/magenta tinted light source. Positive values are greener, and negative values are magenta.")
                         minimumValue: -0.1
                         maximumValue:  0.1
                         stepSize: 0.002
@@ -175,7 +160,7 @@ Rectangle {
                             }
                         }
                         Component.onCompleted: {
-                            exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
+                            tintSlider.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
 
@@ -440,7 +425,7 @@ Rectangle {
                     ToolSlider {
                         id: vibranceSlider
                         title: qsTr("Vibrance")
-                        tooltipText: qsTr("Make the image more colorful but avoid oversaturating already colorful parts of the image.")
+                        tooltipText: qsTr("Adjust the vividness of the less-saturated colors in the image.")
                         minimumValue: -0.5
                         maximumValue: 0.5
                         defaultValue: root.defaultVibrance
@@ -463,7 +448,7 @@ Rectangle {
                     ToolSlider {
                         id: saturationSlider
                         title: qsTr("Saturation")
-                        tooltipText: qsTr("Make all parts of the image more colorful")
+                        tooltipText: qsTr("Adjust the vividness of the entire image.")
                         minimumValue: -0.5
                         maximumValue: 0.5
                         defaultValue: root.defaultSaturation
