@@ -63,7 +63,7 @@ Rectangle {
         text: "[]"
         action: Action {
             onTriggered: {
-                slider.value = defaultValue
+                toggleSwitch.checked = defaultOn
             }
         }
 
