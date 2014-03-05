@@ -98,23 +98,23 @@ Rectangle {
                         height: 3
                     }
 
-                    ToolCheckbox {
-                        id: caCheckbox
+                    ToolSwitch {
+                        id: caSwitch
                         tooltipText: qsTr("Automatically correct directional color fringing.")
                         text: qsTr("CA correction")
-                        onCheckedChanged: {
-                            filmProvider.caEnabled = checked;
+                        onIsOnChanged: {
+                            filmProvider.caEnabled = isOn;
                             root.updateImage()
                         }
                         Connections {
                             target: root
                             onSetAllValues: {
-                                caCheckbox.checked = caEnabled;
+                                caSwitch.isOn = caEnabled;
                             }
                         }
                         Component.onCompleted: {
-                            caCheckbox.tooltipWanted.connect(root.tooltipWanted)
-                            caCheckbox.checked = defaultCaEnabled;
+                            caSwitch.tooltipWanted.connect(root.tooltipWanted)
+                            caSwitch.isOn = defaultCaEnabled;
                         }
                     }
 

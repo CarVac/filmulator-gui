@@ -34,7 +34,8 @@ SOURCES += main.cpp \
     database/sqlproperties.cpp \
     core/rotate_image.cpp \
     core/white_balance.cpp \
-    core/vibrance_saturation.cpp
+    core/vibrance_saturation.cpp \
+    database/organizemodel.cpp
 
 # Installation path
 # target.path =
@@ -56,7 +57,8 @@ HEADERS += \
     database/sqlmodel.h \
     core/interface.h \
     ui/filmimageprovider.h \
-    database/filmulatordb.h
+    database/filmulatordb.h \
+    database/organizemodel.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

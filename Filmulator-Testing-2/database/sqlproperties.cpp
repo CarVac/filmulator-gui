@@ -1,76 +1,76 @@
-#include "sqlmodel.h"
+#include "organizemodel.h"
 #include <QDebug>
 #include <iostream>
 
 //This file is a bunch of methods for changing the SELECT statement.
 
-void SqlModel::setMinCaptureTime(unsigned int captureTimeIn)
+void OrganizeModel::setMinCaptureTime(unsigned int captureTimeIn)
 {
     minCaptureTime = captureTimeIn;
     emit minCaptureTimeChanged();
 }
 
-void SqlModel::setMaxCaptureTime(unsigned int captureTimeIn)
+void OrganizeModel::setMaxCaptureTime(unsigned int captureTimeIn)
 {
     maxCaptureTime = captureTimeIn;
     emit maxCaptureTimeChanged();
 }
 
-void SqlModel::setMinImportTime(unsigned int importTimeIn)
+void OrganizeModel::setMinImportTime(unsigned int importTimeIn)
 {
     minImportTime = importTimeIn;
     emit minImportTimeChanged();
 }
 
-void SqlModel::setMaxImportTime(unsigned int importTimeIn)
+void OrganizeModel::setMaxImportTime(unsigned int importTimeIn)
 {
     maxImportTime = importTimeIn;
     emit maxImportTimeChanged();
 }
 
-void SqlModel::setMinProcessedTime(unsigned int processedTimeIn)
+void OrganizeModel::setMinProcessedTime(unsigned int processedTimeIn)
 {
     minProcessedTime = processedTimeIn;
     emit minImportTimeChanged();
 }
 
-void SqlModel::setMaxProcessedTime(unsigned int processedTimeIn)
+void OrganizeModel::setMaxProcessedTime(unsigned int processedTimeIn)
 {
     maxProcessedTime = processedTimeIn;
     emit maxProcessedTimeChanged();
 }
 
-void SqlModel::setMinRating(int ratingIn)
+void OrganizeModel::setMinRating(int ratingIn)
 {
     minRating = ratingIn;
     emit minRatingChanged();
 }
 
-void SqlModel::setMaxRating(int ratingIn)
+void OrganizeModel::setMaxRating(int ratingIn)
 {
     maxRating = ratingIn;
     emit maxRatingChanged();
 }
 
-void SqlModel::setCaptureSort(int sortMode)
+void OrganizeModel::setCaptureSort(int sortMode)
 {
     captureSort = sortMode;
     emit captureSortChanged();
 }
 
-void SqlModel::setImportSort(int sortMode)
+void OrganizeModel::setImportSort(int sortMode)
 {
     importSort = sortMode;
     emit importSortChanged();
 }
 
-void SqlModel::setProcessedSort(int sortMode)
+void OrganizeModel::setProcessedSort(int sortMode)
 {
     processedSort = sortMode;
     emit processedSortChanged();
 }
 
-void SqlModel::setRatingSort(int sortMode)
+void OrganizeModel::setRatingSort(int sortMode)
 {
     ratingSort = sortMode;
     emit ratingSortChanged();

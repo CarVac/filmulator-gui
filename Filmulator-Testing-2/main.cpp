@@ -4,7 +4,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QTranslator>
 #include "ui/filmimageprovider.h"
-#include "database/sqlmodel.h"
+#include "database/organizemodel.h"
 #include "database/filmulatordb.h"
 
 int main(int argc, char *argv[])
@@ -31,8 +31,7 @@ int main(int argc, char *argv[])
     setupDB(&db);
 
 
-    SqlModel *organizeModel = new SqlModel;
-    organizeModel->organizeSetup();
+    OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty("organizeModel",organizeModel);
 
 
