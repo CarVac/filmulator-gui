@@ -31,7 +31,7 @@ SOURCES += main.cpp \
     ui/updateHistograms.cpp \
     database/sqlmodel.cpp \
     database/dbsetup.cpp \
-    database/sqlproperties.cpp \
+    database/organizeproperties.cpp \
     core/rotate_image.cpp \
     core/white_balance.cpp \
     core/vibrance_saturation.cpp \

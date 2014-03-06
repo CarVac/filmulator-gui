@@ -3,6 +3,8 @@
 #include <QStringList>
 #include <exiv2/exiv2.hpp>
 #include <QCryptographicHash>
+#include <QDateTime>
+#include <QString>
 
 using namespace std;
 
@@ -146,11 +148,13 @@ void OrganizeModel::importDirectory(QString dir)
             hash.addData(file.read(8192));
         }
         std::cout << qPrintable(hash.result().toHex()) << std::endl;
-        /*const char *cstr = fileList.at(i).absoluteFilePath().toStdString().c_str();
+        const char *cstr = fileList.at(i).absoluteFilePath().toStdString().c_str();
         Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(cstr);
-        assert(image.get() != 0);
         image->readMetadata();
-        Exiv2::ExifData exifData = image->exifData();*/
+        Exiv2::ExifData exifData = image->exifData();
+        QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
+        QDateTime dateTime = QDateTime::fromString(exifDateTime,"yyyy:MM:dd hh:mm:ss");
+        cout << dateTime.toTime_t() << endl;
 
     }
 }

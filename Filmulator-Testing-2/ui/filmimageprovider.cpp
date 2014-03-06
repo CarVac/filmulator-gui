@@ -135,7 +135,6 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
 
         //Reads in the photo.
-        cout << caEnabled << endl;
         if(imload(input_filename_list, input_exposure_compensation,
                   input_image, tiff_in, jpeg_in, exifData, highlights,
                   caEnabled))
