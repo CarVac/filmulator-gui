@@ -134,6 +134,8 @@ void OrganizeModel::importDirectory(QString dir)
     nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW";
     directory.setNameFilters(nameFilters);
     QFileInfoList fileList = directory.entryInfoList();
+    
+    QSqlQuery query;
     for(int i = 0; i < fileList.size(); i++)
     {
         std::cout << qPrintable(fileList.at(i).absoluteFilePath()) << std::endl;
@@ -155,6 +157,17 @@ void OrganizeModel::importDirectory(QString dir)
         QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
         QDateTime dateTime = QDateTime::fromString(exifDateTime,"yyyy:MM:dd hh:mm:ss");
         cout << dateTime.toTime_t() << endl;
-
+        
+        query.prepare("REPLACE INTO FileTable values (?,?,?,?,?,?,?,?);");
+        query.bindValue(0,hash.result().toHex());
+        query.bindValue(1,fileList.at(i).fileName());
+        query.bindValue(2,QString::fromStdString(exifData["Exif.Image.Make"].toString()));
+        query.bindValue(3,QString::fromStdString(exifData["Exif.Image.Model"].toString()));
+        query.bindValue(4,exifData["Exif.Photo.ISOSpeedRatings"].toFloat());
+        query.bindValue(5,QString::fromStdString(exifData["Exif.Photo.ExposureTime"].toString()));
+        query.bindValue(6,QString::fromStdString(exifData["Exif.Photo.FNumber"].toString()));
+        query.bindValue(7,QString::fromStdString(exifData["Exif.Photo.FocalLength"].toString()));
+        query.exec();
+        
     }
 }

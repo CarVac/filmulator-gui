@@ -23,7 +23,7 @@ void setupDB(QSqlDatabase *db)
 //        std::cout << "what?!?!?!?" << std::endl;
     }
 
-    //We need to set up 3 tables.
+    //We need to set up 3 tables for the processing.
     //1. The master table for searching. This should be small
     //  for speed. It points at the other two.
     QSqlQuery query;
@@ -48,12 +48,10 @@ void setupDB(QSqlDatabase *db)
                "filePath varchar,"
                "cameraMake varchar,"
                "cameraModel varchar,"
-               "sensitivity varchar,"
-               "exposureTime real,"
-               "aperture real,"
-               "focalLength real,"
-               "width integer,"
-               "height integer"
+               "sensitivity integer,"
+               "exposureTime varchar,"
+               "aperture varchar,"
+               "focalLength varchar"
                ");"
                );
 
@@ -69,22 +67,59 @@ void setupDB(QSqlDatabase *db)
                "initialSilverSaltDensity real,"
                "developerConsumptionConst real,"
                "crystalGrowthConst real,"
-               "silverSaltConsumption_const real"
-               "totalDevelopment_time real,"
+               "silverSaltConsumptionConst real"
+               "totalDevelopmentTime real,"
                "agitateCount integer,"
                "developmentResolution integer,"
                "filmArea real,"
                "sigmaConst real,"
                "layerMixConst real,"
                "layerTimeDivisor real,"
-               "rolloffBoundary integer"
+               "rolloffBoundary integer,"
                "exposureComp real,"
                "whitepoint real,"
                "blackpoint real,"
                "shadowsY real,"
                "highlightsY real,"
-               "exposureComp real,"
+               "highlightRecovery integer,"
+               "caEnabled integer,"
+               "temperature real,"
+               "tint real,"
+               "vibrance real,"
+               "saturation real,"
+               "orientation integer"
+               ");"
+               );
 
+    //Next, we set up a table for default processing parameters.
+    //This will be of the same structure as ProcessingTable.
+    query.exec("create table if not exists ProfileTable ("
+               "profileId varchar primary key,"
+               "initialDeveloperConcentration real,"
+               "reservoirThickness real,"
+               "activeLayerThickness real,"
+               "crystalsPerPixel real,"
+               "silverSaltConsumptionConst,"
+               "totalDevelopmentTime real,"
+               "agitateCount integer,"
+               "developmentResolution integer,"
+               "filmArea real,"
+               "sigmaConst real,"
+               "layerMixConst real,"
+               "layerTimeDivisor real,"
+               "rolloffBoundary integer,"
+               "exposureComp real,"
+               "whitepoint real,"
+               "blackpoint real,"
+               "shadowsY real,"
+               "highlightsY real,"
+               "highlightRecovery integer,"
+               "caEnabled integer,"
+               "temperature real,"
+               "tint real,"
+               "vibrance real,"
+               "saturation real,"
+               "orientation integer"
                ");"
                );
 }
