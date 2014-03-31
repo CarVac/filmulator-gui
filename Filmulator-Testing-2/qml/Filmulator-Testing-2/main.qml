@@ -34,7 +34,12 @@ ApplicationWindow {
 
             Tab {
                 title: qsTr("Import")
-                Import {}
+                Import {
+                    id: importItem
+                    Component.onCompleted: {
+                        importItem.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                }
             }
 
             Tab {

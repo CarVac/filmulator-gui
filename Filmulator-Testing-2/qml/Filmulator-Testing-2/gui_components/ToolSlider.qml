@@ -91,7 +91,7 @@ Rectangle {
                 radius: 5
                 color: control.pressed ? "#A0A0A0" : "#808080"
             }
-            label: Text{
+            label: Text {
                 color: "white"
                 anchors.centerIn: parent
                 horizontalAlignment: Text.AlignHCenter

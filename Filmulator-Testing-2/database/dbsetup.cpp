@@ -50,8 +50,8 @@ void setupDB(QSqlDatabase *db)
                "cameraModel varchar,"
                "sensitivity integer,"
                "exposureTime varchar,"
-               "aperture varchar,"
-               "focalLength varchar"
+               "aperture real,"
+               "focalLength real"
                ");"
                );
 

@@ -106,28 +106,21 @@ void OrganizeModel::setOrganizeQuery()
     setQuery(QString::fromStdString(queryString));
 
 }
-void OrganizeModel::importDirectory(QString dir)
+void OrganizeModel::importDirectory_r(QString dir)
 {
     //This function reads in a directory and puts the raws into the database.
-    QString tempDir = dir;
-    tempDir.remove(7,5000);
-    if(tempDir == QString("file://"))
+    std::cout << "importing directory " << qPrintable(dir) << std::endl;
+    if( dir.length() == 0 )
     {
-        tempDir = dir;
-        tempDir.remove(0,7);
+        return;
     }
-    else
-    {
-        tempDir = dir;
-    }
-    std::cout << "importing directory " << qPrintable(tempDir) << std::endl;
-    QDir directory = QDir(tempDir);
+    QDir directory = QDir(dir);
     directory.setFilter(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
     directory.setSorting(QDir::Name);
     QFileInfoList dirList = directory.entryInfoList();
     for(int i=0; i < dirList.size(); i++)
     {
-        importDirectory(dirList.at(i).absoluteFilePath());
+        importDirectory_r(dirList.at(i).absoluteFilePath());
     }
     directory.setFilter(QDir::Files | QDir::NoSymLinks);
     QStringList nameFilters;
@@ -155,8 +148,23 @@ void OrganizeModel::importDirectory(QString dir)
         image->readMetadata();
         Exiv2::ExifData exifData = image->exifData();
         QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
-        QDateTime dateTime = QDateTime::fromString(exifDateTime,"yyyy:MM:dd hh:mm:ss");
-        cout << dateTime.toTime_t() << endl;
+        QDateTime cameraDateTime = QDateTime::fromString(exifDateTime,"yyyy:MM:dd hh:mm:ss");
+
+        //Now to figure out what time and date in the camera local timezone the thing was.
+        //I want to correctly convert to UTC. I need to set the datetime to the camera timezone.
+        cout << cameraTZ << endl;
+        cameraDateTime.setUtcOffset(cameraTZ);
+        cout << cameraDateTime.toTime_t() << endl;
+        //This lets us ensure that the UTC is correct.
+
+        //Now, I want the folders to be set according to the local timezone where/when captured.
+        //They might get screwed up in the order, if you change the import timezones, but oh well.
+        //The unix time representation will still be okay.
+        QDateTime captureLocaLDateTime = QDateTime::fromTime_t(cameraDateTime.toTime_t());
+        captureLocaLDateTime.setUtcOffset(importTZ);
+        QDate captureLocalDate = captureLocaLDateTime.date();
+        cout << captureLocalDate.toString("yyyy/MM/yyyy-MM-dd").toStdString() << endl;
+
         
         query.prepare("REPLACE INTO FileTable values (?,?,?,?,?,?,?,?);");
         query.bindValue(0,hash.result().toHex());
@@ -165,8 +173,8 @@ void OrganizeModel::importDirectory(QString dir)
         query.bindValue(3,QString::fromStdString(exifData["Exif.Image.Model"].toString()));
         query.bindValue(4,exifData["Exif.Photo.ISOSpeedRatings"].toFloat());
         query.bindValue(5,QString::fromStdString(exifData["Exif.Photo.ExposureTime"].toString()));
-        query.bindValue(6,QString::fromStdString(exifData["Exif.Photo.FNumber"].toString()));
-        query.bindValue(7,QString::fromStdString(exifData["Exif.Photo.FocalLength"].toString()));
+        query.bindValue(6,exifData["Exif.Photo.FNumber"].toFloat());
+        query.bindValue(7,exifData["Exif.Photo.FocalLength"].toFloat());
         query.exec();
         
     }
