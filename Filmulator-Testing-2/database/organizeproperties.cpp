@@ -100,5 +100,9 @@ void OrganizeModel::setPhotoDir( QString dirIn )
 void OrganizeModel::setDirConfig( QString configIn )
 {
     dirConfig = configIn;
+    if ( !dirConfig.endsWith( "/" ) )
+    {
+        dirConfig.append( "/" );
+    }
     emit dirConfigChanged();
 }
