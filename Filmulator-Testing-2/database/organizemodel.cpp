@@ -97,7 +97,7 @@ void OrganizeModel::setOrganizeQuery()
         queryString.append( "SearchTable.captureTime ASC, " );
         queryString.append( "SearchTable.filename ASC;" );
     }
-    else if ( captureSort == -1 )
+    else //if ( captureSort == -1 )
     {
         queryString.append( "SearchTable.captureTime DESC, " );
         queryString.append( "SearchTable.filename DESC;" );
@@ -131,19 +131,21 @@ void OrganizeModel::importDirectory_r( QString dir )
     QSqlQuery query;
     for ( int i = 0; i < fileList.size(); i++ )
     {
-        std::cout << qPrintable( fileList.at( i ).absoluteFilePath() ) << std::endl;
+//        std::cout << qPrintable( fileList.at( i ).absoluteFilePath() ) << std::endl;
         QCryptographicHash hash( QCryptographicHash::Md5 );
         QFile file( fileList.at( i ).absoluteFilePath() );
         if ( !file.open( QIODevice::ReadOnly ) )
         {
-            std::cout << "File couldn't be opened." << std::endl;
+            QDebug( "File couldn't be opened." );
+//            std::cout << "File couldn't be opened." << std::endl;
         }
+
         while ( !file.atEnd() )
         {
             hash.addData( file.read( 8192 ) );
         }
-        std::cout << qPrintable( hash.result().toHex() ) << std::endl;
-        const char *cstr = fileList.at(i).absoluteFilePath().toStdString().c_str();
+//        std::cout << qPrintable( hash.result().toHex() ) << std::endl;
+        const char *cstr = fileList.at( i ).absoluteFilePath().toStdString().c_str();
         Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( cstr );
         image->readMetadata();
         Exiv2::ExifData exifData = image->exifData();
@@ -152,9 +154,9 @@ void OrganizeModel::importDirectory_r( QString dir )
 
         //Now to figure out what time and date in the camera local timezone the thing was.
         //I want to correctly convert to UTC. I need to set the datetime to the camera timezone.
-        cout << cameraTZ << endl;
+//        cout << cameraTZ << endl;
         cameraDateTime.setUtcOffset( cameraTZ );
-        cout << cameraDateTime.toTime_t() << endl;
+//        cout << cameraDateTime.toTime_t() << endl;
         //This lets us ensure that the UTC is correct.
 
         //Now, I want the folders to be set according to the local timezone where/when captured.
@@ -163,24 +165,37 @@ void OrganizeModel::importDirectory_r( QString dir )
         QDateTime captureLocaLDateTime = QDateTime::fromTime_t( cameraDateTime.toTime_t() );
         captureLocaLDateTime.setUtcOffset( importTZ );
         QDate captureLocalDate = captureLocaLDateTime.date();
-        cout << captureLocalDate.toString( "/yyyy/MM/yyyy-MM-dd" ).toStdString() << endl;
 
-        //Now I'm setting up the directory itself.
+        //Now I'm setting up the directory to put the file into.
         QString outputPathName = photoDir;
         outputPathName.append( captureLocalDate.toString( dirConfig ) );
+        QString outputPath = outputPathName;
+//        cout << "Output folder: " << outputPath.toStdString() << endl;
+        QDir dir( outputPath );
+        dir.mkpath( outputPath );//For some reason, QDir::mkpath( outputPath) didn't work on its own.
+
+        //This is the full file path.
         outputPathName.append( fileList.at(i).fileName());
-        cout << outputPathName.toStdString() << endl;
+        cout << "Output path: " << outputPathName.toStdString() << endl;
+        if ( !QFile::exists( outputPathName ) )
+        {
+            QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
+        }
+        else
+        {
+            cout << "Already exists." << endl;
+        }
 
         
-        query.prepare("REPLACE INTO FileTable values (?,?,?,?,?,?,?,?);");
-        query.bindValue(0,hash.result().toHex());
-        query.bindValue(1,fileList.at(i).fileName());
-        query.bindValue(2,QString::fromStdString(exifData["Exif.Image.Make"].toString()));
-        query.bindValue(3,QString::fromStdString(exifData["Exif.Image.Model"].toString()));
-        query.bindValue(4,exifData["Exif.Photo.ISOSpeedRatings"].toFloat());
-        query.bindValue(5,QString::fromStdString(exifData["Exif.Photo.ExposureTime"].toString()));
-        query.bindValue(6,exifData["Exif.Photo.FNumber"].toFloat());
-        query.bindValue(7,exifData["Exif.Photo.FocalLength"].toFloat());
+        query.prepare( "REPLACE INTO FileTable values (?,?,?,?,?,?,?,?);" );
+        query.bindValue( 0, hash.result().toHex() );
+        query.bindValue( 1, fileList.at( i ).fileName() );
+        query.bindValue( 2, QString::fromStdString( exifData[ "Exif.Image.Make" ].toString() ) );
+        query.bindValue( 3, QString::fromStdString( exifData[ "Exif.Image.Model" ].toString() ) );
+        query.bindValue( 4, exifData[ "Exif.Photo.ISOSpeedRatings" ].toFloat() );
+        query.bindValue( 5, QString::fromStdString( exifData[ "Exif.Photo.ExposureTime" ].toString() ) );
+        query.bindValue( 6, exifData[ "Exif.Photo.FNumber" ].toFloat() );
+        query.bindValue( 7, exifData[ "Exif.Photo.FocalLength" ].toFloat() );
         query.exec();
         
     }

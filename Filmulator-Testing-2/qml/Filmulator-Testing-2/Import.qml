@@ -78,6 +78,7 @@ Rectangle {
             id: dirStructureEntry
             title: qsTr( "Directory Structure" )
             tooltipText: qsTr( "Enter with y's, M's, and d's, slashes, and dashes the desired structure. example: \"/yyyy/MM/yyyy-MM-dd/\"")
+            enteredText: "/yyyy/MM/yyyy-MM-dd/"
             onEnteredTextChanged: {
                 organizeModel.dirConfig = enteredText
             }
@@ -95,6 +96,7 @@ Rectangle {
         height: 40
         action: Action{
             onTriggered: {
+                organizeModel.dirConfig = dirStructureEntry.enteredText
                 organizeModel.importDirectory_r( root.folderPath )
             }
         }
