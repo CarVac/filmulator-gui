@@ -3,6 +3,8 @@
 
 #include "sqlmodel.h"
 #include <QString>
+#include <QByteArray>
+#include <exiv2/exiv2.hpp>
 using namespace std;
 
 class OrganizeModel : public SqlModel
@@ -114,6 +116,10 @@ protected:
 
     QString photoDir;
     QString dirConfig;
+
+    void fileInsert( const QString hash,
+                     const QString filePathName,
+                     Exiv2::ExifData exifData);
 
 };
 

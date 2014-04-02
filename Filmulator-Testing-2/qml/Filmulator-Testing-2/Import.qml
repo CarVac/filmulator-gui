@@ -80,6 +80,9 @@ Rectangle {
             tooltipText: qsTr( "Enter with y's, M's, and d's, slashes, and dashes the desired structure. example: \"/yyyy/MM/yyyy-MM-dd/\"")
             enteredText: "/yyyy/MM/yyyy-MM-dd/"
             onEnteredTextChanged: {
+                //For some reason, when there's a default for enteredText, it tries to change this
+                // before the resource organizeModel is defined. So in case no changes are made,
+                // this has to be done again when they hit the import button.
                 organizeModel.dirConfig = enteredText
             }
             Component.onCompleted: {
@@ -89,7 +92,7 @@ Rectangle {
     }
 
     ToolButton {
-        id: openDirButton
+        id: importButton
         anchors.centerIn: parent
         text: qsTr( "Import" )
         width: 200

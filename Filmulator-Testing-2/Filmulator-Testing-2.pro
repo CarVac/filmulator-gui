@@ -35,7 +35,8 @@ SOURCES += main.cpp \
     core/rotate_image.cpp \
     core/white_balance.cpp \
     core/vibrance_saturation.cpp \
-    database/organizemodel.cpp
+    database/organizemodel.cpp \
+    database/organizeinsertion.cpp
 
 # Installation path
 # target.path =

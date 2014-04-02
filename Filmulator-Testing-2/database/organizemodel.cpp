@@ -136,7 +136,7 @@ void OrganizeModel::importDirectory_r( QString dir )
         QFile file( fileList.at( i ).absoluteFilePath() );
         if ( !file.open( QIODevice::ReadOnly ) )
         {
-            QDebug( "File couldn't be opened." );
+            qDebug( "File couldn't be opened." );
 //            std::cout << "File couldn't be opened." << std::endl;
         }
 
@@ -144,7 +144,8 @@ void OrganizeModel::importDirectory_r( QString dir )
         {
             hash.addData( file.read( 8192 ) );
         }
-//        std::cout << qPrintable( hash.result().toHex() ) << std::endl;
+        QString hashString = QString( hash.result().toHex() );
+//        std::cout << qPrintable( hashString ) << std::endl;
         const char *cstr = fileList.at( i ).absoluteFilePath().toStdString().c_str();
         Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( cstr );
         image->readMetadata();
@@ -177,26 +178,31 @@ void OrganizeModel::importDirectory_r( QString dir )
         //This is the full file path.
         outputPathName.append( fileList.at(i).fileName());
         cout << "Output path: " << outputPathName.toStdString() << endl;
-        if ( !QFile::exists( outputPathName ) )
+
+
+        //Now we test to see if it's in the database already.
+        query.prepare( "SELECT filePath from FileTable WHERE (fileID = ?);" );
+        query.bindValue( 0, hashString );
+        query.exec();
+        query.next();
+        cout << ( query.value( 0 ).toString() != outputPathName ) << endl;
+        if ( query.value( 0 ).toString() != outputPathName )//the file isn't in the db
+        {
+            cout << "Inserting into db" << endl;
+            //Copy it into the filestructure. If it is already there, then oh well.
+            QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
+
+            fileInsert( hashString, outputPathName, exifData );
+
+            //Now, make a profile and a searchable row.
+        }
+        else if ( !QFile::exists( outputPathName ) )//it was in the db but the file is gone
         {
             QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
         }
         else
         {
-            cout << "Already exists." << endl;
+            cout << "Exists" << endl;
         }
-
-        
-        query.prepare( "REPLACE INTO FileTable values (?,?,?,?,?,?,?,?);" );
-        query.bindValue( 0, hash.result().toHex() );
-        query.bindValue( 1, fileList.at( i ).fileName() );
-        query.bindValue( 2, QString::fromStdString( exifData[ "Exif.Image.Make" ].toString() ) );
-        query.bindValue( 3, QString::fromStdString( exifData[ "Exif.Image.Model" ].toString() ) );
-        query.bindValue( 4, exifData[ "Exif.Photo.ISOSpeedRatings" ].toFloat() );
-        query.bindValue( 5, QString::fromStdString( exifData[ "Exif.Photo.ExposureTime" ].toString() ) );
-        query.bindValue( 6, exifData[ "Exif.Photo.FNumber" ].toFloat() );
-        query.bindValue( 7, exifData[ "Exif.Photo.FocalLength" ].toFloat() );
-        query.exec();
-        
     }
 }
