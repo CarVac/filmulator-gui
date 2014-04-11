@@ -5,6 +5,7 @@
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QString>
+#include "exiffunctions.h"
 
 using namespace std;
 
@@ -131,13 +132,12 @@ void OrganizeModel::importDirectory_r( QString dir )
     QSqlQuery query;
     for ( int i = 0; i < fileList.size(); i++ )
     {
-//        std::cout << qPrintable( fileList.at( i ).absoluteFilePath() ) << std::endl;
+        //Generate a hash of the raw file.
         QCryptographicHash hash( QCryptographicHash::Md5 );
         QFile file( fileList.at( i ).absoluteFilePath() );
         if ( !file.open( QIODevice::ReadOnly ) )
         {
             qDebug( "File couldn't be opened." );
-//            std::cout << "File couldn't be opened." << std::endl;
         }
 
         while ( !file.atEnd() )
@@ -146,63 +146,60 @@ void OrganizeModel::importDirectory_r( QString dir )
         }
         QString hashString = QString( hash.result().toHex() );
 //        std::cout << qPrintable( hashString ) << std::endl;
+
+        //Grab EXIF data
         const char *cstr = fileList.at( i ).absoluteFilePath().toStdString().c_str();
         Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( cstr );
         image->readMetadata();
         Exiv2::ExifData exifData = image->exifData();
-        QString exifDateTime = QString::fromStdString( exifData[ "Exif.Image.DateTime" ].toString() );
-        QDateTime cameraDateTime = QDateTime::fromString( exifDateTime, "yyyy:MM:dd hh:mm:ss" );
 
-        //Now to figure out what time and date in the camera local timezone the thing was.
-        //I want to correctly convert to UTC. I need to set the datetime to the camera timezone.
-//        cout << cameraTZ << endl;
-        cameraDateTime.setUtcOffset( cameraTZ );
-//        cout << cameraDateTime.toTime_t() << endl;
-        //This lets us ensure that the UTC is correct.
-
-        //Now, I want the folders to be set according to the local timezone where/when captured.
-        //They might get screwed up in the order, if you change the import timezones, but oh well.
-        //The unix time representation will still be okay.
-        QDateTime captureLocaLDateTime = QDateTime::fromTime_t( cameraDateTime.toTime_t() );
-        captureLocaLDateTime.setUtcOffset( importTZ );
-        QDate captureLocalDate = captureLocaLDateTime.date();
-
-        //Now I'm setting up the directory to put the file into.
+        //Here I'm setting up the directory to put the file into based on the capture-local date.
         QString outputPathName = photoDir;
-        outputPathName.append( captureLocalDate.toString( dirConfig ) );
+        outputPathName.append( exifLocalDateString( exifData, cameraTZ, importTZ, dirConfig ) );
         QString outputPath = outputPathName;
 //        cout << "Output folder: " << outputPath.toStdString() << endl;
         QDir dir( outputPath );
         dir.mkpath( outputPath );//For some reason, QDir::mkpath( outputPath) didn't work on its own.
 
-        //This is the full file path.
+        //This sets the full file path including the filename.
         outputPathName.append( fileList.at(i).fileName());
         cout << "Output path: " << outputPathName.toStdString() << endl;
 
 
-        //Now we test to see if it's in the database already.
+        //Now we test to see if it's in the database already by comparing the hashes.
         query.prepare( "SELECT filePath from FileTable WHERE (fileID = ?);" );
         query.bindValue( 0, hashString );
         query.exec();
         query.next();
-        cout << ( query.value( 0 ).toString() != outputPathName ) << endl;
-        if ( query.value( 0 ).toString() != outputPathName )//the file isn't in the db
+        QString dbRecordedPath = query.value ( 0 ).toString();
+        if ( dbRecordedPath == "" )//It's not in the DB. Start fresh.
         {
-            cout << "Inserting into db" << endl;
-            //Copy it into the filestructure. If it is already there, then oh well.
+            //Copy file into the directory structure.
             QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
 
+            //Insert into the database.
             fileInsert( hashString, outputPathName, exifData );
 
-            //Now, make a profile and a searchable row.
+            //Now, make a profile and a search table entry, and generate the thumbnail.
+            createNewProfile( hashString,
+                              fileList.at(i).fileName(),
+                              exifUtcTime( exifData, cameraTZ ),
+                              exifData );
         }
-        else if ( !QFile::exists( outputPathName ) )//it was in the db but the file is gone
+        else //It's already in the db, whether or not in the same path.
         {
-            QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
-        }
-        else
-        {
-            cout << "Exists" << endl;
+            //Check that the file's still there.
+            //One situation where this would be is if they deleted their local copy of the raw file, but
+            // are re-importing it from their backup.
+            //We want to copy the file in so it's usable, but not overwrite the profiles.
+            if ( !QFile::exists( dbRecordedPath ) )//it was in the DB but the local file is gone
+            {
+                //copy it in. Perhaps they removed it and are restoring it from a backup.
+                QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
+            }
+            //No need to make a new profile or insert into the db.
+            //TODO: There should be a "local copy available?" flag that would need to be set here.
+            //Maybe.
         }
     }
 }

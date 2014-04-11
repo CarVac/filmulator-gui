@@ -120,6 +120,10 @@ protected:
     void fileInsert( const QString hash,
                      const QString filePathName,
                      Exiv2::ExifData exifData);
+    void createNewProfile( const QString fileHash,
+                           const QString fileName,
+                           const int captureTime,
+                           Exiv2::ExifData exifData);
 
 };
 
