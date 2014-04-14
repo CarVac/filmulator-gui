@@ -20,12 +20,20 @@
 //Also, we need to replace the convenience functions so that we can more easily set up
 //queries. If possible.
 
-class SqlModel : public QSqlQueryModel//QSqlRelationalTableModel
+class SqlModel : public QSqlQueryModel
 {
     Q_OBJECT
-public:
-    explicit SqlModel(QObject *parent = 0);
 
+public:
+    explicit SqlModel( QObject *parent = 0 );
+    void setQuery( const QSqlQuery &query );
+    void generateRoleNames();
+
+    QVariant data( const QModelIndex &item, int role ) const;
+    QHash<int,QByteArray> roleNames() const;
+
+private:
+    QHash<int,QByteArray> m_roleNames;
 
 };
 

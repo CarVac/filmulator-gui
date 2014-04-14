@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
 
     OrganizeModel *organizeModel = new OrganizeModel;
-    engine.rootContext()->setContextProperty("organizeModel",organizeModel);
+    engine.rootContext()->setContextProperty( "organizeModel", organizeModel );
 
 
 

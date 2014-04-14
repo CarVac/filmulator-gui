@@ -7,13 +7,13 @@ import "gui_components"
 
 ApplicationWindow {
     id: root
-    title: qsTr("Filmulator")
+    title: qsTr( "Filmulator" )
     width: 1024
     height: 768
     minimumHeight: 600
     minimumWidth:800
 
-    signal tooltipWanted(string text, int x, int y)
+    signal tooltipWanted( string text, int x, int y )
 
     Rectangle {
         id: fillRect
@@ -33,17 +33,19 @@ ApplicationWindow {
             style: headerTabViewStyle
 
             Tab {
-                title: qsTr("Import")
+                id: importTab
+                title: qsTr( "Import" )
                 Import {
                     id: importItem
                     Component.onCompleted: {
-                        importItem.tooltipWanted.connect(root.tooltipWanted)
+                        importItem.tooltipWanted.connect( root.tooltipWanted )
                     }
                 }
             }
 
             Tab {
-                title: qsTr("Organize")
+                id: organizeTab
+                title: qsTr( "Organize" )
                 Organize {}
             }
 
@@ -79,7 +81,7 @@ ApplicationWindow {
                 property real defaultSaturation: 0
                 signal updateImage()
 
-                title: qsTr("Filmulate")
+                title: qsTr( "Filmulate" )
                 Edit {
                     id: editItem
                     location: editorTab.location
@@ -118,19 +120,20 @@ ApplicationWindow {
                     Connections {
                         target: editorTab
                         onUpdateImage: {
-                            console.log("updating image")
+                            console.log( "updating image" )
                             editItem.updateImage()
                         }
                     }
 
                     Component.onCompleted: {
-                        editItem.tooltipWanted.connect(root.tooltipWanted)
+                        editItem.tooltipWanted.connect( root.tooltipWanted )
                     }
                 }
             }
 
             Tab {
-                title: qsTr("Output")
+                id: outputTab
+                title: qsTr( "Output" )
             }
         }
 
@@ -144,7 +147,7 @@ ApplicationWindow {
                 id: openButton
                 anchors.right: saveTIFFButton.left
                 anchors.verticalCenter: saveTIFFButton.verticalCenter
-                text: qsTr("Open")
+                text: qsTr( "Open" )
                 width: 80
                 height: 40
                 action: Action {
@@ -157,7 +160,7 @@ ApplicationWindow {
             ToolButton {
                 id: saveTIFFButton
                 anchors.centerIn: parent
-                text: qsTr("Save TIFF")
+                text: qsTr( "Save TIFF" )
                 width: 80
                 height: 40
                 signal update()
@@ -168,7 +171,7 @@ ApplicationWindow {
                     }
                 }
                 Component.onCompleted: {
-                    saveTIFFButton.update.connect(editorTab.updateImage)
+                    saveTIFFButton.update.connect( editorTab.updateImage )
                 }
             }
 
@@ -176,7 +179,7 @@ ApplicationWindow {
                 id: saveJPEGButton
                 anchors.left: saveTIFFButton.right
                 anchors.verticalCenter: saveTIFFButton.verticalCenter
-                text: qsTr("Save JPEG")
+                text: qsTr( "Save JPEG" )
                 width: 80
                 height: 40
                 signal update()
@@ -187,46 +190,17 @@ ApplicationWindow {
                     }
                 }
                 Component.onCompleted: {
-                    saveJPEGButton.update.connect(editorTab.updateImage)
+                    saveJPEGButton.update.connect( editorTab.updateImage )
                 }
             }
 
             FileDialog {
                 id: openDialog
-                title: qsTr("Select a raw file")
+                title: qsTr( "Select a raw file" )
                 onAccepted: {
                     editorTab.location = fileUrl
-                    /*
-                    filmProvider.defaultToneCurveEnabled = editortab.defaultCurve
-                    filmProvider.exposureComp = editortab.exposureComp
-                    filmProvider.whitepoint = editortab.whitepoint
-                    filmProvider.blackpoint = editortab.blackpoint
-                    filmProvider.shadowsY = editortab.shadowsY
-                    filmProvider.highlightsY = editortab.highlightsY
-                    filmProvider.filmArea = editortab.filmSize
-                    */
                 }
             }
-
-            /*            Rectangle {
-                id: textentryholder
-                color: "#101010"
-                height: 20
-                width: 300
-                radius: 5
-                anchors.centerIn: parent
-                TextInput {
-                    id: filelocation
-                    color: "#FFFFFF"
-                    anchors.fill: parent
-                    text: qsTr("Enter file path here")
-                    onAccepted: {
-                        editortab.location = filelocation.text
-                        filmProvider.exposureComp = editortab.exposureComp;
-                        filmProvider.whitepoint = editortab.whitepoint;
-                    }
-                }
-            }*/
         }
     }
 
@@ -253,9 +227,8 @@ ApplicationWindow {
         property Item sourceItem
 
         onEnabledChanged: {
-            if (enabled) {
-                tooltipCatcher.setPosition(xInput, yInput)
-                //tooltipTimer.start()
+            if ( enabled ) {
+                tooltipCatcher.setPosition( xInput, yInput )
             }
         }
 
@@ -268,15 +241,6 @@ ApplicationWindow {
             tooltipCatcher.enabled = false
         }
 
-        /*        Timer {
-            id: tooltipTimer
-            interval: 5000
-            onTriggered: {
-                tooltipCatcher.visible = false
-                tooltipCatcher.enabled = false
-            }
-        }*/
-
         Rectangle {
             id: tooltipBox
             color: "#EE303030"
@@ -287,25 +251,25 @@ ApplicationWindow {
             property int maxWidth: 250
             property int minHeight: 30
             property int posPad: 10
-            width: Math.min(maxWidth,tooltipText.contentWidth+2*padding)
-            height: tooltipText.contentHeight+2*padding
+            width: Math.min( maxWidth, tooltipText.contentWidth + 2*padding )
+            height: tooltipText.contentHeight + 2*padding
             Text {
                 id: tooltipText
                 x: parent.padding
                 y: parent.padding
-                width: parent.maxWidth-2*parent.padding
+                width: parent.maxWidth - 2*parent.padding
                 wrapMode: Text.WordWrap
                 color: "#FFFFFFFF"
             }
         }
-        function setPosition(xIn, yIn) {
-            if (tooltipBox.height + yIn < root.height) {
+        function setPosition( xIn, yIn ) {
+            if ( tooltipBox.height + yIn < root.height ) {
                 tooltipBox.y = yIn
             }
             else {
                 tooltipBox.y = yIn - tooltipBox.height
             }
-            if (tooltipBox.width + xIn + tooltipBox.posPad < root.width) {
+            if ( tooltipBox.width + xIn + tooltipBox.posPad < root.width ) {
                 tooltipBox.x = xIn + tooltipBox.posPad
             }
             else {
@@ -327,8 +291,8 @@ ApplicationWindow {
         }
 
         tab: Rectangle {
-            property int totalOverlap: tabOverlap * (control.count - 1)
-            implicitWidth: Math.min ((styleData.availableWidth + totalOverlap)/control.count - 4, 100)
+            property int totalOverlap: tabOverlap * ( control.count - 1 )
+            implicitWidth: Math.min ( ( styleData.availableWidth + totalOverlap ) / control.count - 4, 100)
             implicitHeight: 30
             radius: 8
             border.color: styleData.selected ? "#B0B0B0" : "#808080"

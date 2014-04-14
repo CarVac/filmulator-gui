@@ -29,7 +29,7 @@ class OrganizeModel : public SqlModel
 
 public:
     explicit OrganizeModel( QObject *parent = 0 );
-    void setOrganizeQuery();
+    Q_INVOKABLE void setOrganizeQuery();
     Q_INVOKABLE void importDirectory_r( QString dir );
 
     void setMinCaptureTime( unsigned int captureTimeIn );

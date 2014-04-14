@@ -26,17 +26,18 @@ void OrganizeModel::setOrganizeQuery()
     //and another equality statement there.
 
     //First we will prepare a string to feed into the query.
+    //We only really care about info in the searchtable.
     std::string queryString = "SELECT * ";
-    queryString.append( "FROM SearchTable, FileTable, ProcessingTable " );
-    queryString.append( "WHERE " );
-    queryString.append( "SearchTable.searchID = ProcessingTable.procID " );
-    queryString.append( "AND SearchTable.sourceHash = FileTable.fileID " );
+    queryString.append( "FROM SearchTable " );
+//    queryString.append( "WHERE " );
+//    queryString.append( "SearchTable.searchID = ProcessingTable.procID " );
+//    queryString.append( "AND SearchTable.sourceHash = FileTable.fileID " );
 
     //Here we do the filtering.
     //For unsigned ones, if the max____Time is 0, then we don't filter.
     //For signed ones, if the max____ is <0, then we don't filter.
 
-
+/*
     if ( maxCaptureTime != 0 )
     {
         queryString.append( "AND SearchTable.captureTime <= " );
@@ -73,7 +74,7 @@ void OrganizeModel::setOrganizeQuery()
         queryString.append( std::to_string( minRating ) );
         queryString.append( " " );
     }
-
+*/
     //Now we go to the ordering.
     //By default, we will always sort by captureTime and filename,
     //but we want them to be last in case some other sorting method is chosen.
@@ -104,9 +105,11 @@ void OrganizeModel::setOrganizeQuery()
         queryString.append( "SearchTable.filename DESC;" );
     }
 
-    setQuery( QString::fromStdString( queryString ) );
+    cout << queryString << endl;
 
-}
+    setQuery( QSqlQuery( QString::fromStdString( queryString ) ) );
+ }
+
 void OrganizeModel::importDirectory_r( QString dir )
 {
     //This function reads in a directory and puts the raws into the database.
