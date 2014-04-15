@@ -156,17 +156,38 @@ void OrganizeModel::importDirectory_r( QString dir )
         image->readMetadata();
         Exiv2::ExifData exifData = image->exifData();
 
-        //Here I'm setting up the directory to put the file into based on the capture-local date.
+        //Here I'm setting up the directories to put the file into based on the capture-local date.
         QString outputPathName = photoDir;
         outputPathName.append( exifLocalDateString( exifData, cameraTZ, importTZ, dirConfig ) );
         QString outputPath = outputPathName;
-//        cout << "Output folder: " << outputPath.toStdString() << endl;
+//        cout << "Output folder: " << outputPathName.toStdString() << endl;
         QDir dir( outputPath );
-        dir.mkpath( outputPath );//For some reason, QDir::mkpath( outputPath) didn't work on its own.
-
+        dir.mkpath( outputPath );//For some reason, QDir::mkpath( outputPath ) didn't work.
         //This sets the full file path including the filename.
-        outputPathName.append( fileList.at(i).fileName());
-        cout << "Output path: " << outputPathName.toStdString() << endl;
+        outputPathName.append( fileList.at( i ).fileName() );
+
+        //Now I'm dealing with the backup directory. First we need to make sure that it's not there.
+        QDir backupRoot( backupDir );
+        bool backupPathExists = backupRoot.exists();
+        QString backupPathName = backupDir;
+        backupPathName.append( exifLocalDateString( exifData, cameraTZ, importTZ, dirConfig ) );
+        QString backupPath = backupPathName;
+        //Now to set the full backup path including the filename.
+        backupPathName.append( fileList.at( i ).fileName() );
+
+        //Now we make sure that the root of the backup directory is there.
+        //This is so the user can leave the same backup location and not worry about failure
+        // in case they have an external hdd disconnected or something like that.
+        if ( backupPathExists )
+        {
+            QDir backupDirectory( backupPath );
+            backupDirectory.mkpath( backupPath );
+            if ( !QFile::exists( backupPathName ) )
+            {
+                QFile::copy( fileList.at( i ).absoluteFilePath(), backupPathName );
+            }
+        }
+
 
 
         //Now we test to see if it's in the database already by comparing the hashes.
@@ -185,7 +206,7 @@ void OrganizeModel::importDirectory_r( QString dir )
 
             //Now, make a profile and a search table entry, and generate the thumbnail.
             createNewProfile( hashString,
-                              fileList.at(i).fileName(),
+                              fileList.at( i ).fileName(),
                               exifUtcTime( exifData, cameraTZ ),
                               exifData );
         }

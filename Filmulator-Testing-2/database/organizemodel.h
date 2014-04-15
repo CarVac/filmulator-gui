@@ -25,6 +25,7 @@ class OrganizeModel : public SqlModel
     Q_PROPERTY( int importTZ      READ getImportTZ      WRITE setImportTZ      NOTIFY importTZChanged )
     Q_PROPERTY( int cameraTZ      READ getCameraTZ      WRITE setCameraTZ      NOTIFY cameraTZChanged )
     Q_PROPERTY( QString photoDir  READ getPhotoDir      WRITE setPhotoDir      NOTIFY photoDirChanged )
+    Q_PROPERTY( QString backupDir READ getBackupDir     WRITE setBackupDir     NOTIFY backupDirChanged )
     Q_PROPERTY( QString dirConfig READ getDirConfig     WRITE setDirConfig     NOTIFY dirConfigChanged )
 
 public:
@@ -50,6 +51,7 @@ public:
     void setCameraTZ( int offsetIn );
 
     void setPhotoDir( QString dirIn );
+    void setBackupDir( QString dirIn );
     void setDirConfig( QString configIn );
 
     unsigned int getMinCaptureTime() { return minCaptureTime; }
@@ -70,6 +72,7 @@ public:
     int getCameraTZ() { return cameraTZ/3600; }
 
     QString getPhotoDir() { return photoDir; }
+    QString getBackupDir() { return backupDir; }
     QString getDirConfig() { return dirConfig; }
 
 signals:
@@ -91,6 +94,7 @@ signals:
     void cameraTZChanged();
 
     void photoDirChanged();
+    void backupDirChanged();
     void dirConfigChanged();
 
 public slots:
@@ -115,6 +119,7 @@ protected:
     int cameraTZ;
 
     QString photoDir;
+    QString backupDir;
     QString dirConfig;
 
     void fileInsert( const QString hash,

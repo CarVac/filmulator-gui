@@ -85,9 +85,9 @@ Rectangle {
                 height: parent.height
                 flickableDirection: Qt.Vertical
                 clip: true
-                contentWidth: contentItem.childrenRect.width + 6
-                contentHeight: contentItem.childrenRect.height
+                contentHeight: toolLayout.height
                 ColumnLayout {
+                    id: toolLayout
                     spacing: 0
                     x: 3
                     width: toolListItem.width - 6

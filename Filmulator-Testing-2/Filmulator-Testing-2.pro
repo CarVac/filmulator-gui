@@ -37,7 +37,8 @@ SOURCES += main.cpp \
     core/vibrance_saturation.cpp \
     database/organizemodel.cpp \
     database/organizeinsertion.cpp \
-    database/exiffunctions.cpp
+    database/exiffunctions.cpp \
+    ui/settings.cpp
 
 # Installation path
 # target.path =
@@ -61,7 +62,8 @@ HEADERS += \
     ui/filmimageprovider.h \
     database/filmulatordb.h \
     database/organizemodel.h \
-    database/exiffunctions.h
+    database/exiffunctions.h \
+    ui/settings.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

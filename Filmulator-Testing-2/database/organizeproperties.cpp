@@ -97,6 +97,12 @@ void OrganizeModel::setPhotoDir( QString dirIn )
     emit photoDirChanged();
 }
 
+void OrganizeModel::setBackupDir( QString dirIn )
+{
+    backupDir = dirIn;
+    emit backupDirChanged();
+}
+
 void OrganizeModel::setDirConfig( QString configIn )
 {
     dirConfig = configIn;

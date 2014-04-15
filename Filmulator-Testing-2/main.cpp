@@ -4,6 +4,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QTranslator>
 #include "ui/filmimageprovider.h"
+#include "ui/settings.h"
 #include "database/organizemodel.h"
 #include "database/filmulatordb.h"
 
@@ -34,7 +35,8 @@ int main(int argc, char *argv[])
     OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty( "organizeModel", organizeModel );
 
-
+    Settings *settingsObj = new Settings;
+    engine.rootContext()->setContextProperty( "settings", settingsObj );
 
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
