@@ -76,9 +76,10 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         int rolloff_boundary);
 
-void agitate( matrix<float> &developer_concentration, float active_layer_thickness,
-        float &reservoir_developer_concentration, float reservoir_thickness,
-        float pixels_per_millimeter );
+//Equalizes the concentration of developer across the reservoir and all pixels.
+void agitate( matrix<float> &developerConcentration, float activeLayerThickness,
+        float &reservoirDeveloperConcentration, float reservoirThickness,
+        float pixelsPerMillimeter );
 
 void develop(matrix<float> &crystal_radius,
         float crystal_growth_const,
