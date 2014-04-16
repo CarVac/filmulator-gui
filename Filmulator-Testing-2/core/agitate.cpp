@@ -18,19 +18,21 @@
  */
 #include "filmsim.hpp"
 
-void agitate ( matrix<float> &developer_concentration,
-    float developer_thickness, float &reservoir_developer_concentration,
-    float reservoir_size, float pixels_per_millimeter )
+void agitate ( matrix<float> &developerConcentration,
+               float activeLayerThickness,
+               float &reservoirDeveloperConcentration,
+               float reservoirThickness,
+               float pixelsPerMillimeter )
 {
-    int npixels = developer_concentration.nc()*
-        developer_concentration.nr();
-    float total_developer = sum(developer_concentration)*
-        developer_thickness/pow(pixels_per_millimeter,2) +
-        reservoir_developer_concentration*reservoir_size;
-    float contact_layer_size = npixels*developer_thickness/
-        pow(pixels_per_millimeter,2);
-    reservoir_developer_concentration = total_developer/(reservoir_size +
-        contact_layer_size);
-    developer_concentration = reservoir_developer_concentration;
+    int npixels = developerConcentration.nc()*
+        developerConcentration.nr();
+    float totalDeveloper = sum( developerConcentration ) *
+        activeLayerThickness / pow( pixelsPerMillimeter, 2 ) +
+        reservoirDeveloperConcentration * reservoirThickness;
+    float contactLayerSize = npixels * activeLayerThickness /
+        pow( pixelsPerMillimeter, 2 );
+    reservoirDeveloperConcentration = totalDeveloper / ( reservoirThickness +
+        contactLayerSize );
+    developerConcentration = reservoirDeveloperConcentration;
     return;
 }
