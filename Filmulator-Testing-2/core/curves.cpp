@@ -185,7 +185,7 @@ void film_like_curve( matrix<unsigned short> &input,
 //It assumes that r and b are the extreme values, and that they are different.
 void RGBTone( unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup )
 {
-    unsigned short rOld=hi, gOld=mid, bOld=lo;
+    unsigned short rOld = hi, gOld = mid, bOld = lo;
 
     hi = lookup[ rOld ];
     lo = lookup[ bOld ];
