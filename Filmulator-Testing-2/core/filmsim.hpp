@@ -145,22 +145,34 @@ bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
 
 bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
                   Exiv2::ExifData exifData);
-        
-float default_tonecurve(float input, bool enabled);
 
-float shadows_highlights (float input, float shadowsX, float shadowsY,
-                   float highlightsX, float highlightsY);
+//Applies the hardcoded post-filmulation tonecurve to the image.
+float default_tonecurve( float input, bool enabled );
 
-float slopeFromT (float t, float A, float B, float C);
+//Applies the effective tonecurve specified by the two control points to the image.
+float shadows_highlights( float input,
+                          float shadowsX,
+                          float shadowsY,
+                          float highlightsX,
+                          float highlightsY );
 
-float xFromT (float t, float A, float B, float C, float D);
+//Computes the slope of the cubic polynomial at time t.
+float slopeFromT( float t, float A, float B, float C );
 
-float yFromT (float t, float E, float F, float G, float H);
+//Computes the x value of the cubic polynomial at time t.
+float xFromT( float t, float A, float B, float C, float D );
 
-void film_like_curve(matrix<unsigned short> &input,
-                      matrix<unsigned short> &output, LUT &lookup);
+//Computes the y value of the cubic polynomial at time t.
+//It happens to be the same as xFromT
+float yFromT( float t, float E, float F, float G, float H );
 
-void RGBTone (unsigned short& r, unsigned short& g, unsigned short& b, LUT &lookup);
+//Applies the LUT to the extreme values while maintaining the relative position of the middle value.
+void film_like_curve( matrix<unsigned short> &input,
+                      matrix<unsigned short> &output,
+                      LUT &lookup );
+
+//Applies the LUT to the first and last values, interpolating the middle value.
+void RGBTone (unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup);
 
 JSAMPLE dither_round(int full_int);
 
@@ -179,7 +191,7 @@ void output_file(matrix<unsigned short> &output, vector<string> input_filename_l
 void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
                            float whitepoint, float blackpoint);
 
-
+//Applies LUTs individually to each color.
 void color_curves(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 LUT lutR, LUT lutG, LUT lutB);
 
