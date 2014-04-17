@@ -172,7 +172,7 @@ void film_like_curve( matrix<unsigned short> &input,
                       LUT &lookup );
 
 //Applies the LUT to the first and last values, interpolating the middle value.
-void RGBTone (unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup);
+void midValueShift (unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup);
 
 JSAMPLE dither_round(int full_int);
 
