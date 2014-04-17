@@ -1,6 +1,6 @@
 #include "filmsim.hpp"
 
-void color_curves(matrix<unsigned short> &input, matrix<unsigned short> &output,
+void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
                   LUT lutR, LUT lutG, LUT lutB)
 {
 

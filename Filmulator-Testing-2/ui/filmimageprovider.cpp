@@ -264,7 +264,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         mutex.lock();
         valid = colorcurve;
         mutex.unlock();
-        color_curves(contrast_image, color_curve_image, lutR, lutG, lutB);
+        colorCurves(contrast_image, color_curve_image, lutR, lutG, lutB);
     }
     case colorcurve://Do flim-like curve
     {
@@ -569,7 +569,7 @@ float FilmImageProvider::getHistogramPoint(histogram &hist, int index, int i, Lo
             return float(min(hist.gHist[i],hist.gHistMax))/float(hist.gHistMax);
         else
             return log(hist.gHist[i]+1)/log(hist.gHistMax+1);
-    case 3: //blue
+    default://case 3: //blue
         if (!isLog)
             return float(min(hist.bHist[i],hist.bHistMax))/float(hist.bHistMax);
         else
