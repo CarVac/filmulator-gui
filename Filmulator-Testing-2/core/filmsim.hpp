@@ -78,16 +78,19 @@ matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
 
 //Equalizes the concentration of developer across the reservoir and all pixels.
 void agitate( matrix<float> &developerConcentration, float activeLayerThickness,
-        float &reservoirDeveloperConcentration, float reservoirThickness,
-        float pixelsPerMillimeter );
+              float &reservoirDeveloperConcentration, float reservoirThickness,
+              float pixelsPerMillimeter );
 
-void develop(matrix<float> &crystal_radius,
-        float crystal_growth_const,
-        const matrix<float> &active_crystals_per_pixel,
-        matrix<float> &silver_salt_density,
-        matrix<float> &developer_concentration, float active_layer_thickness,
-        float developer_consumption_const, float silver_salt_consumption_const,
-        float timestep);
+//This simulates one step of the development reaction.
+void develop( matrix<float> &crystalRad,
+              float crystalGrowthConst,
+              const matrix<float> &activeCrystalsPerPixel,
+              matrix<float> &silverSaltDensity,
+              matrix<float> &develConcentration,
+              float activeLayerThickness,
+              float developerConsumptionConst,
+              float silverSaltConsumptionConst,
+              float timestep);
 
 void diffuse(matrix<float> &developer_concentration,
         float sigma_const,

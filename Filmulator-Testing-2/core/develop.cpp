@@ -18,102 +18,94 @@
  */
 #include "filmsim.hpp"
 
-void develop(matrix<float> &crystal_radius,
-        float crystal_growth_const,
-		const matrix<float> &active_crystals_per_pixel,
-        matrix<float> &silver_salt_density,
-        matrix<float> &developer_concentration, float developer_thickness,
-        float developer_consumption_const, float silver_salt_consumption_const,
-        float timestep)
+void develop( matrix<float> &crystalRad,
+              float crystalGrowthConst,
+              const matrix<float> &activeCrystalsPerPixel,
+              matrix<float> &silverSaltDensity,
+              matrix<float> &develConcentration,
+              float activeLayerThickness,
+              float developerConsumptionConst,
+              float silverSaltConsumptionConst,
+              float timestep)
 {
 
     //Setting up dimensions and boundaries.
-    int height = developer_concentration.nr();
-    int width = developer_concentration.nc();
+    int height = develConcentration.nr();
+    int width = develConcentration.nc();
     //We still count columns of pixels, because we must process them
     // whole, so to ensure this we runthree adjacent elements at a time.
     
     //Here we pre-compute some repeatedly used values.
-    float cgc = crystal_growth_const*timestep;
-    float dcc = 2.0*developer_consumption_const/(developer_thickness*3.0);
-    float sscc = silver_salt_consumption_const*2.0;
+    float cgc = crystalGrowthConst*timestep;
+    float dcc = 2.0*developerConsumptionConst / ( activeLayerThickness*3.0 );
+    float sscc = silverSaltConsumptionConst*2.0;
 
     //These are only used once per loop, so they don't have to be matrices.
-    float delta_crystal_radiusr;
-    float delta_crystal_radiusg;
-    float delta_crystal_radiusb;
-    float delta_crystal_volumer;
-    float delta_crystal_volumeg;
-    float delta_crystal_volumeb;
+    float dCrystalRadR;
+    float dCrystalRadG;
+    float dCrystalRadB;
+    float dCrystalVolR;
+    float dCrystalVolG;
+    float dCrystalVolB;
 
     //These are the column indices for red, green, and blue.
     int row, col, colr, colg, colb;
 
-#pragma omp parallel shared(developer_concentration,silver_salt_density,\
-        crystal_radius,active_crystals_per_pixel,cgc,dcc,sscc) private(row,\
-            col,colr,colg,colb,delta_crystal_radiusr,delta_crystal_radiusg,\
-            delta_crystal_radiusb,delta_crystal_volumer,delta_crystal_volumeg,\
-            delta_crystal_volumeb)
+#pragma omp parallel shared( develConcentration, silverSaltDensity,\
+        crystalRad, activeCrystalsPerPixel, cgc, dcc, sscc )\
+        private( row, col,\
+        colr, colg, colb,\
+        dCrystalRadR, dCrystalRadG, dCrystalRadB,\
+        dCrystalVolR, dCrystalVolG, dCrystalVolB )
     {
 
-#pragma omp for schedule(dynamic) nowait
-        for (row = 0; row < height; row++)
+#pragma omp for schedule( dynamic ) nowait
+        for ( row = 0; row < height; row++ )
         {
-            for (col = 0; col < width; col++)
+            for ( col = 0; col < width; col++ )
             {
-                colr = col*3;
-                colg = colr+1;
-                colb = colr+2;
+                colr = col * 3;
+                colg = colr + 1;
+                colb = colr + 2;
                 //This is the rate of thickness accumulating on the crystals.
-                delta_crystal_radiusr = developer_concentration(row,col)*
-                    silver_salt_density(row,colr)*cgc;
-                delta_crystal_radiusg = developer_concentration(row,col)*
-                    silver_salt_density(row,colg)*cgc;
-                delta_crystal_radiusb = developer_concentration(row,col)*
-                    silver_salt_density(row,colb)*cgc;
+                dCrystalRadR = develConcentration( row, col ) * silverSaltDensity( row, colr ) * cgc;
+                dCrystalRadG = develConcentration( row, col ) * silverSaltDensity( row, colg ) * cgc;
+                dCrystalRadB = develConcentration( row, col ) * silverSaltDensity( row, colb ) * cgc;
     
                 //The volume change is proportional to 4*pi*r^2*dr.
                 //We kinda shuffled around the constants, so ignore the lack of
                 //the 4 and the pi.
                 //However, there are varying numbers of crystals, so we also
                 //multiply by the number of crystals per pixel.
-                delta_crystal_volumer = delta_crystal_radiusr*
-                    crystal_radius(row,colr)*crystal_radius(row,colr)*
-                    active_crystals_per_pixel(row,colr);
-                delta_crystal_volumeg = delta_crystal_radiusg*
-                    crystal_radius(row,colg)*crystal_radius(row,colg)*
-                    active_crystals_per_pixel(row,colg);
-                delta_crystal_volumeb = delta_crystal_radiusb*
-                    crystal_radius(row,colb)*crystal_radius(row,colb)*
-                    active_crystals_per_pixel(row,colb);
+                dCrystalVolR = dCrystalRadR * crystalRad( row, colr ) * crystalRad( row, colr ) *
+                        activeCrystalsPerPixel( row, colr );
+                dCrystalVolG = dCrystalRadG * crystalRad( row, colg ) * crystalRad( row, colg ) *
+                        activeCrystalsPerPixel( row, colg );
+                dCrystalVolB = dCrystalRadB * crystalRad( row, colb ) * crystalRad( row, colb ) *
+                        activeCrystalsPerPixel( row, colb );
     
                 //Now we apply the new crystal radius.
-                crystal_radius(row,colr) = crystal_radius(row,colr) +
-                    delta_crystal_radiusr;
-                crystal_radius(row,colg) = crystal_radius(row,colg) +
-                    delta_crystal_radiusg;
-                crystal_radius(row,colb) = crystal_radius(row,colb) +
-                    delta_crystal_radiusb;
+                crystalRad( row, colr ) += dCrystalRadR;
+                crystalRad( row, colg ) += dCrystalRadG;
+                crystalRad( row, colb ) += dCrystalRadB;
     
                 //Here is where we consume developer. The 3 layers of film,
                 //(one per color) share the same developer.
-                developer_concentration(row,col) =
-                    developer_concentration(row,col) -
-                    dcc*(
-                            delta_crystal_volumer +
-                            delta_crystal_volumeg +
-                            delta_crystal_volumeb);
-                if (developer_concentration(row,col) < 0)
-                    developer_concentration(row,col) = 0;
+                develConcentration( row ,col ) -= dcc * ( dCrystalVolR +
+                                                          dCrystalVolG +
+                                                          dCrystalVolB );
+
+                //Prevent developer concentration from going negative.
+                if ( develConcentration( row, col ) < 0 )
+                {
+                    develConcentration( row, col ) = 0;
+                }
                 //Here, silver salts are consumed in proportion to how much
                 //silver was deposited on the crystals. Unlike the developer,
                 //each color layer has its own separate amount in this sim.
-                silver_salt_density(row,colr) = silver_salt_density(row,colr) -
-                    sscc * delta_crystal_volumer;
-                silver_salt_density(row,colg) = silver_salt_density(row,colg) -
-                    sscc * delta_crystal_volumeg;
-                silver_salt_density(row,colb) = silver_salt_density(row,colb) -
-                    sscc * delta_crystal_volumeb;
+                silverSaltDensity( row, colr ) -= sscc * dCrystalVolR;
+                silverSaltDensity( row, colg ) -= sscc * dCrystalVolG;
+                silverSaltDensity( row, colb ) -= sscc * dCrystalVolB;
             }
         }
     }
