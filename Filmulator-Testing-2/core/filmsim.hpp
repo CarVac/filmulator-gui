@@ -129,9 +129,6 @@ bool ppm_read_data( ifstream &input, int xsize, int ysize,
 void imwrite(matrix<float> &densityr, matrix<float> &densityg,
         matrix<float> &densityb, string outputfilename, bool sixteen_bit);
 
-void initialize(string input_configuration,
-                filmulateParams &filmParams);
-
 bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
         float &exposure_weight, float initial_exposure_comp,
         float &last_exposure_factor, string filename,

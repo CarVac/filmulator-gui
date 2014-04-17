@@ -19,7 +19,6 @@ SOURCES += main.cpp \
     core/imread_tiff.cpp \
     core/imwrite_jpeg.cpp \
     core/imwrite_tiff.cpp \
-    core/initialize.cpp \
     core/layer_mix.cpp \
     core/merge_exps.cpp \
     core/output_file.cpp \
