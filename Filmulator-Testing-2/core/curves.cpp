@@ -92,7 +92,7 @@ float shadows_highlights ( float input,
     // Assume for the first guess that t = x.
     float currentt = x;
     int nRefinementIterations = 5;
-    for ( int i=0; i < nRefinementIterations; i++ )
+    for ( int i = 0; i < nRefinementIterations; i++ )
     {
         float currentx = xFromT( currentt, A, B, C, D );
         float currentslope = slopeFromT( currentt, A, B, C );
@@ -140,7 +140,7 @@ void film_like_curve( matrix<unsigned short> &input,
 {
     int xsize = input.nc();
     int ysize = input.nr();
-    output.set_size( ysize,xsize );
+    output.set_size( ysize, xsize );
 
 #pragma omp parallel shared( lookup, input, output, xsize, ysize )
     {
@@ -155,9 +155,9 @@ void film_like_curve( matrix<unsigned short> &input,
 
             if ( r >= g )
             {
-                if      ( g > b ) RGBTone ( r, g, b, lookup ); // Case1: r>= g>  b
-                else if ( b > r ) RGBTone ( b, r, g, lookup ); // Case2: b>  r>= g
-                else if ( b > g ) RGBTone ( r, b, g, lookup ); // Case3: r>= b>  g
+                if      ( g > b ) midValueShift ( r, g, b, lookup ); // Case1: r>= g>  b
+                else if ( b > r ) midValueShift ( b, r, g, lookup ); // Case2: b>  r>= g
+                else if ( b > g ) midValueShift ( r, b, g, lookup ); // Case3: r>= b>  g
                 else							           // Case4: r>= g== b
                 {
                     //RGBTone fails if the first and last arguments are the same.
@@ -169,9 +169,9 @@ void film_like_curve( matrix<unsigned short> &input,
             }
             else
             {
-                if      ( r >= b ) RGBTone ( g, r, b, lookup ); // Case5: g>  r>= b
-                else if ( b >  g ) RGBTone ( b, g, r, lookup ); // Case6: b>  g>  r
-                else               RGBTone ( g, b, r, lookup ); // Case7: g>= b>  r
+                if      ( r >= b ) midValueShift ( g, r, b, lookup ); // Case5: g>  r>= b
+                else if ( b >  g ) midValueShift ( b, g, r, lookup ); // Case6: b>  g>  r
+                else               midValueShift ( g, b, r, lookup ); // Case7: g>= b>  r
             }
             output( i, j   ) = r;
             output( i, j+1 ) = g;
@@ -182,17 +182,18 @@ void film_like_curve( matrix<unsigned short> &input,
 }
 
 //This is what does the actual computation of the middle value.
+//This was called RGBTone in RawTherapee.
 //It assumes that r and b are the extreme values, and that they are different.
-void RGBTone( unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup )
+void midValueShift( unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup )
 {
-    unsigned short rOld = hi, gOld = mid, bOld = lo;
+    unsigned short oldHi = hi, oldMid = mid, oldLo = lo;
 
-    hi = lookup[ rOld ];
-    lo = lookup[ bOld ];
-    float rf = hi;
-    float bf = lo;
-    float roldf = rOld;
-    float goldf = gOld;
-    float boldf = bOld;
-    mid = bf + ( ( rf - bf ) * ( goldf - boldf ) / ( roldf - boldf ) );
+    hi = lookup[ oldHi ];
+    lo = lookup[ oldLo ];
+    float hi_f = hi;
+    float lo_f = lo;
+    float oldHi_f = oldHi;
+    float oldMid_f = oldMid;
+    float oldLo_f = oldLo;
+    mid = lo_f + ( ( hi_f - lo_f ) * ( oldMid_f - oldLo_f ) / ( oldHi_f - oldLo_f ) );
 }
