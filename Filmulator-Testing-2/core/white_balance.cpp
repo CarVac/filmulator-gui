@@ -146,14 +146,13 @@ void whiteBalance ( matrix<float> &input, matrix<float> &output,
     double yMult = ( 1.0 / 3.0 ) / xyzYIllum;
     double zMult = 3.0 - xMult - yMult;
 
-    //Convert the xyz value of the illuminant to rgb.
+    //Convert the xyz value of the illuminant compensation to rgb.
     double rMult, gMult, bMult;
     xyz2rgb( xMult, yMult, zMult,
              rMult, gMult, bMult );
     cout << "white_balance xmult: " << xMult << endl;
     cout << "white_balance ymult: " << yMult << endl;
     cout << "white_balance zmult: " << zMult << endl;
-
 
     //Check that they don't go negative.
     cout << "white_balance rmult: " << rMult << endl;
@@ -163,6 +162,7 @@ void whiteBalance ( matrix<float> &input, matrix<float> &output,
     rMult = max( rMult, 0.0 );
     gMult = max( gMult, 0.0 );
     bMult = max( bMult, 0.0 );
+
     int nRows = input.nr();
     int nCols = input.nc();
 
