@@ -201,6 +201,9 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
 void white_balance (matrix<float> &input, matrix<float> &output,
                     double temp, double tone);
 
+void whiteBalance ( matrix<float> &input, matrix<float> &output,
+                    double temperature, double tint );
+
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
                          double vibrance, double saturation);

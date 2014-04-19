@@ -91,8 +91,8 @@ void rgb_to_xyz(double  r, double  g, double  b,
     z = 0.0193*r + 0.1192*g + 0.9502*b;
 }
 
-void xyz_to_rgb(double  x, double  y, double  z,
-                double &r, double &g, double &b)
+void xyz2rgb( double  x, double  y, double  z,
+              double &r, double &g, double &b)
 {
     r =  3.2406*x + -1.5372*y + -0.4989*z;
     g = -0.9689*x +  1.8758*y +  0.0415*z;
@@ -126,11 +126,59 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
             double newZ = magnitude - newX - newY;
 
             double newR, newG, newB;
-            xyz_to_rgb(newX, newY, newZ, newR, newG, newB);
+            xyz2rgb(newX, newY, newZ, newR, newG, newB);
 
             output(i,j  ) = max(newR,0.0);
             output(i,j+1) = max(newG,0.0);
             output(i,j+2) = max(newB,0.0);
+        }
+    }
+}
+
+void whiteBalance ( matrix<float> &input, matrix<float> &output,
+                      double temperature, double tint )
+{
+    double xyzXIllum, xyzYIllum;//Value of the illuminant in the xyz space
+    temp_tint_to_xy( temperature, tint, xyzXIllum, xyzYIllum );
+
+    //Calculate the multiplier to compensate for the computed illuminant.
+    double xMult = ( 1.0 / 3.0 ) / xyzXIllum;
+    double yMult = ( 1.0 / 3.0 ) / xyzYIllum;
+    double zMult = 3.0 - xMult - yMult;
+
+    //Convert the xyz value of the illuminant to rgb.
+    double rMult, gMult, bMult;
+    xyz2rgb( xMult, yMult, zMult,
+             rMult, gMult, bMult );
+    cout << "white_balance xmult: " << xMult << endl;
+    cout << "white_balance ymult: " << yMult << endl;
+    cout << "white_balance zmult: " << zMult << endl;
+
+
+    //Check that they don't go negative.
+    cout << "white_balance rmult: " << rMult << endl;
+    cout << "white_balance gmult: " << gMult << endl;
+    cout << "white_balance bmult: " << bMult << endl;
+
+    rMult = max( rMult, 0.0 );
+    gMult = max( gMult, 0.0 );
+    bMult = max( bMult, 0.0 );
+    int nRows = input.nr();
+    int nCols = input.nc();
+
+    output.set_size( nRows, nCols );
+
+#pragma omp parallel shared( output, input ) firstprivate( nRows, nCols, rMult, gMult, bMult )
+    {
+#pragma omp for schedule( dynamic ) nowait
+        for ( int i = 0; i < nRows; i++ )
+        {
+            for ( int j = 0; j < nCols; j += 3 )
+            {
+                output( i, j   ) = rMult*input( i, j   );
+                output( i, j+1 ) = gMult*input( i, j+1 );
+                output( i, j+2 ) = bMult*input( i, j+2 );
+            }
         }
     }
 }
