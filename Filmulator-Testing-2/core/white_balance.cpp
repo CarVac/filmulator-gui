@@ -223,10 +223,14 @@ void whiteBalance( matrix<float> &input, matrix<float> &output,
     double rBaseMult = COLOR.pre_mul[ 0 ];
     double gBaseMult = COLOR.pre_mul[ 1 ];
     double bBaseMult = COLOR.pre_mul[ 2 ];
+    cout << "white_balance premultipliers:" << endl;
+    cout << rBaseMult << endl << gBaseMult << endl << bBaseMult << endl;
     //Next is the white balance coefficients as shot.
     double rCamMult = COLOR.cam_mul[ 0 ];
     double gCamMult = COLOR.cam_mul[ 1 ];
     double bCamMult = COLOR.cam_mul[ 2 ];
+    cout << "white_balance as-shot coefficients:" << endl;
+    cout << rCamMult << endl << gCamMult << endl << bCamMult <<endl;
 
 
     //Computing user multipliers
