@@ -94,9 +94,9 @@ void rgb_to_xyz(double  r, double  g, double  b,
 void xyz2rgb( double  x, double  y, double  z,
               double &r, double &g, double &b)
 {
-    r =  3.2406*x + -1.5372*y + -0.4989*z;
-    g = -0.9689*x +  1.8758*y +  0.0415*z;
-    b =  0.0557*x + -0.2041*y +  1.0573*z;
+    r =  3.2406*x - 1.5372*y - 0.4989*z;
+    g = -0.9689*x + 1.8758*y + 0.0415*z;
+    b =  0.0557*x - 0.2041*y + 1.0573*z;
 }
 
 void white_balance ( matrix<float> &input, matrix<float> &output,
@@ -135,33 +135,117 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
     }
 }
 
-void whiteBalance ( matrix<float> &input, matrix<float> &output,
-                      double temperature, double tint )
+void whiteBalanceMults( double temperature, double tint,
+                         double &rMult, double &gMult, double &bMult )
 {
-    double xyzXIllum, xyzYIllum;//Value of the illuminant in the xyz space
-    temp_tint_to_xy( temperature, tint, xyzXIllum, xyzYIllum );
+    //Value of the desired illuminant in the xyz space.
+    double xyzXIllum, xyzYIllum, xyzZIllum;
 
-    //Calculate the multiplier to compensate for the computed illuminant.
-    double xMult = ( 1.0 / 3.0 ) / xyzXIllum;
-    double yMult = ( 1.0 / 3.0 ) / xyzYIllum;
-    double zMult = 3.0 - xMult - yMult;
+    //Value of the base illuminant in the xyz space.
+    double xyzXBase, xyzYBase, xyzZBase;
+
+    //In order to get physically relevant temperatures, we trust dcraw
+    // and by proxy libraw to give consistent WB in the
+    // "daylight multipliers" (dcraw) and "pre_mul" (libraw)
+    // fields.
+    //
+    //The following values are our baseline estimate of what this temperature
+    // and tint is.
+    double BASE_TEMP =  5830.523;
+    double BASE_TINT = -0.00184056;
+
+    //Now we compute the coordinates.
+    temp_tint_to_xy( temperature, tint, xyzXIllum, xyzYIllum );
+    xyzZIllum = 1 - xyzXIllum - xyzYIllum;
+    temp_tint_to_xy( BASE_TEMP, BASE_TINT, xyzXBase, xyzYBase );
+    xyzZBase = 1 - xyzXBase - xyzYBase;
+
+    //Calculate the multiplier to convert from one illuminant to the other.
+    //
+    //The first constants are rgb2xyz(1,1,1): when the illuminants match for
+    // the baseline value and the user's set temperature, we want the
+    // RGB multipliers to all equal 1.
+    //
+    //Then, we divide the baseline by
+    double xMult = 0.9505 * xyzXBase / xyzXIllum;
+    double yMult = 1.0000 * xyzYBase / xyzYIllum;
+    double zMult = 1.0887 * xyzZBase / xyzZIllum;
 
     //Convert the xyz value of the illuminant compensation to rgb.
-    double rMult, gMult, bMult;
     xyz2rgb( xMult, yMult, zMult,
              rMult, gMult, bMult );
-    cout << "white_balance xmult: " << xMult << endl;
-    cout << "white_balance ymult: " << yMult << endl;
-    cout << "white_balance zmult: " << zMult << endl;
 
     //Check that they don't go negative.
-    cout << "white_balance rmult: " << rMult << endl;
-    cout << "white_balance gmult: " << gMult << endl;
-    cout << "white_balance bmult: " << bMult << endl;
-
     rMult = max( rMult, 0.0 );
     gMult = max( gMult, 0.0 );
     bMult = max( bMult, 0.0 );
+}
+
+void whiteBalance( matrix<float> &input, matrix<float> &output,
+                   double temperature, double tint,
+                   std::string inputFilename )
+                   /*double rBaseMult, double gBaseMult, double bBaseMult,
+                   double rCamMult, double gCamMult, double bCamMult )*/
+{
+
+    //The white balance flow from LibRaw goes like this:
+    // raw ---> srgb primaries --------------> [variable] camera WB.
+    //The camera WB is variable, so we can't base anything off those
+    // multipliers and have the temperature values be still physical.
+    //Fortunately, LibRaw exposes another value for us, the "pre_mul" field,
+    // which is fixed for each camera.
+    //Our new white balance flow is:
+    // raw ---> sRGB primaries --------------> camera WB
+    //          sRGB primaries <------------------
+    //                 --------> pre_mul ------> user set WB
+    //So, we apply the reciprocal of the camera multipliers,
+    // and simply multiply by the base and user multipliers.
+    //The reason we don't ask libRaw for the raw color or sRGB primaries
+    // is because demosaicing performs much better when the white balance
+    // is approximately correct.
+    // So we trust the camera's value to be close enough.
+
+
+    //Grab the white balance data from the raw file.
+    LibRaw imageProcessor;
+#define COLOR imageProcessor.imgdata.color
+
+    const char *cstr = inputFilename.c_str();
+    if ( 0 != imageProcessor.open_file( cstr ) )
+    {
+        cerr << "Could not read input file!" << endl;
+        return;
+    }
+
+    //Set the white balance arguments.
+
+    //First is the fixed (per-camera) daylight multipliers.
+    double rBaseMult = COLOR.pre_mul[ 0 ];
+    double gBaseMult = COLOR.pre_mul[ 1 ];
+    double bBaseMult = COLOR.pre_mul[ 2 ];
+    //Next is the white balance coefficients as shot.
+    double rCamMult = COLOR.cam_mul[ 0 ];
+    double gCamMult = COLOR.cam_mul[ 1 ];
+    double bCamMult = COLOR.cam_mul[ 2 ];
+
+
+    //Computing user multipliers
+    double rMult, bMult, gMult;
+    whiteBalanceMults( temperature, tint,
+                       rMult,
+                       gMult,
+                       bMult );
+    cout << "white_balance user multipliers:" << endl;
+    cout << rMult << endl << gMult << endl << bMult << endl;
+    rMult *= rBaseMult / rCamMult;
+    gMult *= gBaseMult / gCamMult;
+    bMult *= bBaseMult / bCamMult;
+    cout << "white_balance end multipliers:" << endl;
+    double multMin = min( min( rMult, gMult ), bMult );
+    rMult /= multMin;
+    gMult /= multMin;
+    bMult /= multMin;
+    cout << rMult << endl << gMult << endl << bMult << endl;
 
     int nRows = input.nr();
     int nCols = input.nc();

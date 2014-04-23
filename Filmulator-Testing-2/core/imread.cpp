@@ -20,8 +20,8 @@
 //imread.cpp uses libraw to load raw files.
 #include "filmsim.hpp"
 
-bool imread(string input_image_filename, matrix<float> &returnmatrix,
-        Exiv2::ExifData &exifData, int highlights, bool caEnabled)
+bool imread( string input_image_filename, matrix<float> &returnmatrix,
+             Exiv2::ExifData &exifData, int highlights, bool caEnabled )
 {
     //Create image processor for reading raws.
     LibRaw image_processor;
@@ -35,25 +35,17 @@ bool imread(string input_image_filename, matrix<float> &returnmatrix,
     PARAM.user_qual = 10;//10 is AMaZE; -q[#] in dcraw
     PARAM.no_auto_bright = 1;//Don't autoadjust brightness (-W)
     PARAM.output_bps = 16;//16 bits per channel (-6)
-    PARAM.gamm[0] = 1;
-    PARAM.gamm[1] = 1;//Linear gamma (-g 1 1)
+    PARAM.gamm[ 0 ] = 1;
+    PARAM.gamm[ 1 ] = 1;//Linear gamma (-g 1 1)
     PARAM.ca_correc = caEnabled;//Turn on CA auto correction
     PARAM.cared = 0;
     PARAM.cablue = 0;
     PARAM.output_color = 1;//1: Use sRGB regardless.
-    //PARAM.output_color = 0;//0: Use raw color regardless.
     PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
-     /*
-    PARAM.user_mul[0] = 1.0;
-    PARAM.user_mul[1] = 1.0;
-    PARAM.user_mul[2] = 1.0;
-    PARAM.user_mul[3] = 1.0;
-     */
-
     PARAM.highlight = highlights;//Set highlight recovery (-H #)
 
     const char *cstr = input_image_filename.c_str();
-    if(0 != image_processor.open_file(cstr))
+    if ( 0 != image_processor.open_file( cstr ) )
     {
         cerr << "Could not read input file!" << endl;
         return true;
@@ -68,23 +60,23 @@ bool imread(string input_image_filename, matrix<float> &returnmatrix,
     //We will ignore the last blank value.
     image_processor.dcraw_process();
 
-    returnmatrix.set_size(SIZES.iheight,SIZES.iwidth*3);
-    for(int row = 0; row < SIZES.iheight; row++)
+    returnmatrix.set_size( SIZES.iheight, SIZES.iwidth*3 );
+    for ( int row = 0; row < SIZES.iheight; row++ )
     {
         //IMAGE is an (width*height) by 4 array, not width by height by 4.
         int rowoffset = row*SIZES.iwidth;
-        for(int col = 0; col < SIZES.iwidth; col++)
+        for ( int col = 0; col < SIZES.iwidth; col++ )
         {
-            returnmatrix(row,col*3    ) = IMAGE[rowoffset+col][0];//R
-            returnmatrix(row,col*3 + 1) = IMAGE[rowoffset+col][1];//G
-            returnmatrix(row,col*3 + 2) = IMAGE[rowoffset+col][2];//B
+            returnmatrix( row, col*3     ) = IMAGE[ rowoffset + col ][ 0 ];//R
+            returnmatrix( row, col*3 + 1 ) = IMAGE[ rowoffset + col ][ 1 ];//G
+            returnmatrix( row, col*3 + 2 ) = IMAGE[ rowoffset + col ][ 2 ];//B
         }
     }
     image_processor.recycle();
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(cstr);
-    assert(image.get() != 0);
+    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( cstr );
+    assert( image.get() != 0 );
     image->readMetadata();
     exifData = image->exifData();
 
-	return false;
+        return false;
 }

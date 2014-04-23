@@ -182,7 +182,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         //Here we apply the exposure compensation and white balance.
         matrix<float> exposureImage = input_image * pow(2, exposureComp);
         //white_balance(exposureImage,pre_film_image,temperature,tint);
-        whiteBalance(exposureImage,pre_film_image,temperature,tint);
+        whiteBalance(exposureImage,pre_film_image,temperature,tint, inputFilename);
 
         updateFloatHistogram(preFilmHist, pre_film_image, 65535, histPreFilm);
         emit histPreFilmChanged();

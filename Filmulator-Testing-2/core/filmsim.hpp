@@ -98,8 +98,8 @@ void diffuse(matrix<float> &developer_concentration,
         float timestep);
 
 //Reading raws with libraw
-bool imread(string input_image_filename, matrix<float> &returnmatrix,
-        Exiv2::ExifData &exifData, int highlights, bool caEnabled);
+bool imread( string input_image_filename, matrix<float> &returnmatrix,
+             Exiv2::ExifData &exifData, int highlights, bool caEnabled );
 
 //Reading tiff files
 bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
@@ -201,8 +201,14 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
 void white_balance (matrix<float> &input, matrix<float> &output,
                     double temp, double tone);
 
-void whiteBalance ( matrix<float> &input, matrix<float> &output,
-                    double temperature, double tint );
+//Computes the multipliers for the offset from the base to the desired WB
+void whiteBalanceMults( double temperature, double tint,
+                        double &rMult, double &gMult, double &bMult );
+
+//Applies the settings to the image, given the fixed (per camera) base multipliers,
+// and the fixed (per image) multipliers the camera used.
+void whiteBalance( matrix<float> &input, matrix<float> &output,
+                   double temperature, double tint, std::string inputFilename );
 
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,

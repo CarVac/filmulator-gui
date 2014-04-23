@@ -124,7 +124,7 @@ Rectangle {
                         tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.")
                         minimumValue: 1500
                         maximumValue: 15000
-                        stepSize: 10
+                        //stepSize: 10
                         defaultValue: root.defaultTemperature
                         onValueChanged: {
                             filmProvider.temperature = value
@@ -147,7 +147,7 @@ Rectangle {
                         tooltipText: qsTr("Correct for a  green/magenta tinted light source. Positive values are greener, and negative values are magenta.")
                         minimumValue: -0.1
                         maximumValue:  0.1
-                        stepSize: 0.002
+                        //stepSize: 0.002
                         defaultValue: root.defaultTint
                         onValueChanged: {
                             filmProvider.tint = value
