@@ -201,12 +201,11 @@ void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
 void white_balance (matrix<float> &input, matrix<float> &output,
                     double temp, double tone);
 
-//Computes the multipliers for the offset from the base to the desired WB
-void whiteBalanceMults( double temperature, double tint,
+//Computes the multipliers for the white balance.
+void whiteBalanceMults( double temperature, double tint, std::string inputFilename,
                         double &rMult, double &gMult, double &bMult );
 
-//Applies the settings to the image, given the fixed (per camera) base multipliers,
-// and the fixed (per image) multipliers the camera used.
+//Applies the desired temperature and tint adjustments to the image.
 void whiteBalance( matrix<float> &input, matrix<float> &output,
                    double temperature, double tint, std::string inputFilename );
 

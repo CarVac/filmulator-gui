@@ -135,7 +135,7 @@ void white_balance ( matrix<float> &input, matrix<float> &output,
     }
 }
 
-void whiteBalanceMults( double temperature, double tint,
+void whiteBalanceMults( double temperature, double tint, std::string inputFilename,
                          double &rMult, double &gMult, double &bMult )
 {
     //Value of the desired illuminant in the xyz space.
@@ -179,14 +179,6 @@ void whiteBalanceMults( double temperature, double tint,
     rMult = max( rMult, 0.0 );
     gMult = max( gMult, 0.0 );
     bMult = max( bMult, 0.0 );
-}
-
-void whiteBalance( matrix<float> &input, matrix<float> &output,
-                   double temperature, double tint,
-                   std::string inputFilename )
-                   /*double rBaseMult, double gBaseMult, double bBaseMult,
-                   double rCamMult, double gCamMult, double bCamMult )*/
-{
 
     //The white balance flow from LibRaw goes like this:
     // raw ---> srgb primaries --------------> [variable] camera WB.
@@ -206,41 +198,43 @@ void whiteBalance( matrix<float> &input, matrix<float> &output,
     // So we trust the camera's value to be close enough.
 
 
-    //Grab the white balance data from the raw file.
+    double rBaseMult, gBaseMult, bBaseMult;
+    double rCamMult, gCamMult, bCamMult;
+    //Grab the existing white balance data from the raw file.
     LibRaw imageProcessor;
 #define COLOR imageProcessor.imgdata.color
 
     const char *cstr = inputFilename.c_str();
-    if ( 0 != imageProcessor.open_file( cstr ) )
+    if ( 0 == imageProcessor.open_file( cstr ) )
     {
-        cerr << "Could not read input file!" << endl;
-        return;
-    }
-
-    //Set the white balance arguments.
+    //Set the white balance arguments based on what libraw did.
 
     //First is the fixed (per-camera) daylight multipliers.
-    double rBaseMult = COLOR.pre_mul[ 0 ];
-    double gBaseMult = COLOR.pre_mul[ 1 ];
-    double bBaseMult = COLOR.pre_mul[ 2 ];
+    rBaseMult = COLOR.pre_mul[ 0 ];
+    gBaseMult = COLOR.pre_mul[ 1 ];
+    bBaseMult = COLOR.pre_mul[ 2 ];
     cout << "white_balance premultipliers:" << endl;
     cout << rBaseMult << endl << gBaseMult << endl << bBaseMult << endl;
     //Next is the white balance coefficients as shot.
-    double rCamMult = COLOR.cam_mul[ 0 ];
-    double gCamMult = COLOR.cam_mul[ 1 ];
-    double bCamMult = COLOR.cam_mul[ 2 ];
+    rCamMult = COLOR.cam_mul[ 0 ];
+    gCamMult = COLOR.cam_mul[ 1 ];
+    bCamMult = COLOR.cam_mul[ 2 ];
     cout << "white_balance as-shot coefficients:" << endl;
     cout << rCamMult << endl << gCamMult << endl << bCamMult <<endl;
+    }
+    else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
+    {
+        rBaseMult = 1;
+        gBaseMult = 1;
+        bBaseMult = 1;
+        rCamMult = 1;
+        gCamMult = 1;
+        bCamMult = 1;
+    }
 
-
-    //Computing user multipliers
-    double rMult, bMult, gMult;
-    whiteBalanceMults( temperature, tint,
-                       rMult,
-                       gMult,
-                       bMult );
     cout << "white_balance user multipliers:" << endl;
     cout << rMult << endl << gMult << endl << bMult << endl;
+
     rMult *= rBaseMult / rCamMult;
     gMult *= gBaseMult / gCamMult;
     bMult *= bBaseMult / bCamMult;
@@ -250,6 +244,15 @@ void whiteBalance( matrix<float> &input, matrix<float> &output,
     gMult /= multMin;
     bMult /= multMin;
     cout << rMult << endl << gMult << endl << bMult << endl;
+}
+
+void whiteBalance( matrix<float> &input, matrix<float> &output,
+                   double temperature, double tint,
+                   std::string inputFilename )
+{
+    double rMult, gMult, bMult;
+    whiteBalanceMults( temperature, tint, inputFilename,
+                       rMult, gMult, bMult );
 
     int nRows = input.nr();
     int nCols = input.nc();
