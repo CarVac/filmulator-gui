@@ -194,7 +194,7 @@ void setupDB( QSqlDatabase *db )
     //Automatic CA correct switch
     query.bindValue( 26, 0 ); //caEnabled
     //Color temperature WB adjustment
-    query.bindValue( 27, 5700.0f ); //temperature
+    query.bindValue( 27, 5200.0f ); //temperature
     //Magenta/green tint WB adjustment
     query.bindValue( 28, 0.0f ); //tint
     //Saturation of less-saturated stuff
