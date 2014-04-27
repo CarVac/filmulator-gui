@@ -1,4 +1,5 @@
 #include "organizemodel.h"
+#include "../core/filmsim.hpp"
 #include <exiv2/exiv2.hpp>
 #include <QDateTime>
 #include <QString>
@@ -42,6 +43,7 @@ void OrganizeModel::fileInsert( const QString hash,
 /*This function creates a default profile in the profile table, and a search entry in the searchtable.*/
 void OrganizeModel::createNewProfile( const QString fileHash,
                                       const QString fileName,
+                                      const QString absoluteFilePath,
                                       const int captureTime,
                                       Exiv2::ExifData exifData)
 {
@@ -133,6 +135,10 @@ void OrganizeModel::createNewProfile( const QString fileHash,
     query.bindValue( 24, defaultQuery.value( 24 ).toFloat() );//highlightsY
     query.bindValue( 25, defaultQuery.value( 25 ).toInt()   );//highlightRecovery
     query.bindValue( 26, defaultQuery.value( 26 ).toInt()   );//caEnabled
+    double temp, tint;
+    optimizeWBMults( absoluteFilePath.toStdString(), temp, tint );
+    cout << "organizeinsertion: temp: " << temp << endl;
+    cout << "organizeinsertion: tint: " << tint << endl;
     query.bindValue( 27, defaultQuery.value( 27 ).toFloat() );//temperature
     query.bindValue( 28, defaultQuery.value( 28 ).toFloat() );//tint
     query.bindValue( 29, defaultQuery.value( 29 ).toFloat() );//vibrance

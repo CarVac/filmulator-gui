@@ -205,6 +205,10 @@ void white_balance (matrix<float> &input, matrix<float> &output,
 void whiteBalanceMults( double temperature, double tint, std::string inputFilename,
                         double &rMult, double &gMult, double &bMult );
 
+//Uses Nelder-Mead method to find the WB parameters that yield (1,1,1) RGB multipliers.
+void optimizeWBMults( std::string inputFilename,
+                      double &temperature, double &tint );
+
 //Applies the desired temperature and tint adjustments to the image.
 void whiteBalance( matrix<float> &input, matrix<float> &output,
                    double temperature, double tint, std::string inputFilename );

@@ -127,6 +127,7 @@ protected:
                      Exiv2::ExifData exifData);
     void createNewProfile( const QString fileHash,
                            const QString fileName,
+                           const QString absoluteFilePath,
                            const int captureTime,
                            Exiv2::ExifData exifData);
 

@@ -1,5 +1,5 @@
 #include "filmsim.hpp"
-#include <algorithm>
+#include <utility>
 
 void temp_tint_to_xy(double const temp, double const tint,
                      double &tempTintX, double &tempTintY)
@@ -99,42 +99,6 @@ void xyz2rgb( double  x, double  y, double  z,
     b =  0.0557*x - 0.2041*y + 1.0573*z;
 }
 
-void white_balance ( matrix<float> &input, matrix<float> &output,
-                     double temp, double tone )
-{
-    double tempTintX, tempTintY;
-    temp_tint_to_xy(temp,tone,tempTintX,tempTintY);
-    double xShift = (1.0/3.0)/tempTintX;
-    double yShift = (1.0/3.0)/tempTintY;
-
-    int nrows = input.nr();
-    int ncols = input.nc();
-
-    output.set_size(nrows,ncols);
-#pragma omp parallel shared(output, input) firstprivate(nrows,ncols,xShift,yShift)
-        {
-#pragma omp for schedule(dynamic) nowait
-    for(int i = 0; i < nrows; i++)
-        for(int j = 0; j < ncols; j = j+3)
-        {
-            double inputX, inputY, inputZ;
-            rgb_to_xyz(input(i,j),input(i,j+1),input(i,j+2),
-                       inputX    ,inputY      ,inputZ);
-            double magnitude = inputX + inputY + inputZ;
-            double newX = inputX*xShift;
-            double newY = inputY*yShift;
-            double newZ = magnitude - newX - newY;
-
-            double newR, newG, newB;
-            xyz2rgb(newX, newY, newZ, newR, newG, newB);
-
-            output(i,j  ) = max(newR,0.0);
-            output(i,j+1) = max(newG,0.0);
-            output(i,j+2) = max(newB,0.0);
-        }
-    }
-}
-
 void whiteBalanceMults( double temperature, double tint, std::string inputFilename,
                          double &rMult, double &gMult, double &bMult )
 {
@@ -151,8 +115,8 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
     //
     //The following values are our baseline estimate of what this temperature
     // and tint is.
-    double BASE_TEMP =  5830.523;
-    double BASE_TINT = -0.00184056;
+    double BASE_TEMP =  5830.523;//Not quite correct
+    double BASE_TINT = -0.00184056;//Neither is this
 
     //Now we compute the coordinates.
     temp_tint_to_xy( temperature, tint, xyzXIllum, xyzYIllum );
@@ -160,20 +124,21 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
     temp_tint_to_xy( BASE_TEMP, BASE_TINT, xyzXBase, xyzYBase );
     xyzZBase = 1 - xyzXBase - xyzYBase;
 
-    //Calculate the multiplier to convert from one illuminant to the other.
-    //
-    //The first constants are rgb2xyz(1,1,1): when the illuminants match for
-    // the baseline value and the user's set temperature, we want the
-    // RGB multipliers to all equal 1.
-    //
-    //Then, we divide the baseline by
-    double xMult = 0.9505 * xyzXBase / xyzXIllum;
-    double yMult = 1.0000 * xyzYBase / xyzYIllum;
-    double zMult = 1.0887 * xyzZBase / xyzZIllum;
+    //Next, we convert them to RGB.
+    double rIllum, gIllum, bIllum;
+    double rBase, gBase, bBase;
+    xyz2rgb( xyzXIllum, xyzYIllum, xyzZIllum,
+             rIllum, gIllum, bIllum );
+    xyz2rgb( xyzXBase, xyzYBase, xyzZBase,
+             rBase, gBase, bBase );
 
-    //Convert the xyz value of the illuminant compensation to rgb.
-    xyz2rgb( xMult, yMult, zMult,
-             rMult, gMult, bMult );
+    //Calculate the multipliers to convert from one illuminant to the base.
+    rMult = rBase / rIllum;
+    gMult = gBase / gIllum;
+    bMult = bBase / bIllum;
+
+    //cout << "white_balance: non-offset multipliers" << endl;
+    //cout << rMult << endl << gMult << endl << bMult << endl;
 
     //Check that they don't go negative.
     rMult = max( rMult, 0.0 );
@@ -213,14 +178,10 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
     rBaseMult = COLOR.pre_mul[ 0 ];
     gBaseMult = COLOR.pre_mul[ 1 ];
     bBaseMult = COLOR.pre_mul[ 2 ];
-    cout << "white_balance premultipliers:" << endl;
-    cout << rBaseMult << endl << gBaseMult << endl << bBaseMult << endl;
     //Next is the white balance coefficients as shot.
     rCamMult = COLOR.cam_mul[ 0 ];
     gCamMult = COLOR.cam_mul[ 1 ];
     bCamMult = COLOR.cam_mul[ 2 ];
-    cout << "white_balance as-shot coefficients:" << endl;
-    cout << rCamMult << endl << gCamMult << endl << bCamMult <<endl;
     }
     else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
     {
@@ -232,18 +193,135 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
         bCamMult = 1;
     }
 
-    cout << "white_balance user multipliers:" << endl;
-    cout << rMult << endl << gMult << endl << bMult << endl;
 
     rMult *= rBaseMult / rCamMult;
     gMult *= gBaseMult / gCamMult;
     bMult *= bBaseMult / bCamMult;
-    cout << "white_balance end multipliers:" << endl;
     double multMin = min( min( rMult, gMult ), bMult );
     rMult /= multMin;
     gMult /= multMin;
     bMult /= multMin;
-    cout << rMult << endl << gMult << endl << bMult << endl;
+}
+
+//Computes the Eulerian distance from the WB coefficients to (1,1,1). Also adds the temp to it.
+double wbDistance( std::string inputFilename, array<double,2> tempTint )
+{
+    double rMult, gMult, bMult;
+    whiteBalanceMults( tempTint[0], tempTint[1], inputFilename,
+                       rMult, gMult, bMult );
+    rMult -= 1;
+    gMult -= 1;
+    bMult -= 1;
+    return sqrt( rMult*rMult + gMult*gMult + bMult*bMult );
+}
+
+void optimizeWBMults( std::string file,
+                      double &temperature, double &tint )
+{
+    //This is nelder-mead in 2d, so we have 3 points.
+    array<double,2> lowCoord, midCoord, hiCoord;
+    //Some temporary coordinates for use in optimizing.
+    array<double,2> meanCoord, reflCoord, expCoord, contCoord;
+    //Temperature
+    lowCoord[ 0 ] = 5000.0;
+    midCoord[ 0 ] = 5200.0;
+    hiCoord[ 0 ]  = 5400.0;
+    //Tint
+    lowCoord[ 1 ] = 0.0;
+    midCoord[ 1 ] = 0.0001;
+    hiCoord[ 1 ]  = 0.0;
+
+    double low, mid, hi;
+    low = wbDistance( file, lowCoord );
+    mid = wbDistance( file, midCoord );
+    hi  = wbDistance( file, hiCoord  );
+    double refl, exp, cont;
+
+#define TOLERANCE 0.00001
+#define ITER_LIMIT 10000
+
+    int iterations = 0;
+
+    while ( low > TOLERANCE )
+    {
+        iterations++;
+        if ( iterations > ITER_LIMIT )
+        {
+            temperature = 5200.0;
+            tint = 0;
+        }
+        //Sort the coordinates.
+        if ( mid > hi )
+        {
+            midCoord.swap( hiCoord );
+            swap( mid, hi );
+        }
+        if ( low > mid )
+        {
+            lowCoord.swap( midCoord );
+            swap( low, mid );
+        }
+        if ( mid > hi )
+        {
+            midCoord.swap( hiCoord );
+            swap( mid, hi );
+        }//End sort
+
+        //Centroid of all but the worst point.
+        meanCoord[ 0 ] = 0.5 * ( lowCoord[ 0 ]  + midCoord[ 0 ] );
+        meanCoord[ 1 ] = 0.5 * ( lowCoord[ 1 ]  + midCoord[ 1 ] );
+
+        //Reflect the worst point about the centroid.
+        reflCoord[ 0 ] = meanCoord[ 0 ] + 1 * ( meanCoord[ 0 ] - hiCoord[ 0 ] );
+        reflCoord[ 1 ] = meanCoord[ 1 ] + 1 * ( meanCoord[ 1 ] - hiCoord[ 1 ] );
+        refl = wbDistance( file, reflCoord );
+        if ( refl < mid ) //Better than the second-worst point
+        {
+            if ( refl > low ) //but not better than the old best point
+            { //Swap this with the worst point
+                hiCoord.swap( reflCoord );
+                swap( hi, refl );
+            } //and go back to the beginning.
+            else //It's the best point so far
+            { //Try a point expanded farther away in the same direction.
+                expCoord[ 0 ] = meanCoord[ 0 ] + 2 * (meanCoord[ 0 ] - hiCoord[ 0 ] );
+                expCoord[ 1 ] = meanCoord[ 1 ] + 2 * (meanCoord[ 1 ] - hiCoord[ 1 ] );
+                exp = wbDistance( file, expCoord );
+                if ( exp < refl ) //It is the best so far
+                { //Swap this with the worst point
+                    hiCoord.swap( expCoord );
+                    swap( hi, exp );
+                } //and go back to the beginning.
+                else //The reflected point was better
+                { //Swap the reflected point with the best point
+                    hiCoord.swap( reflCoord );
+                    swap( hi,refl );
+                } //and go back.
+            }
+        }
+        else //The reflected point was not better than the second-worst point
+        { //Compute a point contracted from the worst towards the centroid.
+            contCoord[ 0 ] = meanCoord[ 0 ] - 0.5 * (meanCoord[ 0 ] - hiCoord[ 0 ] );
+            contCoord[ 1 ] = meanCoord[ 1 ] - 0.5 * (meanCoord[ 1 ] - hiCoord[ 1 ] );
+            cont = wbDistance( file, contCoord );
+            if ( cont < hi ) //Better than the worst point
+            { //Replace the worst point with this.
+                hiCoord.swap( contCoord );
+                swap( hi, cont );
+            } //and go back.
+            else //Everything we tried was terrible
+            { //Contract everything towards the best point, not the centroid.
+                hiCoord[ 0 ] = lowCoord[ 0 ] + 0.5 * (lowCoord[ 0 ] - hiCoord[ 0 ] );
+                hiCoord[ 1 ] = lowCoord[ 1 ] + 0.5 * (lowCoord[ 1 ] - hiCoord[ 1 ] );
+                hi = wbDistance( file, hiCoord );
+                midCoord[ 0 ] = lowCoord[ 0 ] + 0.5 * (lowCoord[ 0 ] - midCoord[ 0 ] );
+                midCoord[ 1 ] = lowCoord[ 1 ] + 0.5 * (lowCoord[ 1 ] - midCoord[ 1 ] );
+                mid = wbDistance( file, midCoord );
+            }
+        }
+    }
+    temperature = lowCoord[ 0 ];
+    tint = lowCoord[ 1 ];
 }
 
 void whiteBalance( matrix<float> &input, matrix<float> &output,
@@ -253,6 +331,11 @@ void whiteBalance( matrix<float> &input, matrix<float> &output,
     double rMult, gMult, bMult;
     whiteBalanceMults( temperature, tint, inputFilename,
                        rMult, gMult, bMult );
+
+    cout << "white_balance: settings" << endl;
+    cout << temperature << endl << tint << endl;
+    cout << "white_balance: multipliers" << endl;
+    cout << rMult << endl << gMult << endl << bMult << endl;
 
     int nRows = input.nr();
     int nCols = input.nc();

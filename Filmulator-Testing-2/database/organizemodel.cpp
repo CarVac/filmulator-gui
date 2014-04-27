@@ -207,6 +207,7 @@ void OrganizeModel::importDirectory_r( QString dir )
             //Now, make a profile and a search table entry, and generate the thumbnail.
             createNewProfile( hashString,
                               fileList.at( i ).fileName(),
+                              fileList.at( i ).absoluteFilePath(),
                               exifUtcTime( exifData, cameraTZ ),
                               exifData );
         }
