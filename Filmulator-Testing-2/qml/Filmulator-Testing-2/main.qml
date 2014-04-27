@@ -73,8 +73,8 @@ ApplicationWindow {
                 property bool defaultCaEnabled: false
                 property real temperature: 5700
                 property real defaultTemperature: 5700
-                property real tint: 0
-                property real defaultTint: 0
+                property real tint: 1
+                property real defaultTint: 1
                 property real vibrance: 0
                 property real defaultVibrance: 0
                 property real saturation: 0

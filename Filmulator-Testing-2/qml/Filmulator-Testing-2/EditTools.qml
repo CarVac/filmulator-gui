@@ -145,8 +145,8 @@ Rectangle {
                         id: tintSlider
                         title: qsTr("Tint")
                         tooltipText: qsTr("Correct for a  green/magenta tinted light source. Positive values are greener, and negative values are magenta.")
-                        minimumValue: -0.1
-                        maximumValue:  0.1
+                        minimumValue: 0.1
+                        maximumValue: 3
                         //stepSize: 0.002
                         defaultValue: root.defaultTint
                         onValueChanged: {

@@ -115,13 +115,13 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
     //
     //The following values are our baseline estimate of what this temperature
     // and tint is.
-    double BASE_TEMP =  5830.523;//Not quite correct
-    double BASE_TINT = -0.00184056;//Neither is this
+    double BASE_TEMP =  6005.973;
+    double BASE_TINT = 0.9712947;
 
     //Now we compute the coordinates.
-    temp_tint_to_xy( temperature, tint, xyzXIllum, xyzYIllum );
+    temp_tint_to_xy( temperature, 0, xyzXIllum, xyzYIllum );
     xyzZIllum = 1 - xyzXIllum - xyzYIllum;
-    temp_tint_to_xy( BASE_TEMP, BASE_TINT, xyzXBase, xyzYBase );
+    temp_tint_to_xy( BASE_TEMP, 0, xyzXBase, xyzYBase );
     xyzZBase = 1 - xyzXBase - xyzYBase;
 
     //Next, we convert them to RGB.
@@ -133,6 +133,8 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
              rBase, gBase, bBase );
 
     //Calculate the multipliers to convert from one illuminant to the base.
+    gIllum /= tint;
+    gBase /= BASE_TINT;
     rMult = rBase / rIllum;
     gMult = gBase / gIllum;
     bMult = bBase / bIllum;
@@ -207,12 +209,12 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
 double wbDistance( std::string inputFilename, array<double,2> tempTint )
 {
     double rMult, gMult, bMult;
-    whiteBalanceMults( tempTint[0], tempTint[1], inputFilename,
+    whiteBalanceMults( tempTint[ 0 ], tempTint[ 1 ], inputFilename,
                        rMult, gMult, bMult );
     rMult -= 1;
     gMult -= 1;
     bMult -= 1;
-    return sqrt( rMult*rMult + gMult*gMult + bMult*bMult );
+    return sqrt( rMult*rMult + gMult*gMult + bMult*bMult ) + sqrt( tempTint[ 1 ]*tempTint[ 1 ] );
 }
 
 void optimizeWBMults( std::string file,
@@ -227,29 +229,36 @@ void optimizeWBMults( std::string file,
     midCoord[ 0 ] = 5200.0;
     hiCoord[ 0 ]  = 5400.0;
     //Tint
-    lowCoord[ 1 ] = 0.0;
-    midCoord[ 1 ] = 0.0001;
-    hiCoord[ 1 ]  = 0.0;
+    lowCoord[ 1 ] = 1.0;
+    midCoord[ 1 ] = 1.0001;
+    hiCoord[ 1 ]  = 1.0;
 
-    double low, mid, hi;
+    double low, mid, hi, oldLow, delta;
     low = wbDistance( file, lowCoord );
     mid = wbDistance( file, midCoord );
     hi  = wbDistance( file, hiCoord  );
     double refl, exp, cont;
 
-#define TOLERANCE 0.00001
+#define TOLERANCE 0.000001
 #define ITER_LIMIT 10000
+#define REPEAT_LIMIT 5
 
     int iterations = 0;
+    delta = 1;
+    int repeats = 0;
 
-    while ( low > TOLERANCE )
+    while ( repeats < REPEAT_LIMIT )
     {
         iterations++;
         if ( iterations > ITER_LIMIT )
         {
             temperature = 5200.0;
-            tint = 0;
+            tint = 1;
+            return;
         }
+
+        //Remember the low value
+        oldLow = low;
         //Sort the coordinates.
         if ( mid > hi )
         {
@@ -266,6 +275,14 @@ void optimizeWBMults( std::string file,
             midCoord.swap( hiCoord );
             swap( mid, hi );
         }//End sort
+        if ( oldLow - low < TOLERANCE ) //if it hasn't improved enough
+        {
+            repeats++;
+        }
+        else //if it got over a hump
+        {
+            repeats = 0;
+        }
 
         //Centroid of all but the worst point.
         meanCoord[ 0 ] = 0.5 * ( lowCoord[ 0 ]  + midCoord[ 0 ] );
