@@ -276,28 +276,13 @@ double wbDistance( std::string inputFilename, array<double,2> tempTint )
     double rMult, gMult, bMult;
     whiteBalanceMults( tempTint[ 0 ], tempTint[ 1 ], inputFilename,
                        rMult, gMult, bMult );
-    LibRaw imageProcessor;
-    const char *cstr = inputFilename.c_str();
-    if( 0 == imageProcessor.open_file( cstr ) )
-    {
-        double rNorm = COLOR.cam_mul[ 0 ] / COLOR.pre_mul[ 0 ];
-        double gNorm = COLOR.cam_mul[ 1 ] / COLOR.pre_mul[ 1 ];
-        double bNorm = COLOR.cam_mul[ 2 ] / COLOR.pre_mul[ 2 ];
-        double cMin = min( min( rNorm, gNorm ), bNorm );
-        rNorm /= cMin;
-        gNorm /= cMin;
-        bNorm /= cMin;
-        rMult -= rNorm;
-        gMult -= gNorm;
-        bMult -= bNorm;
-    }
-    else
-    {
-        rMult -= 1;
-        gMult -= 1;
-        bMult -= 1;
-    }
-    return sqrt( rMult*rMult + gMult*gMult + bMult*bMult ) + sqrt( tempTint[ 1 ]*tempTint[ 1 ] );
+    rMult -= 1;
+    gMult -= 1;
+    bMult -= 1;
+
+    double output;
+    output = sqrt( rMult*rMult + gMult*gMult + bMult*bMult );
+    return output;
 }
 
 void optimizeWBMults( std::string file,
@@ -308,12 +293,12 @@ void optimizeWBMults( std::string file,
     //Some temporary coordinates for use in optimizing.
     array<double,2> meanCoord, reflCoord, expCoord, contCoord;
     //Temperature
-    lowCoord[ 0 ] = 5000.0;
+    lowCoord[ 0 ] = 4000.0;
     midCoord[ 0 ] = 5200.0;
-    hiCoord[ 0 ]  = 5400.0;
+    hiCoord[ 0 ]  = 6300.0;
     //Tint
     lowCoord[ 1 ] = 1.0;
-    midCoord[ 1 ] = 1.0001;
+    midCoord[ 1 ] = 1.05;
     hiCoord[ 1 ]  = 1.0;
 
     double low, mid, hi, oldLow;
@@ -322,25 +307,26 @@ void optimizeWBMults( std::string file,
     hi  = wbDistance( file, hiCoord  );
     double refl, exp, cont;
 
-#define TOLERANCE 0.000001
+#define TOLERANCE 0.000000001
 #define ITER_LIMIT 10000
-#define REPEAT_LIMIT 5
+#define REPEAT_LIMIT 30
 
     int iterations = 0;
     int repeats = 0;
+    oldLow = 10000;
 
     while ( repeats < REPEAT_LIMIT )
     {
         iterations++;
         if ( iterations > ITER_LIMIT )
         {
+            cout << "Hit iteration limit" << endl;
             temperature = 5200.0;
             tint = 1;
             return;
         }
 
         //Remember the low value
-        oldLow = low;
         //Sort the coordinates.
         if ( mid > hi )
         {
@@ -363,6 +349,7 @@ void optimizeWBMults( std::string file,
         }
         else //if it got over a hump
         {
+            oldLow = low;
             repeats = 0;
         }
 
