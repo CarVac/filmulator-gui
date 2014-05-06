@@ -99,6 +99,48 @@ void xyz2rgb( double  x, double  y, double  z,
     b =  0.0557*x - 0.2041*y + 1.0573*z;
 }
 
+void matrixVectorMult( double rr, double gr, double br,
+                       double &x, double &y, double &z,
+                       double mat[3][3] )
+{
+    x = mat[0][0]*rr + mat[0][1]*gr + mat[0][2]*br;
+    y = mat[1][0]*rr + mat[1][1]*gr + mat[1][2]*br;
+    z = mat[2][0]*rr + mat[2][1]*gr + mat[2][2]*br;
+}
+
+void inverse( double in[3][3], double (&out)[3][3] )
+{
+    double det = in[0][0] * ( in[1][1]*in[2][2] - in[2][1]*in[1][2] ) -
+                 in[0][1] * ( in[1][0]*in[2][2] - in[1][2]*in[2][0] ) +
+                 in[0][2] * ( in[1][0]*in[2][1] - in[1][1]*in[2][0] );
+    double invdet = 1 / det;
+
+    out[0][0] = ( in[1][1]*in[2][2] - in[2][1]*in[1][2] ) * invdet;
+    out[0][1] = ( in[0][2]*in[2][1] - in[0][1]*in[2][2] ) * invdet;
+    out[0][2] = ( in[0][1]*in[1][2] - in[0][2]*in[1][1] ) * invdet;
+    out[1][0] = ( in[1][2]*in[2][0] - in[1][0]*in[2][2] ) * invdet;
+    out[1][1] = ( in[0][0]*in[2][2] - in[0][2]*in[2][0] ) * invdet;
+    out[1][2] = ( in[1][0]*in[0][2] - in[0][0]*in[1][2] ) * invdet;
+    out[2][0] = ( in[1][0]*in[2][1] - in[2][0]*in[1][1] ) * invdet;
+    out[2][1] = ( in[2][0]*in[0][1] - in[0][0]*in[2][1] ) * invdet;
+    out[2][2] = ( in[0][0]*in[1][1] - in[1][0]*in[0][1] ) * invdet;
+}
+
+void matrixMatrixMult( double left[3][3], double right[3][3], double (&output)[3][3])
+{
+    for ( int i = 0; i < 3; i++ )
+    {
+        for ( int j = 0; j < 3; j++ )
+        {
+            output[i][j] = 0;
+            for ( int k = 0; k < 3; k++ )
+            {
+                output[i][j] += left[i][k] * right[k][j];
+            }
+        }
+    }
+}
+
 void whiteBalanceMults( double temperature, double tint, std::string inputFilename,
                          double &rMult, double &gMult, double &bMult )
 {
@@ -115,8 +157,9 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
     //
     //The following values are our baseline estimate of what this temperature
     // and tint is.
-    double BASE_TEMP =  6005.973;
-    double BASE_TINT = 0.9712947;
+    //double BASE_TEMP =  6005.973;
+    double BASE_TEMP = 6655.9928;
+    double BASE_TINT = 0.97214088;
 
     //Now we compute the coordinates.
     temp_tint_to_xy( temperature, 0, xyzXIllum, xyzYIllum );
@@ -147,43 +190,135 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
     gMult = max( gMult, 0.0 );
     bMult = max( bMult, 0.0 );
 
-    //The white balance flow from LibRaw goes like this:
-    // raw ---> srgb primaries --------------> [variable] camera WB.
-    //The camera WB is variable, so we can't base anything off those
-    // multipliers and have the temperature values be still physical.
-    //Fortunately, LibRaw exposes another value for us, the "pre_mul" field,
-    // which is fixed for each camera.
-    //Our new white balance flow is:
-    // raw ---> sRGB primaries --------------> camera WB
-    //          sRGB primaries <------------------
-    //                 --------> pre_mul ------> user set WB
-    //So, we apply the reciprocal of the camera multipliers,
-    // and simply multiply by the base and user multipliers.
-    //The reason we don't ask libRaw for the raw color or sRGB primaries
-    // is because demosaicing performs much better when the white balance
-    // is approximately correct.
-    // So we trust the camera's value to be close enough.
-
-
     double rBaseMult, gBaseMult, bBaseMult;
     double rCamMult, gCamMult, bCamMult;
     //Grab the existing white balance data from the raw file.
     LibRaw imageProcessor;
 #define COLOR imageProcessor.imgdata.color
+#define PARAM imageProcessor.imgdata.params
 
     const char *cstr = inputFilename.c_str();
     if ( 0 == imageProcessor.open_file( cstr ) )
     {
-    //Set the white balance arguments based on what libraw did.
+        //Set the white balance arguments based on what libraw did.
 
-    //First is the fixed (per-camera) daylight multipliers.
-    rBaseMult = COLOR.pre_mul[ 0 ];
-    gBaseMult = COLOR.pre_mul[ 1 ];
-    bBaseMult = COLOR.pre_mul[ 2 ];
-    //Next is the white balance coefficients as shot.
-    rCamMult = COLOR.cam_mul[ 0 ];
-    gCamMult = COLOR.cam_mul[ 1 ];
-    bCamMult = COLOR.cam_mul[ 2 ];
+        //First we need to set up the transformation from the camera's
+        // raw color space to sRGB.
+
+        //Grab the xyz2cam matrix.
+        double xyzToCam[3][3];
+        for ( int i = 0; i < 3; i++ )
+        {
+            for ( int j = 0; j < 3; j++ )
+            {
+                xyzToCam[i][j] = COLOR.cam_xyz[i][j];
+            }
+        }
+        double rgbToXyz[3][3] = {
+            { 0.4124, 0.3576, 0.1805 },
+            { 0.2126, 0.7152, 0.0722 },
+            { 0.0193, 0.1192, 0.9502 } };
+
+        double rgbToCam[3][3];
+
+        //Forward
+        matrixMatrixMult(xyzToCam, rgbToXyz, rgbToCam);
+
+        cout << "white_balance matrix rgbToCam " << endl;
+        cout << rgbToCam[0][0] << " ";
+        cout << rgbToCam[0][1] << " ";
+        cout << rgbToCam[0][2] << endl;
+        cout << rgbToCam[1][0] << " ";
+        cout << rgbToCam[1][1] << " ";
+        cout << rgbToCam[1][2] << endl;
+        cout << rgbToCam[2][0] << " ";
+        cout << rgbToCam[2][1] << " ";
+        cout << rgbToCam[2][2] << endl;
+
+        //Normalize so that rgbToCam*transponse([1 1 1]) is [1 1 1]
+        double sum;
+        for ( int i = 0; i < 3; i++ )
+        {
+            sum = 0;
+            for ( int j = 0; j < 3; j++ )
+            {
+                sum += rgbToCam[i][j];
+            }
+            for ( int j = 0; j < 3; j++ )
+            {
+                rgbToCam[i][j] /= sum;
+            }
+        }
+
+        double camToRgb[3][3];
+        inverse( rgbToCam, camToRgb );
+
+
+        //First is the fixed (per-camera) daylight multipliers.
+        double rrBaseMult = COLOR.pre_mul[ 0 ] / COLOR.cam_mul[ 0 ];
+        double grBaseMult = COLOR.pre_mul[ 1 ] / COLOR.cam_mul[ 1 ];
+        double brBaseMult = COLOR.pre_mul[ 2 ] / COLOR.cam_mul[ 2 ];
+        matrixVectorMult( rrBaseMult, grBaseMult, brBaseMult,
+                          rBaseMult,  gBaseMult,  bBaseMult,
+                          camToRgb);
+        //Next is the white balance coefficients as shot.
+        //These are not sRGB raw color; they're raw color channel values.
+        double rrCamMult = COLOR.cam_mul[ 0 ];
+        double grCamMult = COLOR.cam_mul[ 1 ];
+        double brCamMult = COLOR.cam_mul[ 2 ];
+        matrixVectorMult( rrCamMult, grCamMult, brCamMult,
+                          rCamMult, gCamMult, bCamMult,
+                          camToRgb);
+        rCamMult = 1;
+        gCamMult = 1;
+        bCamMult = 1;
+        cout << "white_balance base multipliers" << endl;
+        cout << rrBaseMult << " ";
+        cout << grBaseMult << " ";
+        cout << brBaseMult << endl;
+        cout << rBaseMult << " ";
+        cout << gBaseMult << " ";
+        cout << bBaseMult << endl;
+        cout << "white_balance cam multipliers" << endl;
+        cout << rrCamMult << " ";
+        cout << grCamMult << " ";
+        cout << brCamMult << endl;
+        cout << rCamMult << " ";
+        cout << gCamMult << " ";
+        cout << bCamMult << endl;
+
+        cout << "white_balance camera matrix " << endl;
+        cout << COLOR.cam_xyz[0][0] << " ";
+        cout << COLOR.cam_xyz[0][1] << " ";
+        cout << COLOR.cam_xyz[0][2] << endl;
+        cout << COLOR.cam_xyz[1][0] << " ";
+        cout << COLOR.cam_xyz[1][1] << " ";
+        cout << COLOR.cam_xyz[1][2] << endl;
+        cout << COLOR.cam_xyz[2][0] << " ";
+        cout << COLOR.cam_xyz[2][1] << " ";
+        cout << COLOR.cam_xyz[2][2] << endl;
+
+        cout << "white_balance matrix rgbToCam " << endl;
+        cout << rgbToCam[0][0] << " ";
+        cout << rgbToCam[0][1] << " ";
+        cout << rgbToCam[0][2] << endl;
+        cout << rgbToCam[1][0] << " ";
+        cout << rgbToCam[1][1] << " ";
+        cout << rgbToCam[1][2] << endl;
+        cout << rgbToCam[2][0] << " ";
+        cout << rgbToCam[2][1] << " ";
+        cout << rgbToCam[2][2] << endl;
+
+        cout << "white_balance matrix camToRgb " << endl;
+        cout << camToRgb[0][0] << " ";
+        cout << camToRgb[0][1] << " ";
+        cout << camToRgb[0][2] << endl;
+        cout << camToRgb[1][0] << " ";
+        cout << camToRgb[1][1] << " ";
+        cout << camToRgb[1][2] << endl;
+        cout << camToRgb[2][0] << " ";
+        cout << camToRgb[2][1] << " ";
+        cout << camToRgb[2][2] << endl;
     }
     else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
     {
@@ -193,16 +328,39 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
         rCamMult = 1;
         gCamMult = 1;
         bCamMult = 1;
+        cout << "white_balance: Fallback multipliers used" << endl;
     }
 
+    cout << "white_balance: Pre-adjusted multipliers" << endl;
+    cout << rMult << " ";
+    cout << gMult << " ";
+    cout << bMult << endl;
 
-    rMult *= rBaseMult / rCamMult;
-    gMult *= gBaseMult / gCamMult;
-    bMult *= bBaseMult / bCamMult;
+    rMult *= (rBaseMult / rCamMult);
+    gMult *= (gBaseMult / gCamMult);
+    bMult *= (bBaseMult / bCamMult);
+
     double multMin = min( min( rMult, gMult ), bMult );
     rMult /= multMin;
     gMult /= multMin;
     bMult /= multMin;
+
+    cout << "white_balance: Post-adjusted multipliers" << endl;
+    cout << rMult << " ";
+    cout << gMult << " ";
+    cout << bMult << endl;
+
+    double rMultNet = rMult * (rCamMult/gCamMult);
+    double gMultNet = gMult * (gCamMult/gCamMult);
+    double bMultNet = bMult * (bCamMult/gCamMult);
+    double netMin = min( min( rMultNet, gMultNet ), bMultNet );
+    rMultNet /= netMin;
+    gMultNet /= netMin;
+    bMultNet /= netMin;
+    cout << "Net multipliers" << endl;
+    cout << rMultNet << " ";
+    cout << gMultNet << " ";
+    cout << bMultNet << endl;
 }
 
 //Computes the Eulerian distance from the WB coefficients to (1,1,1). Also adds the temp to it.
@@ -211,9 +369,27 @@ double wbDistance( std::string inputFilename, array<double,2> tempTint )
     double rMult, gMult, bMult;
     whiteBalanceMults( tempTint[ 0 ], tempTint[ 1 ], inputFilename,
                        rMult, gMult, bMult );
-    rMult -= 1;
-    gMult -= 1;
-    bMult -= 1;
+    LibRaw imageProcessor;
+    const char *cstr = inputFilename.c_str();
+    if( 0 == imageProcessor.open_file( cstr ) )
+    {
+        double rNorm = COLOR.cam_mul[ 0 ] / COLOR.pre_mul[ 0 ];
+        double gNorm = COLOR.cam_mul[ 1 ] / COLOR.pre_mul[ 1 ];
+        double bNorm = COLOR.cam_mul[ 2 ] / COLOR.pre_mul[ 2 ];
+        double cMin = min( min( rNorm, gNorm ), bNorm );
+        rNorm /= cMin;
+        gNorm /= cMin;
+        bNorm /= cMin;
+        rMult -= rNorm;
+        gMult -= gNorm;
+        bMult -= bNorm;
+    }
+    else
+    {
+        rMult -= 1;
+        gMult -= 1;
+        bMult -= 1;
+    }
     return sqrt( rMult*rMult + gMult*gMult + bMult*bMult ) + sqrt( tempTint[ 1 ]*tempTint[ 1 ] );
 }
 
@@ -233,7 +409,7 @@ void optimizeWBMults( std::string file,
     midCoord[ 1 ] = 1.0001;
     hiCoord[ 1 ]  = 1.0;
 
-    double low, mid, hi, oldLow, delta;
+    double low, mid, hi, oldLow;
     low = wbDistance( file, lowCoord );
     mid = wbDistance( file, midCoord );
     hi  = wbDistance( file, hiCoord  );
@@ -244,7 +420,6 @@ void optimizeWBMults( std::string file,
 #define REPEAT_LIMIT 5
 
     int iterations = 0;
-    delta = 1;
     int repeats = 0;
 
     while ( repeats < REPEAT_LIMIT )

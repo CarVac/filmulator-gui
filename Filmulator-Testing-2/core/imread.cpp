@@ -25,7 +25,15 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
 {
     //Create image processor for reading raws.
     LibRaw image_processor;
-    //Make abbreviations for brevity in accessing data.
+
+    //Open the file.
+    const char *cstr = input_image_filename.c_str();
+    if ( 0 != image_processor.open_file( cstr ) )
+    {
+        cerr << "Could not read input file!" << endl;
+        return true;
+    }
+     //Make abbreviations for brevity in accessing data.
 #define SIZES image_processor.imgdata.sizes
 #define PARAM image_processor.imgdata.params
 #define IMAGE image_processor.imgdata.image
@@ -44,13 +52,6 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
     PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
     PARAM.highlight = highlights;//Set highlight recovery (-H #)
 
-    const char *cstr = input_image_filename.c_str();
-    if ( 0 != image_processor.open_file( cstr ) )
-    {
-        cerr << "Could not read input file!" << endl;
-        return true;
-    }
-    
     //This makes IMAGE contains the sensel value and 3 blank values at every
     //location.
     image_processor.unpack();
@@ -60,6 +61,7 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
     //We will ignore the last blank value.
     image_processor.dcraw_process();
 
+    long rSum = 0, gSum = 0, bSum = 0;
     returnmatrix.set_size( SIZES.iheight, SIZES.iwidth*3 );
     for ( int row = 0; row < SIZES.iheight; row++ )
     {
@@ -70,8 +72,18 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
             returnmatrix( row, col*3     ) = IMAGE[ rowoffset + col ][ 0 ];//R
             returnmatrix( row, col*3 + 1 ) = IMAGE[ rowoffset + col ][ 1 ];//G
             returnmatrix( row, col*3 + 2 ) = IMAGE[ rowoffset + col ][ 2 ];//B
+            rSum += IMAGE[ rowoffset + col ][ 0 ];
+            gSum += IMAGE[ rowoffset + col ][ 1 ];
+            bSum += IMAGE[ rowoffset + col ][ 2 ];
         }
     }
+    cout << "imread color outputs" << endl;
+    double dim = SIZES.iheight * SIZES.iwidth;
+    cout << double(rSum) / dim << " ";
+    cout << double(gSum) / dim << " ";
+    cout << double(bSum) / dim << endl;
+
+
     image_processor.recycle();
     Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( cstr );
     assert( image.get() != 0 );
