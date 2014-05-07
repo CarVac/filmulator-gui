@@ -206,14 +206,19 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
 
         //Grab the xyz2cam matrix.
         double xyzToCam[3][3];
+        double camToRgb[3][3];
+        cout << "white_balance: camToRgb" << endl;
         for ( int i = 0; i < 3; i++ )
         {
             for ( int j = 0; j < 3; j++ )
             {
                 xyzToCam[i][j] = COLOR.cam_xyz[i][j];
+                camToRgb[i][j] = COLOR.rgb_cam[i][j];
+                cout << COLOR.rgb_cam[i][j] << " ";
             }
+            cout << endl;
         }
-        double rgbToXyz[3][3] = {
+/*        double rgbToXyz[3][3] = {
             { 0.4124, 0.3576, 0.1805 },
             { 0.2126, 0.7152, 0.0722 },
             { 0.0193, 0.1192, 0.9502 } };
@@ -240,16 +245,24 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
 
         double camToRgb[3][3];
         //Take the inverse so that we have camera space -> sRGB.
-        inverse( rgbToCam, camToRgb );
+        inverse( rgbToCam, camToRgb );*/
 
         //Now we divide the daylight multipliers by the camera multipliers.
         double rrBaseMult = COLOR.pre_mul[ 0 ] / COLOR.cam_mul[ 0 ];
         double grBaseMult = COLOR.pre_mul[ 1 ] / COLOR.cam_mul[ 1 ];
         double brBaseMult = COLOR.pre_mul[ 2 ] / COLOR.cam_mul[ 2 ];
+        cout << "white_balance raw base_mults" << endl;
+        cout << rrBaseMult << " ";
+        cout << grBaseMult << " ";
+        cout << brBaseMult << endl;
         //And then we convert them from camera space to sRGB.
         matrixVectorMult( rrBaseMult, grBaseMult, brBaseMult,
                           rBaseMult,  gBaseMult,  bBaseMult,
                           camToRgb);
+        cout << "white_balance sRGB base_mults" << endl;
+        cout << rBaseMult << " ";
+        cout << gBaseMult << " ";
+        cout << bBaseMult << endl;
     }
     else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
     {
