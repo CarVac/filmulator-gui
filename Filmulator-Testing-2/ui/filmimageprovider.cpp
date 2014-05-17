@@ -1,4 +1,5 @@
 #include "filmimageprovider.h"
+#include "../database/exiffunctions.h"
 #include <pwd.h>
 #include <unistd.h>
 #include <QTimer>
@@ -145,29 +146,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
             mutex.unlock();
             return emptyImage();
         }
-        switch((int) exifData["Exif.Image.Orientation"].value().toLong())
-        {
-        case 3://upside down
-        {
-            rotation = 2;
-            break;
-        }
-        case 6://right side down
-        {
-            rotation = 3;
-            break;
-        }
-        case 8://left side down
-        {
-            rotation = 1;
-            break;
-        }
-        default:
-        {
-            rotation = 0;
-            break;
-        }
-        }
+        rotation = exifDefaultRotation( exifData );
     }
     case demosaic://Do pre-filmulation work.
     {

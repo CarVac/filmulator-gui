@@ -26,7 +26,16 @@ QString exifLocalDateString( Exiv2::ExifData exifData,
 
 int exifDefaultRotation( Exiv2::ExifData exifData )
 {
-    switch( ( int ) exifData[ "Exif.Image.Orientation" ].value().toLong() )
+    int exifOrientation;
+    try
+    {
+        exifOrientation = ( int ) exifData[ "Exif.Image.Orientation" ].value().toLong();
+    }
+    catch ( ... )
+    {
+        exifOrientation = 0;
+    }
+    switch( exifOrientation )
     {
     case 3://upside down
     {
