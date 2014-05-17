@@ -137,6 +137,12 @@ void vibrance_saturation(matrix<unsigned short> &input,
     double gamma = pow(2,-vibrance);
     double sat = pow(2,saturation);
     output.set_size(nrows,ncols);
+    if ( abs( vibrance ) < 0.00001 && abs( saturation ) < 0.00001 ) //no adjustment
+    {
+        output = input;
+        return;
+    }
+    //else, apply the adjustment.
 #pragma omp parallel shared(output, input) firstprivate(nrows,ncols,saturation,gamma)
     {
 #pragma omp for schedule(dynamic) nowait
