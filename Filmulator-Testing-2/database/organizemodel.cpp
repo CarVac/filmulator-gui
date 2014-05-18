@@ -128,7 +128,7 @@ void OrganizeModel::importDirectory_r( QString dir )
     }
     directory.setFilter( QDir::Files | QDir::NoSymLinks );
     QStringList nameFilters;
-    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW";
+    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF";
     directory.setNameFilters( nameFilters );
     QFileInfoList fileList = directory.entryInfoList();
     

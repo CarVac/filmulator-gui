@@ -222,18 +222,30 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
         double rrBaseMult = COLOR.pre_mul[ 0 ] / COLOR.cam_mul[ 0 ];
         double grBaseMult = COLOR.pre_mul[ 1 ] / COLOR.cam_mul[ 1 ];
         double brBaseMult = COLOR.pre_mul[ 2 ] / COLOR.cam_mul[ 2 ];
-//        cout << "white_balance raw base_mults" << endl;
-//        cout << rrBaseMult << " ";
-//        cout << grBaseMult << " ";
-//        cout << brBaseMult << endl;
+        double rawMultMin = min( min( rrBaseMult, grBaseMult ), brBaseMult );
+        rrBaseMult /= rawMultMin;
+        grBaseMult /= rawMultMin;
+        brBaseMult /= rawMultMin;
+        cout << "white_balance raw pre_muls" << endl;
+        cout << rrBaseMult << " ";
+        cout << grBaseMult << " ";
+        cout << brBaseMult << endl;
         //And then we convert them from camera space to sRGB.
         matrixVectorMult( rrBaseMult, grBaseMult, brBaseMult,
                           rBaseMult,  gBaseMult,  bBaseMult,
                           camToRgb);
-//        cout << "white_balance sRGB base_mults" << endl;
-//        cout << rBaseMult << " ";
-//        cout << gBaseMult << " ";
-//        cout << bBaseMult << endl;
+        cout << "white_balance sRGB base_mults" << endl;
+        cout << rBaseMult << " ";
+        cout << gBaseMult << " ";
+        cout << bBaseMult << endl;
+        if ( ( 1.0f == camToRgb[ 0 ][ 0 ] && 1.0f == camToRgb[ 1 ][ 1 ] && 1.0f == camToRgb[ 2 ][ 2 ] )
+             || ( 1.0f == COLOR.pre_mul[ 0 ] && 1.0f == COLOR.pre_mul[ 1 ] && 1.0f == COLOR.pre_mul[ 2 ] ) )
+        {
+            cout << "Unity camera matrix or base multipliers. BORK" << endl;
+            rBaseMult = 1;
+            gBaseMult = 1;
+            bBaseMult = 1;
+        }
     }
     else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
     {
