@@ -112,7 +112,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
         if(interface->checkAbort())
             return 1;
 
-        interface->updateProgress(float(i)/float(development_steps));
+        interface->updateFilmProgress(float(i)/float(development_steps));
 
         gettimeofday(&develop_start,NULL);
 

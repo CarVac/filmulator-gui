@@ -11,8 +11,6 @@
 #include "../core/filmsim.hpp"
 #include <assert.h>
 
-enum Valid {none, load, demosaic, prefilmulation, filmulation, whiteblack, colorcurve, filmlikecurve};
-
 enum LogY {no, yes};
 
 struct histogram {
@@ -135,11 +133,13 @@ public:
     int getHistPostFilm(){return histPostFilm;}
     int getHistPreFilm(){return histPreFilm;}*/
 
+    void updateFilmProgress(float);
     bool checkAbort(Valid currStep);
     bool checkAbort(){return checkAbort(filmulation);}
     unsigned short lookup(unsigned short in);
+    bool isGUI(){return true;}
+    void setValid( Valid );
 
-    void updateProgress(float);
     Q_INVOKABLE void invalidateImage();
     Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,LogY::no);}
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
@@ -147,7 +147,6 @@ public:
     Q_INVOKABLE void rotateRight();
     Q_INVOKABLE void rotateLeft();
 
-    bool isGUI(){return true;}
 
 protected:
     QMutex mutex;

@@ -6,51 +6,6 @@
 #include <cmath>
 #define TIMEOUT 0.1
 
-FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
-    QObject(0),
-    QQuickImageProvider(type, QQuickImageProvider::ForceAsynchronousImageLoading)
-{
-    valid = none;
-
-    lutR.setUnity();
-    lutG.setUnity();
-    lutB.setUnity();
-
-    highlights = 0;
-
-    exposureComp = 0.0;
-
-    develTime = 100.0;
-    agitateCount = 1;
-    develSteps = 12;
-    filmArea = 864.0;
-    layerMixConst = 0.2;
-
-    blackpoint = 0;
-    whitepoint = .002;
-    defaultToneCurveEnabled = true;
-
-    shadowsX = 0.25;
-    shadowsY = 0.25;
-    highlightsX = 0.75;
-    highlightsY = 0.75;
-
-    saturation = 0;
-    vibrance = 0;
-
-    saveTiff = false;
-    saveJpeg = false;
-
-    filmLikeLUT.fill(this);
-
-    zeroHistogram(finalHist);
-    histFinal++;//signal histogram updates
-    zeroHistogram(postFilmHist);
-    histPostFilm++;
-    zeroHistogram(preFilmHist);
-    histPreFilm++;
-}
-
 FilmImageProvider::FilmImageProvider() :
     QObject(0),
     QQuickImageProvider(QQuickImageProvider::Image,
@@ -115,13 +70,11 @@ QImage FilmImageProvider::requestImage(const QString &id,
     input_filename_list.push_back(inputFilename);
 
 
-    switch (valid)
+    switch ( valid )
     {
     case none://Load image into buffer
     {
-        mutex.lock();
-        valid = load;
-        mutex.unlock();
+        setValid( load );
 
     }
     case load://Do demosaic
@@ -130,7 +83,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         //If we're about to do work on a new image, we give up.
         if(checkAbort(load))
             return emptyImage();
-
+//===================================================
         //Mark that demosaicing has started.
         mutex.lock();
         valid = demosaic;
@@ -154,9 +107,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
                   caEnabled))
         {
             qDebug("Error loading images");
-            mutex.lock();
-            valid = none;
-            mutex.unlock();
+            setValid( none );
             return emptyImage();
         }
         rotation = exifDefaultRotation( exifData );
@@ -165,11 +116,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
     {
         if(checkAbort(demosaic))
             return emptyImage();
-
+//============================================================
         //Mark that we've started prefilmulation stuff.
-        mutex.lock();
-        valid = prefilmulation;
-        mutex.unlock();
+        setValid( prefilmulation );
 
         //Here we apply the exposure compensation and white balance.
         matrix<float> exposureImage = input_image * pow(2, exposureComp);
@@ -182,16 +131,13 @@ QImage FilmImageProvider::requestImage(const QString &id,
     }
     case prefilmulation://Do filmulation
     {
-        //If we're about to do work on invalidated demosaicing, we give up.
+        //Check to see if what we just did has been invalidated.
         //It'll restart automatically.
         if(checkAbort(prefilmulation))
             return emptyImage();
-
+//==============================================================
         //Mark that we've started to filmulate.
-        mutex.lock();
-        valid = filmulation;
-        mutex.unlock();
-
+        setValid( filmulation );
         /*        //Read in from the configuration file
         //Get home directory
         int myuid = getuid();
@@ -234,14 +180,12 @@ QImage FilmImageProvider::requestImage(const QString &id,
     {
         setProgress(0.8);
 
-        //See if the filmulation has been invalidated.
+        //See if the filmulation has been invalidated yet.
         if(checkAbort(filmulation))
             return emptyImage();
-
+//=============================================================
         //Mark that we've begun clipping the image and converting to unsigned short.
-        mutex.lock();
-        valid = whiteblack;
-        mutex.unlock();
+        setValid( whiteblack );
         whitepoint_blackpoint(filmulated_image, contrast_image, whitepoint,
                               blackpoint);
     }
@@ -252,11 +196,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
         //See if the clipping has been invalidated.
         if(checkAbort(whiteblack))
             return emptyImage();
-
+//=================================================================
         //Mark that we've begun running the individual color curves.
-        mutex.lock();
-        valid = colorcurve;
-        mutex.unlock();
+        setValid( colorcurve );
         colorCurves(contrast_image, color_curve_image, lutR, lutG, lutB);
     }
     case colorcurve://Do flim-like curve
@@ -266,11 +208,9 @@ QImage FilmImageProvider::requestImage(const QString &id,
         //See if the color curves applied are now invalid.
         if(checkAbort(colorcurve))
             return emptyImage();
-
+//==================================================================
         //Mark that we've begun applying the all-color tone curve.
-        mutex.lock();
-        valid = filmlikecurve;
-        mutex.unlock();
+        setValid( filmlikecurve );
         filmLikeLUT.fill(this);
         matrix<unsigned short> film_curve_image;
         film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
@@ -283,7 +223,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
         //See if the tonecurve has changed since it was applied.
         if(checkAbort(filmlikecurve))
             return emptyImage();
-
+//===================================================================
         //We would mark our progress, but this is the very last step.
         matrix<unsigned short> rotated_image;
         rotate_image(vibrance_saturation_image,rotated_image,rotation);
@@ -529,7 +469,7 @@ void FilmImageProvider::setSaveJpeg(bool saveJpegIn)
     emit saveJpegChanged();
 }
 
-void FilmImageProvider::updateProgress(float percentDone_in)//Percent filmulation
+void FilmImageProvider::updateFilmProgress(float percentDone_in)//Percent filmulation
 {
     progress = 0.2 + percentDone_in*0.6;
     emit progressChanged();
@@ -592,6 +532,14 @@ unsigned short FilmImageProvider::lookup(unsigned short in)
                 shadows_highlights(float(in)/65535.0,shadowsX,shadowsY,
                                    highlightsX,highlightsY)
                 ,defaultToneCurveEnabled);
+}
+
+void FilmImageProvider::setValid( Valid validIn )
+{
+    mutex.lock();
+    valid = validIn;
+    mutex.unlock();
+    return;
 }
 
 void FilmImageProvider::rotateLeft()
