@@ -42,6 +42,13 @@ FilmImageProvider::FilmImageProvider(QQuickImageProvider::ImageType type) :
     saveJpeg = false;
 
     filmLikeLUT.fill(this);
+
+    zeroHistogram(finalHist);
+    histFinal++;//signal histogram updates
+    zeroHistogram(postFilmHist);
+    histPostFilm++;
+    zeroHistogram(preFilmHist);
+    histPreFilm++;
 }
 
 FilmImageProvider::FilmImageProvider() :
@@ -81,6 +88,12 @@ FilmImageProvider::FilmImageProvider() :
     saveJpeg = false;
 
     filmLikeLUT.fill(this);
+    zeroHistogram(finalHist);
+    histFinal++;//signal histogram updates
+    zeroHistogram(postFilmHist);
+    histPostFilm++;
+    zeroHistogram(preFilmHist);
+    histPreFilm++;
 }
 
 FilmImageProvider::~FilmImageProvider()

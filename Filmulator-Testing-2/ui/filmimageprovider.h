@@ -211,6 +211,7 @@ protected:
     void updateShortHistogram(histogram &hist, const matrix<unsigned short> image, int &roll);
     void updateFloatHistogram(histogram &hist, const matrix<float> image, float maximum, int &roll);
     int histIndex(float value, float max);
+    void zeroHistogram(histogram &hist);
 
 signals:
     void caEnabledChanged();

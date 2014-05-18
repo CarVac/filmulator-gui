@@ -2,13 +2,7 @@
 
 void FilmImageProvider::updateShortHistogram(histogram &hist, const matrix<unsigned short> image, int &roll)
 {
-    for(int i = 0; i < 128; i++)
-    {
-        hist.lHist[i] = 0;
-        hist.rHist[i] = 0;
-        hist.gHist[i] = 0;
-        hist.bHist[i] = 0;
-    }
+    zeroHistogram(hist);
     for(int i = 0; i < image.nr(); i = i + 5)
         for(int j = 0; j < image.nc(); j = j + 15)
         {
@@ -21,10 +15,6 @@ void FilmImageProvider::updateShortHistogram(histogram &hist, const matrix<unsig
             hist.gHist[image(i,j+1)/512]++;
             hist.bHist[image(i,j+2)/512]++;
         }
-    hist.lHistMax = 0;
-    hist.rHistMax = 0;
-    hist.gHistMax = 0;
-    hist.bHistMax = 0;
     for(int i = 1; i < 127; i++)
     {
         hist.lHistMax = (hist.lHist[i] > hist.lHistMax) ? hist.lHist[i] : hist.lHistMax;
@@ -37,13 +27,7 @@ void FilmImageProvider::updateShortHistogram(histogram &hist, const matrix<unsig
 
 void FilmImageProvider::updateFloatHistogram(histogram &hist, const matrix<float> image, float maximum, int &roll)
 {
-    for(int i = 0; i < 128; i++)
-    {
-        hist.lHist[i] = 0;
-        hist.rHist[i] = 0;
-        hist.gHist[i] = 0;
-        hist.bHist[i] = 0;
-    }
+    zeroHistogram(hist);
     for(int i = 0; i < image.nr(); i = i + 5)
         for(int j = 0; j < image.nc(); j = j + 15)
         {
@@ -56,10 +40,6 @@ void FilmImageProvider::updateFloatHistogram(histogram &hist, const matrix<float
             hist.gHist[histIndex(image(i,j+1),maximum)]++;
             hist.bHist[histIndex(image(i,j+2),maximum)]++;
         }
-    hist.lHistMax = 0;
-    hist.rHistMax = 0;
-    hist.gHistMax = 0;
-    hist.bHistMax = 0;
     for(int i = 1; i < 127; i++)
     {
         hist.lHistMax = (hist.lHist[i] > hist.lHistMax) ? hist.lHist[i] : hist.lHistMax;
@@ -74,4 +54,20 @@ void FilmImageProvider::updateFloatHistogram(histogram &hist, const matrix<float
 inline int FilmImageProvider::histIndex(float value, float maximum)
 {
     return min(127, int(127*value/maximum));
+}
+
+void FilmImageProvider::zeroHistogram(histogram &hist)
+{
+    for(int i = 0; i < 128; i++)
+    {
+        hist.lHist[i] = 0;
+        hist.rHist[i] = 0;
+        hist.gHist[i] = 0;
+        hist.bHist[i] = 0;
+    }
+    hist.lHistMax = 1;
+    hist.rHistMax = 1;
+    hist.gHistMax = 1;
+    hist.bHistMax = 1;
+    return;
 }
