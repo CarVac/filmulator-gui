@@ -150,6 +150,7 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
     //Value of the base illuminant in the xyz space.
     double xyzXBase, xyzYBase, xyzZBase;
 
+
     //In order to get physically relevant temperatures, we trust dcraw
     // and by proxy libraw to give consistent WB in the
     // "daylight multipliers" (dcraw) and "pre_mul" (libraw)
@@ -160,35 +161,6 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
 //    double BASE_TEMP =  6005.973;
     double BASE_TEMP = 6655.9928;
     double BASE_TINT = 0.97214088;
-
-    //Now we compute the coordinates.
-    temp_tint_to_xy( temperature, 0, xyzXIllum, xyzYIllum );
-    xyzZIllum = 1 - xyzXIllum - xyzYIllum;
-    temp_tint_to_xy( BASE_TEMP, 0, xyzXBase, xyzYBase );
-    xyzZBase = 1 - xyzXBase - xyzYBase;
-
-    //Next, we convert them to RGB.
-    double rIllum, gIllum, bIllum;
-    double rBase, gBase, bBase;
-    xyz2rgb( xyzXIllum, xyzYIllum, xyzZIllum,
-             rIllum, gIllum, bIllum );
-    xyz2rgb( xyzXBase, xyzYBase, xyzZBase,
-             rBase, gBase, bBase );
-
-    //Calculate the multipliers to convert from one illuminant to the base.
-    gIllum /= tint;
-    gBase /= BASE_TINT;
-    rMult = rBase / rIllum;
-    gMult = gBase / gIllum;
-    bMult = bBase / bIllum;
-
-    //cout << "white_balance: non-offset multipliers" << endl;
-    //cout << rMult << endl << gMult << endl << bMult << endl;
-
-    //Check that they don't go negative.
-    rMult = max( rMult, 0.0 );
-    gMult = max( gMult, 0.0 );
-    bMult = max( bMult, 0.0 );
 
     double rBaseMult, gBaseMult, bBaseMult;
     //Grab the existing white balance data from the raw file.
@@ -245,6 +217,8 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
             rBaseMult = 1;
             gBaseMult = 1;
             bBaseMult = 1;
+            BASE_TEMP = 5200;
+            BASE_TINT = 1;
         }
     }
     else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
@@ -252,7 +226,37 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
         rBaseMult = 1;
         gBaseMult = 1;
         bBaseMult = 1;
+        BASE_TEMP = 5200;
+        BASE_TINT = 1;
     }
+    //Now we compute the coordinates.
+    temp_tint_to_xy( temperature, 0, xyzXIllum, xyzYIllum );
+    xyzZIllum = 1 - xyzXIllum - xyzYIllum;
+    temp_tint_to_xy( BASE_TEMP, 0, xyzXBase, xyzYBase );
+    xyzZBase = 1 - xyzXBase - xyzYBase;
+
+    //Next, we convert them to RGB.
+    double rIllum, gIllum, bIllum;
+    double rBase, gBase, bBase;
+    xyz2rgb( xyzXIllum, xyzYIllum, xyzZIllum,
+             rIllum, gIllum, bIllum );
+    xyz2rgb( xyzXBase, xyzYBase, xyzZBase,
+             rBase, gBase, bBase );
+
+    //Calculate the multipliers to convert from one illuminant to the base.
+    gIllum /= tint;
+    gBase /= BASE_TINT;
+    rMult = rBase / rIllum;
+    gMult = gBase / gIllum;
+    bMult = bBase / bIllum;
+
+    //cout << "white_balance: non-offset multipliers" << endl;
+    //cout << rMult << endl << gMult << endl << bMult << endl;
+
+    //Check that they don't go negative.
+    rMult = max( rMult, 0.0 );
+    gMult = max( gMult, 0.0 );
+    bMult = max( bMult, 0.0 );
 
     //Multiply our desired WB by the base offsets.
     rMult *= rBaseMult;

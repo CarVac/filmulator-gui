@@ -71,8 +71,8 @@ ApplicationWindow {
                 property real defaultLayerMixConst: 0.2
                 property bool caEnabled: false
                 property bool defaultCaEnabled: false
-                property real temperature: 5700
-                property real defaultTemperature: 5700
+                property real temperature: 5200
+                property real defaultTemperature: 5200
                 property real tint: 1
                 property real defaultTint: 1
                 property real vibrance: 0
