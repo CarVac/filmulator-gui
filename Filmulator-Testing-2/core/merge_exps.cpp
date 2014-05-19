@@ -113,7 +113,7 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
                (exposure_weight + new_exp_weight*exp_weight_factor);
         }
     }
-    last_exposure_factor = input_exp_factor;
+    last_exposure_factor = input_exp_factor;//TODO: Questionable if correct.
     exposure_weight = exposure_weight + new_exp_weight;
     return false;
 }

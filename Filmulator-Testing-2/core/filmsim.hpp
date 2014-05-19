@@ -51,23 +51,23 @@
 using namespace std;
 
 struct filmulateParams {//TODO: adjust variable names.
-    float initial_developer_concentration;
-    float reservoir_thickness;//once reservoir_size
-    float active_layer_thickness;//once developer_thickness
-    float crystals_per_pixel;
-    float initial_crystal_radius;
-    float initial_silver_salt_density;
-    float developer_consumption_const;
-    float crystal_growth_const;
-    float silver_salt_consumption_const;
-    float total_development_time;//once was int
-    int agitate_count;
-    int development_steps;//once was float; development_resolution
-    float film_area;
-    float sigma_const;
-    float layer_mix_const;
-    float layer_time_divisor;
-    int rolloff_boundary;
+    float initialDevelConcentration;
+    float reservoirThickness;//once reservoir_size
+    float activeLayerThickness;//once developer_thickness
+    float crystalsPerPixel;
+    float initialCrystalRadius;
+    float initialSilverSaltDensity;
+    float develConsumptionConst;
+    float crystalGrowthConst;
+    float silvSaltConsumptionConst;
+    float totalDevelTime;//once was int
+    int agitateCount;
+    int develSteps;//once was float; development_resolution
+    float filmArea;
+    float sigmaConst;
+    float layerMixConst;
+    float layerTimeDivisor;
+    int rolloffBoundary;
 };
 
 bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
@@ -147,7 +147,7 @@ bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
                   Exiv2::ExifData exifData);
 
 //Applies the hardcoded post-filmulation tonecurve to the image.
-float default_tonecurve( float input, bool enabled );
+float default_tonecurve( float input );
 
 //Applies the effective tonecurve specified by the two control points to the image.
 float shadows_highlights( float input,

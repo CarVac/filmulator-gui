@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
+#ifndef MATRIX_H
+#define MATRIX_H
 #include <limits>
 #include <algorithm>
 #include "math.h"
@@ -639,3 +641,5 @@ const matrix<T> operator/(const matrix<T> &mat, const U value)
 {
 	return mat.divide(value);
 }
+
+#endif //MATRIX_H

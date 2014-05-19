@@ -8,22 +8,9 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QList>
-#include "../core/filmsim.hpp"
+#include "../core/imagePipeline.h"
 #include <assert.h>
 
-enum LogY {no, yes};
-
-struct histogram {
-    long long lHist[128];
-    long long rHist[128];
-    long long gHist[128];
-    long long bHist[128];
-
-    long long lHistMax;
-    long long rHistMax;
-    long long gHistMax;
-    long long bHistMax;
-};
 
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
@@ -136,7 +123,6 @@ public:
     void updateFilmProgress(float);
     bool checkAbort(Valid currStep);
     bool checkAbort(){return checkAbort(filmulation);}
-    unsigned short lookup(unsigned short in);
     bool isGUI(){return true;}
     void setValid( Valid );
 
@@ -147,6 +133,9 @@ public:
     Q_INVOKABLE void rotateRight();
     Q_INVOKABLE void rotateLeft();
 
+    void updateHistPreFilm( const matrix<float> image, float maximum );
+    void updateHistPostFilm( const matrix<float> image, float maximum );
+    void updateHistFinal( const matrix<unsigned short> image);
 
 protected:
     QMutex mutex;
@@ -178,10 +167,7 @@ protected:
     bool saveTiff;
     bool saveJpeg;
 
-    LUT lutR, lutG, lutB;
-    LUT filmLikeLUT;
-
-    filmulateParams filmParams;
+    ProcessingParameters param;
 
     struct timeval request_start_time;
 
@@ -195,22 +181,22 @@ protected:
     matrix<unsigned short> color_curve_image;
     matrix<unsigned short> vibrance_saturation_image;
 
-    histogram finalHist;
-    int histFinal;//dummy to signal histogram updates
+    Histogram finalHist;
+    int histFinalRoll;//dummy to signal histogram updates
 
-    histogram postFilmHist;
-    int histPostFilm;//dummy to signal histogram updates
+    Histogram postFilmHist;
+    int histPostFilmRoll;//dummy to signal histogram updates
 
-    histogram preFilmHist;
-    int histPreFilm;//dummy to signal histogram updates
+    Histogram preFilmHist;
+    int histPreFilmRoll;//dummy to signal histogram updates
 
-    float getHistogramPoint(histogram &hist, int index, int i, LogY isLog);
+    float getHistogramPoint(Histogram &hist, int index, int i, LogY isLog);
     QImage emptyImage();
 
-    void updateShortHistogram(histogram &hist, const matrix<unsigned short> image, int &roll);
-    void updateFloatHistogram(histogram &hist, const matrix<float> image, float maximum, int &roll);
+    void updateShortHistogram(Histogram &hist, const matrix<unsigned short> image, int &roll);
+    void updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum, int &roll);
     int histIndex(float value, float max);
-    void zeroHistogram(histogram &hist);
+    void zeroHistogram(Histogram &hist);
 
 signals:
     void caEnabledChanged();

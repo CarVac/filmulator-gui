@@ -27,23 +27,23 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
                filmulateParams filmParams, Interface* interface)
 {
     //Extract parameters from struct
-    float initial_developer_concentration = filmParams.initial_developer_concentration;
-    float reservoir_thickness = filmParams.reservoir_thickness;
-    float active_layer_thickness = filmParams.active_layer_thickness;
-    float crystals_per_pixel = filmParams.crystals_per_pixel;
-    float initial_crystal_radius = filmParams.initial_crystal_radius;
-    float initial_silver_salt_density = filmParams.initial_silver_salt_density;
-    float developer_consumption_const = filmParams.developer_consumption_const;
-    float crystal_growth_const = filmParams.crystal_growth_const;
-    float silver_salt_consumption_const = filmParams.silver_salt_consumption_const;
-    float total_development_time = filmParams.total_development_time;
-    int agitate_count = filmParams.agitate_count;
-    int development_steps = filmParams.development_steps;
-    float film_area = filmParams.film_area;
-    float sigma_const = filmParams.sigma_const;
-    float layer_mix_const = filmParams.layer_mix_const;
-    float layer_time_divisor = filmParams.layer_time_divisor;
-    int rolloff_boundary = filmParams.rolloff_boundary;
+    float initial_developer_concentration = filmParams.initialDevelConcentration;
+    float reservoir_thickness = filmParams.reservoirThickness;
+    float active_layer_thickness = filmParams.activeLayerThickness;
+    float crystals_per_pixel = filmParams.crystalsPerPixel;
+    float initial_crystal_radius = filmParams.initialCrystalRadius;
+    float initial_silver_salt_density = filmParams.initialSilverSaltDensity;
+    float developer_consumption_const = filmParams.develConsumptionConst;
+    float crystal_growth_const = filmParams.crystalGrowthConst;
+    float silver_salt_consumption_const = filmParams.silvSaltConsumptionConst;
+    float total_development_time = filmParams.totalDevelTime;
+    int agitate_count = filmParams.agitateCount;
+    int development_steps = filmParams.develSteps;
+    float film_area = filmParams.filmArea;
+    float sigma_const = filmParams.sigmaConst;
+    float layer_mix_const = filmParams.layerMixConst;
+    float layer_time_divisor = filmParams.layerTimeDivisor;
+    int rolloff_boundary = filmParams.rolloffBoundary;
 
     //Set up timers
     struct timeval initialize_start, development_start, develop_start,

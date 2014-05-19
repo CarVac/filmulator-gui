@@ -37,7 +37,8 @@ SOURCES += main.cpp \
     database/organizemodel.cpp \
     database/organizeinsertion.cpp \
     database/exiffunctions.cpp \
-    ui/settings.cpp
+    ui/settings.cpp \
+    core/imagePipeline.cpp
 
 # Installation path
 # target.path =
@@ -62,7 +63,8 @@ HEADERS += \
     database/filmulatordb.h \
     database/organizemodel.h \
     database/exiffunctions.h \
-    ui/settings.h
+    ui/settings.h \
+    core/imagePipeline.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

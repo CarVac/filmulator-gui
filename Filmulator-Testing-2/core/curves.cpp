@@ -20,10 +20,8 @@
 #include <cmath>
 #include <algorithm>
 
-float default_tonecurve( float input, bool enabled )
+float default_tonecurve( float input )
 {
-    if( !enabled )
-        return input;
 
     //These are the coordinates for a quadratic bezier curve's
     //control points. They should be in ascending order.
