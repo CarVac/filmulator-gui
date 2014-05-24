@@ -47,7 +47,7 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 //    Q_PROPERTY(int histPostFilm READ getHistPostFilm NOTIFY histPostFilmChanged)
 //    Q_PROPERTY(int histPreFilm READ getHistPreFilm NOTIFY histPreFilmChanged)*/
 public:
-    FilmImageProvider(QQuickImageProvider::ImageType type);
+    //FilmImageProvider(QQuickImageProvider::ImageType type);
     FilmImageProvider();
     ~FilmImageProvider();
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
@@ -121,8 +121,6 @@ public:
     int getHistPreFilm(){return histPreFilm;}*/
 
     void updateFilmProgress(float);
-    bool checkAbort(Valid currStep);
-    bool checkAbort(){return checkAbort(filmulation);}
     bool isGUI(){return true;}
     void setValid( Valid );
 
@@ -138,6 +136,7 @@ public:
     void updateHistFinal( const matrix<unsigned short> image);
 
 protected:
+    ImagePipeline pipeline;
     QMutex mutex;
 
     bool caEnabled;

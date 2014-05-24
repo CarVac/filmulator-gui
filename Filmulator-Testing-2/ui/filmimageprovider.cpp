@@ -44,6 +44,8 @@ FilmImageProvider::FilmImageProvider() :
     histPostFilmRoll++;
     zeroHistogram(preFilmHist);
     histPreFilmRoll++;
+
+    pipeline( BothCacheAndHisto, this );
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -63,6 +65,8 @@ QImage FilmImageProvider::requestImage(const QString &id,
     string inputFilename = tempID.toStdString();
     std::vector<std::string> input_filename_list;
     input_filename_list.push_back(inputFilename);
+
+    ProcessingParameters params;
 /*
     output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
     for(int i = 0; i < nrows; i++)
@@ -329,22 +333,6 @@ float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, Lo
 QImage FilmImageProvider::emptyImage()
 {
     return QImage(0,0,QImage::Format_ARGB32);
-}
-
-bool FilmImageProvider::checkAbort(Valid currStep)
-{
-    if (valid < currStep && time_diff(request_start_time) > 0.1)
-        return true;
-    else
-        return false;
-}
-
-void FilmImageProvider::setValid( Valid validIn )
-{
-    mutex.lock();
-    valid = validIn;
-    mutex.unlock();
-    return;
 }
 
 void FilmImageProvider::rotateLeft()

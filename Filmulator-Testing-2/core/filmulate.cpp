@@ -16,29 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
-#include "filmsim.hpp"
+#include "imagePipeline.h"
 #include <algorithm>
 #include <stdio.h>
 #include <unistd.h>
 
 
 //Function-------------------------------------------------------------------------
-bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
+bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_density,
                filmulateParams filmParams, Interface* interface)
 {
     //Extract parameters from struct
-    float initial_developer_concentration = filmParams.initialDevelConcentration;
+    float initial_developer_concentration = filmParams.initialDeveloperConcentration;
     float reservoir_thickness = filmParams.reservoirThickness;
     float active_layer_thickness = filmParams.activeLayerThickness;
     float crystals_per_pixel = filmParams.crystalsPerPixel;
     float initial_crystal_radius = filmParams.initialCrystalRadius;
     float initial_silver_salt_density = filmParams.initialSilverSaltDensity;
-    float developer_consumption_const = filmParams.develConsumptionConst;
+    float developer_consumption_const = filmParams.developerConsumptionConst;
     float crystal_growth_const = filmParams.crystalGrowthConst;
-    float silver_salt_consumption_const = filmParams.silvSaltConsumptionConst;
+    float silver_salt_consumption_const = filmParams.silverSaltConsumptionConst;
     float total_development_time = filmParams.totalDevelTime;
     int agitate_count = filmParams.agitateCount;
-    int development_steps = filmParams.develSteps;
+    int development_steps = filmParams.developmentSteps;
     float film_area = filmParams.filmArea;
     float sigma_const = filmParams.sigmaConst;
     float layer_mix_const = filmParams.layerMixConst;
@@ -63,7 +63,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
     if(!interface->isGUI())
         input_image.free();
 
-    if(interface->checkAbort())
+    if( checkAbort() )
         return 1;
 
     //We set the crystal radius to a small seed value for each color.
@@ -109,7 +109,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
     //differential equation of film development.
     for(int i = 0; i <= development_steps; i++)
     {
-        if(interface->checkAbort())
+        if( checkAbort() )
             return 1;
 
         interface->updateFilmProgress(float(i)/float(development_steps));
@@ -132,7 +132,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
         develop_dif += time_diff(develop_start);
         gettimeofday(&diffuse_start,NULL);
 
-        if(interface->checkAbort())
+        if( checkAbort() )
             return 1;
 
         //Now, we are going to perform the diffusion part.
@@ -190,7 +190,7 @@ bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
     struct timeval mult_start;
     gettimeofday(&mult_start,NULL);
 
-    if(interface->checkAbort())
+    if( checkAbort() )
         return 1;
 
     output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;

@@ -22,7 +22,6 @@ SOURCES += main.cpp \
     core/layer_mix.cpp \
     core/merge_exps.cpp \
     core/output_file.cpp \
-    core/time_diff.cpp \
     core/filmulate.cpp \
     core/whitepoint_blackpoint.cpp \
     core/color_curves.cpp \
@@ -38,7 +37,8 @@ SOURCES += main.cpp \
     database/organizeinsertion.cpp \
     database/exiffunctions.cpp \
     ui/settings.cpp \
-    core/imagePipeline.cpp
+    core/imagePipeline.cpp \
+    core/timeDiff.cpp
 
 # Installation path
 # target.path =

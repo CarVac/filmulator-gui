@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of Filmulator.
  *
  * Copyright 2013 Omer Mano and Carlo Vaccari
@@ -51,27 +51,24 @@
 using namespace std;
 
 struct filmulateParams {//TODO: adjust variable names.
-    float initialDevelConcentration;
+    float initialDeveloperConcentration;
     float reservoirThickness;//once reservoir_size
     float activeLayerThickness;//once developer_thickness
     float crystalsPerPixel;
     float initialCrystalRadius;
     float initialSilverSaltDensity;
-    float develConsumptionConst;
+    float developerConsumptionConst;
     float crystalGrowthConst;
-    float silvSaltConsumptionConst;
+    float silverSaltConsumptionConst;
     float totalDevelTime;//once was int
     int agitateCount;
-    int develSteps;//once was float; development_resolution
+    int developmentSteps;//once was float; development_resolution
     float filmArea;
     float sigmaConst;
     float layerMixConst;
     float layerTimeDivisor;
     int rolloffBoundary;
 };
-
-bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
-               filmulateParams filmParams, Interface* interface);
 
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         int rolloff_boundary);

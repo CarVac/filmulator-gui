@@ -3,11 +3,15 @@
 ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn, Interface* interfaceIn )
 {
     cacheAndHistograms = cacheAndHistoIn;
-    interface = interfaceIn;
+    interface = &interfaceIn;
 }
 
-matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params )
+matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters params )
 {
+    //Record when the function was requested. This is so that the function will not give up
+    // until a given short time has elapsed.
+    gettimeofday( &timeRequested, NULL );
+
     switch ( valid )
     {
     case none://Load image into buffer
@@ -18,8 +22,10 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     case load://Do demosaic
     {
         //If we're about to do work on a new image, we give up.
-        if(interface->checkAbort(load))
+        if( checkAbort() )
+        {
             return emptyMatrix();
+        }
 //===================================================
         //Mark that demosaicing has started.
         interface->setValid( demosaic );
@@ -43,8 +49,10 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     }
     case demosaic://Do pre-filmulation work.
     {
-        if(interface->checkAbort(demosaic))
+        if( checkAbort() )
+        {
             return emptyMatrix();
+        }
 //============================================================
         //Mark that we've started prefilmulation stuff.
         interface->setValid( prefilmulation );
@@ -61,29 +69,33 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     {
         //Check to see if what we just did has been invalidated.
         //It'll restart automatically.
-        if( interface->checkAbort( prefilmulation ) )
+        if( checkAbort() )
+        {
             return emptyMatrix();
+        }
 //==============================================================
         //Mark that we've started to filmulate.
         interface->setValid( filmulation );
 
         //Set up filmulation parameters.
-        params.filmParams.initialDevelConcentration = 1.0;
-        params.filmParams.reservoirThickness = 1000.0;
-        params.filmParams.activeLayerThickness = 0.1;
-        params.filmParams.crystalsPerPixel = 500.0;
-        params.filmParams.initialCrystalRadius = 0.00001;
-        params.filmParams.initialSilverSaltDensity = 1.0;
-        params.filmParams.develConsumptionConst = 2000000.0;
-        params.filmParams.crystalGrowthConst = 0.00001;
-        params.filmParams.silvSaltConsumptionConst = 2000000.0;
-        params.filmParams.sigmaConst = 0.2;
-        params.filmParams.layerTimeDivisor = 20;
-        params.filmParams.rolloffBoundary = 51275;
+        {
+            params.filmParams.initialDeveloperConcentration = 1.0;
+            params.filmParams.reservoirThickness = 1000.0;
+            params.filmParams.activeLayerThickness = 0.1;
+            params.filmParams.crystalsPerPixel = 500.0;
+            params.filmParams.initialCrystalRadius = 0.00001;
+            params.filmParams.initialSilverSaltDensity = 1.0;
+            params.filmParams.developerConsumptionConst = 2000000.0;
+            params.filmParams.crystalGrowthConst = 0.00001;
+            params.filmParams.silverSaltConsumptionConst = 2000000.0;
+            params.filmParams.sigmaConst = 0.2;
+            params.filmParams.layerTimeDivisor = 20;
+            params.filmParams.rolloffBoundary = 51275;
+        }
 
 
         //Here we do the film simulation on the image...
-        if(filmulate(pre_film_image, filmulated_image, params.filmParams, interface))
+        if(filmulate(pre_film_image, filmulated_image, params.filmParams, this))
         {
             return emptyMatrix();//filmulate returns 1 if it detected an abort
         }
@@ -95,8 +107,10 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     {
 
         //See if the filmulation has been invalidated yet.
-        if( interface->checkAbort( filmulation ) )
+        if( checkAbort() )
+        {
             return emptyMatrix();
+        }
 //=============================================================
         //Mark that we've begun clipping the image and converting to unsigned short.
         interface->setValid( whiteblack );
@@ -106,8 +120,10 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     case whiteblack: // Do color_curve
     {
         //See if the clipping has been invalidated.
-        if ( interface->checkAbort( whiteblack ) )
+        if ( checkAbort() )
+        {
             return emptyMatrix();
+        }
 //=================================================================
         //Mark that we've begun running the individual color curves.
         interface->setValid( colorcurve );
@@ -119,8 +135,10 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     case colorcurve://Do film-like curve
     {
         //See if the color curves applied are now invalid.
-        if ( interface->checkAbort( colorcurve ) )
+        if ( checkAbort() )
+        {
             return emptyMatrix();
+        }
 //==================================================================
         //Mark that we've begun applying the all-color tone curve.
         interface->setValid( filmlikecurve );
@@ -142,8 +160,10 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     case filmlikecurve: //output
     {
         //See if the tonecurve has changed since it was applied.
-        if ( interface->checkAbort( filmlikecurve ) )
+        if ( checkAbort() )
+        {
             return emptyMatrix();
+        }
 //===================================================================
         //We would mark our progress, but this is the very last step.
         matrix<unsigned short> rotated_image;
@@ -156,4 +176,89 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params 
     }//End task switch
 
     return emptyMatrix();
+}
+
+bool ImagePipeline::checkAbort()
+{
+    if ( aborted && timeDiff( timeRequested ) > 0.1 )
+    {
+        pipelineLock.lock();
+        aborted = false;
+        pipelineLock.unlock();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void ImagePipeline::setValid( Valid validIn )
+{
+    pipelineLock.lock();
+    valid = validIn;
+    pipelineLock.unlock();
+    return;
+}
+
+void ImagePipeline::setLastValid( const ProcessingParameters newParams )
+{
+    Valid tempValid;
+
+    //First is things that change what are loaded..
+    if ( newParams.filenameList != oldParams.filenameList ){ tempValid = none; }
+    else if ( newParams.tiffIn != oldParams.tiffIn ){ tempValid = none; }
+    else if ( newParams.jpegIn != oldParams.jpegIn ){ tempValid = none; }
+    //Next is things that affect demosaicing.
+    else if ( newParams.caEnabled != oldParams.caEnabled ){ tempValid = load; }
+    else if ( newParams.highlights != oldParams.highlights ){ tempValid = load;}
+    //Next is things that affect prefilmulation.
+    else if ( newParams.exposureComp != oldParams.exposureComp ){ tempValid = demosaic; }
+    else if ( newParams.temperature != oldParams.temperature ){ tempValid = demosaic; }
+    else if ( newParams.tint != oldParams.tint ){ tempValid = demosaic; }
+    //Next is things that affect filmulation.
+    else if ( newParams.filmParams.initialDeveloperConcentration != oldParams.filmParams.initialDeveloperConcentration ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.reservoirThickness != oldParams.filmParams.reservoirThickness ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.activeLayerThickness != oldParams.filmParams.activeLayerThickness ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.crystalsPerPixel != oldParams.filmParams.crystalsPerPixel ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.initialCrystalRadius != oldParams.filmParams.initialCrystalRadius ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.initialSilverSaltDensity != oldParams.filmParams.initialSilverSaltDensity ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.developerConsumptionConst != oldParams.filmParams.developerConsumptionConst ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.crystalGrowthConst != oldParams.filmParams.crystalGrowthConst ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.silverSaltConsumptionConst != oldParams.filmParams.silverSaltConsumptionConst ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.totalDevelTime != oldParams.filmParams.totalDevelTime ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.agitateCount != oldParams.filmParams.agitateCount ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.developmentSteps != oldParams.filmParams.developmentSteps ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.filmArea != oldParams.filmParams.filmArea ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.sigmaConst != oldParams.filmParams.sigmaConst ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.layerMixConst != oldParams.filmParams.layerMixConst ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.layerTimeDivisor != oldParams.filmParams.layerTimeDivisor ){ tempValid = prefilmulation; }
+    else if ( newParams.filmParams.rolloffBoundary != oldParams.filmParams.rolloffBoundary ){ tempValid = prefilmulation; }
+    //Next is stuff that does contrast.
+    else if ( newParams.blackpoint != oldParams.blackpoint ){ tempValid = filmulation; }
+    else if ( newParams.whitepoint != oldParams.whitepoint ){ tempValid = filmulation; }
+    //next is color curve stuff. Well, there's nothing for now.
+    //else if ( newParams.[param] != oldParams.[param] ){ tempValid = whiteblack; }
+    //next is other curves.
+    else if ( newParams.shadowsX != oldParams.shadowsX ){ tempValid = colorcurve; }
+    else if ( newParams.shadowsY != oldParams.shadowsY ){ tempValid = colorcurve; }
+    else if ( newParams.highlightsX != oldParams.highlightsX ){ tempValid = colorcurve; }
+    else if ( newParams.highlightsY != oldParams.highlightsY ){ tempValid = colorcurve; }
+    else if ( newParams.vibrance != oldParams.vibrance ){ tempValid = colorcurve; }
+    else if ( newParams.saturation != oldParams.saturation ){ tempValid = colorcurve; }
+    //next is rotation.
+    else /*if ( newParams.rotation != oldParams.rotation )*/{ tempValid = filmlikecurve; }
+
+    if ( tempValid < valid )
+    {
+        valid = tempValid;
+    }
+    return;
+
+
+
+
+
+
+
 }
