@@ -49,6 +49,8 @@ qtcAddDeployment()
 
 OTHER_FILES += \
     Organize.qml \
+    Edit.qml \
+    EditTools.qml \
     gui_components/SSlider.qml \
     qml/Filmulator-Testing-2/gui_components/ToolSlider.qml \
     qml/Filmulator-Testing-2/generateHistogram.js

@@ -45,7 +45,7 @@ FilmImageProvider::FilmImageProvider() :
     zeroHistogram(preFilmHist);
     histPreFilmRoll++;
 
-    pipeline( BothCacheAndHisto, this );
+    cout << "Constructing FilmImageProvider" << endl;
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -82,7 +82,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     }
 */
 
-    tout << "Request time: " << time_diff(request_start_time) << " seconds" << endl;
+    tout << "Request time: " << timeDiff(request_start_time) << " seconds" << endl;
     setProgress(1);
     *size = output.size();
     return output;

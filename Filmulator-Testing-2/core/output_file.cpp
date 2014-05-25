@@ -49,5 +49,5 @@ void output_file(matrix<unsigned short> &output, vector<string> input_filename_l
         imwrite_tiff(output, output_image_filename,exifData);
     }
 
-    tout << "Write time: " << time_diff(write_start) << " seconds" << endl;
+    tout << "Write time: " << timeDiff(write_start) << " seconds" << endl;
 }

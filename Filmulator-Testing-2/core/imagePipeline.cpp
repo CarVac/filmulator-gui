@@ -1,12 +1,12 @@
 #include "imagePipeline.h"
 
-ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn, Interface* interfaceIn )
+ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn )
 {
     cacheAndHistograms = cacheAndHistoIn;
-    interface = &interfaceIn;
+    //interface = &interfaceIn;
 }
 
-matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters params )
+matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params, Interface* interface )
 {
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
@@ -16,7 +16,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
     {
     case none://Load image into buffer
     {
-        interface->setValid( load );
+        setValid( load );
 
     }
     case load://Do demosaic
@@ -28,7 +28,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
         }
 //===================================================
         //Mark that demosaicing has started.
-        interface->setValid( demosaic );
+        setValid( demosaic );
 
 
         cout << "Opening " << params.filenameList[0] << endl;
@@ -43,7 +43,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
                   params.highlights,
                   params.caEnabled))
         {
-            interface->setValid( none );
+            setValid( none );
             return emptyMatrix();
         }
     }
@@ -55,7 +55,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
         }
 //============================================================
         //Mark that we've started prefilmulation stuff.
-        interface->setValid( prefilmulation );
+        setValid( prefilmulation );
 
         //Here we apply the exposure compensation and white balance.
         matrix<float> exposureImage = input_image * pow(2, params.exposureComp[0]);
@@ -75,7 +75,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
         }
 //==============================================================
         //Mark that we've started to filmulate.
-        interface->setValid( filmulation );
+        setValid( filmulation );
 
         //Set up filmulation parameters.
         {
@@ -95,7 +95,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
 
 
         //Here we do the film simulation on the image...
-        if(filmulate(pre_film_image, filmulated_image, params.filmParams, this))
+        if(filmulate(pre_film_image, filmulated_image, params.filmParams, interface))
         {
             return emptyMatrix();//filmulate returns 1 if it detected an abort
         }
@@ -113,7 +113,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
         }
 //=============================================================
         //Mark that we've begun clipping the image and converting to unsigned short.
-        interface->setValid( whiteblack );
+        setValid( whiteblack );
         whitepoint_blackpoint(filmulated_image, contrast_image, params.whitepoint,
                               params.blackpoint);
     }
@@ -126,7 +126,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
         }
 //=================================================================
         //Mark that we've begun running the individual color curves.
-        interface->setValid( colorcurve );
+        setValid( colorcurve );
         lutR.setUnity();
         lutG.setUnity();
         lutB.setUnity();
@@ -141,7 +141,7 @@ matrix<unsigned short> ImagePipeline::processImage( const ProcessingParameters p
         }
 //==================================================================
         //Mark that we've begun applying the all-color tone curve.
-        interface->setValid( filmlikecurve );
+        setValid( filmlikecurve );
         filmLikeLUT.fill(
             [=](unsigned short in) -> unsigned short
             {

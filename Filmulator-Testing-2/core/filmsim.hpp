@@ -173,7 +173,7 @@ void midValueShift (unsigned short& hi, unsigned short& mid, unsigned short& lo,
 
 JSAMPLE dither_round(int full_int);
 
-double time_diff(struct timeval start);
+double timeDiff(struct timeval start);
 
 int read_args(int argc, char* argv[],string &input_configuration,
                std::vector<string> &input_filename_list,

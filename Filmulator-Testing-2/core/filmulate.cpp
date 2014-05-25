@@ -101,7 +101,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
         agitate_period = 3*development_steps;
 	int half_agitate_period = floor(agitate_period/2);
    
-    tout << "Initialization time: " << time_diff(initialize_start)
+    tout << "Initialization time: " << timeDiff(initialize_start)
          << " seconds" << endl;
     gettimeofday(&development_start,NULL);
 
@@ -129,7 +129,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
                 active_layer_thickness,developer_consumption_const,
                 silver_salt_consumption_const,timestep);
         
-        develop_dif += time_diff(develop_start);
+        develop_dif += timeDiff(develop_start);
         gettimeofday(&diffuse_start,NULL);
 
         if( checkAbort() )
@@ -143,7 +143,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
                 pixels_per_millimeter,
                 timestep);
 
-        diffuse_dif += time_diff(diffuse_start);
+        diffuse_dif += timeDiff(diffuse_start);
 
         gettimeofday(&layer_mix_start,NULL);        
         //This performs mixing between the active layer adjacent to the film
@@ -158,7 +158,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
                   pixels_per_millimeter,
                   timestep);
         
-        layer_mix_dif += time_diff(layer_mix_start);
+        layer_mix_dif += timeDiff(layer_mix_start);
         
         gettimeofday(&agitate_start,NULL);
         
@@ -170,9 +170,9 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
                     reservoir_developer_concentration, reservoir_thickness,
                     pixels_per_millimeter);
        
-        agitate_dif += time_diff(agitate_start);
+        agitate_dif += timeDiff(agitate_start);
     }
-    tout<<"Development time: "<<time_diff(development_start)<<" seconds"<<endl;
+    tout<<"Development time: "<<timeDiff(development_start)<<" seconds"<<endl;
     tout << "Develop time: " << develop_dif << " seconds" << endl;
     tout << "Diffuse time: " << diffuse_dif << " seconds" << endl;
     tout << "Layer mix time: " << layer_mix_dif << " seconds" << endl;
@@ -194,7 +194,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
         return 1;
 
     output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;
-    tout << "Output density time: "<<time_diff(mult_start) << endl;
+    tout << "Output density time: "<<timeDiff(mult_start) << endl;
 #ifdef DOUT
     debug_out.close();
 #endif

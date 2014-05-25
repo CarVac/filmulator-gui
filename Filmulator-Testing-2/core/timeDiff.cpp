@@ -19,7 +19,7 @@
 #include <sys/time.h>
 #include <cstddef>
 
-double time_diff(struct timeval start)
+double timeDiff(struct timeval start)
 {
     struct timeval end;
     long seconds, useconds;

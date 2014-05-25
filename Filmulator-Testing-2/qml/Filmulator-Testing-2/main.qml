@@ -1,8 +1,8 @@
 import QtQuick 2.2
-import QtQuick.Controls 1.1
+import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
-import QtQuick.Controls.Styles 1.1
+import QtQuick.Controls.Styles 1.2
 import "gui_components"
 
 ApplicationWindow {
@@ -239,6 +239,11 @@ ApplicationWindow {
         onExited: {
             tooltipCatcher.visible = false
             tooltipCatcher.enabled = false
+        }
+        onWheel: {
+            tooltipCatcher.visible = false
+            tooltipCatcher.enabled = false
+            wheel.accepted = false
         }
 
         Rectangle {

@@ -48,8 +48,8 @@ enum CacheAndHisto { BothCacheAndHisto, NoCacheNoHisto };
 class ImagePipeline
 {
 public:
-    ImagePipeline( CacheAndHisto, Interface* );
-    matrix<unsigned short> processImage( const ProcessingParameters params );
+    ImagePipeline( CacheAndHisto );
+    matrix<unsigned short> processImage( const ProcessingParameters params, Interface* interface);
     void abort(){ aborted = true; }
     float getProgress(){ return progress; }
 
