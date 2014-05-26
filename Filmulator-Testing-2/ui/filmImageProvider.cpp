@@ -63,23 +63,27 @@ QImage FilmImageProvider::requestImage(const QString &id,
     tempID.remove(0,7);
     cout << tempID.toStdString() << endl;
     string inputFilename = tempID.toStdString();
-    std::vector<std::string> input_filename_list;
-    input_filename_list.push_back(inputFilename);
+    std::vector<std::string> inputFilenameList;
+    inputFilenameList.push_back(inputFilename);
+    param.filenameList = inputFilenameList;
 
-/*
+    matrix<unsigned short> image = pipeline.processImage( param, this );
+
+    int nrows = image.nr();
+    int ncols = image.nc();
+
     output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
     for(int i = 0; i < nrows; i++)
     {
         QRgb *line = (QRgb *)output.scanLine(i);
         for(int j = 0; j < ncols; j = j + 3)
         {
-            *line = QColor(rotated_image(i,j)/256,
-                           rotated_image(i,j+1)/256,
-                           rotated_image(i,j+2)/256).rgb();
+            *line = QColor(image(i,j)/256,
+                           image(i,j+1)/256,
+                           image(i,j+2)/256).rgb();
             line++;
         }
     }
-*/
 
     tout << "Request time: " << timeDiff(request_start_time) << " seconds" << endl;
     setProgress(1);
