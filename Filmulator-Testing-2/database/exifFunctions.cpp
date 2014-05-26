@@ -1,4 +1,4 @@
-#include "exiffunctions.h"
+#include "exifFunctions.h"
 
 int exifUtcTime( Exiv2::ExifData exifData, const int cameraTZ )
 {

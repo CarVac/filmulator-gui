@@ -21,7 +21,7 @@
 // function and loads the data into a matrix. If the length of the filename
 // list is greater than one, it uses that and the input exposure compensation
 // to merge the files into one HDR image.
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 
 bool imload(std::vector<string> input_filename_list,
             std::vector<float> input_exposure_compensation,

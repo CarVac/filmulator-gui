@@ -1,4 +1,4 @@
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 #include <utility>
 
 void temp_tint_to_xy(double const temp, double const tint,

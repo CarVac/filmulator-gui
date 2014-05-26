@@ -58,7 +58,6 @@ SplitView {
         height:250
         property int lineWidth: 1
         property real alpha: 1.0
-        //            property int hist: filmProvider.histFinal
         property int padding: 5
         antialiasing: true
 
@@ -215,7 +214,6 @@ SplitView {
                     height: 30
                     property int lineWidth: 1
                     property real alpha: 1.0
-                    //                        property int hist: filmProvider.histPreFilm
                     property int padding: 3
                     antialiasing: true
 
@@ -291,7 +289,6 @@ SplitView {
                     height: 30
                     property int lineWidth: 1
                     property real alpha: 1.0
-                    //                        property int hist: filmProvider.histPostFilm
                     property int padding: 3
                     antialiasing: true
 

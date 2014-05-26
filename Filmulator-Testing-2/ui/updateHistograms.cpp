@@ -1,6 +1,6 @@
-#include "filmimageprovider.h"
+#include "filmImageProvider.h"
 
-void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsigned short> image, int &roll)
+void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsigned short> image )//, int &roll)
 {
     zeroHistogram(hist);
     for(int i = 0; i < image.nr(); i = i + 5)
@@ -22,10 +22,10 @@ void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsig
         hist.gHistMax = (hist.gHist[i] > hist.gHistMax) ? hist.gHist[i] : hist.gHistMax;
         hist.bHistMax = (hist.bHist[i] > hist.bHistMax) ? hist.bHist[i] : hist.bHistMax;
     }
-    roll++;
+    //roll++;
 }
 
-void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum, int &roll)
+void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum )//, int &roll)
 {
     zeroHistogram(hist);
     for(int i = 0; i < image.nr(); i = i + 5)
@@ -48,7 +48,7 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
         hist.bHistMax = (hist.bHist[i] > hist.bHistMax) ? hist.bHist[i] : hist.bHistMax;
 
     }
-    roll++;
+    //roll++;
 }
 
 inline int FilmImageProvider::histIndex(float value, float maximum)
@@ -74,21 +74,21 @@ void FilmImageProvider::zeroHistogram(Histogram &hist)
 
 void FilmImageProvider::updateHistPreFilm( const matrix<float> image, float maximum )
 {
-    updateFloatHistogram( preFilmHist, image, maximum, histPreFilmRoll );
+    updateFloatHistogram( preFilmHist, image, maximum );//, histPreFilmRoll );
     emit histPreFilmChanged();
     return;
 }
 
 void FilmImageProvider::updateHistPostFilm( const matrix<float> image, float maximum )
 {
-    updateFloatHistogram( postFilmHist, image, maximum, histPostFilmRoll );
+    updateFloatHistogram( postFilmHist, image, maximum );//, histPostFilmRoll );
     emit histPostFilmChanged();
     return;
 }
 
 void FilmImageProvider::updateHistFinal( const matrix<unsigned short> image )
 {
-    updateShortHistogram( finalHist, image, histFinalRoll );
+    updateShortHistogram( finalHist, image );//, histFinalRoll );
     emit histFinalChanged();
     return;
 }

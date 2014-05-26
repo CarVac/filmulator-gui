@@ -1,4 +1,4 @@
-#include "sqlmodel.h"
+#include "sqlModel.h"
 #include <iostream>
 #include <QStringList>
 #include <exiv2/exiv2.hpp>

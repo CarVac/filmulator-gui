@@ -3,10 +3,10 @@
 #include "qtquick2applicationviewer.h"
 #include <QtSql/QSqlDatabase>
 #include <QTranslator>
-#include "ui/filmimageprovider.h"
+#include "ui/filmImageProvider.h"
 #include "ui/settings.h"
-#include "database/organizemodel.h"
-#include "database/filmulatordb.h"
+#include "database/organizeModel.h"
+#include "database/filmulatorDB.h"
 
 int main(int argc, char *argv[])
 {

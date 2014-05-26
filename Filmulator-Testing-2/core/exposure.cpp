@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
         int rolloff_boundary)

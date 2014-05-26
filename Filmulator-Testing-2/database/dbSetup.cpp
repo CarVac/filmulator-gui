@@ -1,4 +1,4 @@
-#include "filmulatordb.h"
+#include "filmulatorDB.h"
 #include <QString>
 #include <QVariant>
 

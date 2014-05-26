@@ -1,4 +1,4 @@
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
                   LUT lutR, LUT lutG, LUT lutB)

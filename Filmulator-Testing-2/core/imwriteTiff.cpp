@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 
 bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
                   Exiv2::ExifData exifData)

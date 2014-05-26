@@ -15,30 +15,30 @@ SOURCES += main.cpp \
     core/exposure.cpp \
     core/imload.cpp \
     core/imread.cpp \
-    core/imread_jpeg.cpp \
-    core/imread_tiff.cpp \
-    core/imwrite_jpeg.cpp \
-    core/imwrite_tiff.cpp \
-    core/layer_mix.cpp \
-    core/merge_exps.cpp \
-    core/output_file.cpp \
     core/filmulate.cpp \
-    core/whitepoint_blackpoint.cpp \
-    core/color_curves.cpp \
-    ui/filmimageprovider.cpp \
     ui/updateHistograms.cpp \
-    database/sqlmodel.cpp \
-    database/dbsetup.cpp \
-    database/organizeproperties.cpp \
-    core/rotate_image.cpp \
-    core/white_balance.cpp \
-    core/vibrance_saturation.cpp \
-    database/organizemodel.cpp \
-    database/organizeinsertion.cpp \
-    database/exiffunctions.cpp \
     ui/settings.cpp \
     core/imagePipeline.cpp \
-    core/timeDiff.cpp
+    core/timeDiff.cpp \
+    ui/filmImageProvider.cpp \
+    database/dbSetup.cpp \
+    database/exifFunctions.cpp \
+    database/organizeInsertion.cpp \
+    database/organizeModel.cpp \
+    database/organizeProperties.cpp \
+    database/sqlModel.cpp \
+    core/colorCurves.cpp \
+    core/imreadJpeg.cpp \
+    core/imreadTiff.cpp \
+    core/imwriteTiff.cpp \
+    core/imwriteJpeg.cpp \
+    core/layerMix.cpp \
+    core/mergeExps.cpp \
+    core/outputFile.cpp \
+    core/rotateImage.cpp \
+    core/vibranceSaturation.cpp \
+    core/whiteBalance.cpp \
+    core/whitepointBlackpoint.cpp
 
 # Installation path
 # target.path =
@@ -56,17 +56,17 @@ OTHER_FILES += \
     qml/Filmulator-Testing-2/generateHistogram.js
 
 HEADERS += \
-    core/filmsim.hpp \
     core/lut.hpp \
     core/matrix.hpp \
-    database/sqlmodel.h \
     core/interface.h \
-    ui/filmimageprovider.h \
-    database/filmulatordb.h \
-    database/organizemodel.h \
-    database/exiffunctions.h \
     ui/settings.h \
-    core/imagePipeline.h
+    core/imagePipeline.h \
+    ui/filmImageProvider.h \
+    database/exifFunctions.h \
+    database/organizeModel.h \
+    database/filmulatorDB.h \
+    database/sqlModel.h \
+    core/filmSim.hpp
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

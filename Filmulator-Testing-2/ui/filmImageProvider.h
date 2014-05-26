@@ -30,7 +30,6 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 
     Q_PROPERTY(float blackpoint READ getBlackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
     Q_PROPERTY(float whitepoint READ getWhitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
-    Q_PROPERTY(bool defaultToneCurveEnabled READ getDefaultToneCurveEnabled WRITE setDefaultToneCurveEnabled NOTIFY defaultToneCurveEnabledChanged)
     Q_PROPERTY(float shadowsY READ getShadowsY WRITE setShadowsY NOTIFY shadowsYChanged)
     Q_PROPERTY(float highlightsY READ getHighlightsY WRITE setHighlightsY NOTIFY highlightsYChanged)
 
@@ -42,10 +41,6 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
     Q_PROPERTY(bool saveTiff READ getSaveTiff WRITE setSaveTiff NOTIFY saveTiffChanged)
     Q_PROPERTY(bool saveJpeg READ getSaveJpeg WRITE setSaveJpeg NOTIFY saveJpegChanged)
 
-/*    //Dummy properties to signal histogram updates
-//    Q_PROPERTY(int histFinal READ getHistFinal NOTIFY histFinalChanged)
-//    Q_PROPERTY(int histPostFilm READ getHistPostFilm NOTIFY histPostFilmChanged)
-//    Q_PROPERTY(int histPreFilm READ getHistPreFilm NOTIFY histPreFilmChanged)*/
 public:
     //FilmImageProvider(QQuickImageProvider::ImageType type);
     FilmImageProvider();
@@ -73,7 +68,6 @@ public:
     //After filmulation, during whiteblack
     void setBlackpoint(float blackpointIn);
     void setWhitepoint(float whitepointIn);
-    void setDefaultToneCurveEnabled(bool enabledIn);
 
     //After whiteblack, during colorcurve
     //nothing yet
@@ -106,7 +100,6 @@ public:
 
     float getBlackpoint(){return blackpoint;}
     float getWhitepoint(){return whitepoint;}
-    bool getDefaultToneCurveEnabled(){return defaultToneCurveEnabled;}
     float getShadowsY(){return shadowsY;}
     float getHighlightsY(){return highlightsY;}
 
@@ -116,9 +109,6 @@ public:
     float getProgress(){return progress;}
     float getSaveTiff(){return saveTiff;}
     float getSaveJpeg(){return saveJpeg;}
-/*    int getHistFinal(){return histFinal;}
-    int getHistPostFilm(){return histPostFilm;}
-    int getHistPreFilm(){return histPreFilm;}*/
 
     void updateFilmProgress(float);
     bool isGUI(){return true;}
@@ -154,7 +144,6 @@ protected:
 
     float blackpoint;
     float whitepoint;
-    bool defaultToneCurveEnabled;
     float shadowsX, shadowsY, highlightsX, highlightsY;
     float vibrance,saturation;
     int rotation;
@@ -181,19 +170,19 @@ protected:
     matrix<unsigned short> vibrance_saturation_image;
 
     Histogram finalHist;
-    int histFinalRoll;//dummy to signal histogram updates
+//    int histFinalRoll;//dummy to signal histogram updates
 
     Histogram postFilmHist;
-    int histPostFilmRoll;//dummy to signal histogram updates
+//    int histPostFilmRoll;//dummy to signal histogram updates
 
     Histogram preFilmHist;
-    int histPreFilmRoll;//dummy to signal histogram updates
+//    int histPreFilmRoll;//dummy to signal histogram updates
 
     float getHistogramPoint(Histogram &hist, int index, int i, LogY isLog);
     QImage emptyImage();
 
-    void updateShortHistogram(Histogram &hist, const matrix<unsigned short> image, int &roll);
-    void updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum, int &roll);
+    void updateShortHistogram(Histogram &hist, const matrix<unsigned short> image );//, int &roll);
+    void updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum );//, int &roll);
     int histIndex(float value, float max);
     void zeroHistogram(Histogram &hist);
 

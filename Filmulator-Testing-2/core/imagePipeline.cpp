@@ -254,11 +254,4 @@ void ImagePipeline::setLastValid( const ProcessingParameters newParams )
         valid = tempValid;
     }
     return;
-
-
-
-
-
-
-
 }

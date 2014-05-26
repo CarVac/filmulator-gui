@@ -18,7 +18,7 @@
  */
 
 //imread.cpp uses libraw to load raw files.
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 
 bool imread( string input_image_filename, matrix<float> &returnmatrix,
              Exiv2::ExifData &exifData, int highlights, bool caEnabled )

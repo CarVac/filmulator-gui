@@ -1,11 +1,11 @@
-#include "organizemodel.h"
+#include "organizeModel.h"
 #include <iostream>
 #include <QStringList>
 #include <exiv2/exiv2.hpp>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QString>
-#include "exiffunctions.h"
+#include "exifFunctions.h"
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 
 void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
                            float whitepoint, float blackpoint)

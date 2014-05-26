@@ -1,4 +1,4 @@
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 #include <algorithm>
 
 // r,g,b values are from 0 to 1

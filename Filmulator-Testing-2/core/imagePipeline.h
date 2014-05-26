@@ -1,6 +1,6 @@
 #ifndef IMAGEPIPELINE_H
 #define IMAGEPIPELINE_H
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 #include "interface.h"
 #include <mutex>
 

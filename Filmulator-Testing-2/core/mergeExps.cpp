@@ -21,7 +21,7 @@
 // intelligently for HDR. It takes in linear brightness data and when neither
 // exposure is clipped it performs a weighted average based on relative
 // brightness and how many exposures have been averaged before.
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 #include <stdlib.h>
 #include <time.h>
 

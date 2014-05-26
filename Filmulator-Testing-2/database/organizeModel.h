@@ -1,7 +1,7 @@
 #ifndef ORGANIZEMODEL_H
 #define ORGANIZEMODEL_H
 
-#include "sqlmodel.h"
+#include "sqlModel.h"
 #include <QString>
 #include <QByteArray>
 #include <exiv2/exiv2.hpp>

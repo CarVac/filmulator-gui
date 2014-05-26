@@ -1,10 +1,10 @@
-#include "organizemodel.h"
-#include "../core/filmsim.hpp"
+#include "organizeModel.h"
+#include "../core/filmSim.hpp"
 #include <exiv2/exiv2.hpp>
 #include <QDateTime>
 #include <QString>
 #include <iostream>
-#include "exiffunctions.h"
+#include "exifFunctions.h"
 #include <QDebug>
 #include <QSqlError>
 
