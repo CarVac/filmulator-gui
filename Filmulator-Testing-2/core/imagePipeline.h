@@ -49,8 +49,7 @@ class ImagePipeline
 {
 public:
     ImagePipeline( CacheAndHisto );
-    matrix<unsigned short> processImage( const ProcessingParameters params, Interface* interface);
-    void abort(){ aborted = true; }
+    matrix<unsigned short> processImage( const ProcessingParameters params, Interface* interface, bool &aborted );
     float getProgress(){ return progress; }
 
 protected:
@@ -68,8 +67,6 @@ protected:
 
     struct timeval timeRequested;
     Valid valid;
-    bool aborted;
-    static std::mutex pipelineLock;
 
     matrix<float> input_image;
     matrix<float> pre_film_image;
@@ -80,13 +77,13 @@ protected:
     matrix<unsigned short> vibrance_saturation_image;
 
     //Internal functions for progress and time tracking.
-    bool checkAbort();
+    bool checkAbort( bool aborted );
     void setValid( Valid );
     void setLastValid( ProcessingParameters );
 
     //The core filmulation. It needs to access checkAbort, so it's here.
     bool filmulate( matrix<float> &input_image, matrix<float> &output_density,
-                    filmulateParams filmParams, Interface* interface);
+                    filmulateParams filmParams, Interface* interface, bool &aborted );
 };
 
 #endif // IMAGEPIPELINE_H

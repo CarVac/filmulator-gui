@@ -127,6 +127,7 @@ public:
 
 protected:
     ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto );
+    bool abort;
     QMutex mutex;
 
     bool caEnabled;
@@ -158,8 +159,6 @@ protected:
     ProcessingParameters param;
 
     struct timeval request_start_time;
-
-    Valid valid;
 
     matrix<float> input_image;
     matrix<float> pre_film_image;

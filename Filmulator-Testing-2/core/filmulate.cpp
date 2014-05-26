@@ -24,7 +24,7 @@
 
 //Function-------------------------------------------------------------------------
 bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_density,
-               filmulateParams filmParams, Interface* interface)
+               filmulateParams filmParams, Interface* interface, bool &aborted )
 {
     //Extract parameters from struct
     float initial_developer_concentration = filmParams.initialDeveloperConcentration;
@@ -63,7 +63,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
     if(!interface->isGUI())
         input_image.free();
 
-    if( checkAbort() )
+    if( checkAbort( aborted ) )
         return 1;
 
     //We set the crystal radius to a small seed value for each color.
@@ -109,7 +109,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
     //differential equation of film development.
     for(int i = 0; i <= development_steps; i++)
     {
-        if( checkAbort() )
+        if( checkAbort( aborted ) )
             return 1;
 
         interface->updateFilmProgress(float(i)/float(development_steps));
@@ -132,7 +132,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
         develop_dif += timeDiff(develop_start);
         gettimeofday(&diffuse_start,NULL);
 
-        if( checkAbort() )
+        if( checkAbort( aborted ) )
             return 1;
 
         //Now, we are going to perform the diffusion part.
@@ -190,7 +190,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
     struct timeval mult_start;
     gettimeofday(&mult_start,NULL);
 
-    if( checkAbort() )
+    if( checkAbort( aborted ) )
         return 1;
 
     output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;

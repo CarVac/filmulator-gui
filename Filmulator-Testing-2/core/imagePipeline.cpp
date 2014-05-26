@@ -6,11 +6,16 @@ ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn )
     //interface = &interfaceIn;
 }
 
-matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params, Interface* interface )
+matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
+                                                    Interface* interface,
+                                                    bool &aborted )
 {
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
     gettimeofday( &timeRequested, NULL );
+
+    setLastValid( params );
+    oldParams = params;
 
     switch ( valid )
     {
@@ -22,14 +27,10 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
     case load://Do demosaic
     {
         //If we're about to do work on a new image, we give up.
-        if( checkAbort() )
+        if( checkAbort( aborted ) )
         {
             return emptyMatrix();
         }
-//===================================================
-        //Mark that demosaicing has started.
-        setValid( demosaic );
-
 
         cout << "Opening " << params.filenameList[0] << endl;
 
@@ -46,36 +47,34 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
             setValid( none );
             return emptyMatrix();
         }
+
+        cout << "ImagePipeline::processImage: Demosaic complete." << endl;
+        setValid( demosaic );
     }
     case demosaic://Do pre-filmulation work.
     {
-        if( checkAbort() )
+        if( checkAbort( aborted ) )
         {
             return emptyMatrix();
         }
-//============================================================
-        //Mark that we've started prefilmulation stuff.
-        setValid( prefilmulation );
 
         //Here we apply the exposure compensation and white balance.
         matrix<float> exposureImage = input_image * pow(2, params.exposureComp[0]);
-        //white_balance(exposureImage,pre_film_image,temperature,tint);
         whiteBalance(exposureImage, pre_film_image, params.temperature, params.tint, params.filenameList[0]);
 
+        //Histogram work
         interface->updateHistPreFilm( pre_film_image, 65535 );
+
+        cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
+        setValid( prefilmulation );
 
     }
     case prefilmulation://Do filmulation
     {
-        //Check to see if what we just did has been invalidated.
-        //It'll restart automatically.
-        if( checkAbort() )
+        if( checkAbort( aborted ) )
         {
             return emptyMatrix();
         }
-//==============================================================
-        //Mark that we've started to filmulate.
-        setValid( filmulation );
 
         //Set up filmulation parameters.
         {
@@ -95,53 +94,55 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
 
 
         //Here we do the film simulation on the image...
-        if(filmulate(pre_film_image, filmulated_image, params.filmParams, interface))
+        if( filmulate( pre_film_image, filmulated_image, params.filmParams, interface, aborted ) )
         {
             return emptyMatrix();//filmulate returns 1 if it detected an abort
         }
 
         //Histogram work
         interface->updateHistPostFilm( filmulated_image, .0025 );//TODO connect this magic number to the qml
+
+        cout << "ImagePipeline::processImage: Filmulation complete." << endl;
+        setValid( filmulation );
     }
     case filmulation://Do whitepoint_blackpoint
     {
 
         //See if the filmulation has been invalidated yet.
-        if( checkAbort() )
+        if( checkAbort( aborted ) )
         {
             return emptyMatrix();
         }
-//=============================================================
-        //Mark that we've begun clipping the image and converting to unsigned short.
-        setValid( whiteblack );
+
         whitepoint_blackpoint(filmulated_image, contrast_image, params.whitepoint,
                               params.blackpoint);
+
+        setValid( whiteblack );
     }
     case whiteblack: // Do color_curve
     {
         //See if the clipping has been invalidated.
-        if ( checkAbort() )
+        if ( checkAbort( aborted ) )
         {
             return emptyMatrix();
         }
-//=================================================================
-        //Mark that we've begun running the individual color curves.
-        setValid( colorcurve );
+
+        //Prepare LUT's for individual color processin.g
         lutR.setUnity();
         lutG.setUnity();
         lutB.setUnity();
         colorCurves(contrast_image, color_curve_image, lutR, lutG, lutB);
+
+        setValid( colorcurve );
     }
     case colorcurve://Do film-like curve
     {
         //See if the color curves applied are now invalid.
-        if ( checkAbort() )
+        if ( checkAbort( aborted ) )
         {
             return emptyMatrix();
         }
-//==================================================================
-        //Mark that we've begun applying the all-color tone curve.
-        setValid( filmlikecurve );
+
         filmLikeLUT.fill(
             [=](unsigned short in) -> unsigned short
             {
@@ -156,16 +157,16 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
         matrix<unsigned short> film_curve_image;
         film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
         vibrance_saturation(film_curve_image,vibrance_saturation_image,params.vibrance,params.saturation);
+
+        setValid( filmlikecurve );
     }
     case filmlikecurve: //output
     {
         //See if the tonecurve has changed since it was applied.
-        if ( checkAbort() )
+        if ( checkAbort( aborted ) )
         {
             return emptyMatrix();
         }
-//===================================================================
-        //We would mark our progress, but this is the very last step.
         matrix<unsigned short> rotated_image;
         rotate_image(vibrance_saturation_image,rotated_image,params.rotation);
 
@@ -178,13 +179,11 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
     return emptyMatrix();
 }
 
-bool ImagePipeline::checkAbort()
+bool ImagePipeline::checkAbort( bool aborted )
 {
     if ( aborted && timeDiff( timeRequested ) > 0.1 )
     {
-        pipelineLock.lock();
         aborted = false;
-        pipelineLock.unlock();
         return true;
     }
     else
@@ -195,12 +194,12 @@ bool ImagePipeline::checkAbort()
 
 void ImagePipeline::setValid( Valid validIn )
 {
-    pipelineLock.lock();
     valid = validIn;
-    pipelineLock.unlock();
     return;
 }
 
+//This function determines at what stage in the pipeline the function's old parameters were valid to.
+//Then, it sets valid to the minimum of its last valid computation and the just-calculated validity.
 void ImagePipeline::setLastValid( const ProcessingParameters newParams )
 {
     Valid tempValid;

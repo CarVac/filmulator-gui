@@ -6,9 +6,10 @@ import "generateHistogram.js" as Script
 
 SplitView {
     id: root
-    width: 250
+    //width: 250
     anchors.margins: 3
-    Layout.maximumWidth: 500
+    property real maxWidth: 500
+    Layout.maximumWidth: maxWidth
     Layout.minimumWidth: 250
     orientation: Qt.Vertical
 
@@ -50,25 +51,30 @@ SplitView {
 
     signal tooltipWanted(string text, int x, int y)
 
-    Canvas {
-        id:mainHistoCanvas
-        width:parent.width
+    Item {
+        width: parent.width
         Layout.minimumHeight: 50
-        Layout.maximumHeight: 250
-        height:250
-        property int lineWidth: 1
-        property real alpha: 1.0
-        property int padding: 5
-        antialiasing: true
+        Layout.maximumHeight: 500
+        height: 250
+        Canvas {
+            id: mainHistoCanvas
+            anchors.fill: parent
+            property int lineWidth: 1
+            property real alpha: 1.0
+            property int padding: 5
+            antialiasing: true
+            canvasSize.width: root.maxWidth
+            canvasSize.height: 500
 
-        onWidthChanged:requestPaint();
-        Connections {
-            target: filmProvider
-            onHistFinalChanged: mainHistoCanvas.requestPaint();
+            onWidthChanged: requestPaint()
+            Connections {
+                target: filmProvider
+                onHistFinalChanged: mainHistoCanvas.requestPaint()
+            }
+
+            onPaint: Script.generateHistogram(1,this.getContext('2d'),width,height,padding,lineWidth)
+
         }
-
-        onPaint: Script.generateHistogram(1,this.getContext('2d'),width,height,padding,lineWidth)
-
     }
 
 
@@ -82,6 +88,7 @@ SplitView {
             flickableDirection: Qt.Vertical
             clip: true
             contentHeight: toolLayout.height
+            boundsBehavior: Flickable.DragOverBounds
             ColumnLayout {
                 id: toolLayout
                 spacing: 0
@@ -216,6 +223,7 @@ SplitView {
                     property real alpha: 1.0
                     property int padding: 3
                     antialiasing: true
+                    canvasSize.width: root.maxWidth
 
                     onWidthChanged: requestPaint();
                     Connections {
@@ -291,6 +299,8 @@ SplitView {
                     property real alpha: 1.0
                     property int padding: 3
                     antialiasing: true
+
+                    canvasSize.width: root.maxWidth
 
                     onWidthChanged: requestPaint();
                     Connections {

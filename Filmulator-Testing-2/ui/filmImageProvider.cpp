@@ -11,32 +11,32 @@ FilmImageProvider::FilmImageProvider() :
     QQuickImageProvider(QQuickImageProvider::Image,
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
-    valid = none;
+    setHighlights( 0 );
 
-    highlights = 0;
+    setExposureComp( 0.0 );
 
-    exposureComp = 0.0;
+    setDevelTime( 100.0 );
+    setAgitateCount( 1 );
+    setDevelSteps( 12 );
+    setFilmArea( 864.0 );
+    setLayerMixConst( 0.2 );
 
-    develTime = 100.0;
-    agitateCount = 1;
-    develSteps = 12;
-    filmArea = 864.0;
-    layerMixConst = 0.2;
-
-    blackpoint = 0;
-    whitepoint = .002;
+    setBlackpoint( 0 );
+    setWhitepoint( 0.002 );
     //defaultToneCurveEnabled = true;
 
     shadowsX = 0.25;
-    shadowsY = 0.25;
-    highlightsX = 0.75;
-    highlightsY = 0.75;
+    param.shadowsX = 0.25;
+    setShadowsY( 0.25 );
+    highlightsX = 0.25;
+    param.highlightsX = 0.25;
+    setHighlightsY( 0.75 );
 
-    saturation = 0;
-    vibrance = 0;
+    setSaturation( 0 );
+    setVibrance( 0 );
 
-    saveTiff = false;
-    saveJpeg = false;
+    setSaveTiff( false);
+    setSaveJpeg( false );
 
     zeroHistogram(finalHist);
     //histFinalRoll++;//signal histogram updates
@@ -67,7 +67,13 @@ QImage FilmImageProvider::requestImage(const QString &id,
     inputFilenameList.push_back(inputFilename);
     param.filenameList = inputFilenameList;
 
-    matrix<unsigned short> image = pipeline.processImage( param, this );
+    //Copy out new parameters
+    mutex.lock();
+    ProcessingParameters tempParams = param;
+    abort = false;
+    mutex.unlock();
+
+    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort );
 
     int nrows = image.nr();
     int ncols = image.nc();
@@ -96,24 +102,20 @@ QImage FilmImageProvider::requestImage(const QString &id,
 //Automatic CA correction
 void FilmImageProvider::setCaEnabled(bool caEnabledIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     caEnabled = caEnabledIn;
     param.caEnabled = caEnabledIn;
-    pipeline.abort();
-    //if (valid > load)
-    //    valid = load;
+    abort = true;
     emit caEnabledChanged();
 }
 
 //Highlight recovery parameter
 void FilmImageProvider::setHighlights(int highlightsIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     highlights = highlightsIn;
     param.highlights = highlightsIn;
-    pipeline.abort();
-    //if (valid > load)
-    //    valid = load;
+    abort = true;
     emit highlightsChanged();
 }
 
@@ -121,38 +123,32 @@ void FilmImageProvider::setHighlights(int highlightsIn)
 //Exposure compensation of simulated film exposure
 void FilmImageProvider::setExposureComp(float exposure)
 {
-    //QMutexLocker locker(&mutex);
+    QMutexLocker locker( &mutex );
     exposureComp = exposure;
     std::vector<float> exposureList;
     exposureList.push_back( exposure );
     param.exposureComp = exposureList;
-    pipeline.abort();
-    //if (valid > demosaic)
-    //    valid = demosaic;
+    abort = true;
     emit exposureCompChanged();
 }
 
 //Temperature of white balance correction
 void FilmImageProvider::setTemperature(double temperatureIn)
 {
-    //QMutexLocker locker(&mutex);
+    QMutexLocker locker( &mutex );
     temperature = temperatureIn;
     param.temperature = temperatureIn;
-    pipeline.abort();
-    //if (valid > demosaic)
-    //    valid = demosaic;
+    abort = true;
     emit temperatureChanged();
 }
 
 //Tint of white balance correction
 void FilmImageProvider::setTint(double tintIn)
 {
-    //QMutexLocker locker(&mutex);
+    QMutexLocker locker( &mutex );
     tint = tintIn;
     param.tint = tintIn;
-    pipeline.abort();
-    //if (valid > demosaic)
-    //    valid = demosaic;
+    abort = true;
     emit tintChanged();
 }
 
@@ -160,48 +156,40 @@ void FilmImageProvider::setTint(double tintIn)
 //Sets the simulated duration of film development.
 void FilmImageProvider::setDevelTime(float develTimeIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     develTime = develTimeIn;
     param.filmParams.totalDevelTime = develTimeIn;
-    pipeline.abort();
-    //if (valid > prefilmulation)
-    //    valid = prefilmulation;
+    abort = true;
     emit develTimeChanged();
 }
 
 //Sets the number of times the tank is agitated
 void FilmImageProvider::setAgitateCount(int agitateCountIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     agitateCount = agitateCountIn;
     param.filmParams.agitateCount = agitateCountIn;
-    pipeline.abort();
-    //if (valid > prefilmulation)
-    //    valid = prefilmulation;
+    abort = true;
     emit agitateCountChanged();
 }
 
 //Sets the number of simulation steps for development
 void FilmImageProvider::setDevelSteps(int develStepsIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     develSteps = develStepsIn;
     param.filmParams.developmentSteps = develStepsIn;
-    pipeline.abort();
-    //if (valid > prefilmulation)
-    //    valid = prefilmulation;
+    abort = true;
     emit develStepsChanged();
 }
 
 //Sets the area of the film being simulated by filmulator
 void FilmImageProvider::setFilmArea(float filmAreaIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     filmArea = filmAreaIn;
     param.filmParams.filmArea = filmAreaIn;
-    pipeline.abort();
-    //if (valid > prefilmulation)
-    //    valid = prefilmulation;
+    abort = true;
     emit filmAreaChanged();
 }
 
@@ -210,12 +198,10 @@ void FilmImageProvider::setFilmArea(float filmAreaIn)
 // film.
 void FilmImageProvider::setLayerMixConst(float layerMixConstIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     layerMixConst = layerMixConstIn;
     param.filmParams.layerMixConst = layerMixConstIn;
-    pipeline.abort();
-    //if (valid > prefilmulation)
-    //    valid = prefilmulation;
+    abort = true;
     emit layerMixConstChanged();
 }
 
@@ -223,24 +209,20 @@ void FilmImageProvider::setLayerMixConst(float layerMixConstIn)
 //Sets the black clipping point right after filmulation
 void FilmImageProvider::setBlackpoint(float blackpointIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     blackpoint = blackpointIn;
     param.blackpoint = blackpointIn;
-    pipeline.abort();
-    //if (valid > filmulation)
-    //    valid = filmulation;
+    abort = true;
     emit blackpointChanged();
 }
 
 //Sets the white clipping point right after filmulation
 void FilmImageProvider::setWhitepoint(float whitepointIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     whitepoint = whitepointIn;
     param.whitepoint = whitepointIn;
-    pipeline.abort();
-    //if (valid > filmulation)
-    //    valid = filmulation;
+    abort = true;
     emit whitepointChanged();
 }
 
@@ -250,46 +232,38 @@ void FilmImageProvider::setWhitepoint(float whitepointIn)
 //Y value of shadow control curve point
 void FilmImageProvider::setShadowsY(float shadowsYIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     shadowsY = shadowsYIn;
     param.shadowsY = shadowsYIn;
-    pipeline.abort();
-    //if (valid > colorcurve)
-    //    valid = colorcurve;
+    abort = true;
     emit shadowsYChanged();
 }
 
 //Y value of highlight control curve point
 void FilmImageProvider::setHighlightsY(float highlightsYIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     highlightsY = highlightsYIn;
     param.highlightsY = highlightsYIn;
-    pipeline.abort();
-    //if (valid > colorcurve)
-    //    valid = colorcurve;
+    abort = true;
     emit highlightsYChanged();
 }
 
 void FilmImageProvider::setVibrance(float vibranceIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     vibrance = vibranceIn;
     param.vibrance = vibranceIn;
-    pipeline.abort();
-    //if (valid > colorcurve)
-    //    valid = colorcurve;
+    abort = true;
     emit vibranceChanged();
 }
 
 void FilmImageProvider::setSaturation(float saturationIn)
 {
-    //QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     saturation = saturationIn;
     param.saturation = saturationIn;
-    pipeline.abort();
-    //if (valid > colorcurve)
-    //    valid = colorcurve;
+    abort = true;
     emit saturationChanged();
 }
 
@@ -301,14 +275,14 @@ void FilmImageProvider::setProgress(float percentDone_in)
 
 void FilmImageProvider::setSaveTiff(bool saveTiffIn)
 {
-    QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     saveTiff = saveTiffIn;
     emit saveTiffChanged();
 }
 
 void FilmImageProvider::setSaveJpeg(bool saveJpegIn)
 {
-    QMutexLocker locker (&mutex);
+    QMutexLocker locker( &mutex );
     saveJpeg = saveJpegIn;
     emit saveJpegChanged();
 }
@@ -322,8 +296,7 @@ void FilmImageProvider::updateFilmProgress(float percentDone_in)//Percent filmul
 void FilmImageProvider::invalidateImage()
 {
     cout << "filmImageProvider::invalidateImage(). We probably shouldn't be using this." << endl;
-    QMutexLocker locker(&mutex);
-    valid = none;
+    QMutexLocker locker( &mutex );
 }
 
 float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, LogY isLog)
@@ -365,22 +338,24 @@ QImage FilmImageProvider::emptyImage()
 
 void FilmImageProvider::rotateLeft()
 {
+    QMutexLocker locker( &mutex );
     rotation++;
     if (rotation > 3)
     {
         rotation -= 4;
     }
     param.rotation = rotation;
-    pipeline.abort();
+    abort = true;
 }
 
 void FilmImageProvider::rotateRight()
 {
+    QMutexLocker locker( &mutex );
     rotation--;
     if (rotation < 0)
     {
         rotation += 4;
     }
     param.rotation = rotation;
-    pipeline.abort();
+    abort = true;
 }
