@@ -75,6 +75,20 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
     matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort );
 
+    if(saveJpeg)
+    {
+        string outputFilename = inputFilename.substr(0,inputFilename.length()-4);
+        Exiv2::ExifData fakeData;
+        imwrite_jpeg(image,outputFilename,fakeData);
+    }
+
+    if(saveTiff)
+    {
+        string outputFilename = inputFilename.substr(0,inputFilename.length()-4);
+        Exiv2::ExifData fakeData;
+        imwrite_tiff(image,outputFilename, fakeData);
+    }
+
     int nrows = image.nr();
     int ncols = image.nc();
 
