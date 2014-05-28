@@ -63,6 +63,8 @@ QImage FilmImageProvider::requestImage(const QString &id,
     tempID.remove(0,7);
     cout << tempID.toStdString() << endl;
     string inputFilename = tempID.toStdString();
+    string outputFilename = inputFilename.substr(0,inputFilename.length()-4);
+    outputFilename.append("-output");
     std::vector<std::string> inputFilenameList;
     inputFilenameList.push_back(inputFilename);
     param.filenameList = inputFilenameList;
@@ -73,20 +75,19 @@ QImage FilmImageProvider::requestImage(const QString &id,
     abort = false;
     mutex.unlock();
 
-    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort );
+    Exiv2::ExifData exif;
+    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort, exif );
 
     if(saveJpeg)
     {
-        string outputFilename = inputFilename.substr(0,inputFilename.length()-4);
-        Exiv2::ExifData fakeData;
-        imwrite_jpeg(image,outputFilename,fakeData);
+        imwrite_jpeg( image, outputFilename, exif);
+        saveJpeg = false;
     }
 
     if(saveTiff)
     {
-        string outputFilename = inputFilename.substr(0,inputFilename.length()-4);
-        Exiv2::ExifData fakeData;
-        imwrite_tiff(image,outputFilename, fakeData);
+        imwrite_tiff( image, outputFilename, exif);
+        saveTiff = false;
     }
 
     int nrows = image.nr();

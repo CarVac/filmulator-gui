@@ -50,7 +50,8 @@ class ImagePipeline
 {
 public:
     ImagePipeline( CacheAndHisto, QuickQuality );
-    matrix<unsigned short> processImage( const ProcessingParameters params, Interface* interface, bool &aborted );
+    matrix<unsigned short> processImage( const ProcessingParameters params, Interface* interface, bool &aborted,
+                                         Exiv2::ExifData &exifOutput );
     float getProgress(){ return progress; }
 
 protected:

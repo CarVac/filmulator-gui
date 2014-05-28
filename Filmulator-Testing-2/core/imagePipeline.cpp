@@ -19,7 +19,8 @@ ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn, QuickQuality qualit
 
 matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
                                                     Interface* interface_in,
-                                                    bool &aborted )
+                                                    bool &aborted,
+                                                    Exiv2::ExifData &exifOutput )
 {
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
@@ -223,6 +224,7 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
             interface->updateHistFinal( rotated_image );
         }
 
+        exifOutput = exifData;
         return rotated_image;
     }
     }//End task switch
