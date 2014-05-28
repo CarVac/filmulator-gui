@@ -44,18 +44,20 @@ struct ProcessingParameters {
 };
 
 enum CacheAndHisto { BothCacheAndHisto, NoCacheNoHisto };
+enum QuickQuality { LowQuality, HighQuality };
 
 class ImagePipeline
 {
 public:
-    ImagePipeline( CacheAndHisto );
+    ImagePipeline( CacheAndHisto, QuickQuality );
     matrix<unsigned short> processImage( const ProcessingParameters params, Interface* interface, bool &aborted );
     float getProgress(){ return progress; }
 
 protected:
     matrix<unsigned short> emptyMatrix(){ matrix<unsigned short> mat; return mat;}
 
-    CacheAndHisto cacheAndHistograms;
+    CacheAndHisto cacheHisto;
+    QuickQuality quality;
     Interface* interface;
 
     float progress;

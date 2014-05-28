@@ -126,7 +126,8 @@ public:
     void updateHistFinal( const matrix<unsigned short> image);
 
 protected:
-    ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto );
+    //ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, LowQuality );
+    ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, HighQuality );
     bool abort;
     QMutex mutex;
 

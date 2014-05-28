@@ -21,7 +21,7 @@
 #include "filmSim.hpp"
 
 bool imread( string input_image_filename, matrix<float> &returnmatrix,
-             Exiv2::ExifData &exifData, int highlights, bool caEnabled )
+             Exiv2::ExifData &exifData, int highlights, bool caEnabled, bool lowQuality )
 {
     //Create image processor for reading raws.
     LibRaw image_processor;
@@ -51,6 +51,13 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
     PARAM.output_color = 1;//1: Use sRGB regardless.
     PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
     PARAM.highlight = highlights;//Set highlight recovery (-H #)
+
+    if ( lowQuality )
+    {
+        PARAM.half_size = 1;//half-size output, should dummy down demosaic.
+        //PARAM.user_qual = 0;//may not be necessary
+        PARAM.ca_correc = 0;//turn off auto CA correction.
+    }
 
     //This makes IMAGE contains the sensel value and 3 blank values at every
     //location.

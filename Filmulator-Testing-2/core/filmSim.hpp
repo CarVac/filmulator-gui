@@ -96,7 +96,7 @@ void diffuse(matrix<float> &developer_concentration,
 
 //Reading raws with libraw
 bool imread( string input_image_filename, matrix<float> &returnmatrix,
-             Exiv2::ExifData &exifData, int highlights, bool caEnabled );
+             Exiv2::ExifData &exifData, int highlights, bool caEnabled, bool lowQuality );
 
 //Reading tiff files
 bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
@@ -110,7 +110,7 @@ bool imload(std::vector<string> input_filename_list,
         std::vector<float> input_exposure_compensation,
         matrix<float> &input_image,
         bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights,
-        bool caEnabled);
+        bool caEnabled, bool lowQuality );
 
 void layer_mix(matrix<float> &developer_concentration,
                float active_layer_thickness,

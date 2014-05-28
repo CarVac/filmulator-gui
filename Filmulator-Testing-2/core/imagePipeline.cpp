@@ -1,9 +1,9 @@
 #include "imagePipeline.h"
 
-ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn )
+ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn, QuickQuality qualityIn )
 {
-    cacheAndHistograms = cacheAndHistoIn;
-    //interface = &interfaceIn;
+    cacheHisto = cacheAndHistoIn;
+    quality = qualityIn;
 }
 
 matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
@@ -42,7 +42,8 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
                   params.jpegIn,
                   exifData,
                   params.highlights,
-                  params.caEnabled))
+                  params.caEnabled,
+                  LowQuality == quality ) )
         {
             setValid( none );
             return emptyMatrix();
@@ -62,8 +63,15 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
         matrix<float> exposureImage = input_image * pow(2, params.exposureComp[0]);
         whiteBalance(exposureImage, pre_film_image, params.temperature, params.tint, params.filenameList[0]);
 
-        //Histogram work
-        interface->updateHistPreFilm( pre_film_image, 65535 );
+        if ( NoCacheNoHisto == cacheHisto )
+        {
+            input_image.set_size( 0, 0 );
+        }
+        else//( BothCacheAndHisto == cacheHisto)
+        {
+            //Histogram work
+            interface->updateHistPreFilm( pre_film_image, 65535 );
+        }
 
         cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
         setValid( prefilmulation );
@@ -99,11 +107,19 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
             return emptyMatrix();//filmulate returns 1 if it detected an abort
         }
 
-        //Histogram work
-        interface->updateHistPostFilm( filmulated_image, .0025 );//TODO connect this magic number to the qml
+        if ( NoCacheNoHisto == cacheHisto )
+        {
+            pre_film_image.set_size( 0, 0 );
+        }
+        else
+        {
+            //Histogram work
+            interface->updateHistPostFilm( filmulated_image, .0025 );//TODO connect this magic number to the qml
+        }
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
         setValid( filmulation );
+
     }
     case filmulation://Do whitepoint_blackpoint
     {
@@ -116,6 +132,11 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
 
         whitepoint_blackpoint(filmulated_image, contrast_image, params.whitepoint,
                               params.blackpoint);
+
+        if ( NoCacheNoHisto == cacheHisto )
+        {
+            filmulated_image.set_size( 0, 0 );
+        }
 
         setValid( whiteblack );
     }
@@ -132,6 +153,11 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
         lutG.setUnity();
         lutB.setUnity();
         colorCurves(contrast_image, color_curve_image, lutR, lutG, lutB);
+
+        if ( NoCacheNoHisto == cacheHisto )
+        {
+            contrast_image.set_size( 0, 0 );
+        }
 
         setValid( colorcurve );
     }
@@ -158,6 +184,12 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
         film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
         vibrance_saturation(film_curve_image,vibrance_saturation_image,params.vibrance,params.saturation);
 
+        if ( NoCacheNoHisto == cacheHisto )
+        {
+            color_curve_image.set_size( 0, 0 );
+            //film_curve_image is going out of scope anyway.
+        }
+
         setValid( filmlikecurve );
     }
     case filmlikecurve: //output
@@ -170,7 +202,14 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
         matrix<unsigned short> rotated_image;
         rotate_image(vibrance_saturation_image,rotated_image,params.rotation);
 
-        interface->updateHistFinal( rotated_image );
+        if ( NoCacheNoHisto == cacheHisto )
+        {
+            vibrance_saturation_image.set_size( 0, 0 );
+        }
+        else
+        {
+            interface->updateHistFinal( rotated_image );
+        }
 
         return rotated_image;
     }
