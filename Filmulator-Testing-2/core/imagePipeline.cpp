@@ -321,10 +321,6 @@ void ImagePipeline::updateProgress(float CurrFractionCompleted)
             fractionCompleted = CurrFractionCompleted;
         //if greater -> 0
         totalCompletedTime += completionTimes[i]*fractionCompleted;
-        cout << "i: " << i << endl;
-        cout << "fractionCompleted: " << fractionCompleted << endl;
-        cout << "totalTime: " << totalTime << endl;
-        cout << "totalCompletedTime: " << totalCompletedTime << endl;
     }
     cout << "progress: " << totalCompletedTime/totalTime << endl;
     interface->setProgress(totalCompletedTime/totalTime);
