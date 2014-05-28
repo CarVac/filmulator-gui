@@ -4,7 +4,7 @@
 #include "interface.h"
 #include <mutex>
 
-enum Valid {none, load, demosaic, prefilmulation, filmulation, whiteblack, colorcurve, filmlikecurve};
+enum Valid {none, load, demosaic, prefilmulation, filmulation, whiteblack, colorcurve, filmlikecurve, count};
 
 struct ProcessingParameters {
     //none valid
@@ -82,10 +82,12 @@ protected:
     bool checkAbort( bool aborted );
     void setValid( Valid );
     void setLastValid( ProcessingParameters );
+    vector<double> completionTimes;
+    void updateProgress(float CurrFractionCompleted);
 
     //The core filmulation. It needs to access checkAbort, so it's here.
     bool filmulate( matrix<float> &input_image, matrix<float> &output_density,
-                    filmulateParams filmParams, Interface* interface, bool &aborted );
+                    filmulateParams filmParams, ImagePipeline* pipeline, bool &aborted );
 };
 
 #endif // IMAGEPIPELINE_H

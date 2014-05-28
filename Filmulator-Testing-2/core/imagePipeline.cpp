@@ -4,15 +4,27 @@ ImagePipeline::ImagePipeline( CacheAndHisto cacheAndHistoIn, QuickQuality qualit
 {
     cacheHisto = cacheAndHistoIn;
     quality = qualityIn;
+
+    completionTimes.resize(Valid::count);
+    completionTimes[Valid::none] = 0;
+    completionTimes[Valid::load] = 5;
+    completionTimes[Valid::demosaic] = 50;
+    completionTimes[Valid::prefilmulation] = 5;
+    completionTimes[Valid::filmulation] = 50;
+    completionTimes[Valid::whiteblack] = 10;
+    completionTimes[Valid::colorcurve] = 10;
+    completionTimes[Valid::filmlikecurve] = 10;
+
 }
 
 matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
-                                                    Interface* interface,
+                                                    Interface* interface_in,
                                                     bool &aborted )
 {
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
     gettimeofday( &timeRequested, NULL );
+    interface = interface_in;
 
     setLastValid( params );
     oldParams = params;
@@ -102,7 +114,7 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
 
 
         //Here we do the film simulation on the image...
-        if( filmulate( pre_film_image, filmulated_image, params.filmParams, interface, aborted ) )
+        if( filmulate( pre_film_image, filmulated_image, params.filmParams, this, aborted ) )
         {
             return emptyMatrix();//filmulate returns 1 if it detected an abort
         }
@@ -234,6 +246,7 @@ bool ImagePipeline::checkAbort( bool aborted )
 void ImagePipeline::setValid( Valid validIn )
 {
     valid = validIn;
+    updateProgress(0);
     return;
 }
 
@@ -289,7 +302,30 @@ void ImagePipeline::setLastValid( const ProcessingParameters newParams )
 
     if ( tempValid < valid )
     {
-        valid = tempValid;
+        setValid(tempValid);
     }
     return;
+}
+
+void ImagePipeline::updateProgress(float CurrFractionCompleted)
+{
+    double totalTime = numeric_limits<double>::epsilon();
+    double totalCompletedTime = 0;
+    for(int i = 0; i < completionTimes.size(); i++)
+    {
+        totalTime += completionTimes[i];
+        float fractionCompleted = 0;
+        if(i <= valid)
+            fractionCompleted = 1;
+        if(i == valid + 1)
+            fractionCompleted = CurrFractionCompleted;
+        //if greater -> 0
+        totalCompletedTime += completionTimes[i]*fractionCompleted;
+        cout << "i: " << i << endl;
+        cout << "fractionCompleted: " << fractionCompleted << endl;
+        cout << "totalTime: " << totalTime << endl;
+        cout << "totalCompletedTime: " << totalCompletedTime << endl;
+    }
+    cout << "progress: " << totalCompletedTime/totalTime << endl;
+    interface->setProgress(totalCompletedTime/totalTime);
 }

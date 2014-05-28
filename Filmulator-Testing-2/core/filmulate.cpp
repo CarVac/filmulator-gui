@@ -24,7 +24,7 @@
 
 //Function-------------------------------------------------------------------------
 bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_density,
-               filmulateParams filmParams, Interface* interface, bool &aborted )
+               filmulateParams filmParams, ImagePipeline* pipeline, bool &aborted )
 {
     //Extract parameters from struct
     float initial_developer_concentration = filmParams.initialDeveloperConcentration;
@@ -60,8 +60,6 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
     matrix<float> active_crystals_per_pixel;
     active_crystals_per_pixel = exposure(input_image, crystals_per_pixel,
             rolloff_boundary);
-    if(!interface->isGUI())
-        input_image.free();
 
     if( checkAbort( aborted ) )
         return 1;
@@ -112,7 +110,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
         if( checkAbort( aborted ) )
             return 1;
 
-        interface->updateFilmProgress(float(i)/float(development_steps));
+        pipeline->updateProgress(float(i)/float(development_steps));
 
         gettimeofday(&develop_start,NULL);
 
