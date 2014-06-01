@@ -45,7 +45,7 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
             return emptyMatrix();
         }
 
-        cout << "Opening " << params.filenameList[0] << endl;
+        cout << "imagePipeline.cpp: Opening " << params.filenameList[0] << endl;
 
         //Reads in the photo.
         if(imload(params.filenameList,
@@ -56,7 +56,7 @@ matrix<unsigned short> ImagePipeline::processImage( ProcessingParameters params,
                   exifData,
                   params.highlights,
                   params.caEnabled,
-                  LowQuality == quality ) )
+                  ( LowQuality == quality ) ) )
         {
             setValid( none );
             return emptyMatrix();

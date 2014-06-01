@@ -54,8 +54,9 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
 
     if ( lowQuality )
     {
-        PARAM.half_size = 1;//half-size output, should dummy down demosaic.
-        //PARAM.user_qual = 0;//may not be necessary
+        //PARAM.half_size = 1;//half-size output, should dummy down demosaic.
+        /* The above sometimes read out a dng thumbnail instead of the image itself. */
+        PARAM.user_qual = 0;//nearest-neighbor demosaic
         PARAM.ca_correc = 0;//turn off auto CA correction.
     }
 
