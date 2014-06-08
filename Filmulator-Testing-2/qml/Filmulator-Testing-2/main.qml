@@ -283,6 +283,20 @@ ApplicationWindow {
         }
     }
 
+    //Global keyboard shortcut handling
+    Action {
+        id: fullscreenAction
+        shortcut: "f11"
+        onTriggered: {
+            if ( root.visibility === 2 ) {
+                root.visibility = 5//"FullScreen"
+            }
+            else {
+                root.visibility = 2//"Windowed"
+            }
+        }
+    }
+
     //styles
     property Component headerTabViewStyle: TabViewStyle {
         tabOverlap: -4
