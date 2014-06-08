@@ -68,8 +68,9 @@ SplitView {
                     flicky.fit = true
                 }
             }
-            onWidthChanged:  if ( flicky.fit ) { bottomImage.scale = flicky.fitScale }
-            onHeightChanged: if ( flicky.fit ) { bottomImage.scale = flicky.fitScale }
+            //Here, if the window size changed, we set it to fitScale. Except that it didn't update in time, so we make it compute it from scratch.
+            onWidthChanged:  if ( flicky.fit ) { bottomImage.scale = Math.min( flicky.width/bottomImage.width, flicky.height/bottomImage.height ) }
+            onHeightChanged: if ( flicky.fit ) { bottomImage.scale = Math.min( flicky.width/bottomImage.width, flicky.height/bottomImage.height ) }
 
             //The centers are the coordinates in display space of the center of the image.
             property real centerX: ( contentX +  bottomImage.width*Math.min( bottomImage.scale, fitScaleX )/2 ) / bottomImage.scale
