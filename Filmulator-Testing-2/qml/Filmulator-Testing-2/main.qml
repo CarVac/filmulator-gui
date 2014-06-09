@@ -8,6 +8,7 @@ import "gui_components"
 ApplicationWindow {
     id: root
     title: qsTr( "Filmulator" )
+    property int tempVisibility
     width: 1024
     height: 768
     minimumHeight: 600
@@ -288,11 +289,12 @@ ApplicationWindow {
         id: fullscreenAction
         shortcut: "f11"
         onTriggered: {
-            if ( root.visibility === 2 ) {
+            if ( root.visibility !== 5 ) {
+                root.tempVisibility = root.visibility
                 root.visibility = 5//"FullScreen"
             }
             else {
-                root.visibility = 2//"Windowed"
+                root.visibility = root.tempVisibility
             }
         }
     }
