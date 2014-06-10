@@ -1,5 +1,5 @@
 # Add more folders to ship with the application, here
-folder_01.source = qml/Filmulator-Testing-2
+folder_01.source = qml/filmulator-gui
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
@@ -52,8 +52,8 @@ OTHER_FILES += \
     Edit.qml \
     EditTools.qml \
     gui_components/SSlider.qml \
-    qml/Filmulator-Testing-2/gui_components/ToolSlider.qml \
-    qml/Filmulator-Testing-2/generateHistogram.js
+    qml/filmulator-gui/gui_components/ToolSlider.qml \
+    qml/filmulator-gui/generateHistogram.js
 
 HEADERS += \
     core/lut.hpp \

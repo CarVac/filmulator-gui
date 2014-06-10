@@ -11,7 +11,7 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    QQmlApplicationEngine engine("qml/Filmulator-Testing-2/main.qml");
+    QQmlApplicationEngine engine("qml/filmulator-gui/main.qml");
 
     QTranslator translator;
     translator.load("filmulatortr_la");
