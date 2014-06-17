@@ -76,39 +76,3 @@ void OrganizeModel::setRatingSort( int sortMode )
     emit ratingSortChanged();
 }
 
-//offsetIn is in hours, importTZ is in seconds.
-void OrganizeModel::setImportTZ( int offsetIn )
-{
-    importTZ = offsetIn*3600;
-//    std::cout << "importTZ: " << importTZ << endl;
-    emit importTZChanged();
-}
-
-void OrganizeModel::setCameraTZ( int offsetIn )
-{
-    cameraTZ = offsetIn*3600;
-//    std::cout << "cameraTZ: " <<  cameraTZ << endl;
-    emit cameraTZChanged();
-}
-
-void OrganizeModel::setPhotoDir( QString dirIn )
-{
-    photoDir = dirIn;
-    emit photoDirChanged();
-}
-
-void OrganizeModel::setBackupDir( QString dirIn )
-{
-    backupDir = dirIn;
-    emit backupDirChanged();
-}
-
-void OrganizeModel::setDirConfig( QString configIn )
-{
-    dirConfig = configIn;
-    if ( !dirConfig.endsWith( "/" ) )
-    {
-        dirConfig.append( "/" );
-    }
-    emit dirConfigChanged();
-}

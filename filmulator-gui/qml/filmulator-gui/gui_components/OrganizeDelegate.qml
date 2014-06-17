@@ -6,6 +6,7 @@ Rectangle {
     height: 300
     color: "#00000000"
     property string hour
+    property string filename
 
     Rectangle {
         width: 350
@@ -14,10 +15,17 @@ Rectangle {
         y: 25
         color: "green"
 
-        Text {
-            id: time
-            color: "white"
-            text: root.hour ? root.hour : ""
+        Column {
+            Text {
+                id: time
+                color: "white"
+                text: root.hour ? root.hour : ""
+            }
+            Text {
+                id: name
+                color: "white"
+                text: root.filename ? root.filename : ""
+            }
         }
     }
 }

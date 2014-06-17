@@ -29,108 +29,108 @@ void setupDB( QSqlDatabase *db )
     //  for speed. It points at the other two.
     QSqlQuery query;
     query.exec( "create table if not exists SearchTable ("
-                "searchID varchar primary key,"
-                "captureTime integer,"//unix time
-                "name varchar,"//name of this instance
-                "filename varchar,"//name of source file
-                "sourceHash varchar( 32 ),"//primary key in the file table
-                "rating integer,"//for easy culling
-                "latitude real,"
-                "longitude real,"
-                "importTime integer,"//unix time
-                "lastProcessedTime integer"//unix time
+                "STsearchID varchar primary key,"
+                "STcaptureTime integer,"//unix time
+                "STname varchar,"//name of this instance
+                "STfilename varchar,"//name of source file
+                "STsourceHash varchar( 32 ),"//primary key in the file table
+                "STrating integer,"//for easy culling
+                "STlatitude real,"
+                "STlongitude real,"
+                "STimportTime integer,"//unix time
+                "STlastProcessedTime integer"//unix time
                 ");"
                 );
     query.exec( "create index if not exists TimeIndex"
-                " on SearchTable ( captureTime );"
+                " on SearchTable ( STcaptureTime );"
                 );
 
     //2. The table which carries more file info, like exifs and thumbnail locations.
     query.exec( "create table if not exists FileTable ("
-                "fileID varchar( 32 ) primary key," //md5sum of the file
-                "filePath varchar,"
-                "cameraMake varchar,"
-                "cameraModel varchar,"
-                "sensitivity integer,"
-                "exposureTime varchar,"
-                "aperture real,"
-                "focalLength real,"
-                "usageIncrement integer"
+                "FTfileID varchar( 32 ) primary key," //md5sum of the file
+                "FTfilePath varchar,"
+                "FTcameraMake varchar,"
+                "FTcameraModel varchar,"
+                "FTsensitivity integer,"
+                "FTexposureTime varchar,"
+                "FTaperture real,"
+                "FTfocalLength real,"
+                "FTusageIncrement integer"
                 ");"
                 );
 
     //3. The table which holds processing parameters.
     //     This table should have the same number of entries as the SearchTable.
     query.exec( "create table if not exists ProcessingTable ("
-                "procID varchar primary key,"           //0
-                "initialDeveloperConcentration real,"   //1
-                "reservoirThickness real,"              //2
-                "activeLayerThickness real,"            //3
-                "crystalsPerPixel real,"                //4
-                "initialCrystalRadius real,"            //5
-                "initialSilverSaltDensity real,"        //6
-                "developerConsumptionConst real,"       //7
-                "crystalGrowthConst real,"              //8
-                "silverSaltConsumptionConst real,"      //9
-                "totalDevelopmentTime real,"            //10
-                "agitateCount integer,"                 //11
-                "developmentResolution integer,"        //12
-                "filmArea real,"                        //13
-                "sigmaConst real,"                      //14
-                "layerMixConst real,"                   //15
-                "layerTimeDivisor real,"                //16
-                "rolloffBoundary integer,"              //17
-                "exposureComp real,"                    //18
-                "whitepoint real,"                      //19
-                "blackpoint real,"                      //20
-                "shadowsX real,"                        //21
-                "shadowsY real,"                        //22
-                "highlightsX real,"                     //23
-                "highlightsY real,"                     //24
-                "highlightRecovery integer,"            //25
-                "caEnabled integer,"                    //26
-                "temperature real,"                     //27
-                "tint real,"                            //28
-                "vibrance real,"                        //29
-                "saturation real,"                      //30
-                "orientation integer"                   //31
+                "ProcTprocID varchar primary key,"           //0
+                "ProcTinitialDeveloperConcentration real,"   //1
+                "ProcTreservoirThickness real,"              //2
+                "ProcTactiveLayerThickness real,"            //3
+                "ProcTcrystalsPerPixel real,"                //4
+                "ProcTinitialCrystalRadius real,"            //5
+                "ProcTinitialSilverSaltDensity real,"        //6
+                "ProcTdeveloperConsumptionConst real,"       //7
+                "ProcTcrystalGrowthConst real,"              //8
+                "ProcTsilverSaltConsumptionConst real,"      //9
+                "ProcTtotalDevelopmentTime real,"            //10
+                "ProcTagitateCount integer,"                 //11
+                "ProcTdevelopmentResolution integer,"        //12
+                "ProcTfilmArea real,"                        //13
+                "ProcTsigmaConst real,"                      //14
+                "ProcTlayerMixConst real,"                   //15
+                "ProcTlayerTimeDivisor real,"                //16
+                "ProcTrolloffBoundary integer,"              //17
+                "ProcTexposureComp real,"                    //18
+                "ProcTwhitepoint real,"                      //19
+                "ProcTblackpoint real,"                      //20
+                "ProcTshadowsX real,"                        //21
+                "ProcTshadowsY real,"                        //22
+                "ProcThighlightsX real,"                     //23
+                "ProcThighlightsY real,"                     //24
+                "ProcThighlightRecovery integer,"            //25
+                "ProcTcaEnabled integer,"                    //26
+                "ProcTtemperature real,"                     //27
+                "ProcTtint real,"                            //28
+                "ProcTvibrance real,"                        //29
+                "ProcTsaturation real,"                      //30
+                "ProcTorientation integer"                   //31
                 ");"
                 );
 
     //Next, we set up a table for default processing parameters.
     //This will be of the same structure as ProcessingTable except for orientation.
     query.exec( "create table if not exists ProfileTable ("
-                "profileId varchar primary key,"        //0
-                "initialDeveloperConcentration real,"   //1
-                "reservoirThickness real,"              //2
-                "activeLayerThickness real,"            //3
-                "crystalsPerPixel real,"                //4
-                "initialCrystalRadius real,"            //5
-                "initialSilverSaltDensity real,"        //6
-                "developerConsumptionConst real,"       //7
-                "crystalGrowthConst real,"              //8
-                "silverSaltConsumptionConst real,"      //9
-                "totalDevelopmentTime real,"            //10
-                "agitateCount integer,"                 //11
-                "developmentResolution integer,"        //12
-                "filmArea real,"                        //13
-                "sigmaConst real,"                      //14
-                "layerMixConst real,"                   //15
-                "layerTimeDivisor real,"                //16
-                "rolloffBoundary integer,"              //17
-                "exposureComp real,"                    //18
-                "whitepoint real,"                      //19
-                "blackpoint real,"                      //20
-                "shadowsX real,"                        //21
-                "shadowsY real,"                        //22
-                "highlightsX real,"                     //23
-                "highlightsY real,"                     //24
-                "highlightRecovery integer,"            //25
-                "caEnabled integer,"                    //26
-                "temperature real,"                     //27
-                "tint real,"                            //28
-                "vibrance real,"                        //29
-                "saturation real"                       //30
+                "ProfTprofileId varchar primary key,"        //0
+                "ProfTinitialDeveloperConcentration real,"   //1
+                "ProfTreservoirThickness real,"              //2
+                "ProfTactiveLayerThickness real,"            //3
+                "ProfTcrystalsPerPixel real,"                //4
+                "ProfTinitialCrystalRadius real,"            //5
+                "ProfTinitialSilverSaltDensity real,"        //6
+                "ProfTdeveloperConsumptionConst real,"       //7
+                "ProfTcrystalGrowthConst real,"              //8
+                "ProfTsilverSaltConsumptionConst real,"      //9
+                "ProfTtotalDevelopmentTime real,"            //10
+                "ProfTagitateCount integer,"                 //11
+                "ProfTdevelopmentResolution integer,"        //12
+                "ProfTfilmArea real,"                        //13
+                "ProfTsigmaConst real,"                      //14
+                "ProfTlayerMixConst real,"                   //15
+                "ProfTlayerTimeDivisor real,"                //16
+                "ProfTrolloffBoundary integer,"              //17
+                "ProfTexposureComp real,"                    //18
+                "ProfTwhitepoint real,"                      //19
+                "ProfTblackpoint real,"                      //20
+                "ProfTshadowsX real,"                        //21
+                "ProfTshadowsY real,"                        //22
+                "ProfThighlightsX real,"                     //23
+                "ProfThighlightsY real,"                     //24
+                "ProfThighlightRecovery integer,"            //25
+                "ProfTcaEnabled integer,"                    //26
+                "ProfTtemperature real,"                     //27
+                "ProfTtint real,"                            //28
+                "ProfTvibrance real,"                        //29
+                "ProfTsaturation real"                       //30
                 ");"
                 );
 

@@ -1,17 +1,11 @@
-#include "organizeModel.h"
+#include "sqlInsertion.h"
 #include "../core/filmSim.hpp"
-#include <exiv2/exiv2.hpp>
-#include <QDateTime>
-#include <QString>
-#include <iostream>
 #include "exifFunctions.h"
-#include <QDebug>
-#include <QSqlError>
 
 /*This function inserts info on a raw file into the database.*/
-void OrganizeModel::fileInsert( const QString hash,
-                                const QString filePathName,
-                                Exiv2::ExifData exifData)
+void fileInsert( const QString hash,
+                 const QString filePathName,
+                 Exiv2::ExifData exifData)
 {
     QSqlQuery query;
     cout << "Before replace into" << endl;
@@ -41,21 +35,21 @@ void OrganizeModel::fileInsert( const QString hash,
 }
 
 /*This function creates a default profile in the profile table, and a search entry in the searchtable.*/
-void OrganizeModel::createNewProfile( const QString fileHash,
-                                      const QString fileName,
-                                      const QString absoluteFilePath,
-                                      const int captureTime,
-                                      Exiv2::ExifData exifData)
+void createNewProfile( const QString fileHash,
+                       const QString fileName,
+                       const QString absoluteFilePath,
+                       const int captureTime,
+                       Exiv2::ExifData exifData)
 {
     QSqlQuery query;
     //Retrieve the usage count from the file table, and increment it by one.
-    query.prepare( "SELECT usageIncrement FROM FileTable WHERE ( fileID = ? );" );
+    query.prepare( "SELECT FTusageIncrement FROM FileTable WHERE ( FTfileID = ? );" );
     query.bindValue( 0, fileHash );
     query.exec();
     query.next();
     int increment = query.value( 0 ).toInt();
     increment++;
-    query.prepare( "UPDATE FileTable SET usageIncrement = ? WHERE fileID = ?;" );
+    query.prepare( "UPDATE FileTable SET FTusageIncrement = ? WHERE FTfileID = ?;" );
     query.bindValue( 0, increment );
     query.bindValue( 1, fileHash );
     query.exec();
@@ -104,7 +98,7 @@ void OrganizeModel::createNewProfile( const QString fileHash,
 
     //First we need to retrieve the defaults.
     QSqlQuery defaultQuery;
-    defaultQuery.exec( "SELECT * FROM ProfileTable WHERE ( ProfileID = \"Default\" )");
+    defaultQuery.exec( "SELECT * FROM ProfileTable WHERE ( ProfTProfileID = \"Default\" )");
     defaultQuery.next();
     //procID (same as searchID in SearchTable)
     query.bindValue(  0, searchID );

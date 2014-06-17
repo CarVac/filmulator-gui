@@ -27,7 +27,10 @@ SplitView {
             cellWidth: 400
             cellHeight: 300
 
-            delegate: OrganizeDelegate {hour: searchID}
+            delegate: OrganizeDelegate {
+                hour: STsearchID
+                filename: STfilename
+            }
             Component.onCompleted: {
                 organizeModel.setOrganizeQuery()
                 organizeModel.minCaptureTime = 0

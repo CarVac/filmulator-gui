@@ -22,16 +22,10 @@ class OrganizeModel : public SqlModel
     Q_PROPERTY( int importSort    READ getImportSort    WRITE setImportSort    NOTIFY importSortChanged )
     Q_PROPERTY( int processedSort READ getProcessedSort WRITE setProcessedSort NOTIFY processedSortChanged )
     Q_PROPERTY( int ratingSort    READ getRatingSort    WRITE setRatingSort    NOTIFY ratingSortChanged )
-    Q_PROPERTY( int importTZ      READ getImportTZ      WRITE setImportTZ      NOTIFY importTZChanged )
-    Q_PROPERTY( int cameraTZ      READ getCameraTZ      WRITE setCameraTZ      NOTIFY cameraTZChanged )
-    Q_PROPERTY( QString photoDir  READ getPhotoDir      WRITE setPhotoDir      NOTIFY photoDirChanged )
-    Q_PROPERTY( QString backupDir READ getBackupDir     WRITE setBackupDir     NOTIFY backupDirChanged )
-    Q_PROPERTY( QString dirConfig READ getDirConfig     WRITE setDirConfig     NOTIFY dirConfigChanged )
 
 public:
     explicit OrganizeModel( QObject *parent = 0 );
     Q_INVOKABLE void setOrganizeQuery();
-    Q_INVOKABLE void importDirectory_r( QString dir );
 
     void setMinCaptureTime( unsigned int captureTimeIn );
     void setMaxCaptureTime( unsigned int captureTimeIn );
@@ -47,13 +41,6 @@ public:
     void setProcessedSort( int sortMode );
     void setRatingSort( int sortMode );
 
-    void setImportTZ( int offsetIn );
-    void setCameraTZ( int offsetIn );
-
-    void setPhotoDir( QString dirIn );
-    void setBackupDir( QString dirIn );
-    void setDirConfig( QString configIn );
-
     unsigned int getMinCaptureTime() { return minCaptureTime; }
     unsigned int getMaxCaptureTime() { return maxCaptureTime; }
     unsigned int getMinImportTime() { return minImportTime; }
@@ -67,13 +54,6 @@ public:
     int getImportSort() { return importSort; }
     int getProcessedSort() { return processedSort; }
     int getRatingSort() { return ratingSort; }
-
-    int getImportTZ() { return importTZ/3600; }
-    int getCameraTZ() { return cameraTZ/3600; }
-
-    QString getPhotoDir() { return photoDir; }
-    QString getBackupDir() { return backupDir; }
-    QString getDirConfig() { return dirConfig; }
 
 signals:
     void minCaptureTimeChanged();
@@ -89,13 +69,6 @@ signals:
     void importSortChanged();
     void processedSortChanged();
     void ratingSortChanged();
-
-    void importTZChanged();
-    void cameraTZChanged();
-
-    void photoDirChanged();
-    void backupDirChanged();
-    void dirConfigChanged();
 
 public slots:
 
@@ -114,22 +87,6 @@ protected:
     int importSort;
     int processedSort;
     int ratingSort;
-
-    int importTZ;
-    int cameraTZ;
-
-    QString photoDir;
-    QString backupDir;
-    QString dirConfig;
-
-    void fileInsert( const QString hash,
-                     const QString filePathName,
-                     Exiv2::ExifData exifData);
-    void createNewProfile( const QString fileHash,
-                           const QString fileName,
-                           const QString absoluteFilePath,
-                           const int captureTime,
-                           Exiv2::ExifData exifData);
 
 };
 

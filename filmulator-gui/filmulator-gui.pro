@@ -23,7 +23,6 @@ SOURCES += main.cpp \
     ui/filmImageProvider.cpp \
     database/dbSetup.cpp \
     database/exifFunctions.cpp \
-    database/organizeInsertion.cpp \
     database/organizeModel.cpp \
     database/organizeProperties.cpp \
     database/sqlModel.cpp \
@@ -38,7 +37,10 @@ SOURCES += main.cpp \
     core/rotateImage.cpp \
     core/vibranceSaturation.cpp \
     core/whiteBalance.cpp \
-    core/whitepointBlackpoint.cpp
+    core/whitepointBlackpoint.cpp \
+    database/sqlInsertion.cpp \
+    database/importModel.cpp \
+    database/importProperties.cpp
 
 # Installation path
 # target.path =
@@ -66,7 +68,9 @@ HEADERS += \
     database/organizeModel.h \
     database/filmulatorDB.h \
     database/sqlModel.h \
-    core/filmSim.hpp
+    core/filmSim.hpp \
+    database/sqlInsertion.h \
+    database/importModel.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

@@ -28,7 +28,7 @@ Rectangle {
             stepSize: 1
             defaultValue: settings.getCameraTZ()
             onValueChanged: {
-                organizeModel.cameraTZ = value
+                importModel.cameraTZ = value
                 settings.cameraTZ = value
             }
             Component.onCompleted: {
@@ -57,7 +57,7 @@ Rectangle {
             stepSize: 1
             defaultValue: settings.getImportTZ()
             onValueChanged: {
-                organizeModel.importTZ = value
+                importModel.importTZ = value
                 settings.importTZ = value
             }
             Component.onCompleted: {
@@ -71,7 +71,7 @@ Rectangle {
             dirDialogTitle: qsTr( "Select the destination root directory" )
             enteredText: settings.getPhotoStorageDir()
             onEnteredTextChanged: {
-                organizeModel.photoDir = enteredText
+                importModel.photoDir = enteredText
                 settings.photoStorageDir = enteredText
             }
             Component.onCompleted: {
@@ -85,7 +85,7 @@ Rectangle {
             dirDialogTitle: qsTr( "Select the backup root directory" )
             enteredText: settings.getPhotoBackupDir()
             onEnteredTextChanged: {
-                organizeModel.backupDir = enteredText
+                importModel.backupDir = enteredText
                 settings.photoBackupDir = enteredText
             }
             Component.onCompleted: {
@@ -102,7 +102,7 @@ Rectangle {
                 //For some reason, when there's a default for enteredText, it tries to change this
                 // before the resource organizeModel is defined. So in case no changes are made,
                 // this has to be done again when they hit the import button.
-                organizeModel.dirConfig = enteredText
+                importModel.dirConfig = enteredText
                 settings.dirConfig = enteredText
             }
             Component.onCompleted: {
@@ -119,8 +119,8 @@ Rectangle {
         height: 40
         action: Action{
             onTriggered: {
-                organizeModel.dirConfig = dirStructureEntry.enteredText
-                organizeModel.importDirectory_r( root.folderPath )
+                importModel.dirConfig = dirStructureEntry.enteredText
+                importModel.importDirectory_r( root.folderPath )
             }
         }
     }

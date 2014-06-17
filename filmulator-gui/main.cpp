@@ -5,6 +5,7 @@
 #include <QTranslator>
 #include "ui/filmImageProvider.h"
 #include "ui/settings.h"
+#include "database/importModel.h"
 #include "database/organizeModel.h"
 #include "database/filmulatorDB.h"
 
@@ -31,6 +32,8 @@ int main(int argc, char *argv[])
 //    qDebug() << db.isValid();
     setupDB(&db);
 
+    ImportModel *importModel = new ImportModel;
+    engine.rootContext()->setContextProperty( "importModel", importModel );
 
     OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty( "organizeModel", organizeModel );

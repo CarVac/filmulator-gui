@@ -1,11 +1,8 @@
 #include "organizeModel.h"
 #include <iostream>
 #include <QStringList>
-#include <exiv2/exiv2.hpp>
-#include <QCryptographicHash>
 #include <QDateTime>
 #include <QString>
-#include "exifFunctions.h"
 
 using namespace std;
 
@@ -30,8 +27,8 @@ void OrganizeModel::setOrganizeQuery()
     std::string queryString = "SELECT * ";
     queryString.append( "FROM SearchTable " );
 //    queryString.append( "WHERE " );
-//    queryString.append( "SearchTable.searchID = ProcessingTable.procID " );
-//    queryString.append( "AND SearchTable.sourceHash = FileTable.fileID " );
+//    queryString.append( "SearchTable.STsearchID = ProcessingTable.ProcTprocID " );
+//    queryString.append( "AND SearchTable.sourceHash = FileTable.FTfileID " );
 
     //Here we do the filtering.
     //For unsigned ones, if the max____Time is 0, then we don't filter.
@@ -40,37 +37,37 @@ void OrganizeModel::setOrganizeQuery()
 /*
     if ( maxCaptureTime != 0 )
     {
-        queryString.append( "AND SearchTable.captureTime <= " );
+        queryString.append( "AND SearchTable.STcaptureTime <= " );
         queryString.append( std::to_string( maxCaptureTime ) );
         queryString.append( " " );
-        queryString.append( "AND SearchTable.captureTime >= " );
+        queryString.append( "AND SearchTable.STcaptureTime >= " );
         queryString.append( std::to_string( minCaptureTime ) );
         queryString.append( " " );
     }
     if ( maxImportTime != 0 )
     {
-        queryString.append( "AND SearchTable.importTime <= " );
+        queryString.append( "AND SearchTable.STimportTime <= " );
         queryString.append( std::to_string( maxImportTime ) );
         queryString.append( " " );
-        queryString.append( "AND SearchTable.importTime >= " );
+        queryString.append( "AND SearchTable.STimportTime >= " );
         queryString.append( std::to_string( minImportTime ) );
         queryString.append( " " );
     }
     if ( maxProcessedTime != 0 )
     {
-        queryString.append( "AND SearchTable.lastProcessedTime <= " );
+        queryString.append( "AND SearchTable.STlastProcessedTime <= " );
         queryString.append( std::to_string( maxProcessedTime ) );
         queryString.append( " " );
-        queryString.append( "AND SearchTable.lastProcessedTime >= " );
+        queryString.append( "AND SearchTable.STlastProcessedTime >= " );
         queryString.append( std::to_string( minProcessedTime ) );
         queryString.append( " " );
     }
     if ( maxRating >= 0 )
     {
-        queryString.append( "AND SearchTable.rating <= " );
+        queryString.append( "AND SearchTable.STrating <= " );
         queryString.append( std::to_string( maxRating ) );
         queryString.append( " " );
-        queryString.append( "AND SearchTable.rating >= " );
+        queryString.append( "AND SearchTable.STrating >= " );
         queryString.append( std::to_string( minRating ) );
         queryString.append( " " );
     }
@@ -85,24 +82,24 @@ void OrganizeModel::setOrganizeQuery()
     //First we need to actually write ORDER BY
     queryString.append( "ORDER BY " );
 
-    if ( ratingSort == 1 ){ queryString.append( "SearchTable.Rating ASC, " ); }
-    else if ( ratingSort == -1 ){ queryString.append( "SearchTable.Rating DESC, " ); }
+    if ( ratingSort == 1 ){ queryString.append( "SearchTable.STRating ASC, " ); }
+    else if ( ratingSort == -1 ){ queryString.append( "SearchTable.STRating DESC, " ); }
 
-    if ( processedSort == 1 ){ queryString.append( "SearchTable.lastProcessedTime ASC, " ); }
-    else if ( processedSort == -1 ){ queryString.append( "SearchTable.lastProcessedTime DESC, " ); }
+    if ( processedSort == 1 ){ queryString.append( "SearchTable.STlastProcessedTime ASC, " ); }
+    else if ( processedSort == -1 ){ queryString.append( "SearchTable.STlastProcessedTime DESC, " ); }
 
-    if ( importSort == 1 ){ queryString.append( "SearchTable.importTime ASC, " ); }
-    else if ( importSort == -1 ){ queryString.append( "searchTable.importTime DESC, " ); }
+    if ( importSort == 1 ){ queryString.append( "SearchTable.STimportTime ASC, " ); }
+    else if ( importSort == -1 ){ queryString.append( "SearchTable.STimportTime DESC, " ); }
 
     if ( captureSort == 1 )
     {
-        queryString.append( "SearchTable.captureTime ASC, " );
-        queryString.append( "SearchTable.filename ASC;" );
+        queryString.append( "SearchTable.STcaptureTime ASC, " );
+        queryString.append( "SearchTable.STfilename ASC;" );
     }
     else //if ( captureSort == -1 )
     {
-        queryString.append( "SearchTable.captureTime DESC, " );
-        queryString.append( "SearchTable.filename DESC;" );
+        queryString.append( "SearchTable.STcaptureTime DESC, " );
+        queryString.append( "SearchTable.STfilename DESC;" );
     }
 
     cout << queryString << endl;
@@ -110,121 +107,3 @@ void OrganizeModel::setOrganizeQuery()
     setQuery( QSqlQuery( QString::fromStdString( queryString ) ) );
  }
 
-void OrganizeModel::importDirectory_r( QString dir )
-{
-    //This function reads in a directory and puts the raws into the database.
-    std::cout << "importing directory " << qPrintable( dir ) << std::endl;
-    if ( dir.length() == 0 )
-    {
-        return;
-    }
-    QDir directory = QDir( dir );
-    directory.setFilter( QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot );
-    directory.setSorting( QDir::Name );
-    QFileInfoList dirList = directory.entryInfoList();
-    for ( int i=0; i < dirList.size(); i++ )
-    {
-        importDirectory_r( dirList.at( i ).absoluteFilePath() );
-    }
-    directory.setFilter( QDir::Files | QDir::NoSymLinks );
-    QStringList nameFilters;
-    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF";
-    directory.setNameFilters( nameFilters );
-    QFileInfoList fileList = directory.entryInfoList();
-    
-    QSqlQuery query;
-    for ( int i = 0; i < fileList.size(); i++ )
-    {
-        //Generate a hash of the raw file.
-        QCryptographicHash hash( QCryptographicHash::Md5 );
-        QFile file( fileList.at( i ).absoluteFilePath() );
-        if ( !file.open( QIODevice::ReadOnly ) )
-        {
-            qDebug( "File couldn't be opened." );
-        }
-
-        while ( !file.atEnd() )
-        {
-            hash.addData( file.read( 8192 ) );
-        }
-        QString hashString = QString( hash.result().toHex() );
-//        std::cout << qPrintable( hashString ) << std::endl;
-
-        //Grab EXIF data
-        const char *cstr = fileList.at( i ).absoluteFilePath().toStdString().c_str();
-        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( cstr );
-        image->readMetadata();
-        Exiv2::ExifData exifData = image->exifData();
-
-        //Here I'm setting up the directories to put the file into based on the capture-local date.
-        QString outputPathName = photoDir;
-        outputPathName.append( exifLocalDateString( exifData, cameraTZ, importTZ, dirConfig ) );
-        QString outputPath = outputPathName;
-//        cout << "Output folder: " << outputPathName.toStdString() << endl;
-        QDir dir( outputPath );
-        dir.mkpath( outputPath );//For some reason, QDir::mkpath( outputPath ) didn't work.
-        //This sets the full file path including the filename.
-        outputPathName.append( fileList.at( i ).fileName() );
-
-        //Now I'm dealing with the backup directory. First we need to make sure that it's not there.
-        QDir backupRoot( backupDir );
-        bool backupPathExists = backupRoot.exists();
-        QString backupPathName = backupDir;
-        backupPathName.append( exifLocalDateString( exifData, cameraTZ, importTZ, dirConfig ) );
-        QString backupPath = backupPathName;
-        //Now to set the full backup path including the filename.
-        backupPathName.append( fileList.at( i ).fileName() );
-
-        //Now we make sure that the root of the backup directory is there.
-        //This is so the user can leave the same backup location and not worry about failure
-        // in case they have an external hdd disconnected or something like that.
-        if ( backupPathExists )
-        {
-            QDir backupDirectory( backupPath );
-            backupDirectory.mkpath( backupPath );
-            if ( !QFile::exists( backupPathName ) )
-            {
-                QFile::copy( fileList.at( i ).absoluteFilePath(), backupPathName );
-            }
-        }
-
-
-
-        //Now we test to see if it's in the database already by comparing the hashes.
-        query.prepare( "SELECT filePath from FileTable WHERE (fileID = ?);" );
-        query.bindValue( 0, hashString );
-        query.exec();
-        query.next();
-        QString dbRecordedPath = query.value ( 0 ).toString();
-        if ( dbRecordedPath == "" )//It's not in the DB. Start fresh.
-        {
-            //Copy file into the directory structure.
-            QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
-
-            //Insert into the database.
-            fileInsert( hashString, outputPathName, exifData );
-
-            //Now, make a profile and a search table entry, and generate the thumbnail.
-            createNewProfile( hashString,
-                              fileList.at( i ).fileName(),
-                              fileList.at( i ).absoluteFilePath(),
-                              exifUtcTime( exifData, cameraTZ ),
-                              exifData );
-        }
-        else //It's already in the db, whether or not in the same path.
-        {
-            //Check that the file's still there.
-            //One situation where this would be is if they deleted their local copy of the raw file, but
-            // are re-importing it from their backup.
-            //We want to copy the file in so it's usable, but not overwrite the profiles.
-            if ( !QFile::exists( dbRecordedPath ) )//it was in the DB but the local file is gone
-            {
-                //copy it in. Perhaps they removed it and are restoring it from a backup.
-                QFile::copy( fileList.at( i ).absoluteFilePath(), outputPathName );
-            }
-            //No need to make a new profile or insert into the db.
-            //TODO: There should be a "local copy available?" flag that would need to be set here.
-            //Maybe.
-        }
-    }
-}
