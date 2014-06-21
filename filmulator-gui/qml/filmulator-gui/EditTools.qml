@@ -44,6 +44,8 @@ SplitView {
     property real defaultVibrance
     property real saturation
     property real defaultSaturation
+    property bool overdriveEnabled
+    property bool defaultOverdriveEnabled
 
     signal setAllValues()
 
@@ -106,18 +108,41 @@ SplitView {
                     tooltipText: qsTr("Automatically correct directional color fringing.")
                     text: qsTr("CA correction")
                     onIsOnChanged: {
-                        filmProvider.caEnabled = isOn;
+                        filmProvider.caEnabled = isOn
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            caSwitch.isOn = caEnabled;
+                            caSwitch.isOn = caEnabled
                         }
                     }
                     Component.onCompleted: {
                         caSwitch.tooltipWanted.connect(root.tooltipWanted)
-                        caSwitch.isOn = defaultCaEnabled;
+                        caSwitch.isOn = defaultCaEnabled
+                    }
+                }
+
+                ToolSlider {
+                    id: highlightRecoverySlider
+                    title: qsTr("Highlight Recovery")
+                    tooltipText: qsTr("Recover clipped highlights.")
+                    minimumValue: 0
+                    maximumValue: 9
+                    stepSize: 1
+                    defaultValue: root.defaultHighlightRecovery
+                    onValueChanged: {
+                        filmProvider.highlights = value
+                        root.updateImage()
+                    }
+                    Connections {
+                        target: root
+                        onSetAllValues: {
+                            highlightRecoverySlider.value = highlightRecovery
+                        }
+                    }
+                    Component.onCompleted: {
+                        highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                 }
 
@@ -187,29 +212,6 @@ SplitView {
                     }
                     Component.onCompleted: {
                         exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
-                    }
-                }
-
-                ToolSlider {
-                    id: highlightRecoverySlider
-                    title: qsTr("Highlight Recovery")
-                    tooltipText: qsTr("Recover clipped highlights.")
-                    minimumValue: 0
-                    maximumValue: 9
-                    stepSize: 1
-                    defaultValue: root.defaultHighlightRecovery
-                    onValueChanged: {
-                        filmProvider.highlights = value
-                        root.updateImage()
-                    }
-                    Connections {
-                        target: root
-                        onSetAllValues: {
-                            highlightRecoverySlider.value = highlightRecovery
-                        }
-                    }
-                    Component.onCompleted: {
-                        highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                 }
 
@@ -286,6 +288,26 @@ SplitView {
                     }
                     Component.onCompleted: {
                         filmDramaSlider.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                }
+
+                ToolSwitch {
+                    id: overdriveSwitch
+                    tooltipText: qsTr("In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you.")
+                    text: qsTr("Overdrive Mode")
+                    onIsOnChanged: {
+                        filmProvider.agitateCount = isOn ? 0 : 1
+                        root.updateImage()
+                    }
+                    Connections {
+                        target: root
+                        onSetAllValues: {
+                            overdriveSwitch.isOn = overdriveEnabled;
+                        }
+                    }
+                    Component.onCompleted: {
+                        overdriveSwitch.tooltipWanted.connect(root.tooltipWanted)
+                        overdriveSwitch.isOn = defaultOverdriveEnabled
                     }
                 }
 

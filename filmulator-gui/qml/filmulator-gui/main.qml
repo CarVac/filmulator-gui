@@ -80,6 +80,8 @@ ApplicationWindow {
                 property real defaultVibrance: 0
                 property real saturation: 0
                 property real defaultSaturation: 0
+                property bool overdriveEnabled: false
+                property bool defaultOverdriveEnabled: false
                 signal updateImage()
 
                 title: qsTr( "Filmulate" )
@@ -113,6 +115,8 @@ ApplicationWindow {
                     defaultVibrance: editorTab.defaultVibrance
                     saturation: editorTab.saturation
                     defaultSaturation: editorTab.defaultSaturation
+                    overdriveEnabled: editorTab.overdriveEnabled
+                    defaultOverdriveEnabled: editorTab.defaultOverdriveEnabled
 
                     Connections {
                         target: openDialog

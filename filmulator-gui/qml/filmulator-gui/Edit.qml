@@ -37,6 +37,8 @@ SplitView {
     property alias defaultVibrance: editTools.defaultVibrance
     property alias saturation: editTools.saturation
     property alias defaultSaturation: editTools.defaultSaturation
+    property alias overdriveEnabled: editTools.overdriveEnabled
+    property alias defaultOverdriveEnabled: editTools.defaultOverdriveEnabled
 
     signal reset()
     signal updateImage()
