@@ -2,33 +2,31 @@
 #include <iostream>
 
 //offsetIn is in hours, importTZ is in seconds.
-void ImportModel::setImportTZ( int offsetIn )
+void ImportModel::setImportTZ( const int offsetIn )
 {
     importTZ = offsetIn*3600;
-//    std::cout << "importTZ: " << importTZ << endl;
     emit importTZChanged();
 }
 
-void ImportModel::setCameraTZ( int offsetIn )
+void ImportModel::setCameraTZ( const int offsetIn )
 {
     cameraTZ = offsetIn*3600;
-//    std::cout << "cameraTZ: " <<  cameraTZ << endl;
     emit cameraTZChanged();
 }
 
-void ImportModel::setPhotoDir( QString dirIn )
+void ImportModel::setPhotoDir( const QString dirIn )
 {
     photoDir = dirIn;
     emit photoDirChanged();
 }
 
-void ImportModel::setBackupDir( QString dirIn )
+void ImportModel::setBackupDir( const QString dirIn )
 {
     backupDir = dirIn;
     emit backupDirChanged();
 }
 
-void ImportModel::setDirConfig( QString configIn )
+void ImportModel::setDirConfig( const QString configIn )
 {
     dirConfig = configIn;
     if ( !dirConfig.endsWith( "/" ) )

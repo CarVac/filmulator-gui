@@ -8,6 +8,8 @@
 #include "database/importModel.h"
 #include "database/organizeModel.h"
 #include "database/filmulatorDB.h"
+#include <QMetaType>
+#include <QFileInfo>
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +26,8 @@ int main(int argc, char *argv[])
     engine.addImageProvider(QLatin1String("filmy"), filmProvider);
     //Connect it as a Q_OBJECT so that qml can run methods
     engine.rootContext()->setContextProperty("filmProvider",filmProvider);
+
+    qRegisterMetaType<QFileInfo>();
 
     //Prepare database connection.
     //This should create a new db file if there was none.

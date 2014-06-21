@@ -4,7 +4,20 @@
 #include "sqlModel.h"
 #include <QString>
 #include <exiv2/exiv2.hpp>
-using namespace std;
+#include <deque>
+#include "importWorker.h"
+#include <QThread>
+#include <QFileInfo>
+
+
+struct importParams {
+    QFileInfo fileInfo;
+    int importTZ;
+    int cameraTZ;
+    QString photoDir;
+    QString backupDir;
+    QString dirConfig;
+};
 
 class ImportModel : public SqlModel
 {
@@ -19,14 +32,14 @@ class ImportModel : public SqlModel
 
 public:
     explicit ImportModel( QObject *parent = 0 );
-    Q_INVOKABLE void importDirectory_r( QString dir );
+    Q_INVOKABLE void importDirectory_r( const QString dir );
 
-    void setImportTZ( int offsetIn );
-    void setCameraTZ( int offsetIn );
+    void setImportTZ( const int offsetIn );
+    void setCameraTZ( const int offsetIn );
 
-    void setPhotoDir( QString dirIn );
-    void setBackupDir( QString dirIn );
-    void setDirConfig( QString configIn );
+    void setPhotoDir( const QString dirIn );
+    void setBackupDir( const QString dirIn );
+    void setDirConfig( const QString configIn );
 
     int getImportTZ() { return importTZ/3600; }
     int getCameraTZ() { return cameraTZ/3600; }
@@ -34,6 +47,9 @@ public:
     QString getPhotoDir() { return photoDir; }
     QString getBackupDir() { return backupDir; }
     QString getDirConfig() { return dirConfig; }
+
+public slots:
+    void workerFinished();
 
 signals:
     void importTZChanged();
@@ -43,6 +59,12 @@ signals:
     void backupDirChanged();
     void dirConfigChanged();
 
+    void workForWorker( const QFileInfo infoIn,
+                        const int importTZ,
+                        const int cameraTZ,
+                        const QString photoDir,
+                        const QString backupDir,
+                        const QString dirConfig );
 protected:
     int importTZ;
     int cameraTZ;
@@ -50,6 +72,14 @@ protected:
     QString photoDir;
     QString backupDir;
     QString dirConfig;
+
+    std::deque<importParams> queue;
+
+    QThread workerThread;
+
+    bool paused = true;
+
+    void startWorker();
 };
 
 #endif // IMPORTMODEL_H

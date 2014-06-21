@@ -179,16 +179,16 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
         //Grab the xyz2cam matrix.
         double xyzToCam[3][3];
         double camToRgb[3][3];
-        cout << "white_balance: camToRgb" << endl;
+//        cout << "white_balance: camToRgb" << endl;
         for ( int i = 0; i < 3; i++ )
         {
             for ( int j = 0; j < 3; j++ )
             {
                 xyzToCam[i][j] = COLOR.cam_xyz[i][j];
                 camToRgb[i][j] = COLOR.rgb_cam[i][j];
-                cout << COLOR.rgb_cam[i][j] << " ";
+//                cout << COLOR.rgb_cam[i][j] << " ";
             }
-            cout << endl;
+//            cout << endl;
         }
         //Now we divide the daylight multipliers by the camera multipliers.
         double rrBaseMult = COLOR.pre_mul[ 0 ] / COLOR.cam_mul[ 0 ];
@@ -198,18 +198,18 @@ void whiteBalanceMults( double temperature, double tint, std::string inputFilena
         rrBaseMult /= rawMultMin;
         grBaseMult /= rawMultMin;
         brBaseMult /= rawMultMin;
-        cout << "white_balance raw pre_muls" << endl;
-        cout << rrBaseMult << " ";
-        cout << grBaseMult << " ";
-        cout << brBaseMult << endl;
+//        cout << "white_balance raw pre_muls" << endl;
+//        cout << rrBaseMult << " ";
+//        cout << grBaseMult << " ";
+//        cout << brBaseMult << endl;
         //And then we convert them from camera space to sRGB.
         matrixVectorMult( rrBaseMult, grBaseMult, brBaseMult,
                           rBaseMult,  gBaseMult,  bBaseMult,
                           camToRgb);
-        cout << "white_balance sRGB base_mults" << endl;
-        cout << rBaseMult << " ";
-        cout << gBaseMult << " ";
-        cout << bBaseMult << endl;
+//        cout << "white_balance sRGB base_mults" << endl;
+//        cout << rBaseMult << " ";
+//        cout << gBaseMult << " ";
+//        cout << bBaseMult << endl;
         if ( ( 1.0f == camToRgb[ 0 ][ 0 ] && 1.0f == camToRgb[ 1 ][ 1 ] && 1.0f == camToRgb[ 2 ][ 2 ] )
              || ( 1.0f == COLOR.pre_mul[ 0 ] && 1.0f == COLOR.pre_mul[ 1 ] && 1.0f == COLOR.pre_mul[ 2 ] ) )
         {

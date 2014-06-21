@@ -28,7 +28,7 @@ void OrganizeModel::setOrganizeQuery()
     queryString.append( "FROM SearchTable " );
 //    queryString.append( "WHERE " );
 //    queryString.append( "SearchTable.STsearchID = ProcessingTable.ProcTprocID " );
-//    queryString.append( "AND SearchTable.sourceHash = FileTable.FTfileID " );
+//    queryString.append( "AND SearchTable.STsourceHash = FileTable.FTfileID " );
 
     //Here we do the filtering.
     //For unsigned ones, if the max____Time is 0, then we don't filter.
@@ -101,8 +101,6 @@ void OrganizeModel::setOrganizeQuery()
         queryString.append( "SearchTable.STcaptureTime DESC, " );
         queryString.append( "SearchTable.STfilename DESC;" );
     }
-
-    cout << queryString << endl;
 
     setQuery( QSqlQuery( QString::fromStdString( queryString ) ) );
  }

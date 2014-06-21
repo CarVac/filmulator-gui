@@ -40,7 +40,8 @@ SOURCES += main.cpp \
     core/whitepointBlackpoint.cpp \
     database/sqlInsertion.cpp \
     database/importModel.cpp \
-    database/importProperties.cpp
+    database/importProperties.cpp \
+    database/importWorker.cpp
 
 # Installation path
 # target.path =
@@ -70,7 +71,8 @@ HEADERS += \
     database/sqlModel.h \
     core/filmSim.hpp \
     database/sqlInsertion.h \
-    database/importModel.h
+    database/importModel.h \
+    database/importWorker.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

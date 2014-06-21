@@ -72,9 +72,7 @@ void Settings::setCameraTZ( int offsetIn )
 {
     QSettings settings( QSettings::UserScope, QString( "Filmulator" ) );
     photoStorageDir = settings.value( "photoDB/photoStorageDir", "" ).toString() ;
-    cout << "Settings::setCameraTZ: " << cameraTZ << endl;
     cameraTZ = offsetIn;
-    cout << "Settings::setCameraTZ: " << offsetIn << endl;
     settings.setValue( "photoDB/cameraTZ", offsetIn );
     emit importTZChanged();
     settings.sync();
@@ -85,7 +83,6 @@ int Settings::getCameraTZ()
     QSettings settings( QSettings::UserScope, QString( "Filmulator" ) );
     photoStorageDir = settings.value( "photoDB/photoStorageDir", "" ).toString() ;
     cameraTZ = settings.value( "photoDB/cameraTZ", 0 ).toInt();
-    cout << "Settings.getCameraTZ: " << cameraTZ << endl;
     emit cameraTZChanged();
     return cameraTZ;
 }

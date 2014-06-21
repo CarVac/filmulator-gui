@@ -8,14 +8,12 @@ void fileInsert( const QString hash,
                  Exiv2::ExifData exifData)
 {
     QSqlQuery query;
-    cout << "Before replace into" << endl;
     query.prepare( "REPLACE INTO FileTable values (?,?,?,?,?,?,?,?,?);");
                                                  //0 1 2 3 4 5 6 7 8
     //Hash of the file:
     query.bindValue( 0, hash );
     //Full path to the new location of the file:
     query.bindValue( 1, filePathName );
-    cout << "After" << endl;
     //Camera manufacturer
     query.bindValue( 2, exifMake( exifData ) );
     //Camera model
@@ -60,7 +58,7 @@ void createNewProfile( const QString fileHash,
 
     //searchID (filehash with the increment appended)
     QString searchID = fileHash;
-    cout << "increment: " << increment << endl;
+//    cout << "increment: " << increment << endl;
     searchID.append( QString( "%1" ).arg( increment, 4, 10, QLatin1Char( '0' ) ) );
     query.bindValue(  0, searchID );
     //captureTime (unix time)
@@ -131,8 +129,8 @@ void createNewProfile( const QString fileHash,
     query.bindValue( 26, defaultQuery.value( 26 ).toInt()   );//caEnabled
     double temp, tint;
     optimizeWBMults( absoluteFilePath.toStdString(), temp, tint );
-    cout << "organizeinsertion: temp: " << temp << endl;
-    cout << "organizeinsertion: tint: " << tint << endl;
+//    cout << "organizeinsertion: temp: " << temp << endl;
+//    cout << "organizeinsertion: tint: " << tint << endl;
     query.bindValue( 27, defaultQuery.value( 27 ).toFloat() );//temperature
     query.bindValue( 28, defaultQuery.value( 28 ).toFloat() );//tint
     query.bindValue( 29, defaultQuery.value( 29 ).toFloat() );//vibrance
