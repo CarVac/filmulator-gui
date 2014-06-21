@@ -401,7 +401,6 @@ SplitView {
                     }
                 }
 
-
                 ToolSlider {
                     id: shadowBrightnessSlider
                     title: qsTr("Shadow Brightness")
@@ -501,11 +500,11 @@ SplitView {
             anchors.fill: toolList
             acceptedButtons: Qt.NoButton
             onWheel: {
-                if (wheel.angleDelta.y > 0) {
+                if (wheel.angleDelta.y > 0 && !toolList.atYBeginning) {
                     //up
                     toolList.flick(0,600);
                 }
-                else {
+                else if (wheel.angleDelta.y < 0 && !toolList.atYEnd) {
                     //down
                     toolList.flick(0,-600);
                 }
