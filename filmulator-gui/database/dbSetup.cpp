@@ -134,6 +134,17 @@ void setupDB( QSqlDatabase *db )
                 ");"
                 );
 
+    //Next, we make a table for the queue.
+    //It will hold a number for the order, and a field identical to
+    // STsearchID.
+    query.exec( "create table if not exists QueueTable ("
+                "QTindex integer primary key,"
+                "QTprocessed bool,"
+                "QTexported bool,"
+                "QTsearchID varchar unique"
+                ");"
+                );
+
     //Now we set the default Default profile.
     query.prepare( "REPLACE INTO ProfileTable values "
                    "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);" );
