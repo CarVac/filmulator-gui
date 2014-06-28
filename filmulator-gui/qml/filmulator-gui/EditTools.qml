@@ -64,7 +64,6 @@ SplitView {
             property int lineWidth: 1
             property real alpha: 1.0
             property int padding: 5
-            antialiasing: true
             canvasSize.width: root.maxWidth
             canvasSize.height: 500
 
@@ -224,7 +223,6 @@ SplitView {
                     property int lineWidth: 1
                     property real alpha: 1.0
                     property int padding: 3
-                    antialiasing: true
                     canvasSize.width: root.maxWidth
 
                     onWidthChanged: requestPaint();
@@ -320,7 +318,6 @@ SplitView {
                     property int lineWidth: 1
                     property real alpha: 1.0
                     property int padding: 3
-                    antialiasing: true
 
                     canvasSize.width: root.maxWidth
 
