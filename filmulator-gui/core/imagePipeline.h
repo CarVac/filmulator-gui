@@ -71,7 +71,7 @@ protected:
     struct timeval timeRequested;
     Valid valid;
 
-    matrix<float> input_image;
+    matrix<float> cropped_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
     matrix<float> filmulated_image;
@@ -87,7 +87,7 @@ protected:
     void updateProgress(float CurrFractionCompleted);
 
     //The core filmulation. It needs to access checkAbort, so it's here.
-    bool filmulate( matrix<float> &input_image, matrix<float> &output_density,
+    bool filmulate( matrix<float> &cropped_image, matrix<float> &output_density,
                     filmulateParams filmParams, ImagePipeline* pipeline, bool &aborted );
 };
 
