@@ -26,6 +26,7 @@ class OrganizeModel : public SqlModel
 public:
     explicit OrganizeModel( QObject *parent = 0 );
     Q_INVOKABLE void setOrganizeQuery();
+    Q_INVOKABLE QString thumbDir();
 
     void setMinCaptureTime( unsigned int captureTimeIn );
     void setMaxCaptureTime( unsigned int captureTimeIn );

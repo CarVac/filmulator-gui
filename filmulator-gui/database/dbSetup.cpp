@@ -5,10 +5,10 @@
 void setupDB( QSqlDatabase *db )
 {
     QDir dir = QDir::home();
-    if ( !dir.cd( ".filmulator" ) )
+    if ( !dir.cd( ".local/share/filmulator" ) )
     {
-        dir.mkdir( ".filmulator" );
-        dir.cd( ".filmulator" );
+        dir.mkdir( ".local/share/filmulator" );
+        dir.cd( ".local/share/filmulator" );
     }
     db -> setDatabaseName( dir.absoluteFilePath( "filmulatorDB" ) );
 //    std::cout << "database path: " << qPrintable(dir.absoluteFilePath("filmulatorDB")) << std::endl;

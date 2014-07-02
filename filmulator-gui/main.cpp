@@ -7,6 +7,7 @@
 #include "ui/settings.h"
 #include "database/importModel.h"
 #include "database/organizeModel.h"
+#include "database/queueModel.h"
 #include "database/filmulatorDB.h"
 #include <QMetaType>
 #include <QFileInfo>
@@ -41,6 +42,12 @@ int main(int argc, char *argv[])
 
     OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty( "organizeModel", organizeModel );
+    std::cout << "Organize row count: " << organizeModel->rowCount() << std::endl;
+
+    QueueModel *queueModel = new QueueModel;
+    queueModel->setQueueQuery();
+    engine.rootContext()->setContextProperty( "queueModel", queueModel );
+    std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
 
     Settings *settingsObj = new Settings;
     engine.rootContext()->setContextProperty( "settings", settingsObj );

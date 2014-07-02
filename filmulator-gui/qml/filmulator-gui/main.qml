@@ -142,12 +142,28 @@ ApplicationWindow {
             }
         }
 
+
         Rectangle {
             id: queue
-            color: "lightgreen"
+            color: "#303030"
             height: 100
             Layout.minimumHeight: 50
 
+            Loader {
+                id: queueLoader
+                anchors.fill: parent
+                //source: "Queue.qml"
+            }
+
+            Timer {
+                id: queueTimer
+                interval: 1
+                running: true
+                onTriggered: queueLoader.source = "Queue.qml"
+            }
+
+
+            /*
             ToolButton {
                 id: openButton
                 anchors.right: saveTIFFButton.left
@@ -206,6 +222,7 @@ ApplicationWindow {
                     editorTab.location = fileUrl
                 }
             }
+            */
         }
     }
 

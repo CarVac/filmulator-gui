@@ -74,7 +74,8 @@ HEADERS += \
     database/sqlInsertion.h \
     database/importModel.h \
     database/importWorker.h \
-    database/queueModel.h
+    database/queueModel.h \
+    ui/parameterManager.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -flto

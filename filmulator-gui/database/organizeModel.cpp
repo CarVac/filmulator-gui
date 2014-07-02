@@ -105,3 +105,9 @@ void OrganizeModel::setOrganizeQuery()
     setQuery( QSqlQuery( QString::fromStdString( queryString ) ) );
  }
 
+QString OrganizeModel::thumbDir()
+{
+    QDir homeDir = QDir::home();
+    homeDir.cd( ".local/share/filmulator/thumbs" );
+    return homeDir.absolutePath();
+}

@@ -1,6 +1,9 @@
 #include "queueModel.h"
 #include <iostream>
 
+using std::cout;
+using std::endl;
+
 QueueModel::QueueModel( QObject *parent ) : SqlModel( parent )
 {
     resetIndex();
@@ -9,15 +12,14 @@ QueueModel::QueueModel( QObject *parent ) : SqlModel( parent )
 void QueueModel::setQueueQuery()
 {
     std::string queryString = "SELECT * ";
-    queryString.append( "FROM QueueTable, SearchTable, ProcTable, FileTable " );
-    queryString.append( "WHERE " );
-    queryString.append( "QueueTable.QTsearchID = SearchTable.STsearchID " );
-    queryString.append( "AND QueueTable.QTsearchID = ProcessingTable.ProcTprocID " );
-    queryString.append( "AND SearchTable.STsourceHash = FileTable.FTfileID " );
+    queryString.append( "FROM QueueTable " );
     queryString.append( "ORDER BY " );
-    queryString.append( "QueueTable.QTindex ASC; " );
+    queryString.append( "QueueTable.QTindex ASC;" );
+
+    cout << "queue query: " << queryString << endl;
 
     setQuery( QSqlQuery( QString::fromStdString( queryString ) ) );
+    resetIndex();
 }
 
 void QueueModel::resetIndex()
