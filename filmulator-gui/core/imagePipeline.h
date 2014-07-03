@@ -49,9 +49,9 @@ enum QuickQuality { LowQuality, HighQuality };
 class ImagePipeline
 {
 public:
-    ImagePipeline( CacheAndHisto, QuickQuality );
-    matrix<unsigned short> processImage( const ProcessingParameters params, Interface* interface, bool &aborted,
-                                         Exiv2::ExifData &exifOutput );
+    ImagePipeline(CacheAndHisto, QuickQuality);
+    matrix<unsigned short> processImage(const ProcessingParameters params, Interface* interface, bool &aborted,
+                                         Exiv2::ExifData &exifOutput);
     float getProgress(){ return progress; }
 
 protected:
@@ -80,15 +80,15 @@ protected:
     matrix<unsigned short> vibrance_saturation_image;
 
     //Internal functions for progress and time tracking.
-    bool checkAbort( bool aborted );
-    void setValid( Valid );
-    void setLastValid( ProcessingParameters );
+    bool checkAbort(bool aborted);
+    void setValid(Valid);
+    void setLastValid(ProcessingParameters);
     vector<double> completionTimes;
     void updateProgress(float CurrFractionCompleted);
 
     //The core filmulation. It needs to access checkAbort, so it's here.
-    bool filmulate( matrix<float> &input_image, matrix<float> &output_density,
-                    filmulateParams filmParams, ImagePipeline* pipeline, bool &aborted );
+    bool filmulate(matrix<float> &input_image, matrix<float> &output_density,
+                   filmulateParams filmParams, ImagePipeline* pipeline, bool &aborted);
 };
 
 #endif // IMAGEPIPELINE_H

@@ -42,7 +42,8 @@ SOURCES += main.cpp \
     database/importModel.cpp \
     database/importProperties.cpp \
     database/importWorker.cpp \
-    database/queueModel.cpp
+    database/queueModel.cpp \
+    ui/parameterManager.cpp
 
 # Installation path
 # target.path =

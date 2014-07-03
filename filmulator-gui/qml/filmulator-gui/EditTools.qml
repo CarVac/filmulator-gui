@@ -108,13 +108,13 @@ SplitView {
                     tooltipText: qsTr("Automatically correct directional color fringing.")
                     text: qsTr("CA correction")
                     onIsOnChanged: {
-                        filmProvider.caEnabled = isOn
+                        paramManager.caEnabled = isOn
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            caSwitch.isOn = caEnabled
+                            caSwitch.isOn = paramManager.caEnabled
                         }
                     }
                     Component.onCompleted: {
@@ -132,13 +132,13 @@ SplitView {
                     stepSize: 1
                     defaultValue: root.defaultHighlightRecovery
                     onValueChanged: {
-                        filmProvider.highlights = value
+                        paramManager.highlights = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            highlightRecoverySlider.value = highlightRecovery
+                            highlightRecoverySlider.value = paramManager.highlightRecovery
                         }
                     }
                     Component.onCompleted: {
@@ -152,16 +152,15 @@ SplitView {
                     tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.")
                     minimumValue: 1500
                     maximumValue: 15000
-                    //stepSize: 10
                     defaultValue: root.defaultTemperature
                     onValueChanged: {
-                        filmProvider.temperature = value
+                        paramManager.temperature = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            temperatureSlider.value = temperature
+                            temperatureSlider.value = paramManager.temperature
                         }
                     }
                     Component.onCompleted: {
@@ -178,13 +177,13 @@ SplitView {
                     //stepSize: 0.002
                     defaultValue: root.defaultTint
                     onValueChanged: {
-                        filmProvider.tint = value
+                        paramManager.tint = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            tintSlider.value = tint
+                            tintSlider.value = paramManager.tint
                         }
                     }
                     Component.onCompleted: {
@@ -201,13 +200,13 @@ SplitView {
                     stepSize: 1/6
                     defaultValue: root.defaultExposureComp
                     onValueChanged: {
-                        filmProvider.exposureComp = value
+                        paramManager.exposureComp = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            exposureCompSlider.value = exposureComp
+                            exposureCompSlider.value = paramManager.exposureComp
                         }
                     }
                     Component.onCompleted: {
@@ -255,13 +254,13 @@ SplitView {
                     // areas, respectively.
                     valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
                     onValueChanged: {
-                        filmProvider.filmArea = value*value
+                        paramManager.filmArea = value*value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            filmSizeSlider.value = Math.sqrt(filmSize)
+                            filmSizeSlider.value = Math.sqrt(paramManager.filmSize)
                         }
                     }
                     Component.onCompleted: {
@@ -277,13 +276,13 @@ SplitView {
                     maximumValue: 100
                     defaultValue: 100*root.defaultLayerMixConst
                     onValueChanged: {
-                        filmProvider.layerMixConst = value/100;
+                        paramManager.layerMixConst = value/100;
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            filmDramaSlider.value = 100*layerMixConst
+                            filmDramaSlider.value = 100*paramManager.layerMixConst
                         }
                     }
                     Component.onCompleted: {
@@ -296,13 +295,13 @@ SplitView {
                     tooltipText: qsTr("In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you.")
                     text: qsTr("Overdrive Mode")
                     onIsOnChanged: {
-                        filmProvider.agitateCount = isOn ? 0 : 1
+                        paramManager.agitateCount = isOn ? 0 : 1
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            overdriveSwitch.isOn = overdriveEnabled;
+                            overdriveSwitch.isOn = (paramManager.agitateCount == 0);
                         }
                     }
                     Component.onCompleted: {
@@ -336,7 +335,8 @@ SplitView {
                         height: parent.height
                         width: 1
                         color: blackpointSlider.pressed ? "#FF8800" : "white"
-                        x: parent.padding + filmProvider.blackpoint/.0025*(parent.width-2*parent.padding)
+                        x: parent.padding + paramManager.blackpoint/.0025*(parent.width-2*parent.padding)
+                        //The .0025 is the highest bin in the post filmulator histogram.
                     }
 
                     Rectangle {
@@ -344,7 +344,8 @@ SplitView {
                         height: parent.height
                         width: 1
                         color: whitepointSlider.pressed ? "#FF8800" : "white"
-                        x: parent.padding + filmProvider.whitepoint/.0025*(parent.width-2*parent.padding)
+                        x: parent.padding + paramManager.whitepoint/.0025*(parent.width-2*parent.padding)
+                        //The .0025 is the highest bin in the post filmulator histogram.
                     }
                     ToolTip {
                         id: postFilmTooltip
@@ -364,13 +365,13 @@ SplitView {
                     defaultValue: Math.sqrt(root.defaultBlackpoint*1000)
                     valueText: value*value/2
                     onValueChanged: {
-                        filmProvider.blackpoint = value*value/1000
+                        paramManager.blackpoint = value*value/1000
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            blackpointSlider.value = Math.sqrt(blackpoint*1000)
+                            blackpointSlider.value = Math.sqrt(paramManager.blackpoint*1000)
                         }
                     }
                     Component.onCompleted: {
@@ -387,13 +388,13 @@ SplitView {
                     defaultValue: root.defaultWhitepoint
                     valueText: value*500// 1000/2
                     onValueChanged: {
-                        filmProvider.whitepoint = value
+                        paramManager.whitepoint = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            whitepointSlider.value = whitepoint
+                            whitepointSlider.value = paramManager.whitepoint
                         }
                     }
                     Component.onCompleted: {
@@ -410,13 +411,13 @@ SplitView {
                     defaultValue: root.defaultShadowsY
                     valueText: value*1000
                     onValueChanged: {
-                        filmProvider.shadowsY = value
+                        paramManager.shadowsY = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            shadowBrightnessSlider.value = shadowsY
+                            shadowBrightnessSlider.value = paramManager.shadowsY
                         }
                     }
                     Component.onCompleted: {
@@ -433,13 +434,13 @@ SplitView {
                     defaultValue: root.defaultHighlightsY
                     valueText: value*1000
                     onValueChanged: {
-                        filmProvider.highlightsY = value
+                        paramManager.highlightsY = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            highlightBrightnessSlider.value = highlightsY
+                            highlightBrightnessSlider.value = paramManager.highlightsY
                         }
                     }
                     Component.onCompleted: {
@@ -456,13 +457,13 @@ SplitView {
                     defaultValue: root.defaultVibrance
                     valueText: value*200
                     onValueChanged: {
-                        filmProvider.vibrance = value
+                        paramManager.vibrance = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            vibranceSlider.value = vibrance
+                            vibranceSlider.value = paramManager.vibrance
                         }
                     }
                     Component.onCompleted: {
@@ -479,13 +480,13 @@ SplitView {
                     defaultValue: root.defaultSaturation
                     valueText: value*200
                     onValueChanged: {
-                        filmProvider.saturation = value
+                        paramManager.saturation = value
                         root.updateImage()
                     }
                     Connections {
                         target: root
                         onSetAllValues: {
-                            saturationSlider.value = saturation
+                            saturationSlider.value = paramManager.saturation
                         }
                     }
                     Component.onCompleted: {

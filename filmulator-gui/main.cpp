@@ -21,8 +21,12 @@ int main(int argc, char *argv[])
     translator.load("filmulatortr_la");
     app.installTranslator(&translator);
 
-    //Prepare image provider object
-    FilmImageProvider *filmProvider = new FilmImageProvider;
+    //Prepare an object for managing the processing parameters.
+    ParameterManager *paramManager = new ParameterManager;
+    engine.rootContext()->setContextProperty("paramManager",paramManager);
+
+    //Prepare an image provider object.
+    FilmImageProvider *filmProvider = new FilmImageProvider(paramManager);
     //Connect it as an image provider so that qml can get the photos
     engine.addImageProvider(QLatin1String("filmy"), filmProvider);
     //Connect it as a Q_OBJECT so that qml can run methods
@@ -32,29 +36,31 @@ int main(int argc, char *argv[])
 
     //Prepare database connection.
     //This should create a new db file if there was none.
-//    qDebug() << QSqlDatabase::drivers();
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-//    qDebug() << db.isValid();
     setupDB(&db);
 
+    //Prepare a model for importing.
     ImportModel *importModel = new ImportModel;
-    engine.rootContext()->setContextProperty( "importModel", importModel );
+    engine.rootContext()->setContextProperty("importModel", importModel);
 
+    //Prepare a model for the organize view.
     OrganizeModel *organizeModel = new OrganizeModel;
-    engine.rootContext()->setContextProperty( "organizeModel", organizeModel );
+    engine.rootContext()->setContextProperty("organizeModel", organizeModel);
     std::cout << "Organize row count: " << organizeModel->rowCount() << std::endl;
 
+    //Prepare a model for the queue view.
     QueueModel *queueModel = new QueueModel;
     queueModel->setQueueQuery();
-    engine.rootContext()->setContextProperty( "queueModel", queueModel );
+    engine.rootContext()->setContextProperty("queueModel", queueModel);
     std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
 
+    //Create a settings object for persistent settings.
     Settings *settingsObj = new Settings;
-    engine.rootContext()->setContextProperty( "settings", settingsObj );
+    engine.rootContext()->setContextProperty("settings", settingsObj);
 
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
-    if (!window ) {
+    if (!window) {
         qWarning("Error: your root item has to be a Window");
         return -1;
     }

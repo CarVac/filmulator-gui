@@ -10,7 +10,7 @@
 #include <QList>
 #include "../core/imagePipeline.h"
 #include <assert.h>
-
+#include "parameterManager.h"
 
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
@@ -43,7 +43,7 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 
 public:
     //FilmImageProvider(QQuickImageProvider::ImageType type);
-    FilmImageProvider();
+    FilmImageProvider(ParameterManager*);
     ~FilmImageProvider();
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
 
@@ -128,6 +128,7 @@ public:
 protected:
     //ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, LowQuality );
     ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, HighQuality );
+    ParameterManager * paramManager;
     bool abort;
     QMutex mutex;
 

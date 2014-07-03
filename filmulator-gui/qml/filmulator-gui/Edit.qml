@@ -190,7 +190,7 @@ SplitView {
             text: qsTr("Rotate Left")
             action: Action {
                 onTriggered: {
-                    filmProvider.rotateLeft()
+                    paramManager.rotateLeft()
                     root.updateImage()
                 }
             }
@@ -204,7 +204,7 @@ SplitView {
             text: qsTr("Rotate Right")
             action: Action {
                 onTriggered: {
-                    filmProvider.rotateRight()
+                    paramManager.rotateRight()
                     root.updateImage()
                 }
             }

@@ -6,11 +6,12 @@
 #include <cmath>
 #define TIMEOUT 0.1
 
-FilmImageProvider::FilmImageProvider() :
+FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     QObject(0),
     QQuickImageProvider(QQuickImageProvider::Image,
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
+    paramManager = manager;
     setHighlights( 0 );
 
     setExposureComp( 0.0 );
@@ -57,27 +58,24 @@ QImage FilmImageProvider::requestImage(const QString &id,
 {
     gettimeofday(&request_start_time,NULL);
     QImage output = emptyImage();
-    QString tempID = id;
-    cout << id.toStdString() << endl;
-    tempID.remove(tempID.length()-6,6);
-    tempID.remove(0,7);
-    cout << tempID.toStdString() << endl;
-    string inputFilename = tempID.toStdString();
-    string outputFilename = inputFilename.substr(0,inputFilename.length()-4);
-    outputFilename.append("-output");
-    std::vector<std::string> inputFilenameList;
-    inputFilenameList.push_back(inputFilename);
-    param.filenameList = inputFilenameList;
 
-    //Copy out new parameters
+    //Copy out the latest parameters.
     mutex.lock();
-    ProcessingParameters tempParams = param;
+    ProcessingParameters tempParams = paramManager->getParams();
     abort = false;
     mutex.unlock();
 
+    //Prepare the output filename.
+    string outputFilename = tempParams.filenameList[0].toStdString();
+    outputFilename.append("-output");
+
+    //Prepare an exif object for later applying to the output files.
     Exiv2::ExifData exif;
+
+    //Run the pipeline.
     matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort, exif );
 
+    //Write out the images.
     if(saveJpeg)
     {
         imwrite_jpeg( image, outputFilename, exif);
