@@ -12,33 +12,6 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     paramManager = manager;
-    /*setHighlights( 0 );
-
-    setExposureComp( 0.0 );
-
-    setDevelTime( 100.0 );
-    setAgitateCount( 1 );
-    setDevelSteps( 12 );
-    setFilmArea( 864.0 );
-    setLayerMixConst( 0.2 );
-
-    setBlackpoint( 0 );
-    setWhitepoint( 0.002 );
-
-    shadowsX = 0.25;
-    param.shadowsX = 0.25;
-    setShadowsY( 0.25 );
-    highlightsX = 0.25;
-    param.highlightsX = 0.25;
-    setHighlightsY( 0.75 );
-
-    setSaturation( 0 );
-    setVibrance( 0 );
-
-    setSaveTiff( false);
-    setSaveJpeg( false );
-    */
-
     zeroHistogram(finalHist);
     zeroHistogram(postFilmHist);
     zeroHistogram(preFilmHist);
@@ -104,177 +77,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     *size = output.size();
     return output;
 }
-/*
-//===After load, during demosaic===
 
-//Automatic CA correction
-void FilmImageProvider::setCaEnabled(bool caEnabledIn)
-{
-    QMutexLocker locker( &mutex );
-    caEnabled = caEnabledIn;
-    param.caEnabled = caEnabledIn;
-    abort = true;
-    emit caEnabledChanged();
-}
-
-//Highlight recovery parameter
-void FilmImageProvider::setHighlights(int highlightsIn)
-{
-    QMutexLocker locker( &mutex );
-    highlights = highlightsIn;
-    param.highlights = highlightsIn;
-    abort = true;
-    emit highlightsChanged();
-}
-
-//===After demosaic, during prefilmulation===
-//Exposure compensation of simulated film exposure
-void FilmImageProvider::setExposureComp(float exposure)
-{
-    QMutexLocker locker( &mutex );
-    exposureComp = exposure;
-    std::vector<float> exposureList;
-    exposureList.push_back( exposure );
-    param.exposureComp = exposureList;
-    abort = true;
-    emit exposureCompChanged();
-}
-
-//Temperature of white balance correction
-void FilmImageProvider::setTemperature(double temperatureIn)
-{
-    QMutexLocker locker( &mutex );
-    temperature = temperatureIn;
-    param.temperature = temperatureIn;
-    abort = true;
-    emit temperatureChanged();
-}
-
-//Tint of white balance correction
-void FilmImageProvider::setTint(double tintIn)
-{
-    QMutexLocker locker( &mutex );
-    tint = tintIn;
-    param.tint = tintIn;
-    abort = true;
-    emit tintChanged();
-}
-
-//===After prefilmulation, during filmulation===
-//Sets the simulated duration of film development.
-void FilmImageProvider::setDevelTime(float develTimeIn)
-{
-    QMutexLocker locker( &mutex );
-    develTime = develTimeIn;
-    param.filmParams.totalDevelTime = develTimeIn;
-    abort = true;
-    emit develTimeChanged();
-}
-
-//Sets the number of times the tank is agitated
-void FilmImageProvider::setAgitateCount(int agitateCountIn)
-{
-    QMutexLocker locker( &mutex );
-    agitateCount = agitateCountIn;
-    param.filmParams.agitateCount = agitateCountIn;
-    abort = true;
-    emit agitateCountChanged();
-}
-
-//Sets the number of simulation steps for development
-void FilmImageProvider::setDevelSteps(int develStepsIn)
-{
-    QMutexLocker locker( &mutex );
-    develSteps = develStepsIn;
-    param.filmParams.developmentSteps = develStepsIn;
-    abort = true;
-    emit develStepsChanged();
-}
-
-//Sets the area of the film being simulated by filmulator
-void FilmImageProvider::setFilmArea(float filmAreaIn)
-{
-    QMutexLocker locker( &mutex );
-    filmArea = filmAreaIn;
-    param.filmParams.filmArea = filmAreaIn;
-    abort = true;
-    emit filmAreaChanged();
-}
-
-//Sets the amount of developer mixing between the bulk
-// developer reservoir and the active layer against the
-// film.
-void FilmImageProvider::setLayerMixConst(float layerMixConstIn)
-{
-    QMutexLocker locker( &mutex );
-    layerMixConst = layerMixConstIn;
-    param.filmParams.layerMixConst = layerMixConstIn;
-    abort = true;
-    emit layerMixConstChanged();
-}
-
-//===After filmulation, during whiteblack===
-//Sets the black clipping point right after filmulation
-void FilmImageProvider::setBlackpoint(float blackpointIn)
-{
-    QMutexLocker locker( &mutex );
-    blackpoint = blackpointIn;
-    param.blackpoint = blackpointIn;
-    abort = true;
-    emit blackpointChanged();
-}
-
-//Sets the white clipping point right after filmulation
-void FilmImageProvider::setWhitepoint(float whitepointIn)
-{
-    QMutexLocker locker( &mutex );
-    whitepoint = whitepointIn;
-    param.whitepoint = whitepointIn;
-    abort = true;
-    emit whitepointChanged();
-}
-
-//===After whiteblack, during colorcurve===
-
-//===After colorcurve, during filmlikecurve===
-//Y value of shadow control curve point
-void FilmImageProvider::setShadowsY(float shadowsYIn)
-{
-    QMutexLocker locker( &mutex );
-    shadowsY = shadowsYIn;
-    param.shadowsY = shadowsYIn;
-    abort = true;
-    emit shadowsYChanged();
-}
-
-//Y value of highlight control curve point
-void FilmImageProvider::setHighlightsY(float highlightsYIn)
-{
-    QMutexLocker locker( &mutex );
-    highlightsY = highlightsYIn;
-    param.highlightsY = highlightsYIn;
-    abort = true;
-    emit highlightsYChanged();
-}
-
-void FilmImageProvider::setVibrance(float vibranceIn)
-{
-    QMutexLocker locker( &mutex );
-    vibrance = vibranceIn;
-    param.vibrance = vibranceIn;
-    abort = true;
-    emit vibranceChanged();
-}
-
-void FilmImageProvider::setSaturation(float saturationIn)
-{
-    QMutexLocker locker( &mutex );
-    saturation = saturationIn;
-    param.saturation = saturationIn;
-    abort = true;
-    emit saturationChanged();
-}
-*/
 void FilmImageProvider::setProgress(float percentDone_in)
 {
     progress = percentDone_in;
@@ -300,12 +103,6 @@ void FilmImageProvider::updateFilmProgress(float percentDone_in)//Percent filmul
     progress = 0.2 + percentDone_in*0.6;
     emit progressChanged();
 }
-
-/*void FilmImageProvider::invalidateImage()
-{
-    cout << "filmImageProvider::invalidateImage(). We probably shouldn't be using this." << endl;
-    QMutexLocker locker( &mutex );
-}*/
 
 float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, LogY isLog)
 {
@@ -344,27 +141,3 @@ QImage FilmImageProvider::emptyImage()
     return QImage(0,0,QImage::Format_ARGB32);
 }
 
-/*void FilmImageProvider::rotateLeft()
-{
-    QMutexLocker locker( &mutex );
-    rotation++;
-    if (rotation > 3)
-    {
-        rotation -= 4;
-    }
-    param.rotation = rotation;
-    abort = true;
-}
-
-void FilmImageProvider::rotateRight()
-{
-    QMutexLocker locker( &mutex );
-    rotation--;
-    if (rotation < 0)
-    {
-        rotation += 4;
-    }
-    param.rotation = rotation;
-    abort = true;
-}
-*/
