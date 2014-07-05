@@ -515,14 +515,16 @@ SplitView {
             action: Action {
                 onTriggered: {
                     filmProvider.saveTiff = true
+                    root.updateImage()
+//                    saveTIFFButton.update()
                 }
             }
-            Component.onCompleted: {
-                saveTIFFButton.clicked.connect(root.updateImage)
-            }
+//            Component.onCompleted: {
+//                saveTIFFButton.update.connect(root.updateImage)
+//            }
         }
         ToolButton {
-            id: saveJPEGbutton
+            id: saveJPEGButton
             width: parent.width/2
             height: 40
             x: width
@@ -531,11 +533,13 @@ SplitView {
             action: Action {
                 onTriggered: {
                     filmProvider.saveJpeg = true
+                    root.updateImage()
+//                    saveJPEGButton.update()
                 }
             }
-            Component.onCompleted: {
-                saveJPEGbutton.clicked.connect(root.updateImage)
-            }
+//            Component.onCompleted: {
+//                saveJPEGButton.update.connect(root.updateImage)
+//            }
         }
     }
 }
