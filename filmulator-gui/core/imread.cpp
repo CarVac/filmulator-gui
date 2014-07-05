@@ -85,18 +85,11 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
             bSum += IMAGE[ rowoffset + col ][ 2 ];
         }
     }
-    cout << "imread color outputs" << endl;
-    double dim = SIZES.iheight * SIZES.iwidth;
-    cout << double(rSum) / dim << " ";
-    cout << double(gSum) / dim << " ";
-    cout << double(bSum) / dim << endl;
-
-
     image_processor.recycle();
     Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open( cstr );
     assert( image.get() != 0 );
     image->readMetadata();
     exifData = image->exifData();
 
-        return false;
+    return false;
 }

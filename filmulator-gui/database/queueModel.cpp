@@ -37,6 +37,7 @@ void QueueModel::deQueue( int deleteIndex )
     query.bindValue( 0, deleteIndex);
     query.exec();
     resetIndex();
+    emit queueChanged();
 }
 
 void QueueModel::enQueue( QString searchID )
@@ -49,4 +50,6 @@ void QueueModel::enQueue( QString searchID )
     query.bindValue( 3, searchID );
     query.exec();
     index++;
+
+    emit queueChanged();
 }

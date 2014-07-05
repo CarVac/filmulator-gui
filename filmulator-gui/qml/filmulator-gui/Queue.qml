@@ -24,11 +24,13 @@ Item {
 
             searchID: QTsearchID
 
-            filePath: FTfilePath
-
             MouseArea {
                 anchors.fill: parent
                 onClicked: parent.ListView.view.currentIndex = index
+                onDoubleClicked: {
+                    console.log("New image: " + QTsearchID)
+                    paramManager.selectImage(QTsearchID)
+                }
             }
         }
 
@@ -37,6 +39,14 @@ Item {
             console.log("Queue completed");
             console.log("height: " + listView.height)
             listView.model = queueModel
+        }
+        Connections {
+            target: queueModel
+            onQueueChanged: {
+                var xPos = listView.contentX
+                queueModel.setQueueQuery()
+                listView.contentX = xPos
+            }
         }
     }
 }

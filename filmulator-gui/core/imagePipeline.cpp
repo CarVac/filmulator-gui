@@ -97,23 +97,6 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
             return emptyMatrix();
         }
 
-        //Set up filmulation parameters.
-        {
-            params.filmParams.initialDeveloperConcentration = 1.0;
-            params.filmParams.reservoirThickness = 1000.0;
-            params.filmParams.activeLayerThickness = 0.1;
-            params.filmParams.crystalsPerPixel = 500.0;
-            params.filmParams.initialCrystalRadius = 0.00001;
-            params.filmParams.initialSilverSaltDensity = 1.0;
-            params.filmParams.developerConsumptionConst = 2000000.0;
-            params.filmParams.crystalGrowthConst = 0.00001;
-            params.filmParams.silverSaltConsumptionConst = 2000000.0;
-            params.filmParams.sigmaConst = 0.2;
-            params.filmParams.layerTimeDivisor = 20;
-            params.filmParams.rolloffBoundary = 51275;
-        }
-
-
         //Here we do the film simulation on the image...
         if(filmulate(pre_film_image, filmulated_image, params.filmParams, this, aborted))
         {
@@ -205,7 +188,7 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
 
         setValid(filmlikecurve);
     }
-    case filmlikecurve: //output
+    default://case filmlikecurve: //output
     {
         //See if the tonecurve has changed since it was applied.
         if (checkAbort(aborted))

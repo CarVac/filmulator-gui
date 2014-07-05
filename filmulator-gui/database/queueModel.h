@@ -17,6 +17,9 @@ protected:
     int index;
 
     void resetIndex();
+
+signals:
+    void queueChanged();
 };
 
 #endif // QUEUEMODEL_H

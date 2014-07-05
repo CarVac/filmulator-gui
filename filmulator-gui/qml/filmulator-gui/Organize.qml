@@ -24,13 +24,32 @@ SplitView {
             id: gridView
             anchors.fill: parent
 
-            cellWidth: 400
-            cellHeight: 300
+            cellWidth: 320
+            cellHeight: 320
 
             delegate: OrganizeDelegate {
-                hour: STsearchID
-                filename: STfilename
+                rootDir: organizeModel.thumbDir()
+
+                searchID: STsearchID
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: parent.GridView.view.currentIndex = index
+                    onDoubleClicked: {
+                        queueModel.enQueue(STsearchID)
+                    }
+                }
             }
+
+            Connections {
+                target: importModel
+                onSearchTableChanged: {
+                    var yPos = gridView.contentY
+                    organizeModel.setOrganizeQuery()
+                    gridView.contentY = yPos
+                }
+            }
+
             Component.onCompleted: {
                 organizeModel.setOrganizeQuery()
                 organizeModel.minCaptureTime = 0

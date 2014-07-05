@@ -10,34 +10,19 @@ SplitView {
     orientation: Qt.Horizontal
 
     property string location
-    property alias exposureComp: editTools.exposureComp
     property alias defaultExposureComp: editTools.defaultExposureComp
-    property alias whitepoint: editTools.whitepoint
     property alias defaultWhitepoint: editTools.defaultWhitepoint
-    property alias blackpoint: editTools.blackpoint
     property alias defaultBlackpoint: editTools.defaultBlackpoint
-    property alias shadowsY: editTools.shadowsY
     property alias defaultShadowsY: editTools.defaultShadowsY
-    property alias highlightsY: editTools.highlightsY
     property alias defaultHighlightsY: editTools.defaultHighlightsY
-    property alias filmSize: editTools.filmSize
     property alias defaultFilmSize: editTools.defaultFilmSize
-    property alias defaultCurve: editTools.defaultCurve
-    property alias highlightRecovery: editTools.highlightRecovery
     property alias defaultHighlightRecovery: editTools.defaultHighlightRecovery
-    property alias layerMixConst: editTools.layerMixConst
     property alias defaultLayerMixConst: editTools.defaultLayerMixConst
-    property alias caEnabled: editTools.caEnabled
     property alias defaultCaEnabled: editTools.defaultCaEnabled
-    property alias temperature: editTools.temperature
     property alias defaultTemperature: editTools.defaultTemperature
-    property alias tint: editTools.tint
     property alias defaultTint: editTools.defaultTint
-    property alias vibrance: editTools.vibrance
     property alias defaultVibrance: editTools.defaultVibrance
-    property alias saturation: editTools.saturation
     property alias defaultSaturation: editTools.defaultSaturation
-    property alias overdriveEnabled: editTools.overdriveEnabled
     property alias defaultOverdriveEnabled: editTools.defaultOverdriveEnabled
 
     signal reset()

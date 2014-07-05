@@ -53,34 +53,19 @@ ApplicationWindow {
             Tab {
                 id: editorTab
                 property string location: ""
-                property real exposureComp: 0
                 property real defaultExposureComp: 0
-                property real whitepoint: 2/1000
                 property real defaultWhitepoint: 2/1000
-                property real blackpoint: 0
                 property real defaultBlackpoint: 0
-                property real shadowsY: 0.25
                 property real defaultShadowsY: 0.25
-                property real highlightsY: 0.75
                 property real defaultHighlightsY: 0.75
-                property real filmSize: 864
                 property real defaultFilmSize: 864
-                property bool defaultCurve: true
-                property int highlightRecovery: 0
                 property int defaultHighlightRecovery: 0
-                property real layerMixConst: 0.2
                 property real defaultLayerMixConst: 0.2
-                property bool caEnabled: false
                 property bool defaultCaEnabled: false
-                property real temperature: 5200
                 property real defaultTemperature: 5200
-                property real tint: 1
                 property real defaultTint: 1
-                property real vibrance: 0
                 property real defaultVibrance: 0
-                property real saturation: 0
                 property real defaultSaturation: 0
-                property bool overdriveEnabled: false
                 property bool defaultOverdriveEnabled: false
                 signal updateImage()
 
@@ -88,39 +73,24 @@ ApplicationWindow {
                 Edit {
                     id: editItem
                     location: editorTab.location
-                    exposureComp: editorTab.exposureComp
                     defaultExposureComp: editorTab.defaultExposureComp
-                    filmSize: editorTab.filmSize
                     defaultFilmSize: editorTab.defaultFilmSize
-                    whitepoint: editorTab.whitepoint
                     defaultWhitepoint: editorTab.defaultWhitepoint
-                    blackpoint: editorTab.blackpoint
                     defaultBlackpoint: editorTab.defaultBlackpoint
-                    shadowsY: editorTab.shadowsY
                     defaultShadowsY: editorTab.defaultShadowsY
-                    highlightsY: editorTab.highlightsY
                     defaultHighlightsY: editorTab.defaultHighlightsY
-                    defaultCurve: editorTab.defaultCurve
-                    highlightRecovery: editorTab.highlightRecovery
                     defaultHighlightRecovery: editorTab.defaultHighlightRecovery
-                    layerMixConst: editorTab.layerMixConst
                     defaultLayerMixConst: editorTab.defaultLayerMixConst
-                    caEnabled: editorTab.caEnabled
                     defaultCaEnabled: editorTab.defaultCaEnabled
-                    temperature: editorTab.temperature
                     defaultTemperature: editorTab.defaultTemperature
-                    tint: editorTab.tint
                     defaultTint: editorTab.defaultTint
-                    vibrance: editorTab.vibrance
                     defaultVibrance: editorTab.defaultVibrance
-                    saturation: editorTab.saturation
                     defaultSaturation: editorTab.defaultSaturation
-                    overdriveEnabled: editorTab.overdriveEnabled
                     defaultOverdriveEnabled: editorTab.defaultOverdriveEnabled
 
                     Connections {
-                        target: openDialog
-                        onAccepted: reset()
+                        target: paramManager
+                        onFilenameChanged: reset()
                     }
                     Connections {
                         target: editorTab

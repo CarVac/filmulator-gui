@@ -141,7 +141,7 @@ bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
                   Exiv2::ExifData exifData);
 
 bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
-                  Exiv2::ExifData exifData);
+                  Exiv2::ExifData exifData, int quality);
 
 //Applies the hardcoded post-filmulation tonecurve to the image.
 float default_tonecurve( float input );

@@ -12,7 +12,7 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     paramManager = manager;
-    setHighlights( 0 );
+    /*setHighlights( 0 );
 
     setExposureComp( 0.0 );
 
@@ -24,7 +24,6 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
 
     setBlackpoint( 0 );
     setWhitepoint( 0.002 );
-    //defaultToneCurveEnabled = true;
 
     shadowsX = 0.25;
     param.shadowsX = 0.25;
@@ -38,15 +37,11 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
 
     setSaveTiff( false);
     setSaveJpeg( false );
+    */
 
     zeroHistogram(finalHist);
-    //histFinalRoll++;//signal histogram updates
     zeroHistogram(postFilmHist);
-    //histPostFilmRoll++;
     zeroHistogram(preFilmHist);
-    //histPreFilmRoll++;
-
-    cout << "Constructing FilmImageProvider" << endl;
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -78,7 +73,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     //Write out the images.
     if(saveJpeg)
     {
-        imwrite_jpeg( image, outputFilename, exif);
+        imwrite_jpeg( image, outputFilename, exif, 95);
         saveJpeg = false;
     }
 
@@ -109,7 +104,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     *size = output.size();
     return output;
 }
-
+/*
 //===After load, during demosaic===
 
 //Automatic CA correction
@@ -279,7 +274,7 @@ void FilmImageProvider::setSaturation(float saturationIn)
     abort = true;
     emit saturationChanged();
 }
-
+*/
 void FilmImageProvider::setProgress(float percentDone_in)
 {
     progress = percentDone_in;
@@ -306,11 +301,11 @@ void FilmImageProvider::updateFilmProgress(float percentDone_in)//Percent filmul
     emit progressChanged();
 }
 
-void FilmImageProvider::invalidateImage()
+/*void FilmImageProvider::invalidateImage()
 {
     cout << "filmImageProvider::invalidateImage(). We probably shouldn't be using this." << endl;
     QMutexLocker locker( &mutex );
-}
+}*/
 
 float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, LogY isLog)
 {
@@ -349,7 +344,7 @@ QImage FilmImageProvider::emptyImage()
     return QImage(0,0,QImage::Format_ARGB32);
 }
 
-void FilmImageProvider::rotateLeft()
+/*void FilmImageProvider::rotateLeft()
 {
     QMutexLocker locker( &mutex );
     rotation++;
@@ -372,3 +367,4 @@ void FilmImageProvider::rotateRight()
     param.rotation = rotation;
     abort = true;
 }
+*/

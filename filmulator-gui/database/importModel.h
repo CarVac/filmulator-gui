@@ -59,6 +59,8 @@ signals:
     void backupDirChanged();
     void dirConfigChanged();
 
+    void searchTableChanged();
+
     void workForWorker( const QFileInfo infoIn,
                         const int importTZ,
                         const int cameraTZ,

@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QDir>
 
 void fileInsert( const QString hash,
                  const QString filePathName,

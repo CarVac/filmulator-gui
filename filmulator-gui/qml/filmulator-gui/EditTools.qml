@@ -17,34 +17,19 @@ SplitView {
     // both the image-specific settings (on reloading of an
     // already processed image), as well as default settings
     // for when the user resets the tool back to 'default'.
-    property real exposureComp
     property real defaultExposureComp
-    property real whitepoint
     property real defaultWhitepoint
-    property real blackpoint
     property real defaultBlackpoint
-    property real shadowsY
     property real defaultShadowsY
-    property real highlightsY
     property real defaultHighlightsY
-    property real filmSize
     property real defaultFilmSize
-    property bool defaultCurve
-    property int highlightRecovery
     property int defaultHighlightRecovery
-    property real layerMixConst
     property real defaultLayerMixConst
-    property bool caEnabled
     property bool defaultCaEnabled
-    property real temperature
     property real defaultTemperature
-    property real tint
     property real defaultTint
-    property real vibrance
     property real defaultVibrance
-    property real saturation
     property real defaultSaturation
-    property bool overdriveEnabled
     property bool defaultOverdriveEnabled
 
     signal setAllValues()
@@ -138,7 +123,7 @@ SplitView {
                     Connections {
                         target: root
                         onSetAllValues: {
-                            highlightRecoverySlider.value = paramManager.highlightRecovery
+                            highlightRecoverySlider.value = paramManager.highlights
                         }
                     }
                     Component.onCompleted: {
@@ -160,6 +145,7 @@ SplitView {
                     Connections {
                         target: root
                         onSetAllValues: {
+                            console.log("EditTools; setTemperature from setAllValues")
                             temperatureSlider.value = paramManager.temperature
                         }
                     }

@@ -3,6 +3,9 @@
 #include <iostream>
 #include <QStringList>
 
+using std::cout;
+using std::endl;
+
 ImportModel::ImportModel( QObject *parent ) : SqlModel( parent )
 {
     ImportWorker *worker = new ImportWorker;
@@ -61,15 +64,26 @@ void ImportModel::importDirectory_r( const QString dir )
 
 void ImportModel::workerFinished()
 {
+    cout << "ImportModel queue items remaining: " << queue.size() << endl;
+    emit searchTableChanged();
+    if ( queue.size() <= 0 )
+    {
+        cout << "ImportModel no more work; empty queue" << endl;
+        return;
+    }
+
     queue.pop_front();
 
-    if ( queue.size() == 0 )
+    if ( queue.size() <= 0 )
     {
+        cout << "ImportModel no more work; just emptied the queue" << endl;
         return;
     }
     else if ( !paused )
     {
+        cout << "ImportModel before startWorker" << endl;
         startWorker();
+        cout << "ImportModel after startWorker" << endl;
     }
 }
 

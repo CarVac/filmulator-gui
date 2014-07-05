@@ -19,11 +19,18 @@
 #include "filmSim.hpp"
 
 bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
-                  Exiv2::ExifData exifData)
+                  Exiv2::ExifData exifData, int quality)
 {
     int xsize = output.nc()/3;
     int ysize = output.nr();
-	int quality = 95;
+    if (quality > 100)
+    {
+        quality = 100;
+    }
+    else if (quality < 10)
+    {
+        quality = 10;
+    }
 	
 	outputfilename = outputfilename + ".jpg";
 	//From example.c of libjpeg-turbo

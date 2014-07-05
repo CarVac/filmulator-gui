@@ -112,7 +112,7 @@ void setupDB( QSqlDatabase *db )
                 "ProfTsilverSaltConsumptionConst real,"      //9
                 "ProfTtotalDevelopmentTime real,"            //10
                 "ProfTagitateCount integer,"                 //11
-                "ProfTdevelopmentResolution integer,"        //12
+                "ProfTdevelopmentSteps integer,"             //12
                 "ProfTfilmArea real,"                        //13
                 "ProfTsigmaConst real,"                      //14
                 "ProfTlayerMixConst real,"                   //15
@@ -175,7 +175,7 @@ void setupDB( QSqlDatabase *db )
     //Number of times the developer solution is mixed during the development process
     query.bindValue( 11, 1 ); //agitateCount
     //Number of simulation steps for the development process
-    query.bindValue( 12, 12 ); //developmentResolution
+    query.bindValue( 12, 12 ); //developmentSteps
     //Area of the simulated film
     query.bindValue( 13, 864.0f ); //filmArea
     //Constant that influences the extent of the diffusion; yes this is redundant.
@@ -189,7 +189,7 @@ void setupDB( QSqlDatabase *db )
     //Exposure compensation
     query.bindValue( 18, 0.0f ); //exposureComp
     //White clipping point
-    query.bindValue( 19, 0.0015f ); //whitepoint
+    query.bindValue( 19, 0.002f ); //whitepoint
     //Black clipping point
     query.bindValue( 20, 0.0f ); //blackpoint
     //Input value defining the general shadow region control point
@@ -207,7 +207,7 @@ void setupDB( QSqlDatabase *db )
     //Color temperature WB adjustment
     query.bindValue( 27, 5200.0f ); //temperature
     //Magenta/green tint WB adjustment
-    query.bindValue( 28, 0.0f ); //tint
+    query.bindValue( 28, 1.0f ); //tint
     //Saturation of less-saturated stuff
     query.bindValue( 29, 0.0f ); //vibrance
     //Saturation of whole image

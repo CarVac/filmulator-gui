@@ -19,11 +19,10 @@ struct Histogram {
 class Interface
 {
 public:
-    virtual void setProgress(float) = 0;
-    virtual bool isGUI() = 0;
-    virtual void updateHistPreFilm( const matrix<float> image, float maximum ) = 0;
-    virtual void updateHistPostFilm( const matrix<float> image, float maximum ) = 0;
-    virtual void updateHistFinal( const matrix<unsigned short> image ) = 0;
+    virtual void setProgress(float){}
+    virtual void updateHistPreFilm(const matrix<float> image, float maximum){}
+    virtual void updateHistPostFilm(const matrix<float> image, float maximum){}
+    virtual void updateHistFinal(const matrix<unsigned short> image){}
 
 
 };

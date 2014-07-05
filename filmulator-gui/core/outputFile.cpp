@@ -42,7 +42,7 @@ void output_file(matrix<unsigned short> &output, vector<string> input_filename_l
     
     if (jpeg_out)
     {
-        imwrite_jpeg(output,output_image_filename,exifData);
+        imwrite_jpeg(output,output_image_filename,exifData, 95);
     }
     else
     {

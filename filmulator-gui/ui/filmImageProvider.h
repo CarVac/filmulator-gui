@@ -15,7 +15,7 @@
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
     Q_OBJECT
-    Q_PROPERTY(bool caEnabled READ getCaEnabled WRITE setCaEnabled NOTIFY caEnabledChanged)
+    /*Q_PROPERTY(bool caEnabled READ getCaEnabled WRITE setCaEnabled NOTIFY caEnabledChanged)
     Q_PROPERTY(int highlights READ getHighlights WRITE setHighlights NOTIFY highlightsChanged)
 
     Q_PROPERTY(float exposureComp READ getExposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -35,6 +35,7 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 
     Q_PROPERTY(float vibrance READ getVibrance WRITE setVibrance NOTIFY vibranceChanged)
     Q_PROPERTY(float saturation READ getSaturation WRITE setSaturation NOTIFY saturationChanged)
+    */
 
     Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
 
@@ -48,7 +49,7 @@ public:
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
 
 
-    //Setter methods
+    /*//Setter methods
     //After load, during demosaic
     void setCaEnabled(bool caEnabledIn);
     void setHighlights(int highlightsIn);
@@ -78,12 +79,12 @@ public:
 
     void setVibrance(float vibranceIn);
     void setSaturation(float saturationIn);
-
+*/
     void setProgress(float progressIn);
 
     void setSaveTiff(bool saveTiffIn);
     void setSaveJpeg(bool saveJpegIn);
-
+/*
     //Getter methods
     bool getCaEnabled(){return caEnabled;}
     int getHighlights(){return highlights;}
@@ -105,21 +106,20 @@ public:
 
     float getVibrance(){return vibrance;}
     float getSaturation(){return saturation;}
-
+*/
     float getProgress(){return progress;}
     float getSaveTiff(){return saveTiff;}
     float getSaveJpeg(){return saveJpeg;}
 
     void updateFilmProgress(float);
-    bool isGUI(){return true;}
     void setValid( Valid );
 
-    Q_INVOKABLE void invalidateImage();
+    //Q_INVOKABLE void invalidateImage();
     Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,LogY::no);}
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
-    Q_INVOKABLE void rotateRight();
-    Q_INVOKABLE void rotateLeft();
+//    Q_INVOKABLE void rotateRight();
+//    Q_INVOKABLE void rotateLeft();
 
     void updateHistPreFilm( const matrix<float> image, float maximum );
     void updateHistPostFilm( const matrix<float> image, float maximum );
@@ -131,7 +131,7 @@ protected:
     ParameterManager * paramManager;
     bool abort;
     QMutex mutex;
-
+/*
     bool caEnabled;
     int highlights;
 
@@ -150,15 +150,15 @@ protected:
     float shadowsX, shadowsY, highlightsX, highlightsY;
     float vibrance,saturation;
     int rotation;
-
-    float wbRMultiplier, wbGMultiplier, wbBMultiplier;
+*/
+//    float wbRMultiplier, wbGMultiplier, wbBMultiplier;
 
     float progress;
 
     bool saveTiff;
     bool saveJpeg;
 
-    ProcessingParameters param;
+//    ProcessingParameters param;
 
     struct timeval request_start_time;
 
@@ -188,7 +188,7 @@ protected:
     void zeroHistogram(Histogram &hist);
 
 signals:
-    void caEnabledChanged();
+/*    void caEnabledChanged();
     void highlightsChanged();
 
     void exposureCompChanged();
@@ -209,7 +209,7 @@ signals:
 
     void vibranceChanged();
     void saturationChanged();
-
+*/
     void progressChanged();
     void saveTiffChanged();
     void saveJpegChanged();

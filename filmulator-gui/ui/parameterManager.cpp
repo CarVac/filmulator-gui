@@ -2,6 +2,44 @@
 
 ParameterManager::ParameterManager() : QObject(0)
 {
+    std::vector<std::string> inputFilenameList;
+    inputFilenameList.push_back("");
+    param.filenameList = inputFilenameList;
+    param.tiffIn = false;
+    param.jpegIn = false;
+    param.caEnabled = false;
+    param.highlights = 0;
+    std::vector<float> exposureCompList;
+    exposureCompList.push_back(0.0f);
+    param.exposureComp = exposureCompList;
+    param.temperature = 5200.0f;
+    param.tint = 1.0f;
+    param.filmParams.initialDeveloperConcentration = 1.0f;
+    param.filmParams.reservoirThickness = 1000.0f;
+    param.filmParams.activeLayerThickness = 0.1f;
+    param.filmParams.crystalsPerPixel = 500.0f;
+    param.filmParams.initialCrystalRadius = 0.00001f;
+    param.filmParams.initialSilverSaltDensity = 1.0f;
+    param.filmParams.initialSilverSaltDensity = 2000000.0f;
+    param.filmParams.crystalGrowthConst =  0.00001f;
+    param.filmParams.silverSaltConsumptionConst = 2000000.0f;
+    param.filmParams.totalDevelTime = 100.0f;
+    param.filmParams.agitateCount = 1;
+    param.filmParams.developmentSteps = 12;
+    param.filmParams.filmArea = 864.0f;
+    param.filmParams.sigmaConst = 0.2f;
+    param.filmParams.layerMixConst = 0.2f;
+    param.filmParams.layerTimeDivisor = 20.0f;
+    param.filmParams.rolloffBoundary = 51275;
+    param.blackpoint = 0.0f;
+    param.whitepoint = 0.002f;
+    param.shadowsX = 0.25f;
+    param.shadowsY = 0.25f;
+    param.highlightsX = 0.75f;
+    param.highlightsY = 0.75f;
+    param.vibrance = 0.0f;
+    param.saturation = 0.0f;
+    param.rotation = 0;
 }
 
 ProcessingParameters ParameterManager::getParams()
@@ -360,6 +398,7 @@ QString ParameterManager::queryHelper(QString imageID, QString columnName)
 
 void ParameterManager::selectImage(QString imageID)
 {
+//    mutex.lock();
     QMutexLocker locker(&mutex);
     imageIndex = imageID;
 
@@ -374,14 +413,16 @@ void ParameterManager::selectImage(QString imageID)
     std::vector<string> tempFilename;
     tempFilename.push_back(m_filename.toStdString());
     param.filenameList = tempFilename;
-    emit filenameChanged();
+//    emit filenameChanged();
 
     //tiffIn should be false.
     m_tiffIn = false;
+    param.tiffIn = false;
     emit tiffInChanged();
 
     //So should jpegIn.
     m_jpegIn = false;
+    param.jpegIn = false;
     emit jpegInChanged();
 
 
@@ -399,18 +440,21 @@ void ParameterManager::selectImage(QString imageID)
 
     //First is caEnabled.
     nameCol = rec.indexOf("ProcTcaEnabled");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcaEnabled" << endl; }
     m_caEnabled = query.value(nameCol).toBool();
     param.caEnabled = m_caEnabled;
     emit caEnabledChanged();
 
     //Next is highlights (highlight recovery)
-    nameCol = rec.indexOf("ProcThighlights");
+    nameCol = rec.indexOf("ProcThighlightRecovery");
+    if (-1 == nameCol) { std::cout << "paramManager ProcThighlightRecovery" << endl; }
     m_highlights = query.value(nameCol).toInt();
     param.highlights = m_highlights;
     emit highlightsChanged();
 
     //Exposure compensation
     nameCol = rec.indexOf("ProcTexposureComp");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTexposureComp" << endl; }
     m_exposureComp = query.value(nameCol).toFloat();
     std::vector<float> exposureCompList;
     exposureCompList.push_back(m_exposureComp);
@@ -419,171 +463,201 @@ void ParameterManager::selectImage(QString imageID)
 
     //Temperature
     nameCol = rec.indexOf("ProcTtemperature");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTtemperature" << endl; }
     m_temperature = query.value(nameCol).toDouble();
     param.temperature = m_temperature;
     emit temperatureChanged();
 
     //Tint
     nameCol = rec.indexOf("ProcTtint");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTtint" << endl; }
     m_tint = query.value(nameCol).toDouble();
     param.tint = m_tint;
     emit tintChanged();
 
     //Initial developer concentration
     nameCol = rec.indexOf("ProcTinitialDeveloperConcentration");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTinitialDeveloperConcentration" << endl; }
     m_initialDeveloperConcentration = query.value(nameCol).toFloat();
     param.filmParams.initialDeveloperConcentration = m_initialDeveloperConcentration;
     emit initialDeveloperConcentrationChanged();
 
     //Reservoir thickness
     nameCol = rec.indexOf("ProcTreservoirThickness");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTreservoirThickness" << endl; }
     m_reservoirThickness = query.value(nameCol).toFloat();
     param.filmParams.reservoirThickness = m_reservoirThickness;
     emit reservoirThicknessChanged();
 
     //Active layer thickness
     nameCol = rec.indexOf("ProcTactiveLayerThickness");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTactiveLayerThickness" << endl; }
     m_activeLayerThickness = query.value(nameCol).toFloat();
     param.filmParams.activeLayerThickness = m_activeLayerThickness;
     emit activeLayerThicknessChanged();
 
     //Crystals per pixel
     nameCol = rec.indexOf("ProcTcrystalsPerPixel");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcrystalsPerPixel" << endl; }
     m_crystalsPerPixel = query.value(nameCol).toFloat();
     param.filmParams.crystalsPerPixel = m_crystalsPerPixel;
     emit crystalsPerPixelChanged();
 
     //Initial crystal radius
     nameCol = rec.indexOf("ProcTinitialCrystalRadius");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTinitialCrystalRadius" << endl; }
     m_initialCrystalRadius = query.value(nameCol).toFloat();
     param.filmParams.initialCrystalRadius = m_initialCrystalRadius;
     emit initialCrystalRadiusChanged();
 
     //Initial silver salt area density
     nameCol = rec.indexOf("ProcTinitialSilverSaltDensity");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTinitialSilverSaltDensity" << endl; }
     m_initialSilverSaltDensity = query.value(nameCol).toFloat();
     param.filmParams.initialSilverSaltDensity = m_initialSilverSaltDensity;
     emit initialSilverSaltDensityChanged();
 
     //Developer consumption rate constant
     nameCol = rec.indexOf("ProcTdeveloperConsumptionConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTdeveloperConsumptionConst" << endl; }
     m_developerConsumptionConst = query.value(nameCol).toFloat();
     param.filmParams.developerConsumptionConst = m_developerConsumptionConst;
     emit developerConsumptionConstChanged();
 
     //Crystal growth rate constant
     nameCol = rec.indexOf("ProcTcrystalGrowthConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcrystalGrowthConst" << endl; }
     m_crystalGrowthConst = query.value(nameCol).toFloat();
     param.filmParams.crystalGrowthConst = m_crystalGrowthConst;
     emit crystalGrowthConstChanged();
 
     //Silver halide consumption rate constant
     nameCol = rec.indexOf("ProcTsilverSaltConsumptionConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTsilverSaltConsumptionConst" << endl; }
     m_silverSaltConsumptionConst = query.value(nameCol).toFloat();
     param.filmParams.silverSaltConsumptionConst = m_silverSaltConsumptionConst;
     emit crystalGrowthConstChanged();
 
     //Total development time
     nameCol = rec.indexOf("ProcTtotalDevelopmentTime");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTtotalDevelopmentTime" << endl; }
     m_totalDevelopmentTime = query.value(nameCol).toFloat();
     param.filmParams.totalDevelTime = m_totalDevelopmentTime;
     emit totalDevelopmentTimeChanged();
 
     //Number of agitations
-    nameCol = rec.indexOf("ProcTagitationCount");
+    nameCol = rec.indexOf("ProcTagitateCount");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTagitateCount" << endl; }
     m_agitateCount = query.value(nameCol).toInt();
     param.filmParams.agitateCount = m_agitateCount;
     emit agitateCountChanged();
 
     //Number of simulation steps for development
-    nameCol = rec.indexOf("ProcTdevelopmentResolution");
+    nameCol = rec.indexOf("ProcTdevelopmentSteps");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTdevelopmentSteps" << endl; }
     m_developmentSteps = query.value(nameCol).toInt();
     param.filmParams.developmentSteps = m_developmentSteps;
     emit developmentStepsChanged();
 
     //Area of film for the simulation
     nameCol = rec.indexOf("ProcTfilmArea");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTfilmArea" << endl; }
     m_filmArea = query.value(nameCol).toFloat();
     param.filmParams.filmArea = m_filmArea;
     emit filmAreaChanged();
 
     //A constant for the size of the diffusion. It...affects the same thing as film area.
     nameCol = rec.indexOf("ProcTsigmaConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTsigmaConst" << endl; }
     m_sigmaConst = query.value(nameCol).toFloat();
     param.filmParams.sigmaConst = m_sigmaConst;
     emit sigmaConstChanged();
 
     //Layer mix constant: the amount of active developer that gets exchanged with the reservoir.
     nameCol = rec.indexOf("ProcTlayerMixConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTlayerMixConst" << endl; }
     m_layerMixConst = query.value(nameCol).toFloat();
     param.filmParams.layerMixConst = m_layerMixConst;
     emit layerMixConstChanged();
 
     //Layer time divisor: Controls the relative intra-layer and inter-layer diffusion.
     nameCol = rec.indexOf("ProcTlayerTimeDivisor");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTlayerTimeDivisor" << endl; }
     m_layerTimeDivisor = query.value(nameCol).toFloat();
     param.filmParams.layerTimeDivisor = m_layerTimeDivisor;
     emit layerTimeDivisorChanged();
 
     //Rolloff boundary. This is where highlights start to roll off.
     nameCol = rec.indexOf("ProcTrolloffBoundary");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrolloffBoundary" << endl; }
     m_rolloffBoundary = query.value(nameCol).toInt();
     param.filmParams.rolloffBoundary = m_rolloffBoundary;
     emit rolloffBoundaryChanged();
 
     //Post-filmulator black clipping point
     nameCol = rec.indexOf("ProcTblackpoint");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTblackpoint" << endl; }
     m_blackpoint = query.value(nameCol).toFloat();
     param.blackpoint = m_blackpoint;
     emit blackpointChanged();
 
     //Post-filmulator white clipping point
     nameCol = rec.indexOf("ProcTwhitepoint");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTwhitepoint" << endl; }
     m_whitepoint = query.value(nameCol).toFloat();
     param.whitepoint = m_whitepoint;
     emit whitepointChanged();
 
     //Shadow control point x value
     nameCol = rec.indexOf("ProcTshadowsX");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTshadowsX" << endl; }
     m_shadowsX = query.value(nameCol).toFloat();
     param.shadowsX = m_shadowsX;
     emit shadowsXChanged();
 
     //Shadow control point y value
     nameCol = rec.indexOf("ProcTshadowsY");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTshadowsY" << endl; }
     m_shadowsY = query.value(nameCol).toFloat();
     param.shadowsY = m_shadowsY;
     emit shadowsYChanged();
 
     //Highlight control point x value
     nameCol = rec.indexOf("ProcThighlightsX");
+    if (-1 == nameCol) { std::cout << "paramManager ProcThighlightsX" << endl; }
     m_highlightsX = query.value(nameCol).toFloat();
     param.highlightsX = m_highlightsX;
     emit highlightsXChanged();
 
     //Highlight control point y value
     nameCol = rec.indexOf("ProcThighlightsY");
+    if (-1 == nameCol) { std::cout << "paramManager ProcThighlightsY" << endl; }
     m_highlightsY = query.value(nameCol).toFloat();
     param.highlightsY = m_highlightsY;
     emit highlightsYChanged();
 
     //Vibrance (saturation of less-saturated things)
     nameCol = rec.indexOf("ProcTvibrance");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTvibrance" << endl; }
     m_vibrance = query.value(nameCol).toFloat();
     param.vibrance = m_vibrance;
     emit vibranceChanged();
 
     //Saturation
     nameCol = rec.indexOf("ProcTsaturation");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTsaturation" << endl; }
     m_saturation = query.value(nameCol).toFloat();
     param.saturation = m_saturation;
     emit saturationChanged();
 
     //Rotation
     nameCol = rec.indexOf("ProcTrotation");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotation" << endl; }
     m_rotation = query.value(nameCol).toInt();
     param.rotation = m_rotation;
     emit rotationChanged();
 
+    locker.unlock();
+    emit filenameChanged();
     emit paramChanged();
 }

@@ -22,11 +22,11 @@ void SqlModel::setQuery( const QSqlQuery &query )
 
 void SqlModel::generateRoleNames()
 {
-    cout << record().count() << endl;
+    //cout << record().count() << endl;
     for( int i=0; i<record().count(); i++ )
     {
         this->m_roleNames[ Qt::UserRole + i + 1 ] = record().fieldName( i ).toLatin1();
-        cout << "SqlModel::generateRoleNames: " << string( record().fieldName( i ).toLatin1() ) << endl;
+        //cout << "SqlModel::generateRoleNames: " << string( record().fieldName( i ).toLatin1() ) << endl;
     }
 }
 
