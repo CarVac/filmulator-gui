@@ -131,68 +131,6 @@ ApplicationWindow {
                 running: true
                 onTriggered: queueLoader.source = "Queue.qml"
             }
-
-
-            /*
-            ToolButton {
-                id: openButton
-                anchors.right: saveTIFFButton.left
-                anchors.verticalCenter: saveTIFFButton.verticalCenter
-                text: qsTr( "Open" )
-                width: 80
-                height: 40
-                action: Action {
-                    onTriggered: {
-                        openDialog.open()
-                    }
-                }
-            }
-
-            ToolButton {
-                id: saveTIFFButton
-                anchors.centerIn: parent
-                text: qsTr( "Save TIFF" )
-                width: 80
-                height: 40
-                signal update()
-                action: Action {
-                    onTriggered: {
-                        filmProvider.saveTiff = true
-                        saveTIFFButton.update()
-                    }
-                }
-                Component.onCompleted: {
-                    saveTIFFButton.update.connect( editorTab.updateImage )
-                }
-            }
-
-            ToolButton {
-                id: saveJPEGButton
-                anchors.left: saveTIFFButton.right
-                anchors.verticalCenter: saveTIFFButton.verticalCenter
-                text: qsTr( "Save JPEG" )
-                width: 80
-                height: 40
-                signal update()
-                action: Action {
-                    onTriggered: {
-                        filmProvider.saveJpeg = true
-                        saveJPEGButton.update()
-                    }
-                }
-                Component.onCompleted: {
-                    saveJPEGButton.update.connect( editorTab.updateImage )
-                }
-            }
-
-            FileDialog {
-                id: openDialog
-                title: qsTr( "Select a raw file" )
-                onAccepted: {
-                    editorTab.location = fileUrl
-                }
-            }
-            */
         }
     }
 

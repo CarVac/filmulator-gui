@@ -45,6 +45,12 @@ void ImportModel::importDirectory_r( const QString dir )
         return;
     }
 
+    QMutexLocker locker(&mutex);
+    if (0 == queue.size())
+    {
+        maxQueue = 0;
+    }
+
     for ( int i = 0; i < fileList.size(); i++ )
     {
         importParams params;
@@ -55,15 +61,17 @@ void ImportModel::importDirectory_r( const QString dir )
         params.backupDir = backupDir;
         params.dirConfig = dirConfig;
         queue.push_back( params );
+        maxQueue++;
     }
 
     paused = false;
 
-    startWorker();
+    startWorker(queue.front());
 }
 
 void ImportModel::workerFinished()
 {
+    QMutexLocker locker(&mutex);
     cout << "ImportModel queue items remaining: " << queue.size() << endl;
     emit searchTableChanged();
     if ( queue.size() <= 0 )
@@ -73,6 +81,12 @@ void ImportModel::workerFinished()
     }
 
     queue.pop_front();
+    if (maxQueue != 0)
+    {
+        progress = float(maxQueue - queue.size())/float(maxQueue);
+        cout << "ImportModel::workerFinished; progress = " << progress << endl;
+        emit progressChanged();
+    }
 
     if ( queue.size() <= 0 )
     {
@@ -82,19 +96,19 @@ void ImportModel::workerFinished()
     else if ( !paused )
     {
         cout << "ImportModel before startWorker" << endl;
-        startWorker();
-        cout << "ImportModel after startWorker" << endl;
+        startWorker(queue.front());
+        cout << "importModel after startWorker" << endl;
     }
 }
 
-void ImportModel::startWorker()
+void ImportModel::startWorker(importParams params)
 {
 
-    const QFileInfo info = queue.front().fileInfo;
-    const int iTZ = queue.front().importTZ;
-    const int cTZ = queue.front().cameraTZ;
-    const QString pDir = queue.front().photoDir;
-    const QString bDir = queue.front().backupDir;
-    const QString dConf = queue.front().dirConfig;
+    const QFileInfo info = params.fileInfo;
+    const int iTZ = params.importTZ;
+    const int cTZ = params.cameraTZ;
+    const QString pDir = params.photoDir;
+    const QString bDir = params.backupDir;
+    const QString dConf = params.dirConfig;
     emit workForWorker( info, iTZ, cTZ, pDir, bDir, dConf );
 }

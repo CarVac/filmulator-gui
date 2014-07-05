@@ -8,7 +8,8 @@
 #include "importWorker.h"
 #include <QThread>
 #include <QFileInfo>
-
+#include <QMutex>
+#include <QMutexLocker>
 
 struct importParams {
     QFileInfo fileInfo;
@@ -23,12 +24,14 @@ class ImportModel : public SqlModel
 {
     Q_OBJECT
 
-    Q_PROPERTY( int importTZ      READ getImportTZ      WRITE setImportTZ      NOTIFY importTZChanged )
-    Q_PROPERTY( int cameraTZ      READ getCameraTZ      WRITE setCameraTZ      NOTIFY cameraTZChanged )
+    Q_PROPERTY(int importTZ      READ getImportTZ      WRITE setImportTZ      NOTIFY importTZChanged)
+    Q_PROPERTY(int cameraTZ      READ getCameraTZ      WRITE setCameraTZ      NOTIFY cameraTZChanged)
 
-    Q_PROPERTY( QString photoDir  READ getPhotoDir      WRITE setPhotoDir      NOTIFY photoDirChanged )
-    Q_PROPERTY( QString backupDir READ getBackupDir     WRITE setBackupDir     NOTIFY backupDirChanged )
-    Q_PROPERTY( QString dirConfig READ getDirConfig     WRITE setDirConfig     NOTIFY dirConfigChanged )
+    Q_PROPERTY(QString photoDir  READ getPhotoDir      WRITE setPhotoDir      NOTIFY photoDirChanged)
+    Q_PROPERTY(QString backupDir READ getBackupDir     WRITE setBackupDir     NOTIFY backupDirChanged)
+    Q_PROPERTY(QString dirConfig READ getDirConfig     WRITE setDirConfig     NOTIFY dirConfigChanged)
+
+    Q_PROPERTY(int progress READ getProgress NOTIFY progressChanged)
 
 public:
     explicit ImportModel( QObject *parent = 0 );
@@ -48,6 +51,8 @@ public:
     QString getBackupDir() { return backupDir; }
     QString getDirConfig() { return dirConfig; }
 
+    float getProgress() {return progress;}
+
 public slots:
     void workerFinished();
 
@@ -58,6 +63,8 @@ signals:
     void photoDirChanged();
     void backupDirChanged();
     void dirConfigChanged();
+
+    void progressChanged();
 
     void searchTableChanged();
 
@@ -76,12 +83,16 @@ protected:
     QString dirConfig;
 
     std::deque<importParams> queue;
+    int maxQueue;
+    float progress = 1;
 
     QThread workerThread;
 
     bool paused = true;
 
-    void startWorker();
+    QMutex mutex;
+
+    void startWorker(importParams);
 };
 
 #endif // IMPORTMODEL_H

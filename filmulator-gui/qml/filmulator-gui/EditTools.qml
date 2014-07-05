@@ -64,10 +64,10 @@ SplitView {
         }
     }
 
-
     Item {
         id: toolListItem
         width: parent.width
+        Layout.fillHeight: true
         Flickable {
             id: toolList
             width: parent.width
@@ -495,6 +495,46 @@ SplitView {
                     //down
                     toolList.flick(0,-600);
                 }
+            }
+        }
+    }
+
+    Item {
+        id: saveButtons
+        width: parent.width
+        height: 40
+        Layout.minimumHeight: 40
+        Layout.maximumHeight: 40
+        ToolButton {
+            id: saveTIFFButton
+            width: parent.width/2
+            height: 40
+            x: 0
+            y: 0
+            text: qsTr("Save TIFF")
+            action: Action {
+                onTriggered: {
+                    filmProvider.saveTiff = true
+                }
+            }
+            Component.onCompleted: {
+                saveTIFFButton.clicked.connect(root.updateImage)
+            }
+        }
+        ToolButton {
+            id: saveJPEGbutton
+            width: parent.width/2
+            height: 40
+            x: width
+            y: 0
+            text: qsTr("Save JPEG")
+            action: Action {
+                onTriggered: {
+                    filmProvider.saveJpeg = true
+                }
+            }
+            Component.onCompleted: {
+                saveJPEGbutton.clicked.connect(root.updateImage)
             }
         }
     }
