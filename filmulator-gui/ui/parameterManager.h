@@ -1,7 +1,10 @@
 #ifndef PARAMETERMANAGER_H
 #define PARAMETERMANAGER_H
 
+#include <QObject>
+#include <QVariant>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include "../core/imagePipeline.h"
 #include <QMutex>
 #include <QMutexLocker>
@@ -29,10 +32,11 @@ class ParameterManager : public QObject
     Q_PROPERTY(float activeLayerThickness MEMBER m_activeLayerThickness WRITE setActiveLayerThickness NOTIFY activeLayerThicknessChanged)
     Q_PROPERTY(float crystalsPerPixel MEMBER m_crystalsPerPixel WRITE setCrystalsPerPixel NOTIFY crystalsPerPixelChanged)
     Q_PROPERTY(float initialCrystalRadius MEMBER m_initialCrystalRadius WRITE setInitialCrystalRadius NOTIFY initialCrystalRadiusChanged)
+    Q_PROPERTY(float initialSilverSaltDensity MEMBER m_initialSilverSaltDensity WRITE setInitialSilverSaltDensity NOTIFY initialSilverSaltDensityChanged)
     Q_PROPERTY(float developerConsumptionConst MEMBER m_developerConsumptionConst WRITE setDeveloperConsumptionConst NOTIFY developerConsumptionConstChanged)
     Q_PROPERTY(float crystalGrowthConst MEMBER m_crystalGrowthConst WRITE setCrystalGrowthConst NOTIFY crystalGrowthConstChanged)
     Q_PROPERTY(float silverSaltConsumptionConst MEMBER m_silverSaltConsumptionConst WRITE setSilverSaltConsumptionConst NOTIFY silverSaltConsumptionConstChanged)
-    Q_PROPERTY(float totalDevelTime MEMBER m_totalDevelTime WRITE setTotalDevelTime NOTIFY totalDevelTimeChanged)
+    Q_PROPERTY(float totalDevelopmentTime MEMBER m_totalDevelopmentTime WRITE setTotalDevelopmentTime NOTIFY totalDevelopmentTimeChanged)
     Q_PROPERTY(int agitateCount MEMBER m_agitateCount WRITE setAgitateCount NOTIFY agitateCountChanged)
     Q_PROPERTY(int developmentSteps MEMBER m_developmentSteps WRITE setDevelopmentSteps NOTIFY developmentStepsChanged)
     Q_PROPERTY(float filmArea MEMBER m_filmArea WRITE setFilmArea NOTIFY filmAreaChanged)
@@ -95,10 +99,11 @@ protected:
     float m_activeLayerThickness;
     float m_crystalsPerPixel;
     float m_initialCrystalRadius;
+    float m_initialSilverSaltDensity;
     float m_developerConsumptionConst;
     float m_crystalGrowthConst;
     float m_silverSaltConsumptionConst;
-    float m_totalDevelTime;
+    float m_totalDevelopmentTime;
     int m_agitateCount;
     int m_developmentSteps;
     float m_filmArea;
@@ -143,10 +148,11 @@ protected:
     void setActiveLayerThickness(float);
     void setCrystalsPerPixel(float);
     void setInitialCrystalRadius(float);
+    void setInitialSilverSaltDensity(float);
     void setDeveloperConsumptionConst(float);
     void setCrystalGrowthConst(float);
     void setSilverSaltConsumptionConst(float);
-    void setTotalDevelTime(float);
+    void setTotalDevelopmentTime(float);
     void setAgitateCount(int);
     void setDevelopmentSteps(int);
     void setFilmArea(float);
@@ -191,10 +197,11 @@ signals:
     void activeLayerThicknessChanged();
     void crystalsPerPixelChanged();
     void initialCrystalRadiusChanged();
+    void initialSilverSaltDensityChanged();
     void developerConsumptionConstChanged();
     void crystalGrowthConstChanged();
     void silverSaltConsumptionConstChanged();
-    void totalDevelTimeChanged();
+    void totalDevelopmentTimeChanged();
     void agitateCountChanged();
     void developmentStepsChanged();
     void filmAreaChanged();

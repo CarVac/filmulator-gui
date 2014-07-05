@@ -112,7 +112,7 @@ void createNewProfile( const QString fileHash,
     query.bindValue(  9, defaultQuery.value(  9 ).toFloat() );//silverSaltConsumptionConst
     query.bindValue( 10, defaultQuery.value( 10 ).toFloat() );//totalDevelopmentTime
     query.bindValue( 11, defaultQuery.value( 11 ).toInt()   );//agitateCount
-    query.bindValue( 12, defaultQuery.value( 12 ).toInt()   );//developmentResolution
+    query.bindValue( 12, defaultQuery.value( 12 ).toInt()   );//developmentSteps
     query.bindValue( 13, defaultQuery.value( 13 ).toFloat() );//filmArea
     query.bindValue( 14, defaultQuery.value( 14 ).toFloat() );//sigmaConst
     query.bindValue( 15, defaultQuery.value( 15 ).toFloat() );//layerMixConst

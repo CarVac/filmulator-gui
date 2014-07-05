@@ -74,7 +74,7 @@ void setupDB( QSqlDatabase *db )
                 "ProcTsilverSaltConsumptionConst real,"      //9
                 "ProcTtotalDevelopmentTime real,"            //10
                 "ProcTagitateCount integer,"                 //11
-                "ProcTdevelopmentResolution integer,"        //12
+                "ProcTdevelopmentSteps integer,"             //12
                 "ProcTfilmArea real,"                        //13
                 "ProcTsigmaConst real,"                      //14
                 "ProcTlayerMixConst real,"                   //15
@@ -93,7 +93,7 @@ void setupDB( QSqlDatabase *db )
                 "ProcTtint real,"                            //28
                 "ProcTvibrance real,"                        //29
                 "ProcTsaturation real,"                      //30
-                "ProcTorientation integer"                   //31
+                "ProcTrotation integer"                      //31
                 ");"
                 );
 

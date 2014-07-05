@@ -66,7 +66,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
     mutex.unlock();
 
     //Prepare the output filename.
-    string outputFilename = tempParams.filenameList[0].toStdString();
+    string outputFilename = tempParams.filenameList[0];
     outputFilename.append("-output");
 
     //Prepare an exif object for later applying to the output files.

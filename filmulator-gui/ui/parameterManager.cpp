@@ -16,7 +16,7 @@ void ParameterManager::setFilename(QString filename)
     QMutexLocker locker(&mutex);
     m_filename = filename;
     std::vector<std::string> inputFilenameList;
-    inputFilenameList.push_back(filename);
+    inputFilenameList.push_back(filename.toStdString());
     param.filenameList = inputFilenameList;
     emit filenameChanged();
     emit paramChanged();
@@ -31,7 +31,7 @@ void ParameterManager::setTiffIn(bool tiffIn)
     emit paramChanged();
 }
 
-void ParameterManager::setjpegIn(bool jpegIn)
+void ParameterManager::setJpegIn(bool jpegIn)
 {
     QMutexLocker locker(&mutex);
     m_jpegIn = jpegIn;
@@ -132,6 +132,15 @@ void ParameterManager::setInitialCrystalRadius(float initialCrystalRadius)
     emit paramChanged();
 }
 
+void ParameterManager::setInitialSilverSaltDensity(float initialSilverSaltDensity)
+{
+    QMutexLocker locker(&mutex);
+    m_initialSilverSaltDensity = initialSilverSaltDensity;
+    param.filmParams.initialSilverSaltDensity = initialSilverSaltDensity;
+    emit initialSilverSaltDensityChanged();
+    emit paramChanged();
+}
+
 void ParameterManager::setDeveloperConsumptionConst(float developerConsumptionConst)
 {
     QMutexLocker locker(&mutex);
@@ -159,12 +168,12 @@ void ParameterManager::setSilverSaltConsumptionConst(float silverSaltConsumption
     emit paramChanged();
 }
 
-void ParameterManager::setTotalDevelTime(float totalDevelTime)
+void ParameterManager::setTotalDevelopmentTime(float totalDevelopmentTime)
 {
     QMutexLocker locker(&mutex);
-    m_totalDevelTime = totalDevelTime;
-    param.filmParams.totalDevelTime = totalDevelTime;
-    emit totalDevelTimeChanged();
+    m_totalDevelopmentTime = totalDevelopmentTime;
+    param.filmParams.totalDevelTime = totalDevelopmentTime;
+    emit totalDevelopmentTimeChanged();
     emit paramChanged();
 }
 
@@ -294,6 +303,15 @@ void ParameterManager::setVibrance(float vibrance)
     emit paramChanged();
 }
 
+void ParameterManager::setSaturation(float saturation)
+{
+    QMutexLocker locker(&mutex);
+    m_saturation = saturation;
+    param.saturation = saturation;
+    emit saturationChanged();
+    emit paramChanged();
+}
+
 void ParameterManager::setRotation(int rotation)
 {
     QMutexLocker locker(&mutex);
@@ -347,8 +365,15 @@ void ParameterManager::selectImage(QString imageID)
 
     QString tempString = imageID;
     tempString.truncate(32);//length of md5
-    m_filename = tempString;
-    param.filename = m_filename;
+    QSqlQuery query;
+    query.prepare("SELECT FTfilePath FROM FileTable WHERE FTfileID = ?;");
+    query.bindValue(0, QVariant(tempString));
+    query.exec();
+    query.first();
+    m_filename = query.value(0).toString();
+    std::vector<string> tempFilename;
+    tempFilename.push_back(m_filename.toStdString());
+    param.filenameList = tempFilename;
     emit filenameChanged();
 
     //tiffIn should be false.
@@ -362,10 +387,9 @@ void ParameterManager::selectImage(QString imageID)
 
     //Everything else can be pulled from sql.
     //This query will be shared.
-    QSqlQuery query;
     query.prepare("SELECT * FROM ProcessingTable WHERE ProcTprocID = ?;");
     query.bindValue(0, imageID);
-    query.exec;
+    query.exec();
 
     //This will help us get the column index of the desired column name.
     QSqlRecord rec = query.record();
@@ -375,7 +399,191 @@ void ParameterManager::selectImage(QString imageID)
 
     //First is caEnabled.
     nameCol = rec.indexOf("ProcTcaEnabled");
-    m_caEnabled = query.value(nameCol).toBool;
+    m_caEnabled = query.value(nameCol).toBool();
     param.caEnabled = m_caEnabled;
     emit caEnabledChanged();
+
+    //Next is highlights (highlight recovery)
+    nameCol = rec.indexOf("ProcThighlights");
+    m_highlights = query.value(nameCol).toInt();
+    param.highlights = m_highlights;
+    emit highlightsChanged();
+
+    //Exposure compensation
+    nameCol = rec.indexOf("ProcTexposureComp");
+    m_exposureComp = query.value(nameCol).toFloat();
+    std::vector<float> exposureCompList;
+    exposureCompList.push_back(m_exposureComp);
+    param.exposureComp = exposureCompList;
+    emit exposureCompChanged();
+
+    //Temperature
+    nameCol = rec.indexOf("ProcTtemperature");
+    m_temperature = query.value(nameCol).toDouble();
+    param.temperature = m_temperature;
+    emit temperatureChanged();
+
+    //Tint
+    nameCol = rec.indexOf("ProcTtint");
+    m_tint = query.value(nameCol).toDouble();
+    param.tint = m_tint;
+    emit tintChanged();
+
+    //Initial developer concentration
+    nameCol = rec.indexOf("ProcTinitialDeveloperConcentration");
+    m_initialDeveloperConcentration = query.value(nameCol).toFloat();
+    param.filmParams.initialDeveloperConcentration = m_initialDeveloperConcentration;
+    emit initialDeveloperConcentrationChanged();
+
+    //Reservoir thickness
+    nameCol = rec.indexOf("ProcTreservoirThickness");
+    m_reservoirThickness = query.value(nameCol).toFloat();
+    param.filmParams.reservoirThickness = m_reservoirThickness;
+    emit reservoirThicknessChanged();
+
+    //Active layer thickness
+    nameCol = rec.indexOf("ProcTactiveLayerThickness");
+    m_activeLayerThickness = query.value(nameCol).toFloat();
+    param.filmParams.activeLayerThickness = m_activeLayerThickness;
+    emit activeLayerThicknessChanged();
+
+    //Crystals per pixel
+    nameCol = rec.indexOf("ProcTcrystalsPerPixel");
+    m_crystalsPerPixel = query.value(nameCol).toFloat();
+    param.filmParams.crystalsPerPixel = m_crystalsPerPixel;
+    emit crystalsPerPixelChanged();
+
+    //Initial crystal radius
+    nameCol = rec.indexOf("ProcTinitialCrystalRadius");
+    m_initialCrystalRadius = query.value(nameCol).toFloat();
+    param.filmParams.initialCrystalRadius = m_initialCrystalRadius;
+    emit initialCrystalRadiusChanged();
+
+    //Initial silver salt area density
+    nameCol = rec.indexOf("ProcTinitialSilverSaltDensity");
+    m_initialSilverSaltDensity = query.value(nameCol).toFloat();
+    param.filmParams.initialSilverSaltDensity = m_initialSilverSaltDensity;
+    emit initialSilverSaltDensityChanged();
+
+    //Developer consumption rate constant
+    nameCol = rec.indexOf("ProcTdeveloperConsumptionConst");
+    m_developerConsumptionConst = query.value(nameCol).toFloat();
+    param.filmParams.developerConsumptionConst = m_developerConsumptionConst;
+    emit developerConsumptionConstChanged();
+
+    //Crystal growth rate constant
+    nameCol = rec.indexOf("ProcTcrystalGrowthConst");
+    m_crystalGrowthConst = query.value(nameCol).toFloat();
+    param.filmParams.crystalGrowthConst = m_crystalGrowthConst;
+    emit crystalGrowthConstChanged();
+
+    //Silver halide consumption rate constant
+    nameCol = rec.indexOf("ProcTsilverSaltConsumptionConst");
+    m_silverSaltConsumptionConst = query.value(nameCol).toFloat();
+    param.filmParams.silverSaltConsumptionConst = m_silverSaltConsumptionConst;
+    emit crystalGrowthConstChanged();
+
+    //Total development time
+    nameCol = rec.indexOf("ProcTtotalDevelopmentTime");
+    m_totalDevelopmentTime = query.value(nameCol).toFloat();
+    param.filmParams.totalDevelTime = m_totalDevelopmentTime;
+    emit totalDevelopmentTimeChanged();
+
+    //Number of agitations
+    nameCol = rec.indexOf("ProcTagitationCount");
+    m_agitateCount = query.value(nameCol).toInt();
+    param.filmParams.agitateCount = m_agitateCount;
+    emit agitateCountChanged();
+
+    //Number of simulation steps for development
+    nameCol = rec.indexOf("ProcTdevelopmentResolution");
+    m_developmentSteps = query.value(nameCol).toInt();
+    param.filmParams.developmentSteps = m_developmentSteps;
+    emit developmentStepsChanged();
+
+    //Area of film for the simulation
+    nameCol = rec.indexOf("ProcTfilmArea");
+    m_filmArea = query.value(nameCol).toFloat();
+    param.filmParams.filmArea = m_filmArea;
+    emit filmAreaChanged();
+
+    //A constant for the size of the diffusion. It...affects the same thing as film area.
+    nameCol = rec.indexOf("ProcTsigmaConst");
+    m_sigmaConst = query.value(nameCol).toFloat();
+    param.filmParams.sigmaConst = m_sigmaConst;
+    emit sigmaConstChanged();
+
+    //Layer mix constant: the amount of active developer that gets exchanged with the reservoir.
+    nameCol = rec.indexOf("ProcTlayerMixConst");
+    m_layerMixConst = query.value(nameCol).toFloat();
+    param.filmParams.layerMixConst = m_layerMixConst;
+    emit layerMixConstChanged();
+
+    //Layer time divisor: Controls the relative intra-layer and inter-layer diffusion.
+    nameCol = rec.indexOf("ProcTlayerTimeDivisor");
+    m_layerTimeDivisor = query.value(nameCol).toFloat();
+    param.filmParams.layerTimeDivisor = m_layerTimeDivisor;
+    emit layerTimeDivisorChanged();
+
+    //Rolloff boundary. This is where highlights start to roll off.
+    nameCol = rec.indexOf("ProcTrolloffBoundary");
+    m_rolloffBoundary = query.value(nameCol).toInt();
+    param.filmParams.rolloffBoundary = m_rolloffBoundary;
+    emit rolloffBoundaryChanged();
+
+    //Post-filmulator black clipping point
+    nameCol = rec.indexOf("ProcTblackpoint");
+    m_blackpoint = query.value(nameCol).toFloat();
+    param.blackpoint = m_blackpoint;
+    emit blackpointChanged();
+
+    //Post-filmulator white clipping point
+    nameCol = rec.indexOf("ProcTwhitepoint");
+    m_whitepoint = query.value(nameCol).toFloat();
+    param.whitepoint = m_whitepoint;
+    emit whitepointChanged();
+
+    //Shadow control point x value
+    nameCol = rec.indexOf("ProcTshadowsX");
+    m_shadowsX = query.value(nameCol).toFloat();
+    param.shadowsX = m_shadowsX;
+    emit shadowsXChanged();
+
+    //Shadow control point y value
+    nameCol = rec.indexOf("ProcTshadowsY");
+    m_shadowsY = query.value(nameCol).toFloat();
+    param.shadowsY = m_shadowsY;
+    emit shadowsYChanged();
+
+    //Highlight control point x value
+    nameCol = rec.indexOf("ProcThighlightsX");
+    m_highlightsX = query.value(nameCol).toFloat();
+    param.highlightsX = m_highlightsX;
+    emit highlightsXChanged();
+
+    //Highlight control point y value
+    nameCol = rec.indexOf("ProcThighlightsY");
+    m_highlightsY = query.value(nameCol).toFloat();
+    param.highlightsY = m_highlightsY;
+    emit highlightsYChanged();
+
+    //Vibrance (saturation of less-saturated things)
+    nameCol = rec.indexOf("ProcTvibrance");
+    m_vibrance = query.value(nameCol).toFloat();
+    param.vibrance = m_vibrance;
+    emit vibranceChanged();
+
+    //Saturation
+    nameCol = rec.indexOf("ProcTsaturation");
+    m_saturation = query.value(nameCol).toFloat();
+    param.saturation = m_saturation;
+    emit saturationChanged();
+
+    //Rotation
+    nameCol = rec.indexOf("ProcTrotation");
+    m_rotation = query.value(nameCol).toInt();
+    param.rotation = m_rotation;
+    emit rotationChanged();
+
+    emit paramChanged();
 }
