@@ -1,4 +1,6 @@
 import QtQuick 2.2
+import QtQuick.Controls 1.2
+import QtQuick.Controls.Styles 1.2
 
 Item {
     id: root
@@ -43,11 +45,6 @@ Item {
             source: root.__thumbPath
         }
     }
-
-    /*ListView.onIsCurrentItemChanged: {
-        if ( ListView.isCurrentItem )
-        openThisImage( filePath, sensitivity, exposureTime, aperture, focalLength, initialDeveloperConcentration, reservoirThickness, activeLayerThickness, crystalsPerPixel, initialCrystalRadius, initialSilverSaltDensity, developerConsumptionConst, crystalGrowthConst, silverSaltConsumptionConst, totalDevelopmentTime, agitateCount, developmentResolution, filmArea, sigmaConst, layerMixConst, layerTimeDivisor, rolloffBoundary, exposureComp, whitepoint, blackpoint, shadowsX, shadowsY, highlightsX, highlightsY, highlightRecovery, caEnabled, temperature, tint, vibrance, saturation, orientation )
-    }*/
 
     Component.onCompleted: {
         loadThumb.sourceComponent = thumbImage

@@ -246,7 +246,7 @@ SplitView {
                     Connections {
                         target: root
                         onSetAllValues: {
-                            filmSizeSlider.value = Math.sqrt(paramManager.filmSize)
+                            filmSizeSlider.value = Math.sqrt(paramManager.filmArea)
                         }
                     }
                     Component.onCompleted: {
@@ -516,12 +516,8 @@ SplitView {
                 onTriggered: {
                     filmProvider.saveTiff = true
                     root.updateImage()
-//                    saveTIFFButton.update()
                 }
             }
-//            Component.onCompleted: {
-//                saveTIFFButton.update.connect(root.updateImage)
-//            }
         }
         ToolButton {
             id: saveJPEGButton
@@ -534,12 +530,8 @@ SplitView {
                 onTriggered: {
                     filmProvider.saveJpeg = true
                     root.updateImage()
-//                    saveJPEGButton.update()
                 }
             }
-//            Component.onCompleted: {
-//                saveJPEGButton.update.connect(root.updateImage)
-//            }
         }
     }
 }
