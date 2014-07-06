@@ -31,6 +31,8 @@ Rectangle {
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
             source: root.__thumbPath
+            sourceSize.width: 300
+            sourceSize.height: 300
         }
     }
     Component.onCompleted: {

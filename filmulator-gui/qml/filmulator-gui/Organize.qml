@@ -9,10 +9,11 @@ SplitView {
     orientation: Qt.Horizontal
 
     Rectangle {
-        id: folderlist
+        id: filterList
         color: "lightblue"
         width: 100
         Layout.maximumWidth: 500
+//        Calendar {
     }
 
     Rectangle {

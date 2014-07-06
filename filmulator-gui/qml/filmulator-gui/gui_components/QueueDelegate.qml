@@ -43,6 +43,8 @@ Item {
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
             source: root.__thumbPath
+            sourceSize.width: 600
+            sourceSize.height: 600
         }
     }
 
