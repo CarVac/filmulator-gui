@@ -179,5 +179,5 @@ void createNewProfile(const QString fileHash,
     }
     QString outputFilename = dir.absoluteFilePath(searchID);
 
-    imwrite_jpeg(image, outputFilename.toStdString(), exif, 20);
+    imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
 }

@@ -213,4 +213,6 @@ void whiteBalance( matrix<float> &input, matrix<float> &output,
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
                          double vibrance, double saturation);
+
+void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputStartX, int inputStartY, int inputEndX, int inputEndY, int outputXSize, int outputYSize);
 #endif // FILMSIM_H

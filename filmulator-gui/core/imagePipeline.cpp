@@ -47,6 +47,7 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
 
         cout << "imagePipeline.cpp: Opening " << params.filenameList[0] << endl;
 
+        matrix<float> input_image;
         //Reads in the photo.
         if(imload(params.filenameList,
                   params.exposureComp,
@@ -63,7 +64,23 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         }
 
         cout << "ImagePipeline::processImage: Demosaic complete." << endl;
-        setValid(demosaic);
+
+        if ( LowQuality == quality )
+        {
+            cout << "scale start:" << timeDiff (timeRequested) << endl;
+            struct timeval downscale_time;
+            gettimeofday( &downscale_time, NULL );
+            downscale_and_crop(input_image,cropped_image, 0, 0, input_image.nc(),input_image.nr(), 600, 600);
+            //cropped_image = input_image;
+            cout << "scale end: " << timeDiff( downscale_time ) << endl;
+        }
+        else
+        {
+            cropped_image.set_size(input_image.nr(),input_image.nc());
+            cropped_image = input_image;
+        }
+
+        setValid( demosaic );
     }
     case demosaic://Do pre-filmulation work.
     {
@@ -73,12 +90,12 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         }
 
         //Here we apply the exposure compensation and white balance.
-        matrix<float> exposureImage = input_image * pow(2, params.exposureComp[0]);
+        matrix<float> exposureImage = cropped_image * pow(2, params.exposureComp[0]);
         whiteBalance(exposureImage, pre_film_image, params.temperature, params.tint, params.filenameList[0]);
 
         if (NoCacheNoHisto == cacheHisto)
         {
-            input_image.set_size(0, 0);
+            cropped_image.set_size( 0, 0 );
         }
         else//(BothCacheAndHisto == cacheHisto)
         {
