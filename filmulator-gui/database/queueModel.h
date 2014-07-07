@@ -8,10 +8,10 @@ class QueueModel : public SqlModel
 {
     Q_OBJECT
 public:
-    explicit QueueModel( QObject *parent = 0 );
+    explicit QueueModel(QObject *parent = 0);
     Q_INVOKABLE void setQueueQuery();
-    Q_INVOKABLE void deQueue( int index );
-    Q_INVOKABLE void enQueue( QString string );
+    Q_INVOKABLE void deQueue(QString searchID);
+    Q_INVOKABLE void enQueue(QString searchID);
 
 protected:
     int index;

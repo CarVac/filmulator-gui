@@ -4,7 +4,7 @@
 using std::cout;
 using std::endl;
 
-QueueModel::QueueModel( QObject *parent ) : SqlModel( parent )
+QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
 {
     resetIndex();
 }
@@ -12,42 +12,42 @@ QueueModel::QueueModel( QObject *parent ) : SqlModel( parent )
 void QueueModel::setQueueQuery()
 {
     std::string queryString = "SELECT * ";
-    queryString.append( "FROM QueueTable " );
-    queryString.append( "ORDER BY " );
-    queryString.append( "QueueTable.QTindex ASC;" );
+    queryString.append("FROM QueueTable ");
+    queryString.append("ORDER BY ");
+    queryString.append("QueueTable.QTindex ASC;");
 
     cout << "queue query: " << queryString << endl;
 
-    setQuery( QSqlQuery( QString::fromStdString( queryString ) ) );
+    setQuery(QSqlQuery(QString::fromStdString(queryString)));
     resetIndex();
 }
 
 void QueueModel::resetIndex()
 {
     QSqlQuery query;
-    query.exec( "SELECT MAX(QTindex) FROM QueueTable;" );
+    query.exec("SELECT MAX(QTindex) FROM QueueTable;");
     query.next();
     index = query.value( 0 ).toInt() + 1;
 }
 
-void QueueModel::deQueue( int deleteIndex )
+void QueueModel::deQueue(QString searchID)
 {
     QSqlQuery query;
-    query.prepare( "DELETE FROM QueueTable WHERE QTindex = ?;" );
-    query.bindValue( 0, deleteIndex);
+    query.prepare("DELETE FROM QueueTable WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
     query.exec();
     resetIndex();
     emit queueChanged();
 }
 
-void QueueModel::enQueue( QString searchID )
+void QueueModel::enQueue(QString searchID)
 {
     QSqlQuery query;
-    query.prepare( "INSERT OR IGNORE INTO QueueTable VALUES (?,?,?,?);" );
-    query.bindValue( 0, index );
-    query.bindValue( 1, false );
-    query.bindValue( 2, false );
-    query.bindValue( 3, searchID );
+    query.prepare("INSERT OR IGNORE INTO QueueTable VALUES (?,?,?,?);");
+    query.bindValue(0, index);
+    query.bindValue(1, false);
+    query.bindValue(2, false);
+    query.bindValue(3, searchID);
     query.exec();
     index++;
 

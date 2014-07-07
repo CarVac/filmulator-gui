@@ -15,8 +15,8 @@ void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end,
 
 void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputStartX, int inputStartY, int inputEndX, int inputEndY, int outputXSize, int outputYSize)
 {
-    int inputXSize = inputEndX - inputStartX;
-    int inputYSize = inputEndY - inputStartY;
+    int inputXSize = inputEndX - inputStartX + 1;
+    int inputYSize = inputEndY - inputStartY + 1;
 
     double overallScaleFactor = max(double(inputXSize)/double(outputXSize),double(inputYSize)/double(outputYSize));
     int integerScaleFactor = floor(overallScaleFactor);
@@ -117,8 +117,6 @@ void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end,
     cout << "scaleFactor"  << scaleFactor << endl;
     int inputNumRows = input.nr();
     int inputNumCols = end - start + 1;
-    if(interleaved)
-        inputNumCols = inputNumCols/3;
 
     int outputNumRows = inputNumRows;
     int outputNumCols = round(double(inputNumCols)/scaleFactor);
