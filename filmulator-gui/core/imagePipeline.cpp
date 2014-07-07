@@ -70,7 +70,7 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
             gettimeofday( &downscale_time, NULL );
-            downscale_and_crop(input_image,cropped_image, 0, 0, input_image.nc(),input_image.nr(), 600, 600);
+            downscale_and_crop(input_image,cropped_image, 0, 0, input_image.nc()/3,input_image.nr(), 600, 600);
             //cropped_image = input_image;
             cout << "scale end: " << timeDiff( downscale_time ) << endl;
         }
