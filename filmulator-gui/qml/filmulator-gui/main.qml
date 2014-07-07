@@ -90,7 +90,10 @@ ApplicationWindow {
 
                     Connections {
                         target: paramManager
-                        onFilenameChanged: reset()
+                        onFilenameChanged: {
+                            reset()
+                            updateImage()
+                        }
                     }
                     Connections {
                         target: editorTab

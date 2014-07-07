@@ -28,33 +28,20 @@ QImage FilmImageProvider::requestImage(const QString &id,
     QImage output = emptyImage();
 
     //Copy out the latest parameters.
-    mutex.lock();
+    paramMutex.lock();
     ProcessingParameters tempParams = paramManager->getParams();
     abort = false;
-    mutex.unlock();
+    paramMutex.unlock();
 
+    writeDataMutex.lock();
     //Prepare the output filename.
-    string outputFilename = tempParams.filenameList[0];
+    outputFilename = tempParams.filenameList[0];
     outputFilename.append("-output");
 
-    //Prepare an exif object for later applying to the output files.
-    Exiv2::ExifData exif;
 
     //Run the pipeline.
-    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort, exif );
-
-    //Write out the images.
-    if(saveJpeg)
-    {
-        imwrite_jpeg( image, outputFilename, exif, 95);
-        saveJpeg = false;
-    }
-
-    if(saveTiff)
-    {
-        imwrite_tiff( image, outputFilename, exif);
-        saveTiff = false;
-    }
+    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort, exifData );
+    writeDataMutex.unlock();
 
     int nrows = image.nr();
     int ncols = image.nc();
@@ -78,24 +65,25 @@ QImage FilmImageProvider::requestImage(const QString &id,
     return output;
 }
 
+void FilmImageProvider::writeTiff()
+{
+    writeDataMutex.lock();
+    imwrite_tiff(pipeline.getLastImage(), outputFilename, exifData);
+    writeDataMutex.unlock();
+}
+
+void FilmImageProvider::writeJpeg()
+{
+    writeDataMutex.lock();
+    matrix<unsigned short> outputData = pipeline.getLastImage();
+    imwrite_jpeg(outputData, outputFilename, exifData, 95);
+    writeDataMutex.unlock();
+}
+
 void FilmImageProvider::setProgress(float percentDone_in)
 {
     progress = percentDone_in;
     emit progressChanged();
-}
-
-void FilmImageProvider::setSaveTiff(bool saveTiffIn)
-{
-    QMutexLocker locker( &mutex );
-    saveTiff = saveTiffIn;
-    emit saveTiffChanged();
-}
-
-void FilmImageProvider::setSaveJpeg(bool saveJpegIn)
-{
-    QMutexLocker locker( &mutex );
-    saveJpeg = saveJpegIn;
-    emit saveJpegChanged();
 }
 
 void FilmImageProvider::updateFilmProgress(float percentDone_in)//Percent filmulation

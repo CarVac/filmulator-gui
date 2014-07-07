@@ -89,6 +89,7 @@ SplitView {
                             var size = 6 //6 digit number
                             while ( s.length < size ) { s = "0" + s }
                             topImage.indexString = s
+                            console.log("Edit.qml; updateImage index: " + s)
                         }
                     }
                     onStatusChanged: if ( topImage.status == Image.Ready ) {

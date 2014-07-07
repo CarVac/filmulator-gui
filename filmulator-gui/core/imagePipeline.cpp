@@ -212,7 +212,6 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         {
             return emptyMatrix();
         }
-        matrix<unsigned short> rotated_image;
         rotate_image(vibrance_saturation_image,rotated_image,params.rotation);
 
         if (NoCacheNoHisto == cacheHisto)
@@ -230,6 +229,14 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
     }//End task switch
 
     return emptyMatrix();
+}
+
+matrix<unsigned short> ImagePipeline::getLastImage()
+{
+    matrix<unsigned short> output_image;
+    output_image.set_size(rotated_image.nr(),rotated_image.nc());
+    output_image = rotated_image;
+    return output_image;
 }
 
 bool ImagePipeline::checkAbort(bool aborted)

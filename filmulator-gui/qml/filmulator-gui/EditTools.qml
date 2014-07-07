@@ -511,8 +511,9 @@ SplitView {
             text: qsTr("Save TIFF")
             action: Action {
                 onTriggered: {
-                    filmProvider.saveTiff = true
-                    root.updateImage()
+                    //filmProvider.saveTiff = true
+                    //root.updateImage()
+                    filmProvider.writeTiff()
                 }
             }
         }
@@ -525,8 +526,9 @@ SplitView {
             text: qsTr("Save JPEG")
             action: Action {
                 onTriggered: {
-                    filmProvider.saveJpeg = true
-                    root.updateImage()
+                    //filmProvider.saveJpeg = true
+                    //root.updateImage()
+                    filmProvider.writeJpeg()
                 }
             }
         }

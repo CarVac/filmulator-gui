@@ -2,7 +2,6 @@
 #define IMAGEPIPELINE_H
 #include "filmSim.hpp"
 #include "interface.h"
-#include <mutex>
 
 enum Valid {none, load, demosaic, prefilmulation, filmulation, whiteblack, colorcurve, filmlikecurve, count};
 
@@ -54,8 +53,11 @@ public:
                                          Exiv2::ExifData &exifOutput);
     float getProgress(){ return progress; }
 
+    matrix<unsigned short> getLastImage();
+
 protected:
     matrix<unsigned short> emptyMatrix(){ matrix<unsigned short> mat; return mat;}
+
 
     CacheAndHisto cacheHisto;
     QuickQuality quality;
@@ -78,6 +80,7 @@ protected:
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
     matrix<unsigned short> vibrance_saturation_image;
+    matrix<unsigned short> rotated_image;
 
     //Internal functions for progress and time tracking.
     bool checkAbort(bool aborted);

@@ -18,9 +18,6 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 
     Q_PROPERTY(float progress READ getProgress WRITE setProgress NOTIFY progressChanged)
 
-    Q_PROPERTY(bool saveTiff READ getSaveTiff WRITE setSaveTiff NOTIFY saveTiffChanged)
-    Q_PROPERTY(bool saveJpeg READ getSaveJpeg WRITE setSaveJpeg NOTIFY saveJpegChanged)
-
 public:
     FilmImageProvider(ParameterManager*);
     ~FilmImageProvider();
@@ -29,13 +26,8 @@ public:
 
     //Setter methods
     void setProgress(float progressIn);
-
-    void setSaveTiff(bool saveTiffIn);
-    void setSaveJpeg(bool saveJpegIn);
     //Getter methods
     float getProgress(){return progress;}
-    float getSaveTiff(){return saveTiff;}
-    float getSaveJpeg(){return saveJpeg;}
 
     void updateFilmProgress(float);
     void setValid( Valid );
@@ -48,22 +40,24 @@ public:
     void updateHistPostFilm( const matrix<float> image, float maximum );
     void updateHistFinal( const matrix<unsigned short> image);
 
+    Q_INVOKABLE void writeTiff();
+    Q_INVOKABLE void writeJpeg();
+
 protected:
     //ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, LowQuality );
     ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, HighQuality );
     ParameterManager * paramManager;
     bool abort;
-    QMutex mutex;
+    QMutex paramMutex;//locks the params
+    QMutex writeDataMutex;//locks the data that gets used when saving
     float progress;
-
-    bool saveTiff;
-    bool saveJpeg;
 
     struct timeval request_start_time;
 
     matrix<float> input_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
+    string outputFilename;
     matrix<float> filmulated_image;
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
@@ -83,8 +77,6 @@ protected:
 
 signals:
     void progressChanged();
-    void saveTiffChanged();
-    void saveJpegChanged();
 
     //Notifications for the histograms
     void histFinalChanged();
