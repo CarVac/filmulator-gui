@@ -230,7 +230,7 @@ SplitView {
                 ToolSlider {
                     id: filmSizeSlider
                     title: qsTr("Film Area")
-                    tooltipText: qsTr("Larger values emphasize smaller details; smaller values emphasize large regions. This has the same effect as film size in real film.")
+                    tooltipText: qsTr("Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.")
                     minimumValue: 10
                     maximumValue: 300
                     defaultValue: Math.sqrt(root.defaultFilmSize)
