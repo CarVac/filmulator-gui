@@ -15,6 +15,7 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     zeroHistogram(finalHist);
     zeroHistogram(postFilmHist);
     zeroHistogram(preFilmHist);
+    QObject::connect(paramManager, SIGNAL(paramChanged()), this, SLOT(abortPipeline()));
 }
 
 FilmImageProvider::~FilmImageProvider()

@@ -54,6 +54,9 @@ SplitView {
                 onLocationChanged: {
                     flicky.fit = true
                 }
+                onReset: {//This should be commented if you want to switch between images and leave the zoom in the same position.
+                    flicky.fit = true
+                }
             }
             //Here, if the window size changed, we set it to fitScale. Except that it didn't update in time, so we make it compute it from scratch.
             onWidthChanged:  if ( flicky.fit ) { bottomImage.scale = Math.min( flicky.width/bottomImage.width, flicky.height/bottomImage.height ) }

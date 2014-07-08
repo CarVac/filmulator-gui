@@ -110,7 +110,7 @@ SplitView {
                 ToolSlider {
                     id: highlightRecoverySlider
                     title: qsTr("Highlight Recovery")
-                    tooltipText: qsTr("Recover clipped highlights.")
+                    tooltipText: qsTr("Recover clipped highlights. 1 is useless, 2 recovers monochrome values, and 3-9 extrapolates the colors. 3 works best most of the time, but 9 can work better on skin tones.")
                     minimumValue: 0
                     maximumValue: 9
                     stepSize: 1
@@ -179,7 +179,7 @@ SplitView {
                 ToolSlider {
                     id: exposureCompSlider
                     title: qsTr("Exposure Compensation")
-                    tooltipText: qsTr("The degree to over- or under-expose the \"film\". Analogous to exposure of film in-camera.")
+                    tooltipText: qsTr("The amount the program should to over- or under-expose the \"film\" relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.")
                     minimumValue: -5
                     maximumValue: 5
                     stepSize: 1/6
@@ -230,7 +230,7 @@ SplitView {
                 ToolSlider {
                     id: filmSizeSlider
                     title: qsTr("Film Area")
-                    tooltipText: qsTr("Larger values emphasize smaller details; smaller values emphasize large regions.")
+                    tooltipText: qsTr("Larger values emphasize smaller details; smaller values emphasize large regions. This has the same effect as film size in real film.")
                     minimumValue: 10
                     maximumValue: 300
                     defaultValue: Math.sqrt(root.defaultFilmSize)
@@ -255,7 +255,7 @@ SplitView {
                 ToolSlider {
                     id: filmDramaSlider
                     title: qsTr("Drama")
-                    tooltipText: qsTr("Pulls down highlights to retain detail.")
+                    tooltipText: qsTr("Pulls down highlights to retain detail. This is the real \"filmy\" effect. This not only helps bring down bright highlights, but it can also rescue extremely saturated regions such as flowers.")
                     minimumValue: 0
                     maximumValue: 100
                     defaultValue: 100*root.defaultLayerMixConst
@@ -342,7 +342,7 @@ SplitView {
                 ToolSlider {
                     id: blackpointSlider
                     title: qsTr("Black Clipping Point")
-                    tooltipText: qsTr("The threshold for crushing the shadows.")
+                    tooltipText: qsTr("This controls the threshold for crushing the shadows. You can see its position in the post-film histogram.")
                     minimumValue: 0
                     maximumValue: 1.4
                     defaultValue: Math.sqrt(root.defaultBlackpoint*1000)
@@ -365,7 +365,7 @@ SplitView {
                 ToolSlider {
                     id: whitepointSlider
                     title: qsTr("White Clipping Point")
-                    tooltipText: qsTr("The threshold for clipping the highlights. Vaguely analogous to adjusting exposure time in the darkroom.")
+                    tooltipText: qsTr("This controls the threshold for clipping the highlights. Vaguely analogous to adjusting exposure time in the darkroom. You can see its position in the post-film histogram.")
                     minimumValue: 0.1/1000
                     maximumValue: 2.5/1000
                     defaultValue: root.defaultWhitepoint
@@ -388,7 +388,7 @@ SplitView {
                 ToolSlider {
                     id: shadowBrightnessSlider
                     title: qsTr("Shadow Brightness")
-                    tooltipText: qsTr("The brightness of the generally darker regions.")
+                    tooltipText: qsTr("This controls the brightness of the generally darker regions of the image.")
                     minimumValue: 0
                     maximumValue: 1
                     defaultValue: root.defaultShadowsY
@@ -411,7 +411,7 @@ SplitView {
                 ToolSlider {
                     id: highlightBrightnessSlider
                     title: qsTr("Highlight Brightness")
-                    tooltipText: qsTr("The brightness of the generally lighter regions.")
+                    tooltipText: qsTr("This controls the brightness of the generally lighter regions of the image.")
                     minimumValue: 0
                     maximumValue: 1
                     defaultValue: root.defaultHighlightsY
@@ -434,7 +434,7 @@ SplitView {
                 ToolSlider {
                     id: vibranceSlider
                     title: qsTr("Vibrance")
-                    tooltipText: qsTr("Adjust the vividness of the less-saturated colors in the image.")
+                    tooltipText: qsTr("This adjusts the vividness of the less-saturated colors in the image.")
                     minimumValue: -0.5
                     maximumValue: 0.5
                     defaultValue: root.defaultVibrance
@@ -457,7 +457,7 @@ SplitView {
                 ToolSlider {
                     id: saturationSlider
                     title: qsTr("Saturation")
-                    tooltipText: qsTr("Adjust the vividness of the entire image.")
+                    tooltipText: qsTr("This adjusts the vividness of the entire image.")
                     minimumValue: -0.5
                     maximumValue: 0.5
                     defaultValue: root.defaultSaturation

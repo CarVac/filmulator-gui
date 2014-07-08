@@ -84,6 +84,7 @@ signals:
     void histPreFilmChanged();
 
 public slots:
+    void abortPipeline(){ abort = true; }
 
 };
 
