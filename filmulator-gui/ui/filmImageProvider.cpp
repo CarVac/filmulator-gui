@@ -36,7 +36,7 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
     writeDataMutex.lock();
     //Prepare the output filename.
-    outputFilename = tempParams.filenameList[0];
+    outputFilename = tempParams.filenameList[0].substr(0,tempParams.filenameList[0].length()-4);
     outputFilename.append("-output");
 
 
