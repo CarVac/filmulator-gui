@@ -107,9 +107,7 @@ Rectangle {
                 settings.dirConfig = enteredText
             }
             Component.onCompleted: {
-                console.log("beforeDirConfig")
                 importModel.dirConfig = enteredText
-                console.log("after getDirConfig")
                 dirStructureEntry.tooltipWanted.connect( root.tooltipWanted )
             }
         }

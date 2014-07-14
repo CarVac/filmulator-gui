@@ -42,7 +42,6 @@ Item {
                 MenuItem {
                     text: qsTr("Remove from queue")
                     onTriggered: {
-                        console.log("Removed from queue: " + QTsearchID)
                         queueModel.deQueue(QTsearchID)
                     }
                 }
@@ -66,18 +65,14 @@ Item {
 
         Component.onCompleted: {
             queueModel.setQueueQuery()
-            console.log("Queue completed");
-            console.log("height: " + listView.height)
             listView.model = queueModel
         }
         Connections {
             target: queueModel
             onQueueChanged: {
-                console.log("Begining refresh of queue")
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
-                console.log("Ending refresh of queue")
             }
         }
     }
