@@ -122,17 +122,8 @@ ApplicationWindow {
             height: 100
             Layout.minimumHeight: 50
 
-            Loader {
-                id: queueLoader
+            Queue {
                 anchors.fill: parent
-                //source: "Queue.qml"
-            }
-
-            Timer {
-                id: queueTimer
-                interval: 1
-                running: true
-                onTriggered: queueLoader.source = "Queue.qml"
             }
         }
     }

@@ -54,12 +54,12 @@ void ImportModel::importDirectory_r( const QString dir )
     for ( int i = 0; i < fileList.size(); i++ )
     {
         importParams params;
-        params.fileInfo = fileList.at( i );
-        params.importTZ = importTZ;
-        params.cameraTZ = cameraTZ;
-        params.photoDir = photoDir;
-        params.backupDir = backupDir;
-        params.dirConfig = dirConfig;
+        params.fileInfoParam = fileList.at( i );
+        params.importTZParam = importTZ;
+        params.cameraTZParam = cameraTZ;
+        params.photoDirParam = photoDir;
+        params.backupDirParam = backupDir;
+        params.dirConfigParam = dirConfig;
         queue.push_back( params );
         maxQueue++;
     }
@@ -95,20 +95,17 @@ void ImportModel::workerFinished()
     }
     else if ( !paused )
     {
-        cout << "ImportModel before startWorker" << endl;
         startWorker(queue.front());
-        cout << "importModel after startWorker" << endl;
     }
 }
 
 void ImportModel::startWorker(importParams params)
 {
-
-    const QFileInfo info = params.fileInfo;
-    const int iTZ = params.importTZ;
-    const int cTZ = params.cameraTZ;
-    const QString pDir = params.photoDir;
-    const QString bDir = params.backupDir;
-    const QString dConf = params.dirConfig;
+    const QFileInfo info = params.fileInfoParam;
+    const int iTZ = params.importTZParam;
+    const int cTZ = params.cameraTZParam;
+    const QString pDir = params.photoDirParam;
+    const QString bDir = params.backupDirParam;
+    const QString dConf = params.dirConfigParam;
     emit workForWorker( info, iTZ, cTZ, pDir, bDir, dConf );
 }

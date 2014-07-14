@@ -12,12 +12,12 @@
 #include <QMutexLocker>
 
 struct importParams {
-    QFileInfo fileInfo;
-    int importTZ;
-    int cameraTZ;
-    QString photoDir;
-    QString backupDir;
-    QString dirConfig;
+    QFileInfo fileInfoParam;
+    int importTZParam;
+    int cameraTZParam;
+    QString photoDirParam;
+    QString backupDirParam;
+    QString dirConfigParam;
 };
 
 class ImportModel : public SqlModel

@@ -15,7 +15,8 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    QQmlApplicationEngine engine("qml/filmulator-gui/main.qml");
+    //QQmlApplicationEngine engine("qml/filmulator-gui/main.qml");
+    QQmlApplicationEngine engine;
 
     QTranslator translator;
     translator.load("filmulatortr_la");
@@ -57,6 +58,8 @@ int main(int argc, char *argv[])
     queueModel->setQueueQuery();
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 //    std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
+
+    engine.load(QUrl::fromLocalFile("qml/filmulator-gui/main.qml"));
 
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
