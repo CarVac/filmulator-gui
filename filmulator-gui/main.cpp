@@ -21,6 +21,10 @@ int main(int argc, char *argv[])
     translator.load("filmulatortr_la");
     app.installTranslator(&translator);
 
+    //Create a settings object for persistent settings.
+    Settings *settingsObj = new Settings;
+    engine.rootContext()->setContextProperty("settings", settingsObj);
+
     //Prepare an object for managing the processing parameters.
     ParameterManager *paramManager = new ParameterManager;
     engine.rootContext()->setContextProperty("paramManager",paramManager);
@@ -53,10 +57,6 @@ int main(int argc, char *argv[])
     queueModel->setQueueQuery();
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 //    std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
-
-    //Create a settings object for persistent settings.
-    Settings *settingsObj = new Settings;
-    engine.rootContext()->setContextProperty("settings", settingsObj);
 
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
