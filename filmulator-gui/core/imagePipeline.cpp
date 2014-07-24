@@ -76,7 +76,6 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         }
         else
         {
-            cropped_image.set_size(input_image.nr(),input_image.nc());
             cropped_image = input_image;
         }
 

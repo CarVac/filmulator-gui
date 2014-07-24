@@ -52,7 +52,6 @@ ApplicationWindow {
 
             Tab {
                 id: editorTab
-                property string location: ""
                 property real defaultExposureComp: 0
                 property real defaultWhitepoint: 2/1000
                 property real defaultBlackpoint: 0
@@ -72,7 +71,6 @@ ApplicationWindow {
                 title: qsTr( "Filmulate" )
                 Edit {
                     id: editItem
-                    location: editorTab.location
                     defaultExposureComp: editorTab.defaultExposureComp
                     defaultFilmSize: editorTab.defaultFilmSize
                     defaultWhitepoint: editorTab.defaultWhitepoint

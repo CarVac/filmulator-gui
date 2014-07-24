@@ -9,7 +9,6 @@ SplitView {
     anchors.fill: parent
     orientation: Qt.Horizontal
 
-    property string location
     property alias defaultExposureComp: editTools.defaultExposureComp
     property alias defaultWhitepoint: editTools.defaultWhitepoint
     property alias defaultBlackpoint: editTools.defaultBlackpoint
@@ -28,8 +27,6 @@ SplitView {
     signal reset()
     signal updateImage()
     signal tooltipWanted( string text, int x, int y )
-
-    onLocationChanged: filmProvider.invalidateImage()
 
     Rectangle {
         id: photoBox
@@ -51,9 +48,6 @@ SplitView {
             property bool fit: true
             Connections {
                 target: root
-                onLocationChanged: {
-                    flicky.fit = true
-                }
                 onReset: {//This should be commented if you want to switch between images and leave the zoom in the same position.
                     flicky.fit = true
                 }
@@ -74,7 +68,7 @@ SplitView {
                 Image {
                     anchors.centerIn: parent
                     id: topImage
-                    source: "image://filmy/" + root.location + indexString
+                    source: "image://filmy/" + indexString
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     layer.mipmap: true
