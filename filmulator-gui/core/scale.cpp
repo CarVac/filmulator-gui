@@ -3,11 +3,7 @@
 #include <math.h>
 
 template <typename T>
-void downscaleDivisible(matrix<T> input, matrix<T> &output, int scaleFactor);
-template <typename T>
 void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, bool interleaved);
-template <typename T>
-void downscaleBilinear(matrix<T> input, matrix<T> &output, int startX, int startY, int endX, int endY, double scaleFactor);
 template <typename T>
 void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end, double scaleFactor, bool interleaved);
 
@@ -21,31 +17,19 @@ void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputSta
     double overallScaleFactor = max(double(inputXSize)/double(outputXSize),double(inputYSize)/double(outputYSize));
     int integerScaleFactor = floor(overallScaleFactor);
     double bilinearScaleFactor = overallScaleFactor/double(integerScaleFactor);
-    matrix<float> bilinear;
-    downscaleBilinear(input,bilinear,inputStartX,inputStartY,inputEndX,inputEndY,bilinearScaleFactor);
-    downscaleDivisible(bilinear,output,integerScaleFactor);
-    return;
-}
-
-template <typename T>
-void downscaleDivisible(matrix<T> input, matrix<T> &output, int scaleFactor)
-{
-    if (scaleFactor == 1)
-    {
-
-    }
-    int inputNumRows = input.nr();
-    int inputNumCols = input.nc();
-    assert(inputNumRows % scaleFactor == 0 && inputNumCols % scaleFactor == 0);
-    matrix<T> scaledX;
-    downscaleDivisible1D(input,scaledX,scaleFactor,true);
-    matrix<T> transposed;
-    transposed.set_size(scaledX.nc(),scaledX.nr());
-    scaledX.transpose_to(transposed);
-    matrix<T> transposedScaledBoth;
-    downscaleDivisible1D(transposed,transposedScaledBoth,scaleFactor,false);
-    output.set_size(transposedScaledBoth.nc(),transposedScaledBoth.nr());
-    transposedScaledBoth.transpose_to(output);
+    matrix<float> bilinearX;
+    matrix<float> bothX;
+    downscaleBilinear1D(input,bilinearX,inputStartX,inputEndX,bilinearScaleFactor,true);
+    downscaleDivisible1D(bilinearX,bothX,integerScaleFactor,true);
+    matrix<float> bothXTransposed;
+    bothXTransposed.set_size(bothX.nc(),bothX.nr());
+    bothX.transpose_to(bothXTransposed);
+    matrix<float> bothXTransposedBilinearY;
+    downscaleBilinear1D(bothXTransposed,bothXTransposedBilinearY,inputStartY,inputEndY,bilinearScaleFactor,false);
+    matrix<float> bothXTransposedBothY;
+    downscaleDivisible1D(bothXTransposedBilinearY,bothXTransposedBothY,integerScaleFactor,false);
+    output.set_size(bothXTransposedBothY.nc(),bothXTransposedBothY.nr());
+    bothXTransposedBothY.transpose_to(output);
     return;
 }
 
@@ -60,6 +44,7 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
 
     if(interleaved)
     {
+        #pragma omp parallel for shared(input, output)
         for(int i = 0; i < outputNumRows; i++)
             for(int j = 0; j < outputNumCols; j = j+3)
             {
@@ -79,6 +64,7 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
     }
     else
     {
+        #pragma omp parallel for shared(input, output)
         for(int i = 0; i < outputNumRows; i++)
             for(int j = 0; j < outputNumCols; j++)
             {
@@ -94,27 +80,8 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
 }
 
 template <typename T>
-void downscaleBilinear(matrix<T> input, matrix<T> &output, int startX, int startY, int endX, int endY, double scaleFactor)
-{
-    int inputNumRows = endY - startY + 1;
-    int inputNumCols = endX - startX + 1;
-    assert(inputNumRows >= input.nr() && inputNumCols >= input.nc());
-    matrix<T> scaledX;
-    downscaleBilinear1D(input,scaledX,startX,endX,scaleFactor,true);
-    matrix<T> transposed;
-    transposed.set_size(scaledX.nc(),scaledX.nr());
-    scaledX.transpose_to(transposed);
-    matrix<T> transposedScaledBoth;
-    downscaleBilinear1D(transposed,transposedScaledBoth,startY,endY,scaleFactor,false);
-    output.set_size(transposedScaledBoth.nc(),transposedScaledBoth.nr());
-    transposedScaledBoth.transpose_to(output);
-    return;
-}
-
-template <typename T>
 void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end, double scaleFactor, bool interleaved)
 {
-    cout << "scaleFactor"  << scaleFactor << endl;
     int inputNumRows = input.nr();
     int inputNumCols = end - start + 1;
 
@@ -126,6 +93,7 @@ void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end,
     else
         output.set_size(outputNumRows,outputNumCols);
 
+    #pragma omp parallel for shared(input, output)
     for(int i = 0; i < outputNumRows; i++)
     {
         for(int j = 0; j < outputNumCols-1; j++)
