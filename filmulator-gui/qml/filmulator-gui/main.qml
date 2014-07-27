@@ -7,14 +7,14 @@ import "gui_components"
 
 ApplicationWindow {
     id: root
-    title: qsTr( "Filmulator" )
+    title: qsTr("Filmulator")
     property int tempVisibility
     width: 1024
     height: 768
     minimumHeight: 600
     minimumWidth:800
 
-    signal tooltipWanted( string text, int x, int y )
+    signal tooltipWanted(string text, int x, int y)
 
     Rectangle {
         id: fillRect
@@ -35,19 +35,24 @@ ApplicationWindow {
 
             Tab {
                 id: importTab
-                title: qsTr( "Import" )
+                title: qsTr("Import")
                 Import {
                     id: importItem
                     Component.onCompleted: {
-                        importItem.tooltipWanted.connect( root.tooltipWanted )
+                        importItem.tooltipWanted.connect(root.tooltipWanted)
                     }
                 }
             }
 
             Tab {
                 id: organizeTab
-                title: qsTr( "Organize" )
-                Organize {}
+                title: qsTr("Organize")
+                Organize {
+                    id: organizeItem
+                    Component.onCompleted: {
+                        organizeItem.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                }
             }
 
             Tab {
@@ -68,7 +73,7 @@ ApplicationWindow {
                 property bool defaultOverdriveEnabled: false
                 signal updateImage()
 
-                title: qsTr( "Filmulate" )
+                title: qsTr("Filmulate")
                 Edit {
                     id: editItem
                     defaultExposureComp: editorTab.defaultExposureComp
@@ -96,20 +101,20 @@ ApplicationWindow {
                     Connections {
                         target: editorTab
                         onUpdateImage: {
-                            console.log( "updating image" )
+                            console.log("updating image")
                             editItem.updateImage()
                         }
                     }
 
                     Component.onCompleted: {
-                        editItem.tooltipWanted.connect( root.tooltipWanted )
+                        editItem.tooltipWanted.connect(root.tooltipWanted)
                     }
                 }
             }
 
             Tab {
                 id: outputTab
-                title: qsTr( "Output" )
+                title: qsTr("Output")
             }
         }
 
@@ -149,8 +154,8 @@ ApplicationWindow {
         property Item sourceItem
 
         onEnabledChanged: {
-            if ( enabled ) {
-                tooltipCatcher.setPosition( xInput, yInput )
+            if (enabled) {
+                tooltipCatcher.setPosition(xInput, yInput)
             }
         }
 
@@ -178,7 +183,7 @@ ApplicationWindow {
             property int maxWidth: 250
             property int minHeight: 30
             property int posPad: 10
-            width: Math.min( maxWidth, tooltipText.contentWidth + 2*padding )
+            width: Math.min(maxWidth, tooltipText.contentWidth + 2*padding)
             height: tooltipText.contentHeight + 2*padding
             Text {
                 id: tooltipText
@@ -189,14 +194,14 @@ ApplicationWindow {
                 color: "#FFFFFFFF"
             }
         }
-        function setPosition( xIn, yIn ) {
-            if ( tooltipBox.height + yIn < root.height ) {
+        function setPosition(xIn, yIn) {
+            if (tooltipBox.height + yIn < root.height) {
                 tooltipBox.y = yIn
             }
             else {
                 tooltipBox.y = yIn - tooltipBox.height
             }
-            if ( tooltipBox.width + xIn + tooltipBox.posPad < root.width ) {
+            if (tooltipBox.width + xIn + tooltipBox.posPad < root.width) {
                 tooltipBox.x = xIn + tooltipBox.posPad
             }
             else {
@@ -210,7 +215,7 @@ ApplicationWindow {
         id: fullscreenAction
         shortcut: "f11"
         onTriggered: {
-            if ( root.visibility !== 5 ) {
+            if (root.visibility !== 5) {
                 root.tempVisibility = root.visibility
                 root.visibility = 5//"FullScreen"
             }
@@ -233,8 +238,8 @@ ApplicationWindow {
         }
 
         tab: Rectangle {
-            property int totalOverlap: tabOverlap * ( control.count - 1 )
-            implicitWidth: Math.min ( ( styleData.availableWidth + totalOverlap ) / control.count - 4, 100)
+            property int totalOverlap: tabOverlap * (control.count - 1)
+            implicitWidth: Math.min ((styleData.availableWidth + totalOverlap) / control.count - 4, 100)
             implicitHeight: 30
             radius: 8
             border.color: styleData.selected ? "#B0B0B0" : "#808080"

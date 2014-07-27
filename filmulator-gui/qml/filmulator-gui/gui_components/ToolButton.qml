@@ -24,7 +24,7 @@ Item {
                 border.width: 2
                 border.color: "#A0A0A0"
                 radius: 5
-                color: control.pressed ? "#202020" : "#000000"
+                color: control.pressed ? "#606060" : "#000000"
             }
             label: Text {
                 color: "white"
