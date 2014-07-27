@@ -7,85 +7,85 @@ using std::endl;
 
 //This file is a bunch of methods for changing the SELECT statement.
 
-void OrganizeModel::setMinCaptureTime(QDate captureTimeIn)
+void OrganizeModel::setMinCaptureTime(QDate captureDateIn)
 {
-    minCaptureTime = captureTimeIn;
+    minCaptureTime = captureDateIn;
     if (maxCaptureTime < minCaptureTime)
     {
-        setMaxCaptureTime(captureTimeIn);
+        setMaxCaptureTime(captureDateIn);
     }
     //We want the beginning of the day.
-    QDateTime tempTime = QDateTime(captureTimeIn, QTime(0,0,0,0), QTimeZone(m_timeZone*3600));
+    QDateTime tempTime = QDateTime(captureDateIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     minCaptureTime_i = tempTime.toTime_t();
     emit minCaptureTimeChanged();
     emit organizeFilterChanged();
 }
 
-void OrganizeModel::setMaxCaptureTime(QDate captureTimeIn)
+void OrganizeModel::setMaxCaptureTime(QDate captureDateIn)
 {
-    maxCaptureTime = captureTimeIn;
+    maxCaptureTime = captureDateIn;
     if (minCaptureTime > maxCaptureTime)
     {
-        setMinCaptureTime(captureTimeIn);
+        setMinCaptureTime(captureDateIn);
     }
     //We want the end of the day.
-    QDateTime tempTime = QDateTime(captureTimeIn, QTime(23,59,59,999), QTimeZone(m_timeZone*3600));
+    QDateTime tempTime = QDateTime(captureDateIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
     maxCaptureTime_i = tempTime.toTime_t();
     emit maxCaptureTimeChanged();
     emit organizeFilterChanged();
 }
 
-void OrganizeModel::setMinImportTime(QDate importTimeIn)
+void OrganizeModel::setMinImportTime(QDate importDateIn)
 {
-    minImportTime = importTimeIn;
+    minImportTime = importDateIn;
     if (maxImportTime < minImportTime)
     {
-        setMaxImportTime(importTimeIn);
+        setMaxImportTime(importDateIn);
     }
     //We want the beginning of the day.
-    QDateTime tempTime = QDateTime(importTimeIn, QTime(0,0,0,0), QTimeZone(m_timeZone*3600));
+    QDateTime tempTime = QDateTime(importDateIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     minImportTime_i = tempTime.toTime_t();
     emit minImportTimeChanged();
     emit organizeFilterChanged();
 }
 
-void OrganizeModel::setMaxImportTime(QDate importTimeIn)
+void OrganizeModel::setMaxImportTime(QDate importDateIn)
 {
-    maxImportTime = importTimeIn;
+    maxImportTime = importDateIn;
     if (minImportTime > maxImportTime)
     {
-        setMinImportTime(importTimeIn);
+        setMinImportTime(importDateIn);
     }
     //We want the end of the day.
-    QDateTime tempTime = QDateTime(importTimeIn, QTime(23,59,59,999), QTimeZone(m_timeZone*3600));
+    QDateTime tempTime = QDateTime(importDateIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
     maxImportTime_i = tempTime.toTime_t();
     emit maxImportTimeChanged();
     emit organizeFilterChanged();
 }
 
-void OrganizeModel::setMinProcessedTime(QDate processedTimeIn)
+void OrganizeModel::setMinProcessedTime(QDate processedDateIn)
 {
-    minProcessedTime = processedTimeIn;
+    minProcessedTime = processedDateIn;
     if (maxProcessedTime < minProcessedTime)
     {
-        setMaxProcessedTime(processedTimeIn);
+        setMaxProcessedTime(processedDateIn);
     }
     //We want the beginning of the day.
-    QDateTime tempTime = QDateTime(processedTimeIn, QTime(0,0,0,0), QTimeZone(m_timeZone*3600));
+    QDateTime tempTime = QDateTime(processedDateIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     minProcessedTime_i = tempTime.toTime_t();
     emit minProcessedTimeChanged();
     emit organizeFilterChanged();
 }
 
-void OrganizeModel::setMaxProcessedTime(QDate processedTimeIn)
+void OrganizeModel::setMaxProcessedTime(QDate processedDateIn)
 {
-    maxProcessedTime = processedTimeIn;
+    maxProcessedTime = processedDateIn;
     if (minProcessedTime > maxProcessedTime)
     {
-        setMinProcessedTime(processedTimeIn);
+        setMinProcessedTime(processedDateIn);
     }
     //We want the end of the day.
-    QDateTime tempTime = QDateTime(processedTimeIn, QTime(23,59,59,999), QTimeZone(m_timeZone*3600));
+    QDateTime tempTime = QDateTime(processedDateIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
     maxProcessedTime_i = tempTime.toTime_t();
     emit maxProcessedTimeChanged();
     emit organizeFilterChanged();
@@ -130,6 +130,7 @@ void OrganizeModel::setRatingSort(int sortMode)
 void OrganizeModel::setTimeZone(int timeZoneIn)
 {
     m_timeZone = timeZoneIn;
+    cout << "organizeModel::setTimeZone: " << timeZoneIn << endl;
     setMinCaptureTime(minCaptureTime);
     setMaxCaptureTime(maxCaptureTime);
     setMinImportTime(minImportTime);

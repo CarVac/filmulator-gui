@@ -20,7 +20,7 @@ SplitView {
             ToolSlider {
                 id: timezoneOffset
                 width: filterList.width
-                title: qsTr("TimezoneSplit")
+                title: qsTr("Time zone")
                 tooltipText: qsTr("Controls when the day is divided for the date filters.")
                 minimumValue: -14
                 maximumValue: 14
