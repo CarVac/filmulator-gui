@@ -88,4 +88,5 @@ LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
 
 QT += sql core quick
 
-RESOURCES +=
+RESOURCES += \
+    resources/pixmaps.qrc

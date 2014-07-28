@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
-#include "filmsim.hpp"
+#include "filmSim.hpp"
 
 bool ppmb_write_data ( ofstream &output, int xsize, int ysize,
   matrix<float> &densityr, matrix<float> &densityg, matrix<float> &densityb,

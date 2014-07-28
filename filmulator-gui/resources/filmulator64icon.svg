@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="64px"
+   height="64px"
+   id="svg2985"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="filmulator64icon2.svg"
+   inkscape:export-filename="/home/carvac/filmulator/filmulator32icon.png"
+   inkscape:export-xdpi="45"
+   inkscape:export-ydpi="45">
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="22.627417"
+     inkscape:cx="31.727597"
+     inkscape:cy="28.650341"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:document-units="px"
+     inkscape:grid-bbox="true"
+     inkscape:window-width="1870"
+     inkscape:window-height="1786"
+     inkscape:window-x="779"
+     inkscape:window-y="157"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata2990">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer">
+    <rect
+       style="fill:#aa4400"
+       id="rect2993"
+       width="63.99984"
+       height="57.938179"
+       x="1.6181183e-08"
+       y="2.8184016" />
+    <rect
+       style="opacity:0.68999999;fill:#1a1a1a"
+       id="rect3133"
+       width="60.828041"
+       height="40.599018"
+       x="1.2687191"
+       y="11.347015" />
+    <text
+       xml:space="preserve"
+       style="font-size:19.06970596px;font-style:normal;font-weight:normal;text-align:start;line-height:37.99999952%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="2.4770758"
+       y="34.515415"
+       id="text3135"
+       sodipodi:linespacing="38%"><tspan
+         sodipodi:role="line"
+         x="2.4770758"
+         y="34.515415"
+         style="font-size:26.31551933px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;text-align:start;line-height:37.99999952%;text-anchor:start;fill:#ffffff;font-family:FreeSans;-inkscape-font-specification:FreeSans Semi-Bold"
+         id="tspan3143">Film</tspan><tspan
+         sodipodi:role="line"
+         x="2.4770758"
+         y="44.515312"
+         style="font-size:15.35072041px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;text-anchor:start;fill:#ffffff;font-family:FreeSans;-inkscape-font-specification:FreeSans"
+         id="tspan3151" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="3.4029515"
+       y="48.841396"
+       id="text3085"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3087"
+         x="3.4029515"
+         y="48.841396"
+         style="font-size:13px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;fill:#ffffff;font-family:FreeSans;-inkscape-font-specification:FreeSans Semi-Bold">emulator</tspan></text>
+    <rect
+       style="fill:#ffffff"
+       id="rect3094"
+       width="3.2482715"
+       height="4.6569614"
+       x="2.0716019"
+       y="6.0807724"
+       ry="0.52480584" />
+    <rect
+       ry="0.52480584"
+       y="52.690147"
+       x="2.0716019"
+       height="4.6569614"
+       width="3.2482715"
+       id="rect3116"
+       style="fill:#ffffff" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3118"
+       width="3.2482715"
+       height="4.6569614"
+       x="10.071602"
+       y="52.690147"
+       ry="0.52480584" />
+    <rect
+       ry="0.52480584"
+       y="52.690147"
+       x="18.071613"
+       height="4.6569614"
+       width="3.2482715"
+       id="rect3120"
+       style="fill:#ffffff" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3122"
+       width="3.2482715"
+       height="4.6569614"
+       x="26.071613"
+       y="52.690147"
+       ry="0.52480584" />
+    <rect
+       ry="0.52480584"
+       y="52.690147"
+       x="34.071613"
+       height="4.6569614"
+       width="3.2482715"
+       id="rect3124"
+       style="fill:#ffffff" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3126"
+       width="3.2482715"
+       height="4.6569614"
+       x="42.071613"
+       y="52.690147"
+       ry="0.52480584" />
+    <rect
+       ry="0.52480584"
+       y="52.690147"
+       x="50.071613"
+       height="4.6569614"
+       width="3.2482715"
+       id="rect3135"
+       style="fill:#ffffff" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3144"
+       width="3.2482715"
+       height="4.6569614"
+       x="58.071613"
+       y="52.690147"
+       ry="0.52480584" />
+    <rect
+       ry="0.52480584"
+       y="6.0807724"
+       x="10.071602"
+       height="4.6569614"
+       width="3.2482715"
+       id="rect3146"
+       style="fill:#ffffff" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3148"
+       width="3.2482715"
+       height="4.6569614"
+       x="18.071613"
+       y="6.0807724"
+       ry="0.52480584" />
+    <rect
+       ry="0.52480584"
+       y="6.0807724"
+       x="26.071613"
+       height="4.6569614"
+       width="3.2482715"
+       id="rect3150"
+       style="fill:#ffffff" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3152"
+       width="3.2482715"
+       height="4.6569614"
+       x="34.071613"
+       y="6.0807724"
+       ry="0.52480584" />
+    <rect
+       ry="0.52480584"
+       y="6.0807724"
+       x="42.071613"
+       height="4.6569614"
+       width="3.2482715"
+       id="rect3154"
+       style="fill:#ffffff" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3156"
+       width="3.2482715"
+       height="4.6569614"
+       x="50.071613"
+       y="6.0807724"
+       ry="0.52480584" />
+    <rect
+       style="fill:#ffffff"
+       id="rect3160"
+       width="3.2482715"
+       height="4.6569614"
+       x="58.071613"
+       y="6.0807724"
+       ry="0.52480584" />
+  </g>
+</svg>

@@ -242,6 +242,7 @@ bool ImagePipeline::checkAbort(bool aborted)
 {
     if (aborted && timeDiff(timeRequested) > 0.1)
     {
+        cout << "ImagePipeline::aborted. valid = " << valid << endl;
         return true;
     }
     else
