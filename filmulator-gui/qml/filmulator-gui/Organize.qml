@@ -110,7 +110,7 @@ SplitView {
                             }
                         }
                         Label {
-                            text: control.visibleMonth + "/" + control.visibleYear
+                            text: (control.visibleMonth + 1) + "/" + control.visibleYear
                             anchors.centerIn: parent
                             color: "white"
                         }
