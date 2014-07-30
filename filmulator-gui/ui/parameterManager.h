@@ -13,7 +13,7 @@ class ParameterManager : public QObject
 {
     Q_OBJECT
     //Loading
-    Q_PROPERTY(QString filename MEMBER m_filename WRITE setFilename NOTIFY filenameChanged)
+    Q_PROPERTY(QString filename READ getFilename NOTIFY filenameChanged)
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
 
@@ -76,11 +76,11 @@ protected:
     QString imageIndex;
 
     //Helper for setting up SQL queries.
-    QString queryHelper(QString imageID, QString columnName);
+    void writeback(QString colName, QVariant valueIn);
 
     //Variables for the properties.
     //Loading
-    QString m_filename;
+    QString filename;
     bool m_tiffIn;
     bool m_jpegIn;
 
@@ -127,9 +127,13 @@ protected:
     //Rotation
     int m_rotation;
 
+
+    //Getters for read-only properties.
+    //Loading
+    QString getFilename(){return filename;}
+
     //Setters for the properties.
     //Loading
-    void setFilename(QString);
     void setTiffIn(bool);
     void setJpegIn(bool);
 
