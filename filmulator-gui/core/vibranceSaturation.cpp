@@ -125,7 +125,12 @@ float myPow2(float i)
 
 float myPow(float a, float b)
 {
-    return myPow2(b*myLog2(a));
+    float result;
+    if(a < std::numeric_limits<float>::min())
+        result = a; //(avoid bugs with tiny a)
+    else
+        result = myPow2(b*myLog2(a));
+    return result;
 }
 
 void vibrance_saturation(matrix<unsigned short> &input,
