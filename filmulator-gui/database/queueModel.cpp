@@ -43,9 +43,16 @@ void QueueModel::deQueue(QString searchID)
 void QueueModel::enQueue(QString searchID)
 {
     QSqlQuery query;
+    query.prepare("SELECT STimportTime,STlastProcessedTime FROM SearchTable WHERE STsearchID=?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    int importTime = query.value(0).toInt();
+    int lastProcessedTime = query.value(1).toInt();
+    bool edited = importTime < lastProcessedTime;
     query.prepare("INSERT OR IGNORE INTO QueueTable VALUES (?,?,?,?);");
     query.bindValue(0, index);
-    query.bindValue(1, false);
+    query.bindValue(1, edited);
     query.bindValue(2, false);
     query.bindValue(3, searchID);
     query.exec();
