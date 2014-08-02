@@ -8,11 +8,13 @@
 #include "../core/imagePipeline.h"
 #include <QMutex>
 #include <QMutexLocker>
+#include <QDateTime>
 
 class ParameterManager : public QObject
 {
     Q_OBJECT
     //Loading
+    Q_PROPERTY(QString imageIndex READ getImageIndex NOTIFY imageIndexChanged)
     Q_PROPERTY(QString filename READ getFilename NOTIFY filenameChanged)
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
@@ -129,6 +131,7 @@ protected:
 
 
     //Getters for read-only properties.
+    QString getImageIndex(){return imageIndex;}
     //Loading
     QString getFilename(){return filename;}
 
@@ -181,6 +184,7 @@ protected:
     void setRotation(int);
 
 signals:
+    void imageIndexChanged();
     //Loading
     void filenameChanged();
     void tiffInChanged();

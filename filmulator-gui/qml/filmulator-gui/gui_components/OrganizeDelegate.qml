@@ -7,13 +7,15 @@ Rectangle {
     color: "#00000000"
     property string rootDir
     property string searchID
+    property int importTime
+    property int lastProcessedTime
 
     property string __thumbPath: rootDir + '/'+ searchID.slice(0,4) + '/' + searchID + '.jpg'
 
 
     Rectangle {
         anchors.fill: parent
-        color: "green"
+        color: (importTime < lastProcessedTime) ? "green" : "#00000000"
         opacity: .3
     }
 

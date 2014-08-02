@@ -414,9 +414,21 @@ void ParameterManager::rotateLeft()
 // image specified by imageIndex.
 void ParameterManager::writeback(QString colName, QVariant valueIn)
 {
+    //Write back the slider to the database.
     QSqlQuery query;
     query.prepare(QString("UPDATE ProcessingTable SET %1 = ? WHERE ProcTprocID = ?;").arg(colName));
     query.bindValue(0, valueIn);
+    query.bindValue(1, imageIndex);
+    query.exec();
+    //Write that it's been edited to the SearchTable (actually writing the edit time)
+    QDateTime now = QDateTime::currentDateTime();
+    query.prepare("UPDATE SearchTable SET STlastProcessedTime = ? WHERE STSearchID = ?;");
+    query.bindValue(0, QVariant(now.toTime_t()));
+    query.bindValue(1, imageIndex);
+    query.exec();
+    //Write that it's been edited to the QueueTable
+    query.prepare("UPDATE QueueTable SET QTprocessed = ? WHERE QTsearchID = ?;");
+    query.bindValue(0, QVariant(true));
     query.bindValue(1, imageIndex);
     query.exec();
 }
@@ -425,6 +437,7 @@ void ParameterManager::selectImage(QString imageID)
 {
     QMutexLocker locker(&mutex);
     imageIndex = imageID;
+    emit imageIndexChanged();
 
     QString tempString = imageID;
     tempString.truncate(32);//length of md5

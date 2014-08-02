@@ -179,6 +179,8 @@ SplitView {
                 rootDir: organizeModel.thumbDir()
 
                 searchID: STsearchID
+                importTime: STimportTime
+                lastProcessedTime: STlastProcessedTime
 
                 MouseArea {
                     anchors.fill: parent

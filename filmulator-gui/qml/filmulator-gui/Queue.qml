@@ -17,7 +17,10 @@ Item {
             dim: root.height
             rootDir: organizeModel.thumbDir()
 
+            selectedID: paramManager.imageIndex
             searchID: QTsearchID
+            processed: QTprocessed
+            exported: QTexported
 
             MouseArea {
                 anchors.fill: parent
