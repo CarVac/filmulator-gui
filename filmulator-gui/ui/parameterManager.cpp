@@ -437,7 +437,9 @@ void ParameterManager::selectImage(QString imageID)
     std::vector<string> tempFilename;
     tempFilename.push_back(filename.toStdString());
     param.filenameList = tempFilename;
-//    emit filenameChanged();
+    //You _cannot_ emit filenameChanged() here because it needs to
+    //happen after all the sliders have been set.
+    //It's called at the end.
 
     //tiffIn should be false.
     m_tiffIn = false;
