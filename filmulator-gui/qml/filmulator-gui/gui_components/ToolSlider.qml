@@ -30,7 +30,7 @@ Rectangle {
         color: "white"
         width: parent.width - valueBox.width - reset.width- 4*__padding
         x: __padding
-        y: __padding + 1
+        y: __padding * 1.5
         elide: Text.ElideRight
     }
     Rectangle {
@@ -38,11 +38,14 @@ Rectangle {
         color: "black"
         width: 60
         height: 20 - __padding
-        x: parent.width - this.width - reset.width - 1.5*__padding
-        y: __padding + 1
+        x: parent.width - this.width - reset.width - __padding * 1.5
+        y: __padding * 1.5
         Text {
             id: valueText
-            anchors.fill: parent
+            x: __padding / 2
+            y: __padding / 2
+            width: parent.width - x
+            height: parent.height - y
             color: "white"
             text: slider.value
             elide: Text.ElideRight

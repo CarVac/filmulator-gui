@@ -13,13 +13,13 @@ Item {
         orientation: Qt.Horizontal
         indeterminate: false
         visible: true
-        x: 1
-        y: 1
+        x: 2
+        y: 2
 
         style: ProgressBarStyle {
             background: Rectangle {
-                implicitWidth: 198
-                implicitHeight: 28
+                implicitWidth: 196
+                implicitHeight: 26
                 radius: 3
                 color: "#B0B0B0"
                 border.width: 1

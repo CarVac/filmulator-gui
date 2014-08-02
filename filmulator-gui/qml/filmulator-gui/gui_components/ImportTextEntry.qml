@@ -19,24 +19,25 @@ Rectangle {
         id: label
         color: "white"
         width: parent.width - 2*__padding
-        height: 20 - __padding
+        height: 25 - __padding
         x: __padding
-        y: __padding + 1
+        y: __padding * 1.5
         elide: Text.ElideRight
     }
     Rectangle {
         id: textEntryRect
         color: "black"
         width: parent.width - 2*__padding
-        height: 30 - 2*__padding
+        height: 25 - 2*__padding
         x: __padding
-        y: 20
+        y: 25
         TextEdit {
             id: textEntryBox
+            x: __padding
+            y: __padding * 1.5
             color: "white"
             selectByMouse: true
             cursorVisible: focus
-            anchors.fill: parent
         }
     }
 

@@ -12,6 +12,7 @@ Rectangle {
     property alias tooltipText: labelTooltip.tooltipText
     property alias dirDialogTitle: dirDialog.title
     property alias enteredText: textEntryBox.text
+    property bool erroneous: false
 
     property real __padding: 2
 
@@ -23,22 +24,25 @@ Rectangle {
         width: parent.width - openDirButton.width - 3*__padding
         height: 25 - __padding
         x: __padding
-        y: __padding + 1
+        y: __padding * 1.5
         elide: Text.ElideRight
     }
     Rectangle {
         id: textEntryRect
-        color: "black"
+        color: root.erroneous ? "#FF9922" : "black"
         width: parent.width - 2*__padding
         height: 25 - 2*__padding
         x: __padding
         y: 25
         TextEdit {
             id: textEntryBox
-            color: "white"
+            x: __padding
+            y: __padding * 1.5
+            width: parent.width - x
+            height: parent.height - y
+            color: root.erroneous ? "black" : "white"
             selectByMouse: true
             cursorVisible: focus
-            anchors.fill: parent
         }
     }
 
@@ -47,7 +51,7 @@ Rectangle {
         width: 120
         height: 25
         x: root.width - width - __padding / 2
-        y: __padding/2
+        y: 0//__padding/2
         text: qsTr( "Select a directory" )
         action: Action {
             onTriggered: {

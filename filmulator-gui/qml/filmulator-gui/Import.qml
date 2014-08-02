@@ -41,9 +41,17 @@ Rectangle {
             title: qsTr( "Source Directory" )
             tooltipText: qsTr( "Select or type in the directory containing photos to be imported." )
             dirDialogTitle: qsTr( "Select the directory containing the photos to import." )
+            erroneous: importModel.emptyDir
             onEnteredTextChanged: {
                 root.folderPath = enteredText
             }
+            Connections {
+                target: importModel
+                onEmptyDirChanged: {
+                    sourceDirEntry.erroneous = importModel.emptyDir
+                }
+            }
+
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect( root.tooltipWanted )
             }

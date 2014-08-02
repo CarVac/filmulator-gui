@@ -32,6 +32,7 @@ class ImportModel : public SqlModel
     Q_PROPERTY(QString dirConfig READ getDirConfig     WRITE setDirConfig     NOTIFY dirConfigChanged)
 
     Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
+    Q_PROPERTY(bool emptyDir READ getEmptyDir NOTIFY emptyDirChanged)
 
 public:
     explicit ImportModel( QObject *parent = 0 );
@@ -52,6 +53,7 @@ public:
     QString getDirConfig() { return dirConfig; }
 
     float getProgress() {return progress;}
+    bool getEmptyDir() {return emptyDir;}
 
 public slots:
     void workerFinished();
@@ -65,6 +67,7 @@ signals:
     void dirConfigChanged();
 
     void progressChanged();
+    void emptyDirChanged();
 
     void searchTableChanged();
 
@@ -85,6 +88,7 @@ protected:
     std::deque<importParams> queue;
     int maxQueue;
     float progress = 1;
+    bool emptyDir = false;
 
     QThread workerThread;
 

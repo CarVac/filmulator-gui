@@ -7,16 +7,17 @@ Item {
     property alias text: button.text
     property alias action: button.action
     property alias tooltipText: tooltip.tooltipText
+    property real __padding: 2
 
     signal tooltipWanted(string text, int x, int y)
     implicitWidth: 30
     implicitHeight: 30
     Button {
         id: button
-        width: parent.width - 4
-        height: parent.height - 4
-        x: 2
-        y: 2
+        width: parent.width - __padding * 2
+        height: parent.height - __padding * 2
+        x: __padding
+        y: __padding
         style: ButtonStyle {
             background: Rectangle {
                 implicitWidth: 26

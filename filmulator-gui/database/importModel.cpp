@@ -20,8 +20,13 @@ void ImportModel::importDirectory_r( const QString dir )
     //This function reads in a directory and puts the raws into the database.
     if ( dir.length() == 0 )
     {
+        emptyDir = true;
+        emit emptyDirChanged();
         return;
     }
+
+    emptyDir = false;
+    emit emptyDirChanged();
 
     //First, we call itself recursively on the folders within.
     QDir directory = QDir( dir );
@@ -63,6 +68,9 @@ void ImportModel::importDirectory_r( const QString dir )
         queue.push_back( params );
         maxQueue++;
     }
+
+    progress = float(maxQueue - queue.size())/float(maxQueue);
+    emit progressChanged();
 
     paused = false;
 
