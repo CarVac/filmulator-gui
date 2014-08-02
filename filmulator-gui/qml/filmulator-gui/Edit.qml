@@ -268,10 +268,8 @@ SplitView {
                 }
             }
         }
-        ProgressBar {
+        FilmProgressBar {
             id: progressBar
-            indeterminate: false
-            orientation: Qt.Horizontal
             visible: true
             value: filmProvider.progress
             Connections {

@@ -125,4 +125,14 @@ Rectangle {
             }
         }
     }
+    FilmProgressBar {
+        id: importProgress
+        anchors.top: importButton.bottom
+        anchors.left: importButton.left
+        value: importModel.progress
+        Connections {
+            target: importModel
+            onProgressChanged: importProgress.value = importModel.progress
+        }
+    }
 }

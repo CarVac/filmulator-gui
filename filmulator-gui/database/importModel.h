@@ -31,7 +31,7 @@ class ImportModel : public SqlModel
     Q_PROPERTY(QString backupDir READ getBackupDir     WRITE setBackupDir     NOTIFY backupDirChanged)
     Q_PROPERTY(QString dirConfig READ getDirConfig     WRITE setDirConfig     NOTIFY dirConfigChanged)
 
-    Q_PROPERTY(int progress READ getProgress NOTIFY progressChanged)
+    Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
 
 public:
     explicit ImportModel( QObject *parent = 0 );
