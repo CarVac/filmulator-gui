@@ -74,7 +74,7 @@ SplitView {
             flickableDirection: Qt.Vertical
             clip: true
             contentHeight: toolLayout.height
-            boundsBehavior: Flickable.DragOverBounds
+            boundsBehavior: Flickable.StopAtBounds
             ColumnLayout {
                 id: toolLayout
                 spacing: 0
