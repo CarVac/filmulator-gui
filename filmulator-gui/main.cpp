@@ -12,10 +12,11 @@
 #include <QMetaType>
 #include <QFileInfo>
 #include <QIcon>
+#include <QtWidgets/QApplication>
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     //QQmlApplicationEngine engine("qml/filmulator-gui/main.qml");
     QQmlApplicationEngine engine;
 
