@@ -71,7 +71,6 @@ ApplicationWindow {
                 property real defaultVibrance: 0
                 property real defaultSaturation: 0
                 property bool defaultOverdriveEnabled: false
-                signal updateImage()
 
                 title: qsTr("Filmulate")
                 Edit {
@@ -90,21 +89,6 @@ ApplicationWindow {
                     defaultVibrance: editorTab.defaultVibrance
                     defaultSaturation: editorTab.defaultSaturation
                     defaultOverdriveEnabled: editorTab.defaultOverdriveEnabled
-
-                    Connections {
-                        target: paramManager
-                        onFilenameChanged: {
-                            reset()
-                            updateImage()
-                        }
-                    }
-                    Connections {
-                        target: editorTab
-                        onUpdateImage: {
-                            console.log("updating image")
-                            editItem.updateImage()
-                        }
-                    }
 
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)

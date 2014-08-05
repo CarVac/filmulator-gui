@@ -75,7 +75,8 @@ public:
 
 protected:
     ProcessingParameters param;
-    QMutex mutex;
+    QMutex paramMutex;
+    QMutex signalMutex;
 
     QString imageIndex;
 
@@ -243,6 +244,7 @@ signals:
 
     //General: if any param changes, emit this one as well after the param-specific signal.
     void paramChanged(QString source);
+    void updateImage();
 };
 
 #endif // PARAMETERMANAGER_H

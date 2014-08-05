@@ -24,8 +24,6 @@ SplitView {
     property alias defaultSaturation: editTools.defaultSaturation
     property alias defaultOverdriveEnabled: editTools.defaultOverdriveEnabled
 
-    signal reset()
-    signal updateImage()
     signal tooltipWanted( string text, int x, int y )
 
     Rectangle {
@@ -78,7 +76,7 @@ SplitView {
                     property string indexString: "000000"
                     scale: bottomImage.scale
                     Connections {
-                        target: root
+                        target: paramManager//root
                         onUpdateImage: {
                             var num = ( topImage.index + 1 ) % 1000000//1 in a million
                             topImage.index = num;
@@ -296,12 +294,6 @@ SplitView {
         id: editTools
         Component.onCompleted: {
             editTools.tooltipWanted.connect( root.tooltipWanted )
-            editTools.updateImage.connect( root.updateImage )
         }
-    }
-
-    Component.onCompleted: {
-        //We are forwarding the reset signal to the tools
-        root.reset.connect( editTools.setAllValues )
     }
 }

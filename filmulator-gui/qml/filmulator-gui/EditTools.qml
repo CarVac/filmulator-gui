@@ -32,10 +32,6 @@ SplitView {
     property real defaultSaturation
     property bool defaultOverdriveEnabled
 
-    signal setAllValues()
-
-    signal updateImage()
-
     signal tooltipWanted(string text, int x, int y)
 
     Item {
@@ -93,11 +89,10 @@ SplitView {
                     text: qsTr("CA correction")
                     onIsOnChanged: {
                         paramManager.caEnabled = isOn
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onCaEnabledChanged: {
                             caSwitch.isOn = paramManager.caEnabled
                         }
                     }
@@ -117,11 +112,10 @@ SplitView {
                     defaultValue: root.defaultHighlightRecovery
                     onValueChanged: {
                         paramManager.highlights = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onHighlightsChanged: {
                             highlightRecoverySlider.value = paramManager.highlights
                         }
                     }
@@ -139,12 +133,10 @@ SplitView {
                     defaultValue: root.defaultTemperature
                     onValueChanged: {
                         paramManager.temperature = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
-                            console.log("EditTools; setTemperature from setAllValues")
+                        target: paramManager
+                        onTemperatureChanged: {
                             temperatureSlider.value = paramManager.temperature
                         }
                     }
@@ -163,11 +155,10 @@ SplitView {
                     defaultValue: root.defaultTint
                     onValueChanged: {
                         paramManager.tint = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onTintChanged: {
                             tintSlider.value = paramManager.tint
                         }
                     }
@@ -186,11 +177,10 @@ SplitView {
                     defaultValue: root.defaultExposureComp
                     onValueChanged: {
                         paramManager.exposureComp = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onExposureCompChanged: {
                             exposureCompSlider.value = paramManager.exposureComp
                         }
                     }
@@ -239,11 +229,10 @@ SplitView {
                     valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
                     onValueChanged: {
                         paramManager.filmArea = value*value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onFilmAreaChanged: {
                             filmSizeSlider.value = Math.sqrt(paramManager.filmArea)
                         }
                     }
@@ -261,11 +250,10 @@ SplitView {
                     defaultValue: 100*root.defaultLayerMixConst
                     onValueChanged: {
                         paramManager.layerMixConst = value/100;
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onLayerMixConstChanged: {
                             filmDramaSlider.value = 100*paramManager.layerMixConst
                         }
                     }
@@ -280,11 +268,10 @@ SplitView {
                     text: qsTr("Overdrive Mode")
                     onIsOnChanged: {
                         paramManager.agitateCount = isOn ? 0 : 1
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onAgitateCountChanged: {
                             overdriveSwitch.isOn = (paramManager.agitateCount == 0);
                         }
                     }
@@ -349,11 +336,10 @@ SplitView {
                     valueText: value*value/2
                     onValueChanged: {
                         paramManager.blackpoint = value*value/1000
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onBlackpointChanged: {
                             blackpointSlider.value = Math.sqrt(paramManager.blackpoint*1000)
                         }
                     }
@@ -372,11 +358,10 @@ SplitView {
                     valueText: value*500// 1000/2
                     onValueChanged: {
                         paramManager.whitepoint = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onWhitepointChanged: {
                             whitepointSlider.value = paramManager.whitepoint
                         }
                     }
@@ -395,11 +380,10 @@ SplitView {
                     valueText: value*1000
                     onValueChanged: {
                         paramManager.shadowsY = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onShadowsYChanged: {
                             shadowBrightnessSlider.value = paramManager.shadowsY
                         }
                     }
@@ -418,11 +402,10 @@ SplitView {
                     valueText: value*1000
                     onValueChanged: {
                         paramManager.highlightsY = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onHighlightsYChanged: {
                             highlightBrightnessSlider.value = paramManager.highlightsY
                         }
                     }
@@ -441,11 +424,10 @@ SplitView {
                     valueText: value*200
                     onValueChanged: {
                         paramManager.vibrance = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onVibranceChanged: {
                             vibranceSlider.value = paramManager.vibrance
                         }
                     }
@@ -464,11 +446,10 @@ SplitView {
                     valueText: value*200
                     onValueChanged: {
                         paramManager.saturation = value
-                        root.updateImage()
                     }
                     Connections {
-                        target: root
-                        onSetAllValues: {
+                        target: paramManager
+                        onSaturationChanged: {
                             saturationSlider.value = paramManager.saturation
                         }
                     }

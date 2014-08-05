@@ -48,343 +48,342 @@ ParameterManager::ParameterManager() : QObject(0)
 
 ProcessingParameters ParameterManager::getParams()
 {
-    QMutexLocker locker(&mutex);
+    QMutexLocker paramLocker(&paramMutex);
     return param;
 }
 
 void ParameterManager::setTiffIn(bool tiffIn)
 {
-    QMutexLocker locker(&mutex);
     m_tiffIn = tiffIn;
     param.tiffIn = tiffIn;
     emit tiffInChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setTiff"));
 }
 
 void ParameterManager::setJpegIn(bool jpegIn)
 {
-    QMutexLocker locker(&mutex);
     m_jpegIn = jpegIn;
     param.jpegIn = jpegIn;
     emit jpegInChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setJpeg"));
 }
 
 void ParameterManager::setCaEnabled(bool caEnabled)
 {
-    QMutexLocker locker(&mutex);
     m_caEnabled = caEnabled;
     param.caEnabled = caEnabled;
     writeback(QString("ProcTcaEnabled"), QVariant(int(caEnabled)));
     emit caEnabledChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setCaEnabled"));
 }
 
 void ParameterManager::setHighlights(int highlights)
 {
-    QMutexLocker locker(&mutex);
     m_highlights = highlights;
     param.highlights = highlights;
     writeback(QString("ProcThighlightRecovery"), QVariant(highlights));
     emit highlightsChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setHighlights"));
 }
 
 void ParameterManager::setExposureComp(float exposureComp)
 {
-    QMutexLocker locker(&mutex);
     m_exposureComp = exposureComp;
     std::vector<float> exposureCompList;
     exposureCompList.push_back(exposureComp);
     param.exposureComp = exposureCompList;
     writeback(QString("ProcTexposureComp"), QVariant(exposureComp));
     emit exposureCompChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setExposureComp"));
 }
 
 void ParameterManager::setTemperature(double temperature)
 {
-    QMutexLocker locker(&mutex);
     m_temperature = temperature;
     param.temperature = temperature;
     writeback(QString("ProcTtemperature"), QVariant(temperature));
     emit temperatureChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setTemperature"));
 }
 
 void ParameterManager::setTint(double tint)
 {
-    QMutexLocker locker(&mutex);
     m_tint = tint;
     param.tint = tint;
     writeback(QString("ProcTtint"), QVariant(tint));
     emit tintChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setTint"));
 }
 
 void ParameterManager::setInitialDeveloperConcentration(float initialDeveloperConcentration)
 {
-    QMutexLocker locker(&mutex);
     m_initialDeveloperConcentration = initialDeveloperConcentration;
     param.filmParams.initialDeveloperConcentration = initialDeveloperConcentration;
     writeback(QString("ProcTinitialDeveloperConcentration"), QVariant(initialDeveloperConcentration));
     emit initialDeveloperConcentrationChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setInitialDeveloperConcentration"));
 }
 
 void ParameterManager::setReservoirThickness(float reservoirThickness)
 {
-    QMutexLocker locker(&mutex);
     m_reservoirThickness = reservoirThickness;
     param.filmParams.reservoirThickness = reservoirThickness;
     writeback(QString("ProcTreservoirThickness"), QVariant(reservoirThickness));
     emit reservoirThicknessChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setReservoirThickness"));
 }
 
 void ParameterManager::setActiveLayerThickness(float activeLayerThickness)
 {
-    QMutexLocker locker(&mutex);
     m_activeLayerThickness = activeLayerThickness;
     param.filmParams.activeLayerThickness = activeLayerThickness;
     writeback(QString("ProcTactiveLayerThickness"), QVariant(activeLayerThickness));
     emit activeLayerThicknessChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setActiveLayerThickness"));
 }
 
 void ParameterManager::setCrystalsPerPixel(float crystalsPerPixel)
 {
-    QMutexLocker locker(&mutex);
     m_crystalsPerPixel = crystalsPerPixel;
     param.filmParams.crystalsPerPixel = crystalsPerPixel;
     writeback(QString("ProcTcrystalsPerPixel"), QVariant(crystalsPerPixel));
     emit crystalsPerPixelChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setCrystalsPerPixel"));
 }
 
 void ParameterManager::setInitialCrystalRadius(float initialCrystalRadius)
 {
-    QMutexLocker locker(&mutex);
     m_initialCrystalRadius = initialCrystalRadius;
     param.filmParams.initialCrystalRadius = initialCrystalRadius;
     writeback(QString("ProcTinitialCrystalRadius"), QVariant(initialCrystalRadius));
     emit initialCrystalRadiusChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setInitialCrystalRadius"));
 }
 
 void ParameterManager::setInitialSilverSaltDensity(float initialSilverSaltDensity)
 {
-    QMutexLocker locker(&mutex);
     m_initialSilverSaltDensity = initialSilverSaltDensity;
     param.filmParams.initialSilverSaltDensity = initialSilverSaltDensity;
     writeback(QString("ProcTinitialSilverSaltDensity"), QVariant(initialSilverSaltDensity));
     emit initialSilverSaltDensityChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setInitialSilverSaltDensity"));
 }
 
 void ParameterManager::setDeveloperConsumptionConst(float developerConsumptionConst)
 {
-    QMutexLocker locker(&mutex);
     m_developerConsumptionConst = developerConsumptionConst;
     param.filmParams.developerConsumptionConst = developerConsumptionConst;
     writeback(QString("ProcTdeveloperConsumptionConst"), QVariant(developerConsumptionConst));
     emit developerConsumptionConstChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setDeveloperConsumptionConst"));
 }
 
 void ParameterManager::setCrystalGrowthConst(float crystalGrowthConst)
 {
-    QMutexLocker locker(&mutex);
     m_crystalGrowthConst = crystalGrowthConst;
     param.filmParams.crystalGrowthConst = crystalGrowthConst;
     writeback(QString("ProcTcrystalGrowthConst"), QVariant(crystalGrowthConst));
     emit crystalGrowthConstChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setCrystalGrowthConst"));
 }
 
 void ParameterManager::setSilverSaltConsumptionConst(float silverSaltConsumptionConst)
 {
-    QMutexLocker locker(&mutex);
     m_silverSaltConsumptionConst = silverSaltConsumptionConst;
     param.filmParams.silverSaltConsumptionConst = silverSaltConsumptionConst;
     writeback(QString("ProcTsilverSaltConsumptionConst"), QVariant(silverSaltConsumptionConst));
     emit silverSaltConsumptionConstChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setSilverSaltConsumptionConst"));
 }
 
 void ParameterManager::setTotalDevelopmentTime(float totalDevelopmentTime)
 {
-    QMutexLocker locker(&mutex);
     m_totalDevelopmentTime = totalDevelopmentTime;
     param.filmParams.totalDevelTime = totalDevelopmentTime;
     writeback(QString("ProcTtotalDevelopmentTime"), QVariant(totalDevelopmentTime));
     emit totalDevelopmentTimeChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setTotalDevelopmentTime"));
 }
 
 void ParameterManager::setAgitateCount(int agitateCount)
 {
-    QMutexLocker locker(&mutex);
     m_agitateCount = agitateCount;
     param.filmParams.agitateCount = agitateCount;
     writeback(QString("ProcTagitateCount"), QVariant(agitateCount));
     emit agitateCountChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setAgitateCount"));
 }
 
 void ParameterManager::setDevelopmentSteps(int developmentSteps)
 {
-    QMutexLocker locker(&mutex);
     m_developmentSteps = developmentSteps;
     param.filmParams.developmentSteps = developmentSteps;
     writeback(QString("ProcTdevelopmentSteps"), QVariant(developmentSteps));
     emit developmentStepsChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setDevelopmentSteps"));
 }
 
 void ParameterManager::setFilmArea(float filmArea)
 {
-    QMutexLocker locker(&mutex);
     m_filmArea = filmArea;
     param.filmParams.filmArea = filmArea;
     writeback(QString("ProcTfilmArea"), QVariant(filmArea));
     emit filmAreaChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setFilmArea"));
 }
 
 void ParameterManager::setSigmaConst(float sigmaConst)
 {
-    QMutexLocker locker(&mutex);
     m_sigmaConst = sigmaConst;
     param.filmParams.sigmaConst = sigmaConst;
     writeback(QString("ProcTsigmaConst"), QVariant(sigmaConst));
     emit sigmaConstChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setSigmaConst"));
 }
 
 void ParameterManager::setLayerMixConst(float layerMixConst)
 {
-    QMutexLocker locker(&mutex);
     m_layerMixConst = layerMixConst;
     param.filmParams.layerMixConst = layerMixConst;
     writeback(QString("ProcTlayerMixConst"), QVariant(layerMixConst));
     emit layerMixConstChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setLayerMixConst"));
 }
 
 void ParameterManager::setLayerTimeDivisor(float layerTimeDivisor)
 {
-    QMutexLocker locker(&mutex);
     m_layerTimeDivisor = layerTimeDivisor;
     param.filmParams.layerTimeDivisor = layerTimeDivisor;
     writeback(QString("ProcTlayerTimeDivisor"), QVariant(layerTimeDivisor));
     emit layerTimeDivisorChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setLayerTimeDivisor"));
 }
 
 void ParameterManager::setRolloffBoundary(int rolloffBoundary)
 {
-    QMutexLocker locker(&mutex);
     m_rolloffBoundary = rolloffBoundary;
     param.filmParams.rolloffBoundary = rolloffBoundary;
     writeback(QString("ProcTrolloffBoundary"), QVariant(rolloffBoundary));
     emit rolloffBoundaryChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setRolloffBoundary"));
 }
 
 void ParameterManager::setBlackpoint(float blackpoint)
 {
-    QMutexLocker locker(&mutex);
     m_blackpoint = blackpoint;
     param.blackpoint = blackpoint;
     writeback(QString("ProcTblackpoint"), QVariant(blackpoint));
     emit blackpointChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setBlackpoint"));
 }
 
 void ParameterManager::setWhitepoint(float whitepoint)
 {
-    QMutexLocker locker(&mutex);
     m_whitepoint = whitepoint;
     param.whitepoint = whitepoint;
     writeback(QString("ProcTwhitepoint"), QVariant(whitepoint));
     emit whitepointChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setWhitepoint"));
 }
 
 void ParameterManager::setShadowsX(float shadowsX)
 {
-    QMutexLocker locker(&mutex);
     m_shadowsX = shadowsX;
     param.shadowsX = shadowsX;
     writeback(QString("ProcTshadowsX"), QVariant(shadowsX));
     emit shadowsXChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setShadowsX"));
 }
 
 void ParameterManager::setShadowsY(float shadowsY)
 {
-    QMutexLocker locker(&mutex);
     m_shadowsY = shadowsY;
     param.shadowsY = shadowsY;
     writeback(QString("ProcTshadowsY"), QVariant(shadowsY));
     emit shadowsYChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setShadowsY"));
 }
 
 void ParameterManager::setHighlightsX(float highlightsX)
 {
-    QMutexLocker locker(&mutex);
     m_highlightsX = highlightsX;
     param.highlightsX = highlightsX;
     writeback(QString("ProcThighlightsX"), QVariant(highlightsX));
     emit highlightsXChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setHighlightsX"));
 }
 
 void ParameterManager::setHighlightsY(float highlightsY)
 {
-    QMutexLocker locker(&mutex);
     m_highlightsY = highlightsY;
     param.highlightsY = highlightsY;
     writeback(QString("ProcThighlightsY"), QVariant(highlightsY));
     emit highlightsYChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setHighlightsY"));
 }
 
 void ParameterManager::setVibrance(float vibrance)
 {
-    QMutexLocker locker(&mutex);
     m_vibrance = vibrance;
     param.vibrance = vibrance;
     writeback(QString("ProcTvibrance"), QVariant(vibrance));
     emit vibranceChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setVibrance"));
 }
 
 void ParameterManager::setSaturation(float saturation)
 {
-    QMutexLocker locker(&mutex);
     m_saturation = saturation;
     param.saturation = saturation;
     writeback(QString("ProcTsaturation"), QVariant(saturation));
     emit saturationChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setSaturation"));
 }
 
 void ParameterManager::setRotation(int rotation)
 {
-    QMutexLocker locker(&mutex);
     m_rotation = rotation;
     param.rotation = rotation;
     writeback(QString("ProcTrotation"), QVariant(rotation));
     emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setRotation"));
 }
 
 void ParameterManager::rotateRight()
 {
-    QMutexLocker locker(&mutex);
     m_rotation--;
     if (m_rotation < 0)
     {
@@ -393,12 +392,12 @@ void ParameterManager::rotateRight()
     param.rotation = m_rotation;
     writeback(QString("ProcTrotation"), QVariant(m_rotation));
     emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("rotateRight"));
 }
 
 void ParameterManager::rotateLeft()
 {
-    QMutexLocker locker(&mutex);
     m_rotation++;
     if (m_rotation > 3)
     {
@@ -407,6 +406,7 @@ void ParameterManager::rotateLeft()
     param.rotation = m_rotation;
     writeback(QString("ProcTrotation"), QVariant(m_rotation));
     emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("rotateLeft"));
 }
 
@@ -441,7 +441,7 @@ void ParameterManager::writeback(QString colName, QVariant valueIn)
 
 void ParameterManager::selectImage(QString imageID)
 {
-    QMutexLocker locker(&mutex);//Make all the param changes happen together.
+    QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
     disableParamChange();//Prevent aborting of computation.
     qDebug() << paramChangeEnabled;
 
@@ -484,192 +484,160 @@ void ParameterManager::selectImage(QString imageID)
     //First is caEnabled.
     nameCol = rec.indexOf("ProcTcaEnabled");
     if (-1 == nameCol) { std::cout << "paramManager ProcTcaEnabled" << endl; }
-    m_caEnabled = query.value(nameCol).toBool();
-    param.caEnabled = m_caEnabled;
+    setCaEnabled(query.value(nameCol).toBool());
 
     //Next is highlights (highlight recovery)
     nameCol = rec.indexOf("ProcThighlightRecovery");
     if (-1 == nameCol) { std::cout << "paramManager ProcThighlightRecovery" << endl; }
-    m_highlights = query.value(nameCol).toInt();
-    param.highlights = m_highlights;
+    setHighlights(query.value(nameCol).toInt());
 
     //Exposure compensation
     nameCol = rec.indexOf("ProcTexposureComp");
     if (-1 == nameCol) { std::cout << "paramManager ProcTexposureComp" << endl; }
-    m_exposureComp = query.value(nameCol).toFloat();
-    std::vector<float> exposureCompList;
-    exposureCompList.push_back(m_exposureComp);
-    param.exposureComp = exposureCompList;
+    setExposureComp(query.value(nameCol).toFloat());
 
     //Temperature
     nameCol = rec.indexOf("ProcTtemperature");
     if (-1 == nameCol) { std::cout << "paramManager ProcTtemperature" << endl; }
-    m_temperature = query.value(nameCol).toDouble();
-    param.temperature = m_temperature;
+    setTemperature(query.value(nameCol).toDouble());
 
     //Tint
     nameCol = rec.indexOf("ProcTtint");
     if (-1 == nameCol) { std::cout << "paramManager ProcTtint" << endl; }
-    m_tint = query.value(nameCol).toDouble();
-    param.tint = m_tint;
+    setTint(query.value(nameCol).toDouble());
 
     //Initial developer concentration
     nameCol = rec.indexOf("ProcTinitialDeveloperConcentration");
     if (-1 == nameCol) { std::cout << "paramManager ProcTinitialDeveloperConcentration" << endl; }
-    m_initialDeveloperConcentration = query.value(nameCol).toFloat();
-    param.filmParams.initialDeveloperConcentration = m_initialDeveloperConcentration;
+    setInitialDeveloperConcentration(query.value(nameCol).toFloat());
 
     //Reservoir thickness
     nameCol = rec.indexOf("ProcTreservoirThickness");
     if (-1 == nameCol) { std::cout << "paramManager ProcTreservoirThickness" << endl; }
-    m_reservoirThickness = query.value(nameCol).toFloat();
-    param.filmParams.reservoirThickness = m_reservoirThickness;
+    setReservoirThickness(query.value(nameCol).toFloat());
 
     //Active layer thickness
     nameCol = rec.indexOf("ProcTactiveLayerThickness");
     if (-1 == nameCol) { std::cout << "paramManager ProcTactiveLayerThickness" << endl; }
-    m_activeLayerThickness = query.value(nameCol).toFloat();
-    param.filmParams.activeLayerThickness = m_activeLayerThickness;
+    setActiveLayerThickness(query.value(nameCol).toFloat());
 
     //Crystals per pixel
     nameCol = rec.indexOf("ProcTcrystalsPerPixel");
     if (-1 == nameCol) { std::cout << "paramManager ProcTcrystalsPerPixel" << endl; }
-    m_crystalsPerPixel = query.value(nameCol).toFloat();
-    param.filmParams.crystalsPerPixel = m_crystalsPerPixel;
+    setCrystalsPerPixel(query.value(nameCol).toFloat());
 
     //Initial crystal radius
     nameCol = rec.indexOf("ProcTinitialCrystalRadius");
     if (-1 == nameCol) { std::cout << "paramManager ProcTinitialCrystalRadius" << endl; }
-    m_initialCrystalRadius = query.value(nameCol).toFloat();
-    param.filmParams.initialCrystalRadius = m_initialCrystalRadius;
+    setInitialCrystalRadius(query.value(nameCol).toFloat());
 
     //Initial silver salt area density
     nameCol = rec.indexOf("ProcTinitialSilverSaltDensity");
     if (-1 == nameCol) { std::cout << "paramManager ProcTinitialSilverSaltDensity" << endl; }
-    m_initialSilverSaltDensity = query.value(nameCol).toFloat();
-    param.filmParams.initialSilverSaltDensity = m_initialSilverSaltDensity;
+    setInitialSilverSaltDensity(query.value(nameCol).toFloat());
 
     //Developer consumption rate constant
     nameCol = rec.indexOf("ProcTdeveloperConsumptionConst");
     if (-1 == nameCol) { std::cout << "paramManager ProcTdeveloperConsumptionConst" << endl; }
-    m_developerConsumptionConst = query.value(nameCol).toFloat();
-    param.filmParams.developerConsumptionConst = m_developerConsumptionConst;
+    setDeveloperConsumptionConst(query.value(nameCol).toFloat());
 
     //Crystal growth rate constant
     nameCol = rec.indexOf("ProcTcrystalGrowthConst");
     if (-1 == nameCol) { std::cout << "paramManager ProcTcrystalGrowthConst" << endl; }
-    m_crystalGrowthConst = query.value(nameCol).toFloat();
-    param.filmParams.crystalGrowthConst = m_crystalGrowthConst;
+    setCrystalGrowthConst(query.value(nameCol).toFloat());
 
     //Silver halide consumption rate constant
     nameCol = rec.indexOf("ProcTsilverSaltConsumptionConst");
     if (-1 == nameCol) { std::cout << "paramManager ProcTsilverSaltConsumptionConst" << endl; }
-    m_silverSaltConsumptionConst = query.value(nameCol).toFloat();
-    param.filmParams.silverSaltConsumptionConst = m_silverSaltConsumptionConst;
+    setSilverSaltConsumptionConst(query.value(nameCol).toFloat());
 
     //Total development time
     nameCol = rec.indexOf("ProcTtotalDevelopmentTime");
     if (-1 == nameCol) { std::cout << "paramManager ProcTtotalDevelopmentTime" << endl; }
-    m_totalDevelopmentTime = query.value(nameCol).toFloat();
-    param.filmParams.totalDevelTime = m_totalDevelopmentTime;
+    setTotalDevelopmentTime(query.value(nameCol).toFloat());
 
     //Number of agitations
     nameCol = rec.indexOf("ProcTagitateCount");
     if (-1 == nameCol) { std::cout << "paramManager ProcTagitateCount" << endl; }
-    m_agitateCount = query.value(nameCol).toInt();
-    param.filmParams.agitateCount = m_agitateCount;
+    setAgitateCount(query.value(nameCol).toInt());
 
     //Number of simulation steps for development
     nameCol = rec.indexOf("ProcTdevelopmentSteps");
     if (-1 == nameCol) { std::cout << "paramManager ProcTdevelopmentSteps" << endl; }
-    m_developmentSteps = query.value(nameCol).toInt();
-    param.filmParams.developmentSteps = m_developmentSteps;
+    setDevelopmentSteps(query.value(nameCol).toInt());
 
     //Area of film for the simulation
     nameCol = rec.indexOf("ProcTfilmArea");
     if (-1 == nameCol) { std::cout << "paramManager ProcTfilmArea" << endl; }
-    m_filmArea = query.value(nameCol).toFloat();
-    param.filmParams.filmArea = m_filmArea;
+    setFilmArea(query.value(nameCol).toFloat());
 
     //A constant for the size of the diffusion. It...affects the same thing as film area.
     nameCol = rec.indexOf("ProcTsigmaConst");
     if (-1 == nameCol) { std::cout << "paramManager ProcTsigmaConst" << endl; }
-    m_sigmaConst = query.value(nameCol).toFloat();
-    param.filmParams.sigmaConst = m_sigmaConst;
+    setSigmaConst(query.value(nameCol).toFloat());
 
     //Layer mix constant: the amount of active developer that gets exchanged with the reservoir.
     nameCol = rec.indexOf("ProcTlayerMixConst");
     if (-1 == nameCol) { std::cout << "paramManager ProcTlayerMixConst" << endl; }
-    m_layerMixConst = query.value(nameCol).toFloat();
-    param.filmParams.layerMixConst = m_layerMixConst;
+    setLayerMixConst(query.value(nameCol).toFloat());
 
     //Layer time divisor: Controls the relative intra-layer and inter-layer diffusion.
     nameCol = rec.indexOf("ProcTlayerTimeDivisor");
     if (-1 == nameCol) { std::cout << "paramManager ProcTlayerTimeDivisor" << endl; }
-    m_layerTimeDivisor = query.value(nameCol).toFloat();
-    param.filmParams.layerTimeDivisor = m_layerTimeDivisor;
+    setLayerTimeDivisor(query.value(nameCol).toFloat());
 
     //Rolloff boundary. This is where highlights start to roll off.
     nameCol = rec.indexOf("ProcTrolloffBoundary");
     if (-1 == nameCol) { std::cout << "paramManager ProcTrolloffBoundary" << endl; }
-    m_rolloffBoundary = query.value(nameCol).toInt();
-    param.filmParams.rolloffBoundary = m_rolloffBoundary;
+    setRolloffBoundary(query.value(nameCol).toInt());
 
     //Post-filmulator black clipping point
     nameCol = rec.indexOf("ProcTblackpoint");
     if (-1 == nameCol) { std::cout << "paramManager ProcTblackpoint" << endl; }
-    m_blackpoint = query.value(nameCol).toFloat();
-    param.blackpoint = m_blackpoint;
+    setBlackpoint(query.value(nameCol).toFloat());
 
     //Post-filmulator white clipping point
     nameCol = rec.indexOf("ProcTwhitepoint");
     if (-1 == nameCol) { std::cout << "paramManager ProcTwhitepoint" << endl; }
-    m_whitepoint = query.value(nameCol).toFloat();
-    param.whitepoint = m_whitepoint;
+    setWhitepoint(query.value(nameCol).toFloat());
 
     //Shadow control point x value
     nameCol = rec.indexOf("ProcTshadowsX");
     if (-1 == nameCol) { std::cout << "paramManager ProcTshadowsX" << endl; }
-    m_shadowsX = query.value(nameCol).toFloat();
-    param.shadowsX = m_shadowsX;
+    setShadowsX(query.value(nameCol).toFloat());
 
     //Shadow control point y value
     nameCol = rec.indexOf("ProcTshadowsY");
     if (-1 == nameCol) { std::cout << "paramManager ProcTshadowsY" << endl; }
-    m_shadowsY = query.value(nameCol).toFloat();
-    param.shadowsY = m_shadowsY;
+    setShadowsY(query.value(nameCol).toFloat());
 
     //Highlight control point x value
     nameCol = rec.indexOf("ProcThighlightsX");
     if (-1 == nameCol) { std::cout << "paramManager ProcThighlightsX" << endl; }
-    m_highlightsX = query.value(nameCol).toFloat();
-    param.highlightsX = m_highlightsX;
+    setHighlightsX(query.value(nameCol).toFloat());
 
     //Highlight control point y value
     nameCol = rec.indexOf("ProcThighlightsY");
     if (-1 == nameCol) { std::cout << "paramManager ProcThighlightsY" << endl; }
-    m_highlightsY = query.value(nameCol).toFloat();
-    param.highlightsY = m_highlightsY;
+    setHighlightsY(query.value(nameCol).toFloat());
 
     //Vibrance (saturation of less-saturated things)
     nameCol = rec.indexOf("ProcTvibrance");
     if (-1 == nameCol) { std::cout << "paramManager ProcTvibrance" << endl; }
-    m_vibrance = query.value(nameCol).toFloat();
-    param.vibrance = m_vibrance;
+    setVibrance(query.value(nameCol).toFloat());
 
     //Saturation
     nameCol = rec.indexOf("ProcTsaturation");
     if (-1 == nameCol) { std::cout << "paramManager ProcTsaturation" << endl; }
-    m_saturation = query.value(nameCol).toFloat();
-    param.saturation = m_saturation;
+    setSaturation(query.value(nameCol).toFloat());
 
     //Rotation
     nameCol = rec.indexOf("ProcTrotation");
     if (-1 == nameCol) { std::cout << "paramManager ProcTrotation" << endl; }
-    m_rotation = query.value(nameCol).toInt();
-    param.rotation = m_rotation;
+    setRotation(query.value(nameCol).toInt());
 
-    locker.unlock();
+    paramLocker.unlock();
+    QMutexLocker signalLocker(&signalMutex);
     enableParamChange();//Re-enable updating of the image.
     paramChangeWrapper(QString("selectImage"));
 }
@@ -680,7 +648,6 @@ void ParameterManager::selectImage(QString imageID)
 void ParameterManager::disableParamChange()
 {
     paramChangeEnabled = false;
-    qDebug() << "Disabling param changes: enabled? " << paramChangeEnabled;
 }
 void ParameterManager::enableParamChange()
 {
@@ -688,13 +655,9 @@ void ParameterManager::enableParamChange()
 }
 void ParameterManager::paramChangeWrapper(QString source)
 {
-    qDebug() << "paramChangeWrapper: changes enabled? " << paramChangeEnabled;
     if (paramChangeEnabled)
     {
         emit paramChanged(source);
-    }
-    else
-    {
-        qDebug() << "Param change prevented";
+        emit updateImage();
     }
 }
