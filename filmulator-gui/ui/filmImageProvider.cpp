@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <QTimer>
 #include <cmath>
+#include <QDebug>
 #define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
@@ -15,7 +16,7 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     zeroHistogram(finalHist);
     zeroHistogram(postFilmHist);
     zeroHistogram(preFilmHist);
-    QObject::connect(paramManager, SIGNAL(paramChanged()), this, SLOT(abortPipeline()));
+    QObject::connect(paramManager, SIGNAL(paramChanged(QString)), this, SLOT(abortPipeline(QString)));
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -130,3 +131,8 @@ QImage FilmImageProvider::emptyImage()
     return QImage(0,0,QImage::Format_ARGB32);
 }
 
+void FilmImageProvider::abortPipeline(QString source)
+{
+    qDebug() << "Aborted by " << source;
+    abort = true;
+}

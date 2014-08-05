@@ -84,7 +84,7 @@ signals:
     void histPreFilmChanged();
 
 public slots:
-    void abortPipeline(){ abort = true; }
+    void abortPipeline(QString source);
 
 };
 

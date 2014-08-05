@@ -9,6 +9,8 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QDateTime>
+#include <QString>
+#include <QDebug>
 
 class ParameterManager : public QObject
 {
@@ -79,6 +81,12 @@ protected:
 
     //Helper for setting up SQL queries.
     void writeback(QString colName, QVariant valueIn);
+
+    void paramChangeWrapper(QString);
+    void disableParamChange();
+    void enableParamChange();
+
+    bool paramChangeEnabled;
 
     //Variables for the properties.
     //Loading
@@ -234,7 +242,7 @@ signals:
     void rotationChanged();
 
     //General: if any param changes, emit this one as well after the param-specific signal.
-    void paramChanged();
+    void paramChanged(QString source);
 };
 
 #endif // PARAMETERMANAGER_H
