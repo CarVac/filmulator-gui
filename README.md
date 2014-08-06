@@ -52,6 +52,4 @@ If told to make a version number for it right now, I'd put it as 0.5 Alpha.
 
 Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the Import and Organize tabs need some UI massaging, as does the queue. Finally, the Output tab hasn't even been started yet.
 
-There are a few known bugs. The most important is that occasionally, a new image will not load completely. In this case, nudge a slider in order to reload the image.
-
 But in the meantime, feel free to play around. Report any new bugs or suggestions you may have!
