@@ -17,7 +17,13 @@ class ParameterManager : public QObject
     Q_OBJECT
     //Loading
     Q_PROPERTY(QString imageIndex READ getImageIndex NOTIFY imageIndexChanged)
+
     Q_PROPERTY(QString filename READ getFilename NOTIFY filenameChanged)
+    Q_PROPERTY(int sensitivity READ getSensitivity NOTIFY sensitivityChanged)
+    Q_PROPERTY(QString exposureTime READ getExposureTime NOTIFY exposureTimeChanged)
+    Q_PROPERTY(float aperture READ getAperture NOTIFY apertureChanged)
+    Q_PROPERTY(float focalLength READ getFocalLength NOTIFY focalLengthChanged)
+
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
 
@@ -90,8 +96,14 @@ protected:
     bool paramChangeEnabled;
 
     //Variables for the properties.
-    //Loading
+    //Image parameters, read-only.
     QString filename;
+    int sensitivity;
+    QString exposureTime;
+    float aperture;
+    float focalLength;
+
+    //Loading
     bool m_tiffIn;
     bool m_jpegIn;
 
@@ -141,8 +153,12 @@ protected:
 
     //Getters for read-only properties.
     QString getImageIndex(){return imageIndex;}
-    //Loading
+
     QString getFilename(){return filename;}
+    int getSensitivity(){return sensitivity;}
+    QString getExposureTime(){return exposureTime;}
+    float getAperture(){return aperture;}
+    float getFocalLength(){return focalLength;}
 
     //Setters for the properties.
     //Loading
@@ -194,8 +210,15 @@ protected:
 
 signals:
     void imageIndexChanged();
-    //Loading
+
+    //Read-only image properties
     void filenameChanged();
+    void sensitivityChanged();
+    void exposureTimeChanged();
+    void apertureChanged();
+    void focalLengthChanged();
+
+    //Loading
     void tiffInChanged();
     void jpegInChanged();
 

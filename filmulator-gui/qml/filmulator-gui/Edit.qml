@@ -275,20 +275,34 @@ SplitView {
                 onProgressChanged: progressBar.value = filmProvider.progress
             }
         }
-/*        Text {
-            id: text1
+        Text {
+            id: filenameText
             x: 200
             y: 0
             color: "white"
-            text: wheelCapture.mouseX
+            text: paramManager.filename
         }
         Text{
             id: text2
             x: 200
             y: 15
             color: "white"
-            text: wheelCapture.mouseY
-        }*/
+            text: paramManager.exposureTime
+        }
+        Text {
+            id: text3
+            x: 300
+            y: 0
+            color: "white"
+            text: paramManager.sensitivity
+        }
+        Text {
+            id: text4
+            x: 300
+            y: 15
+            color: "white"
+            text: paramManager.aperture
+        }
     }
     EditTools {
         id: editTools

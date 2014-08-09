@@ -439,6 +439,43 @@ void ParameterManager::writeback(QString colName, QVariant valueIn)
     }
 }
 
+//Returns greatest common denominator. From wikipedia.
+unsigned int gcd(unsigned int u, unsigned int v)
+{
+    // simple cases (termination)
+    if (u == v) { return u; }
+
+    if (u == 0) { return v; }
+
+    if (v == 0) { return u; }
+
+    // look for factors of 2
+    if (~u & 1) // u is even
+    {
+        if (v & 1) // v is odd
+        {
+            return gcd(u >> 1, v);
+        }
+        else // both u and v are even
+        {
+            return gcd(u >> 1, v >> 1) << 1;
+        }
+    }
+
+    if (~v & 1) // u is odd, v is even
+    {
+        return gcd(u, v >> 1);
+    }
+
+    // reduce larger argument
+    if (u > v)
+    {
+        return gcd((u - v) >> 1, v);
+    }
+
+    return gcd((v - u) >> 1, u);
+}
+
 void ParameterManager::selectImage(QString imageID)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
@@ -451,14 +488,69 @@ void ParameterManager::selectImage(QString imageID)
     QString tempString = imageID;
     tempString.truncate(32);//length of md5
     QSqlQuery query;
-    query.prepare("SELECT FTfilePath FROM FileTable WHERE FTfileID = ?;");
+    query.prepare("SELECT \
+                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength \
+                  FROM FileTable WHERE FTfileID = ?;");
     query.bindValue(0, QVariant(tempString));
     query.exec();
     query.first();
-    filename = query.value(0).toString();
+
+    //This will help us get the column index of the desired column name.
+    int nameCol;
+    QSqlRecord rec = query.record();
+
+    //Filename. First is the full path for the image pipeline.
+    nameCol = rec.indexOf("FTfilePath");
+    if (-1 == nameCol) { std::cout << "paramManager FTfilePath" << endl; }
+    QString name = query.value(0).toString();
     std::vector<string> tempFilename;
-    tempFilename.push_back(filename.toStdString());
+    tempFilename.push_back(name.toStdString());
     param.filenameList = tempFilename;
+    filename = name.right(name.size() - name.lastIndexOf(QString("/")) - 1);
+    emit filenameChanged();
+
+    nameCol = rec.indexOf("FTsensitivity");
+    if (-1 == nameCol) { std::cout << "paramManager FTsensitivity" << endl; }
+    sensitivity = query.value(1).toInt();
+    emit sensitivityChanged();
+
+    nameCol = rec.indexOf("FTexposureTime");
+    if (-1 == nameCol) { std::cout << "paramManager FTexposureTime" << endl; }
+    QString expTimeTemp = query.value(2).toString();
+    bool okNum;
+    unsigned int numerator = expTimeTemp.left(expTimeTemp.lastIndexOf("/")).toInt(&okNum, 10);
+    bool okDen;
+    unsigned int denominator = expTimeTemp.right(expTimeTemp.size() - expTimeTemp.lastIndexOf("/") - 1).toInt(&okDen, 10);
+    if (okNum && okDen)
+    {
+        unsigned int divisor = gcd(numerator, denominator);
+        numerator /= divisor;
+        denominator /= divisor;
+        double expTime = double(numerator)/double(denominator);
+        if (expTime > 0.5)
+        {
+            exposureTime = QString::number(expTime, 'f', 1);
+        }
+        else
+        {
+            exposureTime = QString("%1/%2").arg(numerator).arg(denominator);
+        }
+    }
+    else
+    {
+        exposureTime = expTimeTemp;
+    }
+    emit exposureTimeChanged();
+
+    nameCol = rec.indexOf("FTaperture");
+    if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
+    aperture = query.value(3).toFloat();
+    emit apertureChanged();
+
+    nameCol = rec.indexOf("FTfocalLength");
+    if (-1 == nameCol) { std::cout << "paramManager FTfocalLength" << endl; }
+    focalLength = query.value(4).toFloat();
+    emit focalLengthChanged();
 
     //tiffIn should be false.
     m_tiffIn = false;
@@ -474,12 +566,8 @@ void ParameterManager::selectImage(QString imageID)
     query.prepare("SELECT * FROM ProcessingTable WHERE ProcTprocID = ?;");
     query.bindValue(0, imageID);
     query.exec();
-
-    //This will help us get the column index of the desired column name.
-    QSqlRecord rec = query.record();
-    int nameCol;
-
     query.first();
+    rec = query.record();
 
     //First is caEnabled.
     nameCol = rec.indexOf("ProcTcaEnabled");

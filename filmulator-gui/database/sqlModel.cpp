@@ -34,10 +34,11 @@ QVariant SqlModel::data( const QModelIndex &index, int role ) const
 //THIS NEEDS REDOING WITH SQL QUERY MODEL
 {
     QVariant value = QSqlQueryModel::data( index, role );
-    //Roles are numbers. If it's less than the UserRole constant, it's a custom one.
+    //Roles are numbers. If it's greater than the UserRole constant, it's a custom one.
     if( role < Qt::UserRole )
     {
         value = QSqlQueryModel::data( index,role );
+        cout << "SqlModel::data: nonUserRole" << endl;
     }
     else
     {
