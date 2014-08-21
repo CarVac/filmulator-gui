@@ -146,7 +146,8 @@ SplitView {
             onWheel: {
                 var oldMouseX = wheel.x + flicky.contentX - Math.max( 0, 0.5*( flicky.width-bottomImage.width*bottomImage.scale ) )
                 var oldMouseY = wheel.y + flicky.contentY - Math.max( 0, 0.5*( flicky.height-bottomImage.height*bottomImage.scale ) )
-                var zoomFactor = 1.2
+                var zoomFactor = Math.pow(1.2,Math.abs(wheel.angleDelta.y)/120)
+                //console.log(wheel.angleDelta.y)
                 if ( wheel.angleDelta.y > 0 ) {
                     bottomImage.scale *= zoomFactor;
                     flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max( 0, 0.5*( flicky.width-bottomImage.width*bottomImage.scale ) )
@@ -287,21 +288,21 @@ SplitView {
             x: 200
             y: 15
             color: "white"
-            text: paramManager.exposureTime
+            text: paramManager.exposureTime + " s"
         }
         Text {
             id: text3
-            x: 300
+            x: 350
             y: 0
             color: "white"
-            text: paramManager.sensitivity
+            text: "ISO " + paramManager.sensitivity
         }
         Text {
             id: text4
-            x: 300
+            x: 350
             y: 15
             color: "white"
-            text: paramManager.aperture
+            text: "f/" + paramManager.aperture
         }
     }
     EditTools {
