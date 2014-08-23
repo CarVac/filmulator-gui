@@ -10,13 +10,14 @@
 #include <QSqlQuery>
 #include <QDir>
 
-void fileInsert( const QString hash,
-                 const QString filePathName,
-                 Exiv2::ExifData exifData);
-void createNewProfile( const QString fileHash,
-                       const QString fileName,
-                       const QString absoluteFilePath,
-                       const int captureTime,
-                       Exiv2::ExifData exifData);
+void fileInsert(const QString hash,
+                const QString filePathName,
+                Exiv2::ExifData exifData);
+void createNewProfile(const QString fileHash,
+                      const QString fileName,
+                      const QString absoluteFilePath,
+                      const QDateTime captureTime,
+                      const QDateTime importTime,
+                      Exiv2::ExifData exifData);
 
 #endif // SQLINSERTION_H

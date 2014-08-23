@@ -5,8 +5,8 @@
 
 /*This function inserts info on a raw file into the database.*/
 void fileInsert(const QString hash,
-                 const QString filePathName,
-                 Exiv2::ExifData exifData)
+                const QString filePathName,
+                Exiv2::ExifData exifData)
 {
     QSqlQuery query;
     query.prepare("REPLACE INTO FileTable values (?,?,?,?,?,?,?,?,?);");
@@ -35,10 +35,11 @@ void fileInsert(const QString hash,
 
 /*This function creates a default profile in the profile table, and a search entry in the searchtable.*/
 void createNewProfile(const QString fileHash,
-                       const QString fileName,
-                       const QString absoluteFilePath,
-                       const int captureTime,
-                       Exiv2::ExifData exifData)
+                      const QString fileName,
+                      const QString absoluteFilePath,
+                      const QDateTime captureTime,
+                      const QDateTime importTime,
+                      Exiv2::ExifData exifData)
 {
     QSqlQuery query;
     //Retrieve the usage count from the file table, and increment it by one.
@@ -62,7 +63,7 @@ void createNewProfile(const QString fileHash,
     searchID.append(QString("%1").arg(increment, 4, 10, QLatin1Char('0')));
     query.bindValue( 0, searchID);
     //captureTime (unix time)
-    query.bindValue( 1, captureTime);
+    query.bindValue( 1, captureTime.toTime_t());
     //name (of instance)
     query.bindValue( 2, "");
     //filename
@@ -79,9 +80,9 @@ void createNewProfile(const QString fileHash,
     query.bindValue( 7, 0);
 
     //importTime (unix time)
-    QDateTime currentTime = QDateTime::currentDateTime();
-    query.bindValue( 8, currentTime.toTime_t());
+    query.bindValue( 8, importTime.toTime_t());
     //lastProcessedTime (unix time)
+    QDateTime currentTime = QDateTime::currentDateTime();
     //It's the same as above, since we're making a new one.
     query.bindValue( 9, currentTime.toTime_t());
 

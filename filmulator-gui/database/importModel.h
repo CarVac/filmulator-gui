@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QDateTime>
 
 struct importParams {
     QFileInfo fileInfoParam;
@@ -18,6 +19,7 @@ struct importParams {
     QString photoDirParam;
     QString backupDirParam;
     QString dirConfigParam;
+    QDateTime importTimeParam;
 };
 
 class ImportModel : public SqlModel
@@ -35,15 +37,15 @@ class ImportModel : public SqlModel
     Q_PROPERTY(bool emptyDir READ getEmptyDir NOTIFY emptyDirChanged)
 
 public:
-    explicit ImportModel( QObject *parent = 0 );
-    Q_INVOKABLE void importDirectory_r( const QString dir );
+    explicit ImportModel(QObject *parent = 0);
+    Q_INVOKABLE void importDirectory_r(const QString dir);
 
-    void setImportTZ( const int offsetIn );
-    void setCameraTZ( const int offsetIn );
+    void setImportTZ(const int offsetIn);
+    void setCameraTZ(const int offsetIn);
 
-    void setPhotoDir( const QString dirIn );
-    void setBackupDir( const QString dirIn );
-    void setDirConfig( const QString configIn );
+    void setPhotoDir(const QString dirIn);
+    void setBackupDir(const QString dirIn);
+    void setDirConfig(const QString configIn);
 
     int getImportTZ() { return importTZ/3600; }
     int getCameraTZ() { return cameraTZ/3600; }
@@ -71,12 +73,13 @@ signals:
 
     void searchTableChanged();
 
-    void workForWorker( const QFileInfo infoIn,
-                        const int importTZ,
-                        const int cameraTZ,
-                        const QString photoDir,
-                        const QString backupDir,
-                        const QString dirConfig );
+    void workForWorker(const QFileInfo infoIn,
+                       const int importTZ,
+                       const int cameraTZ,
+                       const QString photoDir,
+                       const QString backupDir,
+                       const QString dirConfig,
+                       const QDateTime importTime);
 protected:
     int importTZ;
     int cameraTZ;
