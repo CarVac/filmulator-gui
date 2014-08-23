@@ -146,8 +146,8 @@ SplitView {
             onWheel: {
                 var oldMouseX = wheel.x + flicky.contentX - Math.max( 0, 0.5*( flicky.width-bottomImage.width*bottomImage.scale ) )
                 var oldMouseY = wheel.y + flicky.contentY - Math.max( 0, 0.5*( flicky.height-bottomImage.height*bottomImage.scale ) )
+                //1.2 is the zoom factor for a normal wheel click, and 120 units is the 'angle' of a normal wheel click.
                 var zoomFactor = Math.pow(1.2,Math.abs(wheel.angleDelta.y)/120)
-                //console.log(wheel.angleDelta.y)
                 if ( wheel.angleDelta.y > 0 ) {
                     bottomImage.scale *= zoomFactor;
                     flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max( 0, 0.5*( flicky.width-bottomImage.width*bottomImage.scale ) )

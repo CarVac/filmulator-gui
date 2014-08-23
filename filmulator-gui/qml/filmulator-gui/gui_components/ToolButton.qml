@@ -10,8 +10,8 @@ Item {
     property real __padding: 2
 
     signal tooltipWanted(string text, int x, int y)
-    implicitWidth: 30
-    implicitHeight: 30
+    width: 30
+    height: 30
     Button {
         id: button
         width: parent.width - __padding * 2
