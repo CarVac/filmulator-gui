@@ -82,9 +82,8 @@ void createNewProfile(const QString fileHash,
     //importTime (unix time)
     query.bindValue( 8, importTime.toTime_t());
     //lastProcessedTime (unix time)
-    QDateTime currentTime = QDateTime::currentDateTime();
     //It's the same as above, since we're making a new one.
-    query.bindValue( 9, currentTime.toTime_t());
+    query.bindValue( 9, importTime.toTime_t());
 
     query.exec();
 

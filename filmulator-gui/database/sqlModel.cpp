@@ -38,13 +38,15 @@ QVariant SqlModel::data( const QModelIndex &index, int role ) const
     if( role < Qt::UserRole )
     {
         value = QSqlQueryModel::data( index,role );
-        cout << "SqlModel::data: nonUserRole" << endl;
+        //cout << "SqlModel::data: nonUserRole" << endl;
     }
     else
     {
         int columnIndex = role - Qt::UserRole - 1;
         QModelIndex modelIndex = this->index( index.row(), columnIndex );
         value = QSqlQueryModel::data( modelIndex, Qt::DisplayRole );
+        //cout << "SqlModel::data row: " << index.row() << " column: " << columnIndex << endl;
+        //cout << "SqlModel::data row count: " << this->rowCount() << endl;
     }
     return value;
 }
