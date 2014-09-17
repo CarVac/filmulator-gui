@@ -1,41 +1,41 @@
 #include "exifFunctions.h"
 
-int exifUtcTime( Exiv2::ExifData exifData, const int cameraTZ )
+QDateTime exifUtcTime(Exiv2::ExifData exifData, const int cameraTZ)
 {
-    QString exifDateTime = QString::fromStdString( exifData[ "Exif.Image.DateTime" ].toString() );
+    QString exifDateTime = QString::fromStdString(exifData[ "Exif.Image.DateTime" ].toString());
 
-    QDateTime cameraDateTime = QDateTime::fromString( exifDateTime, "yyyy:MM:dd hh:mm:ss" );
+    QDateTime cameraDateTime = QDateTime::fromString(exifDateTime, "yyyy:MM:dd hh:mm:ss");
 
-    cameraDateTime.setUtcOffset( cameraTZ );
+    cameraDateTime.setUtcOffset(cameraTZ);
 
-    return int( cameraDateTime.toTime_t() );
+    return cameraDateTime;
 }
 
-QString exifLocalDateString( Exiv2::ExifData exifData,
+QString exifLocalDateString(Exiv2::ExifData exifData,
                              const int cameraTZ,
                              const int importTZ,
-                             const QString dirConfig )
+                             const QString dirConfig)
 {
     QDateTime captureLocalDateTime =
-            QDateTime::fromTime_t( exifUtcTime( exifData, cameraTZ ) );
+            QDateTime::fromTime_t(exifUtcTime(exifData, cameraTZ).toTime_t());
 
-    captureLocalDateTime.setUtcOffset( importTZ );
+    captureLocalDateTime.setUtcOffset(importTZ);
 
-    return captureLocalDateTime.toString( dirConfig );
+    return captureLocalDateTime.toString(dirConfig);
 }
 
-int exifDefaultRotation( Exiv2::ExifData exifData )
+int exifDefaultRotation(Exiv2::ExifData exifData)
 {
     int exifOrientation;
     try
     {
-        exifOrientation = ( int ) exifData[ "Exif.Image.Orientation" ].value().toLong();
+        exifOrientation = (int) exifData[ "Exif.Image.Orientation" ].value().toLong();
     }
-    catch ( ... )
+    catch (...)
     {
         exifOrientation = 0;
     }
-    switch( exifOrientation )
+    switch(exifOrientation)
     {
     case 3://upside down
     {
@@ -56,32 +56,32 @@ int exifDefaultRotation( Exiv2::ExifData exifData )
     }
 }
 
-QString exifMake( Exiv2::ExifData exifData )
+QString exifMake(Exiv2::ExifData exifData)
 {
-    return QString::fromStdString( exifData[ "Exif.Image.Make" ].toString() );
+    return QString::fromStdString(exifData[ "Exif.Image.Make" ].toString());
 }
 
-QString exifModel( Exiv2::ExifData exifData )
+QString exifModel(Exiv2::ExifData exifData)
 {
-    return QString::fromStdString( exifData[ "Exif.Image.Model" ].toString() );
+    return QString::fromStdString(exifData[ "Exif.Image.Model" ].toString());
 }
 
-float exifIso( Exiv2::ExifData exifData )
+float exifIso(Exiv2::ExifData exifData)
 {
     return exifData [ "Exif.Photo.ISOSpeedRatings" ].toFloat();
 }
 
-QString exifTv( Exiv2::ExifData exifData )
+QString exifTv(Exiv2::ExifData exifData)
 {
-    return QString::fromStdString( exifData[ "Exif.Photo.ExposureTime" ].toString() );
+    return QString::fromStdString(exifData[ "Exif.Photo.ExposureTime" ].toString());
 }
 
-float exifAv( Exiv2::ExifData exifData )
+float exifAv(Exiv2::ExifData exifData)
 {
     return exifData[ "Exif.Photo.FNumber" ].toFloat();
 }
 
-float exifFl( Exiv2::ExifData exifData )
+float exifFl(Exiv2::ExifData exifData)
 {
     return exifData[ "Exif.Photo.FocalLength" ].toFloat();
 }
