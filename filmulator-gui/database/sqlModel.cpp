@@ -12,6 +12,7 @@ SqlModel::SqlModel(QObject *parent) :
 //    QSqlRelationalTableModel(parent)
     QSqlQueryModel(parent)
 {
+    columnCount = 0;
 }
 
 void SqlModel::setQuery( const QSqlQuery &query )
@@ -23,6 +24,7 @@ void SqlModel::setQuery( const QSqlQuery &query )
 void SqlModel::generateRoleNames()
 {
     //cout << record().count() << endl;
+    columnCount = record().count();
     for( int i=0; i<record().count(); i++ )
     {
         this->m_roleNames[ Qt::UserRole + i + 1 ] = record().fieldName( i ).toLatin1();
@@ -53,5 +55,14 @@ QVariant SqlModel::data( const QModelIndex &index, int role ) const
 
 QHash<int,QByteArray> SqlModel::roleNames() const
 {
-    return this->m_roleNames;
+    return m_roleNames;
+}
+
+//This is for "push notification" of changes to the database.
+void SqlModel::updateData(QString table)
+{
+    if (tableName == table)
+    {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount - 1));
+    }
 }

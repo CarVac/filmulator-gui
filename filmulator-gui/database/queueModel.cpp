@@ -6,6 +6,7 @@ using std::endl;
 
 QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
 {
+    tableName = "QueueTable";
     resetIndex();
 }
 

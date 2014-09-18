@@ -32,8 +32,15 @@ public:
     QVariant data( const QModelIndex &item, int role ) const;
     QHash<int,QByteArray> roleNames() const;
 
+public slots:
+    void updateData(QString table);
+
 private:
     QHash<int,QByteArray> m_roleNames;
+    int columnCount;
+
+protected:
+    QString tableName;
 
 };
 
