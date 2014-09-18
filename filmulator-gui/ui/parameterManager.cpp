@@ -425,17 +425,20 @@ void ParameterManager::writeback(QString colName, QVariant valueIn)
         query.bindValue(0, valueIn);
         query.bindValue(1, imageIndex);
         query.exec();
+        emit updateTable("ProcessingTable", 0);//edit
         //Write that it's been edited to the SearchTable (actually writing the edit time)
         QDateTime now = QDateTime::currentDateTime();
         query.prepare("UPDATE SearchTable SET STlastProcessedTime = ? WHERE STSearchID = ?;");
         query.bindValue(0, QVariant(now.toTime_t()));
         query.bindValue(1, imageIndex);
         query.exec();
+        emit updateTable("SearchTable", 0);//edit
         //Write that it's been edited to the QueueTable
         query.prepare("UPDATE QueueTable SET QTprocessed = ? WHERE QTsearchID = ?;");
         query.bindValue(0, QVariant(true));
         query.bindValue(1, imageIndex);
         query.exec();
+        emit updateTable("QueueTable", 0);//edit
     }
 }
 
