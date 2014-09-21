@@ -175,6 +175,7 @@ SplitView {
             cellWidth: 320
             cellHeight: 320
 
+            boundsBehavior: Flickable.StopAtBounds
             maximumFlickVelocity: 50000
 
             delegate: OrganizeDelegate {
