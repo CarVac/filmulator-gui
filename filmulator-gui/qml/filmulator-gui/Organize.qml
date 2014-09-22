@@ -175,6 +175,9 @@ SplitView {
             cellWidth: 320
             cellHeight: 320
 
+            boundsBehavior: Flickable.StopAtBounds
+            maximumFlickVelocity: 50000
+
             delegate: OrganizeDelegate {
                 rootDir: organizeModel.thumbDir()
 
@@ -211,6 +214,26 @@ SplitView {
                 organizeModel.maxRating = 5
                 organizeModel.setOrganizeQuery()
                 gridView.model = organizeModel
+            }
+        }
+        MouseArea {
+            id: wheelstealer
+            //Custom scrolling implementation because the default flickable one sucks.
+            anchors.fill: gridView
+            acceptedButtons: Qt.NoButton
+            onWheel: {
+                var velocity = gridView.verticalVelocity
+                if (wheel.angleDelta.y > 0 && !gridView.atYBeginning) {
+                    //up
+                    //This formula makes each click of the wheel advance the 'target' a fixed distance.
+                    gridView.flick(0, velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : 1000)
+                    //It's not 1,000,000 (1000 squared) because it feels slightly sluggish at that level.
+                    //And 1000 isn't higher because otherwise a single scroll click is too far.
+                }
+                else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
+                    //down
+                    gridView.flick(0, velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : -1000)
+                }
             }
         }
     }

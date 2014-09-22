@@ -37,7 +37,9 @@ Item {
         id: thumbImage
         Image {
             id: thumb
-            anchors.fill: parent
+            width: root.width
+            height: root.height
+            anchors.centerIn: parent
             fillMode: Image.PreserveAspectFit
             source: root.__thumbPath
             sourceSize.width: 600

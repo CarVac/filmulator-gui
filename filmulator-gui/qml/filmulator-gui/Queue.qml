@@ -7,11 +7,20 @@ import "gui_components"
 Item {
     id: root
 
-    ListView {
+//    ListView {
+    GridView { //There is a bug in ListView that makes scrolling not smooth.
         id: listView
         anchors.fill: parent
-        orientation: Qt.Horizontal
+        flow: GridView.FlowTopToBottom
+        //orientation: Qt.Horizontal
         layoutDirection: Qt.LeftToRight
+        cacheBuffer: 10
+        cellWidth: root.height * 0.9375
+        cellHeight: root.height
+
+        boundsBehavior: Flickable.StopAtBounds
+        flickDeceleration: 3000
+        maximumFlickVelocity: 10000
 
         delegate: QueueDelegate {
             dim: root.height
@@ -76,6 +85,25 @@ Item {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
+            }
+        }
+    }
+
+    MouseArea {
+        id: wheelstealer
+        //Custom scrolling implementation.
+        anchors.fill: listView
+        acceptedButtons: Qt.NoButton
+        onWheel: {
+            var velocity = listView.horizontalVelocity
+            if (wheel.angleDelta.y > 0 && !listView.atXBeginning) {
+                //Leftward; up on the scroll wheel.
+                //This formula makes each click of the wheel advance the 'target' a fixed distance.
+                listView.flick(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : 1000, 0)
+            }
+            if (wheel.angleDelta.y < 0 && !listView.atXEnd) {
+                //Rightward; down on the scroll wheel.
+                listView.flick(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : -1000, 0)
             }
         }
     }
