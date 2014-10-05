@@ -22,6 +22,13 @@ Rectangle {
     property real __padding: 2
 
     signal tooltipWanted(string text, int coordX, int coordY)
+    signal released()
+
+    onPressedChanged: {
+        if (pressed == false) {
+            released()
+        }
+    }
 
     color: "#303030"
 

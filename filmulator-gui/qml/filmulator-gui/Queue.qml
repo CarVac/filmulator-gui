@@ -22,6 +22,8 @@ Item {
         flickDeceleration: 3000
         maximumFlickVelocity: 10000
 
+        model: queueModel
+
         delegate: QueueDelegate {
             dim: root.height
             rootDir: organizeModel.thumbDir()
@@ -75,10 +77,6 @@ Item {
             }
         }
 
-        Component.onCompleted: {
-            queueModel.setQueueQuery()
-            listView.model = queueModel
-        }
         Connections {
             target: queueModel
             onQueueChanged: {
@@ -86,6 +84,7 @@ Item {
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
             }
+            //onDataChanged: console.log("queue.qml data changed")
         }
     }
 

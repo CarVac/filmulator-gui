@@ -79,15 +79,14 @@ public:
 
     Q_INVOKABLE void selectImage(QString);
 
+    Q_INVOKABLE void writeback();
+
 protected:
     ProcessingParameters param;
     QMutex paramMutex;
     QMutex signalMutex;
 
     QString imageIndex;
-
-    //Helper for setting up SQL queries.
-    void writeback(QString colName, QVariant valueIn);
 
     void paramChangeWrapper(QString);
     void disableParamChange();

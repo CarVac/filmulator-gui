@@ -133,6 +133,6 @@ QImage FilmImageProvider::emptyImage()
 
 void FilmImageProvider::abortPipeline(QString source)
 {
-    qDebug() << "Aborted by " << source;
+    //qDebug() << "FilmImageProvider::abortPipeline Aborted by " << source;
     abort = true;
 }

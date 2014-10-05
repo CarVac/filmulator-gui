@@ -89,6 +89,7 @@ SplitView {
                     text: qsTr("CA correction")
                     onIsOnChanged: {
                         paramManager.caEnabled = isOn
+                        paramManager.writeback()
                     }
                     Connections {
                         target: paramManager
@@ -113,6 +114,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.highlights = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onHighlightsChanged: {
@@ -134,6 +136,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.temperature = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onTemperatureChanged: {
@@ -156,6 +159,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.tint = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onTintChanged: {
@@ -178,6 +182,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.exposureComp = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onExposureCompChanged: {
@@ -230,6 +235,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.filmArea = value*value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onFilmAreaChanged: {
@@ -251,6 +257,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.layerMixConst = value/100;
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onLayerMixConstChanged: {
@@ -268,6 +275,7 @@ SplitView {
                     text: qsTr("Overdrive Mode")
                     onIsOnChanged: {
                         paramManager.agitateCount = isOn ? 0 : 1
+                        paramManager.writeback()
                     }
                     Connections {
                         target: paramManager
@@ -337,6 +345,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.blackpoint = value*value/1000
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onBlackpointChanged: {
@@ -359,6 +368,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.whitepoint = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onWhitepointChanged: {
@@ -381,6 +391,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.shadowsY = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onShadowsYChanged: {
@@ -403,6 +414,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.highlightsY = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onHighlightsYChanged: {
@@ -425,6 +437,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.vibrance = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onVibranceChanged: {
@@ -447,6 +460,7 @@ SplitView {
                     onValueChanged: {
                         paramManager.saturation = value
                     }
+                    onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onSaturationChanged: {

@@ -11,7 +11,6 @@ void setupDB( QSqlDatabase *db )
         dir.cd( ".local/share/filmulator" );
     }
     db -> setDatabaseName( dir.absoluteFilePath( "filmulatorDB" ) );
-//    std::cout << "database path: " << qPrintable(dir.absoluteFilePath("filmulatorDB")) << std::endl;
     //this should create the database if it doesn't already exist.
 
     if ( db -> open() )
@@ -24,10 +23,13 @@ void setupDB( QSqlDatabase *db )
 //        std::cout << "what?!?!?!?" << std::endl;
     }
 
+    QSqlQuery query;
+    //query.exec("PRAGMA synchronous = OFF");//Use for speed, but dangerous.
+    //query.exec("PRAGMA synchronous = NORMAL");//Use for less speed, slightly dangerous.
+
     //We need to set up 3 tables for the processing.
     //1. The master table for searching. This should be small
     //  for speed. It points at the other two.
-    QSqlQuery query;
     query.exec( "create table if not exists SearchTable ("
                 "STsearchID varchar primary key,"
                 "STcaptureTime integer,"//unix time
