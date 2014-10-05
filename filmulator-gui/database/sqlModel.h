@@ -33,7 +33,7 @@ public:
     QHash<int,QByteArray> roleNames() const;
 
 public slots:
-    void updateData(QString table);
+    void updateTable(QString table, int operation);
 
 private:
     QHash<int,QByteArray> m_roleNames;

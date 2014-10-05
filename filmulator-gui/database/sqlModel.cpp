@@ -59,10 +59,18 @@ QHash<int,QByteArray> SqlModel::roleNames() const
 }
 
 //This is for "push notification" of changes to the database.
-void SqlModel::updateData(QString table)
+void SqlModel::updateTable(QString table, int operation)
 {
-    if (tableName == table)
+    if (table != tableName)
+    {
+        return;
+    }
+    if (operation == 0) //(and it's this table)
     {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount - 1));
+    }
+    else
+    {
+        return;
     }
 }
