@@ -362,6 +362,7 @@ void ParameterManager::rotateRight()
     emit rotationChanged();
     QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("rotateRight"));
+    writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
 void ParameterManager::rotateLeft()
@@ -375,6 +376,7 @@ void ParameterManager::rotateLeft()
     emit rotationChanged();
     QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("rotateLeft"));
+    writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
 //This gets called by a slider when it is released.
@@ -388,38 +390,38 @@ void ParameterManager::writeback()
         QSqlQuery query;
         query.exec("BEGIN;");//Stick these all into one db action for speed.
         query.prepare("UPDATE ProcessingTable SET "
-                      "ProcTinitialDeveloperConcentration=?,"
-                      "ProcTreservoirThickness=?,"
-                      "ProcTactiveLayerThickness=?,"
-                      "ProcTcrystalsPerPixel=?,"
-                      "ProcTinitialCrystalRadius=?,"
-                      "ProcTinitialSilverSaltDensity=?,"
-                      "ProcTdeveloperConsumptionConst=?,"
-                      "ProcTcrystalGrowthConst=?,"
-                      "ProcTsilverSaltConsumptionConst=?,"
-                      "ProcTtotalDevelopmentTime=?,"
-                      "ProcTagitateCount=?,"
-                      "ProcTdevelopmentSteps=?,"
-                      "ProcTfilmArea=?,"
-                      "ProcTsigmaConst=?,"
-                      "ProcTlayerMixConst=?,"
-                      "ProcTlayerTimeDivisor=?,"
-                      "ProcTrolloffBoundary=?,"
-                      "ProcTexposureComp=?,"
-                      "ProcTwhitepoint=?,"
-                      "ProcTblackpoint=?,"
-                      "ProcTshadowsX=?,"
-                      "ProcTshadowsY=?,"
-                      "ProcThighlightsX=?,"
-                      "ProcThighlightsY=?,"
-                      "ProcThighlightRecovery=?,"
-                      "ProcTcaEnabled=?,"
-                      "ProcTtemperature=?,"
-                      "ProcTtint=?,"
-                      "ProcTvibrance=?,"
-                      "ProcTsaturation=?,"
-                      "ProcTrotation=?"
-                      "WHERE ProcTprocID = ?;");
+                      "ProcTinitialDeveloperConcentration=?,"   //00
+                      "ProcTreservoirThickness=?,"              //01
+                      "ProcTactiveLayerThickness=?,"            //02
+                      "ProcTcrystalsPerPixel=?,"                //03
+                      "ProcTinitialCrystalRadius=?,"            //04
+                      "ProcTinitialSilverSaltDensity=?,"        //05
+                      "ProcTdeveloperConsumptionConst=?,"       //06
+                      "ProcTcrystalGrowthConst=?,"              //07
+                      "ProcTsilverSaltConsumptionConst=?,"      //08
+                      "ProcTtotalDevelopmentTime=?,"            //09
+                      "ProcTagitateCount=?,"                    //10
+                      "ProcTdevelopmentSteps=?,"                //11
+                      "ProcTfilmArea=?,"                        //12
+                      "ProcTsigmaConst=?,"                      //13
+                      "ProcTlayerMixConst=?,"                   //14
+                      "ProcTlayerTimeDivisor=?,"                //15
+                      "ProcTrolloffBoundary=?,"                 //16
+                      "ProcTexposureComp=?,"                    //17
+                      "ProcTwhitepoint=?,"                      //18
+                      "ProcTblackpoint=?,"                      //19
+                      "ProcTshadowsX=?,"                        //20
+                      "ProcTshadowsY=?,"                        //21
+                      "ProcThighlightsX=?,"                     //22
+                      "ProcThighlightsY=?,"                     //23
+                      "ProcThighlightRecovery=?,"               //24
+                      "ProcTcaEnabled=?,"                       //25
+                      "ProcTtemperature=?,"                     //26
+                      "ProcTtint=?,"                            //27
+                      "ProcTvibrance=?,"                        //28
+                      "ProcTsaturation=?,"                      //29
+                      "ProcTrotation=? "                        //30
+                      "WHERE ProcTprocID = ?;");                //31
         query.bindValue( 0, m_initialDeveloperConcentration);
         query.bindValue( 1, m_reservoirThickness);
         query.bindValue( 2, m_activeLayerThickness);
