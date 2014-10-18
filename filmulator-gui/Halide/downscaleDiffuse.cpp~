@@ -1,0 +1,150 @@
+#include <stdio.h>
+#include <Halide.h>
+#include <sys/time.h>
+
+using namespace Halide;
+using namespace Halide::BoundaryConditions;
+
+Var x, y;
+
+// Sum an image vertically around radius
+Func downSumY(Func input, Expr radius) {
+
+    Func sum;
+    Expr diameter = 2*radius + 1;
+    
+    sum(x, y) = cast<float>(0);
+
+    RDom r(-radius, radius+1);
+    sum(x,y) += cast<float>(input(x,diameter*y + r - radius));
+
+    return sum;
+}
+
+Func upscale(Func input, Expr radius){
+    Func output;
+    
+    Expr scaleFactor = cast<float>(2*radius+1);
+    Expr xf = (x % scaleFactor)/scaleFactor;
+    Expr yf = (y % scaleFactor)/scaleFactor;
+    Expr x0 = cast<int>(floor(x/scaleFactor));
+    Expr y0 = cast<int>(floor(y/scaleFactor));
+    Expr x1 = cast<int>( ceil(x/scaleFactor));
+    Expr y1 = cast<int>( ceil(y/scaleFactor));
+    Expr Ix0y0 = input(x0,y0);
+    Expr Ix0y1 = input(x0,y1);
+    Expr Ix1y0 = input(x1,y0);
+    Expr Ix1y1 = input(x1,y1);
+    output(x,y) = lerp(lerp(Ix0y0,Ix1y0,xf),
+                       lerp(Ix0y1,Ix1y1,xf),yf);
+    return output;
+}
+
+Func gaussBlur(Func input){
+    Func blurx,blury;
+    blurx(x, y) = (input(x-2, y) +
+                   input(x-1, y)*4 +
+                   input(x  , y)*6 +
+                   input(x+1, y)*4 +
+                   input(x+2, y))/16;
+    blury(x, y) = (blurx(x, y-2) +
+                   blurx(x, y-1)*4 +
+                   blurx(x, y  )*6 +
+                   blurx(x, y+1)*4 +
+                   blurx(x, y+2))/16;
+    return blury;
+}
+
+int main(int argc, char **argv) {
+
+    ImageParam input(UInt(8), 2);
+    Param<int> radius;
+    Expr denominator = cast<uint8_t>(radius * 2 + 1);
+
+    // radius can be at most 127 before the sums overflow
+    radius.set_range(0, 127);
+
+    Func in = mirror_interior(input);
+
+    Func downscaled;
+    downscaled = downscale(in,radius,input.width(), input.height());
+
+    Func blurred_small;
+    blurred_small = gaussBlur(downscaled);
+    
+    Func blurred_float;
+    blurred_float = upscale(blurred_small,radius);
+
+    Func blurred;
+    blurred(x,y) = cast<uint8_t>(blurred_float(x,y));
+
+    Target target = get_target_from_environment();
+    std::cout << target.to_string() << std::endl;
+    if(target.has_gpu_feature())
+    {
+      downscaled.compute_root().gpu_tile(x,y,16,16);
+      blurred_small.compute_root().gpu_tile(x,y,16,16);
+      blurred.gpu_tile(x,y,16,16);
+
+      Target target = get_host_target();
+      target.set_feature(Target::CUDA);
+      //target.set_feature(Target::GPUDebug);
+      blurred.compile_jit(target);
+    }
+    else
+    {
+        Var x_outer, y_outer, x_inner, y_inner, tile_index;
+        downscaled.compute_root().reorder(y,x).parallel(x);
+        blurred_small.compute_root()
+            .tile(x, y, x_outer, y_outer, x_inner, y_inner, 256, 256)
+            .fuse(x_outer, y_outer, tile_index)
+            .parallel(tile_index);
+        blurred.compute_root()
+            .tile(x, y, x_outer, y_outer, x_inner, y_inner, 256, 256)
+            .fuse(x_outer, y_outer, tile_index)
+            .parallel(tile_index);
+    }
+
+    // Dump the assembly for inspection.
+    //blur_in_y.compile_to_assembly("/dev/stdout", Internal::vec<Argument>(input, radius), "box_blur");
+
+    // Save the output. Comment this out for benchmarking - it takes
+    // way more time than the actual algorithm. Should look like a
+    // blurry circle.
+    //blurred.debug_to_file("blurred.tiff");
+
+    // Set some test parameters
+    radius.set(5);
+
+    // Make a test input image of a circle.
+    Image<uint8_t> input_image(4000, 4000);
+    lambda(x, y, select(((x - 500)*(x - 500) + (y - 500)*(y - 500)) < 100*100, cast<uint8_t>(255), cast<uint8_t>(0))).realize(input_image);
+    input.set(input_image);
+
+    Image<uint8_t> out(4000, 4000);
+    // Realize it once to trigger compilation.
+    blurred.realize(out);
+    timeval t1, t2;
+    gettimeofday(&t1, NULL);
+    float numIter = 50;
+    for (size_t i = 0; i < numIter; i++) {
+        // Realize 100 more times for timing.
+        blurred.realize(out);
+    }
+    gettimeofday(&t2, NULL);
+
+    int64_t dt = t2.tv_sec - t1.tv_sec;
+    dt *= 1000;
+    dt += (t2.tv_usec - t1.tv_usec) / 1000;
+    printf("%0.4f ms\n", dt / numIter);
+
+    /*std::vector<Argument> arguments;
+    arguments.push_back(input_image);
+    arguments.push_back(radius);
+    arguments.push_back(radius);
+    blur_in_y.compile_to_c("gradient.cpp", arguments, "attachment");*/
+    printf("Success!\n");
+    return 0;
+}
+
+

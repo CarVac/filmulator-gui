@@ -1,11 +1,11 @@
 #ifndef HALIDE_HALIDERUNTIME_H
 #define HALIDE_HALIDERUNTIME_H
 
-#ifdef COMPILING_HALIDE
-#include "mini_stdint.h"
-#else
+#ifndef COMPILING_HALIDE_RUNTIME
 #include <stddef.h>
 #include <stdint.h>
+#else
+#include "runtime_internal.h"
 #endif
 
 #ifdef __cplusplus
@@ -72,6 +72,26 @@ extern void halide_error_varargs(void *user_context, const char *, ...);
 
 /** A macro that calls halide_error if the supplied condition is false. */
 #define halide_assert(user_context, cond) if (!(cond)) halide_error(user_context, #cond);
+
+/** These are allocated statically inside the runtime, hence the fixed
+ * size. They must be initialized with zero. The first time
+ * halide_mutex_lock is called, the lock must be initialized in a
+ * thread safe manner. This incurs a small overhead for a once
+ * mechanism, but makes the lock reliably easy to setup and use
+ * without depending on e.g. C++ constructor logic.
+ */
+struct halide_mutex {
+    unsigned char _private[64];
+};
+
+/** A basic set of mutex functions, which call platform specific code
+ * for mutual exclusion.
+ */
+//@{
+extern void halide_mutex_lock(struct halide_mutex *mutex);
+extern void halide_mutex_unlock(struct halide_mutex *mutex);
+extern void halide_mutex_cleanup(struct halide_mutex *mutex_arg);
+//@}
 
 /** Define halide_do_par_for to replace the default thread pool
  * implementation. halide_shutdown_thread_pool can also be called to
@@ -246,8 +266,8 @@ extern void halide_set_ocl_platform_name(const char *n);
 extern const char *halide_get_ocl_platform_name(void *user_context);
 
 /** Set the device type for OpenCL to use. The argument is copied
- * internally. It must be "cpu" or "gpu". If never called, Halide uses
- * the environment variable HL_OCL_DEVICE_TYPE. */
+ * internally. It must be "cpu", "gpu", or "acc". If never called,
+ * Halide uses the environment variable HL_OCL_DEVICE_TYPE. */
 extern void halide_set_ocl_device_type(const char *n);
 
 /** Halide calls this to gets the desired OpenCL device
@@ -271,9 +291,51 @@ extern void halide_set_gpu_device(int n);
  * HL_GPU_DEVICE. */
 extern int halide_get_gpu_device(void *user_context);
 
+/** Set the soft maximum amount of memory, in bytes, that the LRU
+ *  cache will use to memoize Func results.  This is not a strict
+ *  maximum in that concurrency and simultaneous use of memoized
+ *  reults larger than the cache size can both cause it to
+ *  temporariliy be larger than the size specified here.
+ */
+extern void halide_memoization_cache_set_size(int64_t size);
+
+/** Given a cache key for a memoized result, currently constructed
+ *  from the Func name and top-level Func name plus the arguments of
+ *  the computation, determine if the result is in the cache and
+ *  return it if so. (The internals of the cache key should be
+ *  considered opaque by this function.) If this routine returns true,
+ *  it is a cache miss. Otherwise, it will return false and the
+ *  buffers passed in will be filled, via copying, with memoized
+ *  data. The last argument is a list if buffer_t pointers which
+ *  represents the outputs of the memoized Func. If the Func does not
+ *  return a Tuple, there will only be one buffer_t in the list. The
+ *  tuple_count parameters determines the length of the list.
+ */
+extern bool halide_memoization_cache_lookup(void *user_context, const uint8_t *cache_key, int32_t size,
+                                            buffer_t *realized_bounds, int32_t tuple_count, ... /* list of buffer_t * */);
+
+/** Given a cache key for a memoized result, currently constructed
+ *  from the Func name and top-level Func name plus the arguments of
+ *  the computation, store the result in the cache for futre access by
+ *  halide_memoization_cache_lookup. (The internals of the cache key
+ *  should be considered opaque by this function.) Data is copied out
+ *  from the inputs and inputs are unmodified. The last argument is a
+ *  list if buffer_t pointers which represents the outputs of the
+ *  memoized Func. If the Func does not return a Tuple, there will
+ *  only be one buffer_t in the list. The tuple_count parameters
+ *  determines the length of the list.
+ */
+extern void halide_memoization_cache_store(void *user_context, const uint8_t *cache_key, int32_t size,
+                                           buffer_t *realized_bounds, int32_t tuple_count, ... /* list of buffer_t * */);
+
+
+/** Free all memory and resources associated with the memoization cache.
+ * Must be called at a time when no other threads are accessing the cache.
+ */
+extern void halide_memoization_cache_cleanup();
+
 #ifdef __cplusplus
 } // End extern "C"
 #endif
 
 #endif // HALIDE_HALIDERUNTIME_H
-

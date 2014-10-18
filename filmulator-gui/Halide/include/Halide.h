@@ -505,22 +505,22 @@ template<typename T> Type type_of() {
 
 #include <string>
 
-/** \file 
+/** \file
  * Defines a type used for expressing the type signature of a
  * generated halide pipeline
  */
 
-namespace Halide { 
+namespace Halide {
 
 /**
  * A struct representing an argument to a halide-generated
  * function. Used for specifying the function signature of
- * generated code. 
+ * generated code.
  */
 struct Argument {
     /** The name of the argument */
-    std::string name;        
-            
+    std::string name;
+
     /** An argument is either a primitive type (for parameters), or a
      * buffer pointer. If 'is_buffer' is true, then 'type' should be
      * ignored.
@@ -537,7 +537,7 @@ struct Argument {
     Type type;
 
     Argument() : is_buffer(false) {}
-    Argument(const std::string &_name, bool _is_buffer, Type _type) : 
+    Argument(const std::string &_name, bool _is_buffer, Type _type) :
         name(_name), is_buffer(_is_buffer), type(_type) {
         read = write = is_buffer;
     }
@@ -977,7 +977,7 @@ public:
 #ifndef BUFFER_T_DEFINED
 #define BUFFER_T_DEFINED
 
-#ifndef COMPILING_HALIDE
+#ifndef COMPILING_HALIDE_RUNTIME
 #include <stdint.h>
 #endif
 
@@ -1643,82 +1643,35 @@ namespace Internal {
 struct Cast : public ExprNode<Cast> {
     Expr value;
 
-    static Expr make(Type t, Expr v) {
-        internal_assert(v.defined()) << "Cast of undefined\n";
-
-        Cast *node = new Cast;
-        node->type = t;
-        node->value = v;
-        return node;
-    }
+    EXPORT static Expr make(Type t, Expr v);
 };
 
 /** The sum of two expressions */
 struct Add : public ExprNode<Add> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Add of undefined\n";
-        internal_assert(b.defined()) << "Add of undefined\n";
-        internal_assert(a.type() == b.type()) << "Add of mismatched types\n";
-
-        Add *node = new Add;
-        node->type = a.type();
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** The difference of two expressions */
 struct Sub : public ExprNode<Sub> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Sub of undefined\n";
-        internal_assert(b.defined()) << "Sub of undefined\n";
-        internal_assert(a.type() == b.type()) << "Sub of mismatched types\n";
-
-        Sub *node = new Sub;
-        node->type = a.type();
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** The product of two expressions */
 struct Mul : public ExprNode<Mul> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Mul of undefined\n";
-        internal_assert(b.defined()) << "Mul of undefined\n";
-        internal_assert(a.type() == b.type()) << "Mul of mismatched types\n";
-
-        Mul *node = new Mul;
-        node->type = a.type();
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** The ratio of two expressions */
 struct Div : public ExprNode<Div> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Div of undefined\n";
-        internal_assert(b.defined()) << "Div of undefined\n";
-        internal_assert(a.type() == b.type()) << "Div of mismatched types\n";
-
-        Div *node = new Div;
-        node->type = a.type();
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** The remainder of a / b. Mostly equivalent to '%' in C, except that
@@ -1727,204 +1680,84 @@ struct Div : public ExprNode<Div> {
 struct Mod : public ExprNode<Mod> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Mod of undefined\n";
-        internal_assert(b.defined()) << "Mod of undefined\n";
-        internal_assert(a.type() == b.type()) << "Mod of mismatched types\n";
-
-        Mod *node = new Mod;
-        node->type = a.type();
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** The lesser of two values. */
 struct Min : public ExprNode<Min> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Min of undefined\n";
-        internal_assert(b.defined()) << "Min of undefined\n";
-        internal_assert(a.type() == b.type()) << "Min of mismatched types\n";
-
-        Min *node = new Min;
-        node->type = a.type();
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** The greater of two values */
 struct Max : public ExprNode<Max> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Max of undefined\n";
-        internal_assert(b.defined()) << "Max of undefined\n";
-        internal_assert(a.type() == b.type()) << "Max of mismatched types\n";
-
-        Max *node = new Max;
-        node->type = a.type();
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Is the first expression equal to the second */
 struct EQ : public ExprNode<EQ> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "EQ of undefined\n";
-        internal_assert(b.defined()) << "EQ of undefined\n";
-        internal_assert(a.type() == b.type()) << "EQ of mismatched types\n";
-
-        EQ *node = new EQ;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Is the first expression not equal to the second */
 struct NE : public ExprNode<NE> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "NE of undefined\n";
-        internal_assert(b.defined()) << "NE of undefined\n";
-        internal_assert(a.type() == b.type()) << "NE of mismatched types\n";
-
-        NE *node = new NE;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Is the first expression less than the second. */
 struct LT : public ExprNode<LT> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "LT of undefined\n";
-        internal_assert(b.defined()) << "LT of undefined\n";
-        internal_assert(a.type() == b.type()) << "LT of mismatched types\n";
-
-        LT *node = new LT;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Is the first expression less than or equal to the second. */
 struct LE : public ExprNode<LE> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "LE of undefined\n";
-        internal_assert(b.defined()) << "LE of undefined\n";
-        internal_assert(a.type() == b.type()) << "LE of mismatched types\n";
-
-        LE *node = new LE;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Is the first expression greater than the second. */
 struct GT : public ExprNode<GT> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "GT of undefined\n";
-        internal_assert(b.defined()) << "GT of undefined\n";
-        internal_assert(a.type() == b.type()) << "GT of mismatched types\n";
-
-        GT *node = new GT;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Is the first expression greater than or equal to the second. */
 struct GE : public ExprNode<GE> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "GE of undefined\n";
-        internal_assert(b.defined()) << "GE of undefined\n";
-        internal_assert(a.type() == b.type()) << "GE of mismatched types\n";
-
-        GE *node = new GE;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Logical and - are both expressions true */
 struct And : public ExprNode<And> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "And of undefined\n";
-        internal_assert(b.defined()) << "And of undefined\n";
-        internal_assert(a.type().is_bool()) << "lhs of And is not a bool\n";
-        internal_assert(b.type().is_bool()) << "rhs of And is not a bool\n";
-
-        And *node = new And;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Logical or - is at least one of the expression true */
 struct Or : public ExprNode<Or> {
     Expr a, b;
 
-    static Expr make(Expr a, Expr b) {
-        internal_assert(a.defined()) << "Or of undefined\n";
-        internal_assert(b.defined()) << "Or of undefined\n";
-        internal_assert(a.type().is_bool()) << "lhs of Or is not a bool\n";
-        internal_assert(b.type().is_bool()) << "rhs of Or is not a bool\n";
-
-        Or *node = new Or;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        node->b = b;
-        return node;
-    }
+    EXPORT static Expr make(Expr a, Expr b);
 };
 
 /** Logical not - true if the expression false */
 struct Not : public ExprNode<Not> {
     Expr a;
 
-    static Expr make(Expr a) {
-        internal_assert(a.defined()) << "Not of undefined\n";
-        internal_assert(a.type().is_bool()) << "argument of Not is not a bool\n";
-
-        Not *node = new Not;
-        node->type = Bool(a.type().width);
-        node->a = a;
-        return node;
-    }
+    EXPORT static Expr make(Expr a);
 };
 
 /** A ternary operator. Evalutes 'true_value' and 'false_value',
@@ -1933,23 +1766,7 @@ struct Not : public ExprNode<Not> {
 struct Select : public ExprNode<Select> {
     Expr condition, true_value, false_value;
 
-    static Expr make(Expr condition, Expr true_value, Expr false_value) {
-        internal_assert(condition.defined()) << "Select of undefined\n";
-        internal_assert(true_value.defined()) << "Select of undefined\n";
-        internal_assert(false_value.defined()) << "Select of undefined\n";
-        internal_assert(condition.type().is_bool()) << "First argument to Select is not a bool\n";
-        internal_assert(false_value.type() == true_value.type()) << "Select of mismatched types\n";
-        internal_assert(condition.type().is_scalar() ||
-                        condition.type().width == true_value.type().width)
-            << "In Select, vector width of condition must either be 1, or equal to vector width of arguments\n";
-
-        Select *node = new Select;
-        node->type = true_value.type();
-        node->condition = condition;
-        node->true_value = true_value;
-        node->false_value = false_value;
-        return node;
-    }
+    EXPORT static Expr make(Expr condition, Expr true_value, Expr false_value);
 };
 
 /** Load a value from a named buffer. The buffer is treated as an
@@ -1967,18 +1784,7 @@ struct Load : public ExprNode<Load> {
     // If it's a load from an image parameter, this points to that
     Parameter param;
 
-    static Expr make(Type type, std::string name, Expr index, Buffer image, Parameter param) {
-        internal_assert(index.defined()) << "Load of undefined\n";
-        internal_assert(type.width == index.type().width) << "Vector width of Load must match vector width of index\n";
-
-        Load *node = new Load;
-        node->type = type;
-        node->name = name;
-        node->index = index;
-        node->image = image;
-        node->param = param;
-        return node;
-    }
+    EXPORT static Expr make(Type type, std::string name, Expr index, Buffer image, Parameter param);
 };
 
 /** A linear ramp vector node. This is vector with 'width' elements,
@@ -1990,21 +1796,7 @@ struct Ramp : public ExprNode<Ramp> {
     Expr base, stride;
     int width;
 
-    static Expr make(Expr base, Expr stride, int width) {
-        internal_assert(base.defined()) << "Ramp of undefined\n";
-        internal_assert(stride.defined()) << "Ramp of undefined\n";
-        internal_assert(base.type().is_scalar()) << "Ramp with vector base\n";
-        internal_assert(stride.type().is_scalar()) << "Ramp with vector stride\n";
-        internal_assert(width > 1) << "Ramp of width <= 1\n";
-        internal_assert(stride.type() == base.type()) << "Ramp of mismatched types\n";
-
-        Ramp *node = new Ramp;
-        node->type = base.type().vector_of(width);
-        node->base = base;
-        node->stride = stride;
-        node->width = width;
-        return node;
-    }
+    EXPORT static Expr make(Expr base, Expr stride, int width);
 };
 
 /** A vector with 'width' elements, in which every element is
@@ -2014,17 +1806,7 @@ struct Broadcast : public ExprNode<Broadcast> {
     Expr value;
     int width;
 
-    static Expr make(Expr value, int width) {
-        internal_assert(value.defined()) << "Broadcast of undefined\n";
-        internal_assert(value.type().is_scalar()) << "Broadcast of vector\n";
-        internal_assert(width > 1) << "Broadcast of width <= 1\n";
-
-        Broadcast *node = new Broadcast;
-        node->type = value.type().vector_of(width);
-        node->value = value;
-        node->width = width;
-        return node;
-    }
+    EXPORT static Expr make(Expr value, int width);
 };
 
 /** A let expression, like you might find in a functional
@@ -2034,17 +1816,7 @@ struct Let : public ExprNode<Let> {
     std::string name;
     Expr value, body;
 
-    static Expr make(std::string name, Expr value, Expr body) {
-        internal_assert(value.defined()) << "Let of undefined\n";
-        internal_assert(body.defined()) << "Let of undefined\n";
-
-        Let *node = new Let;
-        node->type = body.type();
-        node->name = name;
-        node->value = value;
-        node->body = body;
-        return node;
-    }
+    EXPORT static Expr make(std::string name, Expr value, Expr body);
 };
 
 /** The statement form of a let node. Within the statement 'body',
@@ -2054,16 +1826,7 @@ struct LetStmt : public StmtNode<LetStmt> {
     Expr value;
     Stmt body;
 
-    static Stmt make(std::string name, Expr value, Stmt body) {
-        internal_assert(value.defined()) << "Let of undefined\n";
-        internal_assert(body.defined()) << "Let of undefined\n";
-
-        LetStmt *node = new LetStmt;
-        node->name = name;
-        node->value = value;
-        node->body = body;
-        return node;
-    }
+    EXPORT static Stmt make(std::string name, Expr value, Stmt body);
 };
 
 /** If the 'condition' is false, then bail out printing the
@@ -2074,15 +1837,7 @@ struct AssertStmt : public StmtNode<AssertStmt> {
     std::string message;
     std::vector<Expr> args;
 
-    static Stmt make(Expr condition, std::string message, const std::vector<Expr> &args) {
-        internal_assert(condition.defined()) << "AssertStmt of undefined\n";
-
-        AssertStmt *node = new AssertStmt;
-        node->condition = condition;
-        node->message = message;
-        node->args = args;
-        return node;
-    }
+    EXPORT static Stmt make(Expr condition, std::string message, const std::vector<Expr> &args);
 };
 
 /** This node is a helpful annotation to do with permissions. The
@@ -2096,18 +1851,7 @@ struct Pipeline : public StmtNode<Pipeline> {
     std::string name;
     Stmt produce, update, consume;
 
-    static Stmt make(std::string name, Stmt produce, Stmt update, Stmt consume) {
-        internal_assert(produce.defined()) << "Pipeline of undefined\n";
-        // update is allowed to be null
-        internal_assert(consume.defined()) << "Pipeline of undefined\n";
-
-        Pipeline *node = new Pipeline;
-        node->name = name;
-        node->produce = produce;
-        node->update = update;
-        node->consume = consume;
-        return node;
-    }
+    EXPORT static Stmt make(std::string name, Stmt produce, Stmt update, Stmt consume);
 };
 
 /** A for loop. Execute the 'body' statement for all values of the
@@ -2129,21 +1873,7 @@ struct For : public StmtNode<For> {
     ForType for_type;
     Stmt body;
 
-    static Stmt make(std::string name, Expr min, Expr extent, ForType for_type, Stmt body) {
-        internal_assert(min.defined()) << "For of undefined\n";
-        internal_assert(extent.defined()) << "For of undefined\n";
-        internal_assert(min.type().is_scalar()) << "For with vector min\n";
-        internal_assert(extent.type().is_scalar()) << "For with vector extent\n";
-        internal_assert(body.defined()) << "For of undefined\n";
-
-        For *node = new For;
-        node->name = name;
-        node->min = min;
-        node->extent = extent;
-        node->for_type = for_type;
-        node->body = body;
-        return node;
-    }
+    EXPORT static Stmt make(std::string name, Expr min, Expr extent, ForType for_type, Stmt body);
 };
 
 /** Store a 'value' to the buffer called 'name' at a given
@@ -2153,16 +1883,7 @@ struct Store : public StmtNode<Store> {
     std::string name;
     Expr value, index;
 
-    static Stmt make(std::string name, Expr value, Expr index) {
-        internal_assert(value.defined()) << "Store of undefined\n";
-        internal_assert(index.defined()) << "Store of undefined\n";
-
-        Store *node = new Store;
-        node->name = name;
-        node->value = value;
-        node->index = index;
-        return node;
-    }
+    EXPORT static Stmt make(std::string name, Expr value, Expr index);
 };
 
 /** This defines the value of a function at a multi-dimensional
@@ -2174,21 +1895,7 @@ struct Provide : public StmtNode<Provide> {
     std::vector<Expr> values;
     std::vector<Expr> args;
 
-    static Stmt make(std::string name, const std::vector<Expr> &values, const std::vector<Expr> &args) {
-        internal_assert(!values.empty()) << "Provide of no values\n";
-        for (size_t i = 0; i < values.size(); i++) {
-            internal_assert(values[i].defined()) << "Provide of undefined value\n";
-        }
-        for (size_t i = 0; i < args.size(); i++) {
-            internal_assert(args[i].defined()) << "Provide to undefined location\n";
-        }
-
-        Provide *node = new Provide;
-        node->name = name;
-        node->values = values;
-        node->args = args;
-        return node;
-    }
+    EXPORT static Stmt make(std::string name, const std::vector<Expr> &values, const std::vector<Expr> &args);
 };
 
 /** Allocate a scratch area called with the given name, type, and
@@ -2202,34 +1909,15 @@ struct Allocate : public StmtNode<Allocate> {
     Expr condition;
     Stmt body;
 
-    static Stmt make(std::string name, Type type, const std::vector<Expr> &extents,
-                     Expr condition, Stmt body) {
-        for (size_t i = 0; i < extents.size(); i++) {
-            internal_assert(extents[i].defined()) << "Allocate of undefined extent\n";
-            internal_assert(extents[i].type().is_scalar() == 1) << "Allocate of vector extent\n";
-        }
-        internal_assert(body.defined()) << "Allocate of undefined\n";
-
-        Allocate *node = new Allocate;
-        node->name = name;
-        node->type = type;
-        node->extents = extents;
-        node->condition = condition;
-
-        node->body = body;
-        return node;
-    }
+    EXPORT static Stmt make(std::string name, Type type, const std::vector<Expr> &extents,
+                            Expr condition, Stmt body);
 };
 
 /** Free the resources associated with the given buffer. */
 struct Free : public StmtNode<Free> {
     std::string name;
 
-    static Stmt make(std::string name) {
-        Free *node = new Free;
-        node->name = name;
-        return node;
-    }
+    static Stmt make(std::string name);
 };
 
 /** A single-dimensional span. Includes all numbers between min and
@@ -2256,24 +1944,7 @@ struct Realize : public StmtNode<Realize> {
     Expr condition;
     Stmt body;
 
-    static Stmt make(const std::string &name, const std::vector<Type> &types, const Region &bounds, Expr condition, Stmt body) {
-        for (size_t i = 0; i < bounds.size(); i++) {
-            internal_assert(bounds[i].min.defined()) << "Realize of undefined\n";
-            internal_assert(bounds[i].extent.defined()) << "Realize of undefined\n";
-            internal_assert(bounds[i].min.type().is_scalar()) << "Realize of vector size\n";
-            internal_assert(bounds[i].extent.type().is_scalar()) << "Realize of vector size\n";
-        }
-        internal_assert(body.defined()) << "Realize of undefined\n";
-        internal_assert(!types.empty()) << "Realize has empty type\n";
-
-        Realize *node = new Realize;
-        node->name = name;
-        node->types = types;
-        node->bounds = bounds;
-        node->condition = condition;
-        node->body = body;
-        return node;
-    }
+    EXPORT static Stmt make(const std::string &name, const std::vector<Type> &types, const Region &bounds, Expr condition, Stmt body);
 };
 
 /** A sequence of statements to be executed in-order. 'rest' may be
@@ -2281,15 +1952,7 @@ struct Realize : public StmtNode<Realize> {
 struct Block : public StmtNode<Block> {
     Stmt first, rest;
 
-    static Stmt make(Stmt first, Stmt rest) {
-        internal_assert(first.defined()) << "Block of undefined\n";
-        // rest is allowed to be null
-
-        Block *node = new Block;
-        node->first = first;
-        node->rest = rest;
-        return node;
-    }
+    EXPORT static Stmt make(Stmt first, Stmt rest);
 };
 
 /** An if-then-else block. 'else' may be NULL. */
@@ -2297,29 +1960,14 @@ struct IfThenElse : public StmtNode<IfThenElse> {
     Expr condition;
     Stmt then_case, else_case;
 
-    static Stmt make(Expr condition, Stmt then_case, Stmt else_case = Stmt()) {
-        internal_assert(condition.defined() && then_case.defined()) << "IfThenElse of undefined\n";
-        // else_case may be null.
-
-        IfThenElse *node = new IfThenElse;
-        node->condition = condition;
-        node->then_case = then_case;
-        node->else_case = else_case;
-        return node;
-    }
+    EXPORT static Stmt make(Expr condition, Stmt then_case, Stmt else_case = Stmt());
 };
 
 /** Evaluate and discard an expression, presumably because it has some side-effect. */
 struct Evaluate : public StmtNode<Evaluate> {
     Expr value;
 
-    static Stmt make(Expr v) {
-        internal_assert(v.defined()) << "Evaluate of undefined\n";
-
-        Evaluate *node = new Evaluate;
-        node->value = v;
-        return node;
-    }
+    EXPORT static Stmt make(Expr v);
 };
 
 }
@@ -2448,6 +2096,12 @@ public:
     Schedule(const Schedule &other) : contents(other.contents) {}
     EXPORT Schedule();
 
+    /** This flag is set to true if the schedule is memoized. */
+    // @{
+    bool &memoized();
+    bool memoized() const;
+    // @}
+
     /** This flag is set to true if the dims list has been manipulated
      * by the user (or if a ScheduleHandle was created that could have
      * been used to manipulate it). It controls the warning that
@@ -2568,7 +2222,7 @@ public:
      * all values of the given ReductionVariable in scanline order,
      * with the start of the vector being innermost, and the end of
      * the vector being outermost. */
-    ReductionDomain(const std::vector<ReductionVariable> &domain) : 
+    ReductionDomain(const std::vector<ReductionVariable> &domain) :
         contents(new ReductionDomainContents) {
         contents.ptr->domain = domain;
     }
@@ -2637,7 +2291,7 @@ struct ExternFuncArgument {
 
 namespace Internal {
 
-struct ReductionDefinition {
+struct UpdateDefinition {
     std::vector<Expr> values, args;
     Schedule schedule;
     ReductionDomain domain;
@@ -2651,7 +2305,7 @@ struct FunctionContents {
     std::vector<Type> output_types;
     Schedule schedule;
 
-    std::vector<ReductionDefinition> reductions;
+    std::vector<UpdateDefinition> updates;
 
     std::string debug_file;
 
@@ -2689,15 +2343,15 @@ public:
      * reduction domain */
     void define(const std::vector<std::string> &args, std::vector<Expr> values);
 
-    /** Add a reduction definition to this function. It must already
-     * have a pure definition but not a reduction definition, and the
+    /** Add an update definition to this function. It must already
+     * have a pure definition but not an update definition, and the
      * length of args must match the length of args used in the pure
      * definition. 'value' must depend on some reduction domain, and
      * may contain variables from that domain as well as pure
      * variables. Any pure variables must also appear as Variables in
      * the args array, and they must have the same name as the pure
      * definition's argument in the same index. */
-    void define_reduction(const std::vector<Expr> &args, std::vector<Expr> values);
+    void define_update(const std::vector<Expr> &args, std::vector<Expr> values);
 
     /** Construct a new function with the given name */
     Function(const std::string &n) : contents(new FunctionContents) {
@@ -2748,7 +2402,7 @@ public:
     /** Does this function *only* have a pure definition */
     bool is_pure() const {
         return (has_pure_definition() &&
-                !has_reduction_definition() &&
+                !has_update_definition() &&
                 !has_extern_definition());
     }
 
@@ -2769,20 +2423,20 @@ public:
         return contents.ptr->output_buffers;
     }
 
-    /** Get a mutable handle to the schedule for the reduction
+    /** Get a mutable handle to the schedule for the update
      * stage */
-    Schedule &reduction_schedule(int idx = 0) {
-        return contents.ptr->reductions[idx].schedule;
+    Schedule &update_schedule(int idx = 0) {
+        return contents.ptr->updates[idx].schedule;
     }
 
-    /** Get a const reference to this function's reduction definitions. */
-    const std::vector<ReductionDefinition> &reductions() const {
-        return contents.ptr->reductions;
+    /** Get a const reference to this function's update definitions. */
+    const std::vector<UpdateDefinition> &updates() const {
+        return contents.ptr->updates;
     }
 
-    /** Does this function have a reduction definition */
-    bool has_reduction_definition() const {
-        return !contents.ptr->reductions.empty();
+    /** Does this function have an update definition */
+    bool has_update_definition() const {
+        return !contents.ptr->updates.empty();
     }
 
     /** Check if the function has an extern definition */
@@ -2915,9 +2569,11 @@ struct Call : public ExprNode<Call> {
         return_second,
         if_then_else,
         trace,
+        trace_expr,
         glsl_texture_load,
         glsl_texture_store,
-        trace_expr;
+        memoize_expr,
+        copy_memory;
 
     // If it's a call to another halide function, this call node
     // holds onto a pointer to that function.
@@ -2935,39 +2591,9 @@ struct Call : public ExprNode<Call> {
     // pointer to that
     Parameter param;
 
-    static Expr make(Type type, std::string name, const std::vector<Expr> &args, CallType call_type,
-                     Function func = Function(), int value_index = 0,
-                     Buffer image = Buffer(), Parameter param = Parameter()) {
-        for (size_t i = 0; i < args.size(); i++) {
-            internal_assert(args[i].defined()) << "Call of undefined\n";
-        }
-        if (call_type == Halide) {
-            internal_assert(value_index >= 0 &&
-                            value_index < func.outputs())
-                << "Value index out of range in call to halide function\n";
-            internal_assert((func.has_pure_definition() || func.has_extern_definition())) << "Call to undefined halide function\n";
-            internal_assert((int)args.size() <= func.dimensions()) << "Call node with too many arguments.\n";
-            for (size_t i = 0; i < args.size(); i++) {
-                internal_assert(args[i].type() == Int(32)) << "Args to call to halide function must be type Int(32)\n";
-            }
-        } else if (call_type == Image) {
-            internal_assert((param.defined() || image.defined())) << "Call node to undefined image\n";
-            for (size_t i = 0; i < args.size(); i++) {
-                internal_assert(args[i].type() == Int(32)) << "Args to load from image must be type Int(32)\n";
-            }
-        }
-
-        Call *node = new Call;
-        node->type = type;
-        node->name = name;
-        node->args = args;
-        node->call_type = call_type;
-        node->func = func;
-        node->value_index = value_index;
-        node->image = image;
-        node->param = param;
-        return node;
-    }
+    EXPORT static Expr make(Type type, std::string name, const std::vector<Expr> &args, CallType call_type,
+                            Function func = Function(), int value_index = 0,
+                            Buffer image = Buffer(), Parameter param = Parameter());
 
     /** Convenience constructor for calls to other halide functions */
     static Expr make(Function func, const std::vector<Expr> &args, int idx = 0) {
@@ -3023,3068 +2649,13 @@ struct Variable : public ExprNode<Variable> {
         return make(type, name, Buffer(), Parameter(), reduction_domain);
     }
 
-    static Expr make(Type type, std::string name, Buffer image, Parameter param, ReductionDomain reduction_domain) {
-        internal_assert(!name.empty());
-        Variable *node = new Variable;
-        node->type = type;
-        node->name = name;
-        node->image = image;
-        node->param = param;
-        node->reduction_domain = reduction_domain;
-        return node;
-    }
-
+    EXPORT static Expr make(Type type, std::string name, Buffer image, Parameter param, ReductionDomain reduction_domain);
 };
 
 }
 }
 
 #endif
-#ifndef HALIDE_SCOPE_H
-#define HALIDE_SCOPE_H
-
-#include <string>
-#include <map>
-#include <stack>
-#include <utility>
-#include <iostream>
-
-
-/** \file
- * Defines the Scope class, which is used for keeping track of names in a scope while traversing IR
- */
-
-namespace Halide {
-namespace Internal {
-
-/** A stack which can store one item very efficiently. Using this
- * instead of std::stack speeds up Scope substantially. */
-template<typename T>
-class SmallStack {
-private:
-    T _top;
-    std::vector<T> _rest;
-    bool _empty;
-
-public:
-    SmallStack() : _empty(true) {}
-
-    void pop() {
-        if (_rest.empty()) {
-            _empty = true;
-            _top = T();
-        } else {
-            _top = _rest.back();
-            _rest.pop_back();
-        }
-    }
-
-    void push(const T &t) {
-        if (_empty) {
-            _empty = false;
-        } else {
-            _rest.push_back(_top);
-        }
-        _top = t;
-    }
-
-    T top() const {
-        return _top;
-    }
-
-    T &top_ref() {
-        return _top;
-    }
-
-    bool empty() const {
-        return _empty;
-    }
-};
-
-/** A common pattern when traversing Halide IR is that you need to
- * keep track of stuff when you find a Let or a LetStmt, and that it
- * should hide previous values with the same name until you leave the
- * Let or LetStmt nodes This class helps with that. */
-template<typename T>
-class Scope {
-private:
-    std::map<std::string, SmallStack<T> > table;
-public:
-    Scope() {}
-
-    /** Retrieve the value referred to by a name */
-    T get(const std::string &name) const {
-        typename std::map<std::string, SmallStack<T> >::const_iterator iter = table.find(name);
-        if (iter == table.end() || iter->second.empty()) {
-            internal_error << "Symbol '" << name << "' not found\n";
-        }
-        return iter->second.top();
-    }
-
-    /** Return a reference to an entry */
-    T &ref(const std::string &name) {
-        typename std::map<std::string, SmallStack<T> >::iterator iter = table.find(name);
-        if (iter == table.end() || iter->second.empty()) {
-            internal_error << "Symbol '" << name << "' not found\n";
-        }
-        return iter->second.top_ref();
-    }
-
-    /** Tests if a name is in scope */
-    bool contains(const std::string &name) const {
-        typename std::map<std::string, SmallStack<T> >::const_iterator iter = table.find(name);
-        return iter != table.end() && !iter->second.empty();
-    }
-
-    /** Add a new (name, value) pair to the current scope. Hide old
-     * values that have this name until we pop this name.
-     */
-    void push(const std::string &name, const T &value) {
-        table[name].push(value);
-    }
-
-    /** A name goes out of scope. Restore whatever its old value
-     * was (or remove it entirely if there was nothing else of the
-     * same name in an outer scope) */
-    void pop(const std::string &name) {
-        typename std::map<std::string, SmallStack<T> >::iterator iter = table.find(name);
-        internal_assert(iter != table.end()) << "Name not in symbol table: " << name << "\n";
-        iter->second.pop();
-        if (iter->second.empty()) {
-            table.erase(iter);
-        }
-    }
-
-    /** Iterate through the scope. */
-    class const_iterator {
-        typename std::map<std::string, SmallStack<T> >::const_iterator iter;
-    public:
-        explicit const_iterator(const typename std::map<std::string, SmallStack<T> >::const_iterator &i) :
-            iter(i) {
-        }
-
-        const_iterator() {}
-
-        bool operator!=(const const_iterator &other) {
-            return iter != other.iter;
-        }
-
-        void operator++() {
-            ++iter;
-        }
-
-        const std::string &name() {
-            return iter->first;
-        }
-
-        const SmallStack<T> &stack() {
-            return iter->second;
-        }
-
-        const T &value() {
-            return iter->second.top();
-        }
-    };
-
-    const_iterator cbegin() const {
-        return const_iterator(table.begin());
-    }
-
-    const_iterator cend() const {
-        return const_iterator(table.end());
-    }
-
-    class iterator {
-        typename std::map<std::string, SmallStack<T> >::iterator iter;
-    public:
-        explicit iterator(typename std::map<std::string, SmallStack<T> >::iterator i) :
-            iter(i) {
-        }
-
-        iterator() {}
-
-        bool operator!=(const iterator &other) {
-            return iter != other.iter;
-        }
-
-        void operator++() {
-            ++iter;
-        }
-
-        const std::string &name() {
-            return iter->first;
-        }
-
-        SmallStack<T> &stack() {
-            return iter->second;
-        }
-
-        T &value() {
-            return iter->second.top_ref();
-        }
-    };
-
-    iterator begin() {
-        return iterator(table.begin());
-    }
-
-    iterator end() {
-        return iterator(table.end());
-    }
-};
-
-template<typename T>
-std::ostream &operator<<(std::ostream &stream, const Scope<T>& s) {
-    stream << "{\n";
-    typename Scope<T>::const_iterator iter;
-    for (iter = s.cbegin(); iter != s.cend(); ++iter) {
-        stream << "  " << iter.name() << "\n";
-    }
-    stream << "}";
-    return stream;
-}
-
-}
-}
-
-#endif
-#include <vector>
-
-/** \file
- * Methods for computing the upper and lower bounds of an expression,
- * and the regions of a function read or written by a statement.
- */
-
-namespace Halide {
-namespace Internal {
-
-struct Interval {
-    Expr min, max;
-    Interval() {}
-    Interval(Expr min, Expr max) : min(min), max(max) {}
-};
-
-typedef std::map<std::pair<std::string, int>, Interval> FuncValueBounds;
-
-/** Given an expression in some variables, and a map from those
- * variables to their bounds (in the form of (minimum possible value,
- * maximum possible value)), compute two expressions that give the
- * minimum possible value and the maximum possible value of this
- * expression. Max or min may be undefined expressions if the value is
- * not bounded above or below.
- *
- * This is for tasks such as deducing the region of a buffer
- * loaded by a chunk of code.
- */
-Interval bounds_of_expr_in_scope(Expr expr,
-                                 const Scope<Interval> &scope,
-                                 const FuncValueBounds &func_bounds = FuncValueBounds());
-
-
-struct Box {
-    // The conditions under which this region may be touched
-    Expr used;
-
-    // The bounds if it is touched
-    std::vector<Interval> bounds;
-
-    Box() {}
-    Box(size_t sz) : bounds(sz) {}
-    Box(const std::vector<Interval> &b) : bounds(b) {}
-    size_t size() const {return bounds.size();}
-    bool empty() const {return bounds.empty();}
-    Interval &operator[](int i) {return bounds[i];}
-    const Interval &operator[](int i) const {return bounds[i];}
-    void resize(size_t sz) {bounds.resize(sz);}
-    void push_back(const Interval &i) {bounds.push_back(i);}
-};
-
-// Expand box a to encompass box b
-void merge_boxes(Box &a, const Box &b);
-
-/** Compute rectangular domains large enough to cover all the 'Call's
- * to each function that occurs within a given statement or
- * expression. This is useful for figuring out what regions of things
- * to evaluate. */
-// @{
-std::map<std::string, Box> boxes_required(Expr e,
-                                          const Scope<Interval> &scope = Scope<Interval>(),
-                                          const FuncValueBounds &func_bounds = FuncValueBounds());
-std::map<std::string, Box> boxes_required(Stmt s,
-                                          const Scope<Interval> &scope = Scope<Interval>(),
-                                          const FuncValueBounds &func_bounds = FuncValueBounds());
-// @}
-
-/** Compute rectangular domains large enough to cover all the
- * 'Provides's to each function that occurs within a given statement
- * or expression. */
-// @{
-std::map<std::string, Box> boxes_provided(Expr e,
-                                          const Scope<Interval> &scope = Scope<Interval>(),
-                                          const FuncValueBounds &func_bounds = FuncValueBounds());
-std::map<std::string, Box> boxes_provided(Stmt s,
-                                          const Scope<Interval> &scope = Scope<Interval>(),
-                                          const FuncValueBounds &func_bounds = FuncValueBounds());
-// @}
-
-/** Compute rectangular domains large enough to cover all the 'Call's
- * and 'Provides's to each function that occurs within a given
- * statement or expression. */
-// @{
-std::map<std::string, Box> boxes_touched(Expr e,
-                                         const Scope<Interval> &scope = Scope<Interval>(),
-                                         const FuncValueBounds &func_bounds = FuncValueBounds());
-std::map<std::string, Box> boxes_touched(Stmt s,
-                                         const Scope<Interval> &scope = Scope<Interval>(),
-                                         const FuncValueBounds &func_bounds = FuncValueBounds());
-// @}
-
-/** Variants of the above that are only concerned with a single function. */
-// @{
-Box box_required(Expr e, std::string fn,
-                 const Scope<Interval> &scope = Scope<Interval>(),
-                 const FuncValueBounds &func_bounds = FuncValueBounds());
-Box box_required(Stmt s, std::string fn,
-                 const Scope<Interval> &scope = Scope<Interval>(),
-                 const FuncValueBounds &func_bounds = FuncValueBounds());
-
-Box box_provided(Expr e, std::string fn,
-                 const Scope<Interval> &scope = Scope<Interval>(),
-                 const FuncValueBounds &func_bounds = FuncValueBounds());
-Box box_provided(Stmt s, std::string fn,
-                 const Scope<Interval> &scope = Scope<Interval>(),
-                 const FuncValueBounds &func_bounds = FuncValueBounds());
-
-Box box_touched(Expr e, std::string fn,
-                const Scope<Interval> &scope = Scope<Interval>(),
-                const FuncValueBounds &func_bounds = FuncValueBounds());
-Box box_touched(Stmt s, std::string fn,
-                const Scope<Interval> &scope = Scope<Interval>(),
-                const FuncValueBounds &func_bounds = FuncValueBounds());
-// @}
-
-/** Compute the maximum and minimum possible value for each function
- * in an environment. */
-FuncValueBounds compute_function_value_bounds(const std::vector<std::string> &order,
-                                              const std::map<std::string, Function> &env);
-
-void bounds_test();
-
-}
-}
-
-#endif
-#ifndef HALIDE_BOUNDS_INFERENCE_H
-#define HALIDE_BOUNDS_INFERENCE_H
-
-/** \file
- * Defines the bounds_inference lowering pass.
- */
-
-#include <map>
-
-
-namespace Halide {
-namespace Internal {
-
-/** Take a partially lowered statement that includes symbolic
- * representations of the bounds over which things should be realized,
- * and inject expressions defining those bounds.
- */
-Stmt bounds_inference(Stmt,
-                      const std::vector<std::string> &realization_order,
-                      const std::map<std::string, Function> &environment,
-                      const std::map<std::pair<std::string, int>, Interval> &func_bounds);
-
-}
-}
-
-#endif
-#ifndef HALIDE_CODEGEN_C_H
-#define HALIDE_CODEGEN_C_H
-
-/** \file
- *
- * Defines an IRPrinter that emits C++ code equivalent to a halide stmt
- */
-
-#include <string>
-#include <vector>
-#include <ostream>
-#include <map>
-
-#ifndef HALIDE_IR_PRINTER_H
-#define HALIDE_IR_PRINTER_H
-
-#include <ostream>
-
-
-namespace Halide {
-
-/** \file
- * This header file defines operators that let you dump a Halide
- * expression, statement, or type directly into an output stream
- * in a human readable form.
- * E.g:
- \code
- Expr foo = ...
- std::cout << "Foo is " << foo << std::endl;
- \endcode
- *
- * These operators are implemented using \ref Halide::Internal::IRPrinter
- */
-
-/** Emit an expression on an output stream (such as std::cout) in a
- * human-readable form */
-EXPORT std::ostream &operator<<(std::ostream &stream, const Expr &);
-
-/** Emit a halide type on an output stream (such as std::cout) in a
- * human-readable form */
-EXPORT std::ostream &operator<<(std::ostream &stream, const Type &);
-
-namespace Internal {
-
-/** Emit a halide statement on an output stream (such as std::cout) in
- * a human-readable form */
-std::ostream &operator<<(std::ostream &stream, const Stmt &);
-
-/** Emit a halide for loop type (vectorized, serial, etc) in a human
- * readable form */
-std::ostream &operator<<(std::ostream &stream, const For::ForType &);
-
-/** An IRVisitor that emits IR to the given output stream in a human
- * readable form. Can be subclassed if you want to modify the way in
- * which it prints.
- */
-class IRPrinter : public IRVisitor {
-public:
-    /** Construct an IRPrinter pointed at a given output stream
-     * (e.g. std::cout, or a std::ofstream) */
-    IRPrinter(std::ostream &);
-
-    /** emit an expression on the output stream */
-    void print(Expr);
-
-    /** emit a statement on the output stream */
-    void print(Stmt);
-
-    static void test();
-
-protected:
-    /** The stream we're outputting on */
-    std::ostream &stream;
-
-    /** The current indentation level, useful for pretty-printing
-     * statements */
-    int indent;
-
-    /** Emit spaces according to the current indentation level */
-    void do_indent();
-
-    void visit(const IntImm *);
-    void visit(const FloatImm *);
-    void visit(const StringImm *);
-    void visit(const Cast *);
-    void visit(const Variable *);
-    void visit(const Add *);
-    void visit(const Sub *);
-    void visit(const Mul *);
-    void visit(const Div *);
-    void visit(const Mod *);
-    void visit(const Min *);
-    void visit(const Max *);
-    void visit(const EQ *);
-    void visit(const NE *);
-    void visit(const LT *);
-    void visit(const LE *);
-    void visit(const GT *);
-    void visit(const GE *);
-    void visit(const And *);
-    void visit(const Or *);
-    void visit(const Not *);
-    void visit(const Select *);
-    void visit(const Load *);
-    void visit(const Ramp *);
-    void visit(const Broadcast *);
-    void visit(const Call *);
-    void visit(const Let *);
-    void visit(const LetStmt *);
-    void visit(const AssertStmt *);
-    void visit(const Pipeline *);
-    void visit(const For *);
-    void visit(const Store *);
-    void visit(const Provide *);
-    void visit(const Allocate *);
-    void visit(const Free *);
-    void visit(const Realize *);
-    void visit(const Block *);
-    void visit(const IfThenElse *);
-    void visit(const Evaluate *);
-
-};
-}
-}
-
-#endif
-
-namespace Halide {
-
-struct Argument;
-
-namespace Internal {
-
-/** This class emits C++ code equivalent to a halide Stmt. It's
- * mostly the same as an IRPrinter, but it's wrapped in a function
- * definition, and some things are handled differently to be valid
- * C++.
- */
-class CodeGen_C : public IRPrinter {
-public:
-    /** Initialize a C code generator pointing at a particular output
-     * stream (e.g. a file, or std::cout) */
-    CodeGen_C(std::ostream &);
-
-    /** Emit source code equivalent to the given statement, wrapped in
-     * a function with the given type signature */
-    void compile(Stmt stmt, std::string name,
-                 const std::vector<Argument> &args,
-                 const std::vector<Buffer> &images_to_embed);
-
-    /** Emit a header file defining a halide pipeline with the given
-     * type signature */
-    void compile_header(const std::string &name, const std::vector<Argument> &args);
-
-    static void test();
-
-protected:
-    /** An ID for the most recently generated ssa variable */
-    std::string id;
-
-    /** A cache of generated values in scope */
-    std::map<std::string, std::string> cache;
-
-    /** Emit an expression as an assignment, then return the id of the
-     * resulting var */
-    std::string print_expr(Expr);
-
-    /** Emit a statement */
-    void print_stmt(Stmt);
-
-    /** Emit the C name for a halide type */
-    virtual std::string print_type(Type);
-
-    /** Emit a statement to reinterpret an expression as another type */
-    virtual std::string print_reinterpret(Type, Expr);
-
-    /** Emit a version of a string that is a valid identifier in C (. is replaced with _) */
-    virtual std::string print_name(const std::string &);
-
-    /** Emit an SSA-style assignment, and set id to the freshly generated name. Return id. */
-    std::string print_assignment(Type t, const std::string &rhs);
-
-    /** Open a new C scope (i.e. throw in a brace, increase the indent) */
-    void open_scope();
-
-    /** Close a C scope (i.e. throw in an end brace, decrease the indent) */
-    void close_scope(const std::string &comment);
-
-    /** Unpack a buffer into its constituent parts */
-    void unpack_buffer(Type t, const std::string &buffer_name);
-
-    /** Track the types of allocations to avoid unnecessary casts. */
-    Scope<Type> allocations;
-
-    /** Track which allocations actually went on the heap. */
-    Scope<int> heap_allocations;
-
-    /** True if there is a void * __user_context parameter in the arguments. */
-    bool have_user_context;
-
-    using IRPrinter::visit;
-
-    void visit(const Variable *);
-    void visit(const IntImm *);
-    void visit(const StringImm *);
-    void visit(const FloatImm *);
-    void visit(const Cast *);
-    void visit(const Add *);
-    void visit(const Sub *);
-    void visit(const Mul *);
-    void visit(const Div *);
-    void visit(const Mod *);
-    void visit(const Max *);
-    void visit(const Min *);
-    void visit(const EQ *);
-    void visit(const NE *);
-    void visit(const LT *);
-    void visit(const LE *);
-    void visit(const GT *);
-    void visit(const GE *);
-    void visit(const And *);
-    void visit(const Or *);
-    void visit(const Not *);
-    void visit(const Call *);
-    void visit(const Select *);
-    void visit(const Load *);
-    void visit(const Store *);
-    void visit(const Let *);
-    void visit(const LetStmt *);
-    void visit(const AssertStmt *);
-    void visit(const Pipeline *);
-    void visit(const For *);
-    void visit(const Provide *);
-    void visit(const Allocate *);
-    void visit(const Free *);
-    void visit(const Realize *);
-    void visit(const IfThenElse *);
-    void visit(const Evaluate *);
-
-    void visit_binop(Type t, Expr a, Expr b, const char *op);
-};
-
-}
-}
-
-#endif
-#ifndef HALIDE_CODEGEN_H
-#define HALIDE_CODEGEN_H
-
-/** \file
- *
- * Defines the base-class for all architecture-specific code
- * generators that use llvm.
- */
-
-namespace llvm {
-class Value;
-class Module;
-class Function;
-template<bool> class IRBuilderDefaultInserter;
-class ConstantFolder;
-template<bool, typename, typename> class IRBuilder;
-class LLVMContext;
-class Type;
-class StructType;
-class Instruction;
-class CallInst;
-class ExecutionEngine;
-class AllocaInst;
-class Constant;
-class Triple;
-}
-
-#include <map>
-#include <stack>
-#include <string>
-#include <vector>
-
-#ifndef HALIDE_JIT_COMPILED_MODULE_H
-#define HALIDE_JIT_COMPILED_MODULE_H
-
-/** \file
- * Defines the struct representing a JIT compiled halide pipeline
- */
-
-
-#ifdef COMPILING_HALIDE
-#define _COMPILING_HALIDE
-#undef COMPILING_HALIDE
-#endif
-#ifndef HALIDE_HALIDERUNTIME_H
-#define HALIDE_HALIDERUNTIME_H
-
-#ifdef COMPILING_HALIDE
-#ifndef MINI_STDINT_H
-#define MINI_STDINT_H
-
-typedef signed char        int8_t;
-typedef short int          int16_t;
-typedef int                int32_t;
-typedef unsigned char      uint8_t;
-typedef unsigned short int uint16_t;
-typedef unsigned int       uint32_t;
-
-#ifdef BITS_64
-typedef long long int           int64_t;
-typedef unsigned long long int  uint64_t;
-typedef uint64_t size_t;
-typedef int64_t ssize_t;
-typedef int64_t intptr_t;
-typedef int64_t ptrdiff_t;
-#define INT64_C(c)	c ## L
-#define UINT64_C(c)	c ## UL
-#endif
-
-#ifdef BITS_32
-__extension__ typedef long long int          int64_t;
-__extension__ typedef unsigned long long int uint64_t;
-typedef uint32_t size_t;
-typedef int32_t ssize_t;
-typedef int32_t intptr_t;
-typedef int32_t ptrdiff_t;
-#define INT64_C(c)	c ## LL
-#define UINT64_C(c)	c ## ULL
-#endif
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#define WEAK __attribute__((weak))
-
-#endif
-#else
-#include <stddef.h>
-#include <stdint.h>
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/** \file
- *
- * This file exports all routines which can be replaced by an
- * application hosting code generated by %Halide. These are used when
- * doing Ahead Of Time (AOT) compilation and must be supplied to the
- * linker to override a routine. I.e., just define your own version of
- * any of these functions with extern "C" linkage, and it should
- * replace the default one.
- *
- * When doing Just In Time (JIT) compilation methods on the Func being
- * compiled must be called instead. The corresponding methods are
- * documented below.
- *
- * All of these functions take a "void *user_context" parameter as their
- * first argument; if the Halide kernel that calls back to any of these
- * funcions has been defined with a "__user_context" parameter XXXXXXXX,
- * then the value of that pointer passed from the code that calls the
- * Halide kernel is piped through to the function.
- *
- * Some of these are also useful to call when using the default
- * implementation. E.g. halide_shutdown_thread_pool.
- *
- * Note that some linker setups may not respect the override you
- * provide. E.g. if the override is in a shared library and the halide
- * object files are linked directly into the output, the builtin
- * versions of the runtime functions will be called. See your linker
- * documentation for more details. On Linux, LD_DYNAMIC_WEAK=1 may
- * help.
- *
- */
-
-/** Define halide_printf to catch debugging output, informational
-  * messages, etc. Main use is to support HL_TRACE functionality and
-  * PrintStmt in IR. Also called by the default halide_error
-  * implementation.
-  *
-  * This function is implemented using \ref halide_print.
-  */
-extern int halide_printf(void *user_context, const char *, ...);
-
-/** Unformatted print used to support halide_printf. This function
- * can be replaced in JITed code by using halide_custom_print
- * and providing an implementation of halide_print in AOT code. See
- * Func::set_custom_print.
- */
-extern void halide_print(void *user_context, const char *);
-
-/** Define halide_error to catch errors messages at runtime, for
- * example bounds checking failures. This function can be replaced
- * in JITed code by using halide_set_error_handler and providing an
- * implementation of halide_error in AOT code. See
- * Func::set_error_handler.
- */
-//@{
-extern void halide_error(void *user_context, const char *);
-extern void halide_error_varargs(void *user_context, const char *, ...);
-//@}
-
-/** A macro that calls halide_error if the supplied condition is false. */
-#define halide_assert(user_context, cond) if (!(cond)) halide_error(user_context, #cond);
-
-/** Define halide_do_par_for to replace the default thread pool
- * implementation. halide_shutdown_thread_pool can also be called to
- * release resources used by the default thread pool on platforms
- * where it makes sense. (E.g. On Mac OS, Grand Central Dispatch is
- * used so %Halide does not own the threads backing the pool and they
- * cannot be released.)  See Func::set_custom_do_task and
- * Func::set_custom_do_par_for. Should return zero if all the jobs
- * return zero, or an arbitrarily chosen return value from one of the
- * jobs otherwise.
- */
-//@{
-extern int halide_do_par_for(void *user_context,
-                             int (*f)(void *ctx, int, uint8_t *),
-                             int min, int size, uint8_t *closure);
-extern void halide_shutdown_thread_pool();
-//@}
-
-/** Set the number of threads used by Halide's thread pool. No effect
- * on OS X or iOS. If changed after the first use of a parallel Halide
- * routine, shuts down and then reinitializes the thread pool. */
-extern void halide_set_num_threads(int n);
-
-/** Define halide_malloc and halide_free to replace the default memory
- * allocator.  See Func::set_custom_allocator. (Specifically note that
- * halide_malloc must return a 32-byte aligned pointer, and it must be
- * safe to read at least 8 bytes before the start and beyond the
- * end.)
- */
-//@{
-extern void *halide_malloc(void *user_context, size_t x);
-extern void halide_free(void *user_context, void *ptr);
-//@}
-
-/** Called when debug_to_file is used inside %Halide code.  See
- * Func::debug_to_file for how this is called
- *
- * Cannot be replaced in JITted code at present.
- */
-extern int32_t halide_debug_to_file(void *user_context, const char *filename,
-                                    uint8_t *data, int32_t s0, int32_t s1, int32_t s2,
-                                    int32_t s3, int32_t type_code,
-                                    int32_t bytes_per_element);
-
-
-enum halide_trace_event_code {halide_trace_load = 0,
-                              halide_trace_store = 1,
-                              halide_trace_begin_realization = 2,
-                              halide_trace_end_realization = 3,
-                              halide_trace_produce = 4,
-                              halide_trace_update = 5,
-                              halide_trace_consume = 6,
-                              halide_trace_end_consume = 7};
-
-struct halide_trace_event {
-    const char *func;
-    halide_trace_event_code event;
-    int32_t parent_id;
-    int32_t type_code;
-    int32_t bits;
-    int32_t vector_width;
-    int32_t value_index;
-    void *value;
-    int32_t dimensions;
-    int32_t *coordinates;
-};
-
-/** Called when Funcs are marked as trace_load, trace_store, or
- * trace_realization. See Func::set_custom_trace. The default
- * implementation either prints events via halide_printf, or if
- * HL_TRACE_FILE is defined, dumps the trace to that file in a
- * yet-to-be-documented binary format (see src/runtime/tracing.cpp to
- * reverse engineer the format). If the trace is going to be large,
- * you may want to make the file a named pipe, and then read from that
- * pipe into gzip.
- *
- * halide_trace returns a unique ID which will be passed to future
- * events that "belong" to the earlier event as the parent id. The
- * ownership hierarchy looks like:
- *
- * begin_realization
- *    produce
- *      store
- *      update
- *      load/store
- *      consume
- *      load
- *      end_consume
- *    end_realization
- *
- * Threading means that ownership cannot be inferred from the ordering
- * of events. There can be many active realizations of a given
- * function, or many active productions for a single
- * realization. Within a single production, the ordering of events is
- * meaningful.
- */
-extern int32_t halide_trace(void *user_context, const halide_trace_event *event);
-
-/** Set the file descriptor that Halide should write binary trace
- * events to. If called with 0 as the argument, Halide outputs trace
- * information to stdout in a human-readable format. If never called,
- * Halide checks the for existence of an environment variable called
- * HL_TRACE_FILE and opens that file. If HL_TRACE_FILE is not defined,
- * it outputs trace information to stdout in a human-readable
- * format. */
-extern void halide_set_trace_file(int fd);
-
-/** Halide calls this to retrieve the file descriptor to write binary
- * trace events to. The default implementation returns the value set
- * by halide_set_trace_file. Implement it yourself if you wish to use
- * a custom file descriptor per user_context. Return zero from your
- * implementation to tell Halide to print human-readable trace
- * information to stdout. */
-extern int halide_get_trace_file(void *user_context);
-
-/** If tracing is writing to a file. This call closes that file
- * (flushing the trace). Returns zero on success. */
-extern int halide_shutdown_trace();
-
-/** Release all data associated with the current GPU backend, in particular
- * all resources (memory, texture, context handles) allocated by Halide. Must
- * be called explicitly when using AOT compilation. */
-extern void halide_release(void *user_context);
-
-/** Copy image data from device memory to host memory. This must be called
- * explicitly to copy back the results of a GPU-based filter. */
-extern int halide_copy_to_host(void *user_context, struct buffer_t *buf);
-
-/** Copy image data from host memory to device memory. This should not be
- * called directly; Halide handles copying to the device automatically. */
-extern int halide_copy_to_dev(void *user_context, struct buffer_t *buf);
-
-/** Wait for current GPU operations to complete. Calling this explicitly
- * should rarely be necessary, except maybe for profiling. */
-extern int halide_dev_sync(void *user_context);
-
-/** Allocate device memory to back a buffer_t. */
-extern int halide_dev_malloc(void *user_context, struct buffer_t *buf);
-
-/** Free any device memory associated with a buffer_t. */
-extern int halide_dev_free(void *user_context, struct buffer_t *buf);
-
-/** These are forward declared here to ensure they have the same
- * signature across different Halide gpu backends. Do not call
- * them. */
-// @{
-extern int halide_init_kernels(void *user_context, void **state_ptr,
-                               const char *src, int size);
-extern int halide_dev_run(void *user_context,
-                          void *state_ptr,
-                          const char *entry_name,
-                          int blocksX, int blocksY, int blocksZ,
-                          int threadsX, int threadsY, int threadsZ,
-                          int shared_mem_bytes,
-                          size_t arg_sizes[],
-                          void *args[]);
-// @}
-
-/** Set the platform name for OpenCL to use (e.g. "Intel" or
- * "NVIDIA"). The argument is copied internally. The opencl runtime
- * will select a platform that includes this as a substring. If never
- * called, Halide uses the environment variable HL_OCL_PLATFORM_NAME,
- * or defaults to the first available platform. */
-extern void halide_set_ocl_platform_name(const char *n);
-
-/** Halide calls this to get the desired OpenCL platform
- * name. Implement this yourself to use a different platform per
- * user_context. The default implementation returns the value set by
- * halide_set_ocl_platform_name, or the value of the environment
- * variable HL_OCL_PLATFORM_NAME. The output is valid until the next
- * call to halide_set_ocl_platform_name. */
-extern const char *halide_get_ocl_platform_name(void *user_context);
-
-/** Set the device type for OpenCL to use. The argument is copied
- * internally. It must be "cpu" or "gpu". If never called, Halide uses
- * the environment variable HL_OCL_DEVICE_TYPE. */
-extern void halide_set_ocl_device_type(const char *n);
-
-/** Halide calls this to gets the desired OpenCL device
- * type. Implement this yourself to use a different device type per
- * user_context. The default implementation returns the value set by
- * halide_set_ocl_device_type, or the environment variable
- * HL_OCL_DEVICE_TYPE. The result is valid until the next call to
- * halide_set_ocl_device_type. */
-extern const char *halide_get_ocl_device_type(void *user_context);
-
-/** Selects which gpu device to use. 0 is usually the display
- * device. If never called, Halide uses the environment variable
- * HL_GPU_DEVICE. If that variable is unset, Halide uses the last
- * device. Set this to -1 to use the last device. */
-extern void halide_set_gpu_device(int n);
-
-/** Halide calls this to get the desired halide gpu device
- * setting. Implement this yourself to use a different gpu device per
- * user_context. The default implementation returns the value set by
- * halide_set_gpu_device, or the environment variable
- * HL_GPU_DEVICE. */
-extern int halide_get_gpu_device(void *user_context);
-
-#ifdef __cplusplus
-} // End extern "C"
-#endif
-
-#endif // HALIDE_HALIDERUNTIME_H
-
-#ifdef _COMPILING_HALIDE
-#define COMPILING_HALIDE
-#undef _COMPILING_HALIDE
-#endif
-
-namespace llvm {
-class Module;
-}
-
-namespace Halide {
-namespace Internal {
-
-class JITModuleHolder;
-class CodeGen;
-
-/** Function pointers into a compiled halide module. These function
- * pointers are meaningless once the last copy of a JITCompiledModule
- * is deleted, so don't cache them. */
-struct JITCompiledModule {
-    /** A pointer to the raw halide function. It's true type depends
-     * on the Argument vector passed to CodeGen::compile. Image
-     * parameters become (buffer_t *), and scalar parameters become
-     * pointers to the appropriate values. The final argument is a
-     * pointer to the buffer_t defining the output. */
-    void *function;
-
-    /** A slightly more type-safe wrapper around the raw halide
-     * module. Takes it arguments as an array of pointers that
-     * correspond to the arguments to \ref function */
-    int (*wrapped_function)(const void **);
-
-    /** JITed helpers to interact with device-mapped buffer_t
-     * objects. These pointers may be NULL if not compiling for a
-     * gpu-like target. */
-    // @{
-    int (*copy_to_host)(void *user_context, struct buffer_t*);
-    int (*copy_to_dev)(void *user_context, struct buffer_t*);
-    int (*free_dev_buffer)(void *user_context, struct buffer_t*);
-    // @}
-
-    /** The type of a halide runtime error handler function */
-    typedef void (*ErrorHandler)(void *user_context, const char *);
-
-    /** Set the runtime error handler for this module */
-    void (*set_error_handler)(ErrorHandler);
-
-    /** Set a custom malloc and free for this module to use. See
-     * \ref Func::set_custom_allocator */
-    void (*set_custom_allocator)(void *(*malloc)(void *user_context, size_t),
-                                 void (*free)(void *user_context, void *ptr));
-
-    /** Set a custom parallel for loop launcher. See
-     * \ref Func::set_custom_do_par_for */
-    typedef int (*HalideTask)(void *user_context, int, uint8_t *);
-    void (*set_custom_do_par_for)(int (*custom_do_par_for)(void *user_context, HalideTask,
-                                                           int, int, uint8_t *));
-
-    /** Set a custom do parallel task. See
-     * \ref Func::set_custom_do_task */
-    void (*set_custom_do_task)(int (*custom_do_task)(void *user_context, HalideTask,
-                                                     int, uint8_t *));
-
-    /** Set a custom trace function. See \ref Func::set_custom_trace. */
-    typedef int (*TraceFn)(void *, const halide_trace_event *);
-    void (*set_custom_trace)(TraceFn);
-
-    /** Set a custom print function for this module. See
-     * \ref Func::set_custom_print. */
-    void (*set_custom_print)(void (*custom_print)(void *, const char *));
-
-    /** Shutdown the thread pool maintained by this JIT module. This
-     * is also done automatically when the last reference to this
-     * module is destroyed. */
-    void (*shutdown_thread_pool)();
-
-    // The JIT Module Allocator holds onto the memory storing the functions above.
-    IntrusivePtr<JITModuleHolder> module;
-
-    JITCompiledModule() :
-        function(NULL),
-        wrapped_function(NULL),
-        copy_to_host(NULL),
-        copy_to_dev(NULL),
-        free_dev_buffer(NULL),
-        set_error_handler(NULL),
-        set_custom_allocator(NULL),
-        set_custom_do_par_for(NULL),
-        set_custom_do_task(NULL),
-        set_custom_trace(NULL),
-        set_custom_print(NULL),
-        shutdown_thread_pool(NULL) {}
-
-    /** Take an llvm module and compile it. Populates the function
-     * pointer members above with the result. */
-    void compile_module(CodeGen *cg, llvm::Module *mod, const std::string &function_name);
-
-    /** Holds a cleanup routine and context parameter. */
-    struct CleanupRoutine {
-        void (*fn)(void *);
-        void *context;
-
-        CleanupRoutine() : fn(NULL), context(NULL) {}
-        CleanupRoutine(void (*fn)(void *), void *context) : fn(fn), context(context) {}
-    };
-};
-
-}
-}
-
-
-#endif
-#ifndef HALIDE_MODULUS_REMAINDER_H
-#define HALIDE_MODULUS_REMAINDER_H
-
-/** \file
- * Routines for statically determining what expressions are divisible by.
- */
-
-
-namespace Halide {
-namespace Internal {
-
-/** The result of modulus_remainder analysis */
-struct ModulusRemainder {
-    ModulusRemainder() : modulus(0), remainder(0) {}
-    ModulusRemainder(int m, int r) : modulus(m), remainder(r) {}
-    int modulus, remainder;
-};
-
-/** For things like alignment analysis, often it's helpful to know
- * if an integer expression is some multiple of a constant plus
- * some other constant. For example, it is straight-forward to
- * deduce that ((10*x + 2)*(6*y - 3) - 1) is congruent to five
- * modulo six.
- *
- * We get the most information when the modulus is large. E.g. if
- * something is congruent to 208 modulo 384, then we also know it's
- * congruent to 0 mod 8, and we can possibly use it as an index for an
- * aligned load. If all else fails, we can just say that an integer is
- * congruent to zero modulo one.
- */
-EXPORT ModulusRemainder modulus_remainder(Expr e);
-
-/** If we have alignment information about external variables, we can
- * let the analysis know about that using this version of
- * modulus_remainder: */
-ModulusRemainder modulus_remainder(Expr e, const Scope<ModulusRemainder> &scope);
-
-/** Reduce an expression modulo some integer. Returns true and assigns
- * to remainder if an answer could be found. */
-bool reduce_expr_modulo(Expr e, int modulus, int *remainder);
-
-void modulus_remainder_test();
-
-/** The greatest common divisor of two integers */
-int gcd(int, int);
-
-/** The least common multiple of two integers */
-int lcm(int, int);
-
-}
-}
-
-#endif
-#ifndef HALIDE_TARGET_H
-#define HALIDE_TARGET_H
-
-/** \file
- * Defines the structure that describes a Halide target.
- */
-
-#include <stdint.h>
-#include <string>
-
-namespace llvm {
-class Module;
-class LLVMContext;
-}
-
-namespace Halide {
-
-/** A struct representing a target machine and os to generate code for. */
-struct Target {
-    /** The operating system used by the target. Determines which
-     * system calls to generate. */
-    enum OS {OSUnknown = 0, Linux, Windows, OSX, Android, IOS, NaCl} os;
-
-    /** The architecture used by the target. Determines the
-     * instruction set to use. For the PNaCl target, the "instruction
-     * set" is actually llvm bitcode. */
-    enum Arch {ArchUnknown = 0, X86, ARM, PNaCl} arch;
-
-    /** The bit-width of the target machine. Must be 0 for unknown, or 32 or 64. */
-    int bits;
-
-    /** Optional features a target can have. */
-    enum Features {JIT       = 1 << 0,  ///< Generate code that will run immediately inside the calling process.
-                   SSE41     = 1 << 1,  ///< Use SSE 4.1 and earlier instructions. Only relevant on x86.
-                   AVX       = 1 << 2,  ///< Use AVX 1 instructions. Only relevant on x86.
-                   AVX2      = 1 << 3,  ///< Use AVX 2 instructions. Only relevant on x86.
-                   CUDA      = 1 << 4,  ///< Enable the CUDA runtime.
-                   OpenCL    = 1 << 5,  ///< Enable the OpenCL runtime.
-                   OpenGL    = 1 << 6,  ///< Enable the OpenGL runtime.
-                   GPUDebug  = 1 << 7,  ///< Increase the level of checking and the verbosity of the gpu runtimes.
-                   NoAsserts = 1 << 8,  ///< Disable all runtime checks, for slightly tighter code.
-                   NoBoundsQuery = 1 << 9, ///< Disable the bounds querying functionality.
-                   ARMv7s    = 1 << 10,  ///< Generate code for ARMv7s. Only relevant for 32-bit ARM.
-                   CLDoubles = 1 << 11, ///< Enable double support on OpenCL targets
-                   FMA       = 1 << 12, /// Enable x86 FMA instruction
-                   FMA4      = 1 << 13, /// Enable x86 (AMD) FMA4 instruction set
-                   F16C      = 1 << 14  /// Enable x86 16-bit float support
-    };
-
-    /** A bitmask that stores the active features. */
-    uint64_t features;
-
-    Target() : os(OSUnknown), arch(ArchUnknown), bits(0), features(0) {}
-    Target(OS o, Arch a, int b, uint64_t f) : os(o), arch(a), bits(b), features(f) {}
-
-    /** Is OpenCL or CUDA enabled in this target? I.e. is
-     * Func::gpu_tile and similar going to work? We do not include
-     * OpenGL, because it is not capable of gpgpu, and is not
-     * scheduled via Func::gpu_tile. */
-    bool has_gpu_feature() const {
-        return (features & (CUDA|OpenCL)) != 0;
-    }
-
-    bool operator==(const Target &other) const {
-      return os == other.os &&
-          arch == other.arch &&
-          bits == other.bits &&
-          features == other.features;
-    }
-
-    bool operator!=(const Target &other) const {
-      return !(*this == other);
-    }
-
-    /** Convert the Target into a string form that can be reconstituted
-     * by merge_string(), which will always be of the form
-     *
-     *   arch-bits-os-feature1-feature2...featureN.
-     *
-     * Note that is guaranteed that t2.from_string(t1.to_string()) == t1
-     * ,but not that from_string(s).to_string() == s (since there can be
-     * multiple strings that parse to the same Target)...
-     * *unless* t1 contains 'unknown' fields (in which case you'll get a string
-     * that can't be parsed, which is intentional).
-     */
-    EXPORT std::string to_string() const;
-
-    /**
-     * Parse the contents of 'target' and merge into 'this',
-     * replacing only the parts that are specified. (e.g., if 'target' specifies
-     * only an arch, only the arch field of 'this' will be changed, leaving
-     * the other fields untouched). Any features specified in 'target'
-     * are added to 'this', whether or not originally present.
-     *
-     * If the string contains unknown tokens, or multiple tokens of the
-     * same category (e.g. multiple arch values), return false
-     * (possibly leaving 'this' munged). (Multiple feature specifications
-     * will not cause a failure.)
-     *
-     * If 'target' contains "host" as the first token, it replaces the entire
-     * contents of 'this' with get_host_target(), then proceeds to parse the
-     * remaining tokens (allowing for things like "host-opencl" to mean
-     * "host configuration, but with opencl added").
-     *
-     * Note that unlike parse_from_string(), this will never print to cerr or
-     * assert in the event of a parse failure. Note also that an empty target
-     * string is essentially a no-op, leaving 'this' unaffected.
-     */
-    EXPORT bool merge_string(const std::string &target);
-
-    /**
-     * Like merge_string(), but reset the contents of 'this' first.
-     */
-    EXPORT bool from_string(const std::string &target) {
-	*this = Target();
-	return merge_string(target);
-    }
-};
-
-/** Return the target corresponding to the host machine. */
-EXPORT Target get_host_target();
-
-/** Return the target that Halide will use. If HL_TARGET is set it
- * uses that. Otherwise calls \ref get_host_target */
-EXPORT Target get_target_from_environment();
-
-/** Return the target that Halide will use for jit-compilation. If
- * HL_JIT_TARGET is set it uses that. Otherwise calls \ref
- * get_host_target. Throws an error if the architecture, bit width,
- * and OS of the target do not match the host target, so this is only
- * useful for controlling the feature set. */
-EXPORT Target get_jit_target_from_environment();
-
-/** Given a string of the form used in HL_TARGET (e.g. "x86-64-avx"),
- * return the Target it specifies. Note that this always starts with
- * the result of get_host_target(), replacing only the parts found in the
- * target string, so if you omit (say) an OS specification, the host OS
- * will be used instead. An empty string is exactly equivalent to get_host_target().
- */
-EXPORT Target parse_target_string(const std::string &target);
-
-namespace Internal {
-
-/** Create an llvm module containing the support code for a given target. */
-llvm::Module *get_initial_module_for_target(Target, llvm::LLVMContext *);
-
-/** Create an llvm module containing the support code for ptx device. */
-llvm::Module *get_initial_module_for_ptx_device(llvm::LLVMContext *c);
-
-}
-
-}
-
-
-#endif
-
-namespace Halide {
-namespace Internal {
-
-/** A code generator abstract base class. Actual code generators
- * (e.g. CodeGen_X86) inherit from this. This class is responsible
- * for taking a Halide Stmt and producing llvm bitcode, machine
- * code in an object file, or machine code accessible through a
- * function pointer.
- */
-class CodeGen : public IRVisitor {
-public:
-    mutable RefCount ref_count;
-
-    CodeGen(Target t);
-    virtual ~CodeGen();
-
-    /** Take a halide statement and compiles it to an llvm module held
-     * internally. Call this before calling compile_to_bitcode or
-     * compile_to_native. */
-    virtual void compile(Stmt stmt, std::string name,
-                         const std::vector<Argument> &args,
-                         const std::vector<Buffer> &images_to_embed);
-
-    /** Emit a compiled halide statement as llvm bitcode. Call this
-     * after calling compile. */
-    virtual void compile_to_bitcode(const std::string &filename);
-
-    /** Emit a compiled halide statement as either an object file, or
-     * as raw assembly, depending on the value of the second
-     * argument. Call this after calling compile. */
-    virtual void compile_to_native(const std::string &filename, bool assembly = false);
-
-    /** Compile to machine code stored in memory, and return some
-     * functions pointers into that machine code. */
-    JITCompiledModule compile_to_function_pointers();
-
-    /** What should be passed as -mcpu, -mattrs, and related for
-     * compilation. The architecture-specific code generator should
-     * define these. */
-    // @{
-    virtual std::string mcpu() const = 0;
-    virtual std::string mattrs() const = 0;
-    virtual bool use_soft_float_abi() const = 0;
-    // @}
-
-    /** Do any required target-specific things to the execution engine
-     * and the module prior to jitting. Called by JITCompiledModule
-     * just before it jits. Does nothing by default. */
-    virtual void jit_init(llvm::ExecutionEngine *, llvm::Module *) {}
-
-    /** Do any required target-specific things to the execution engine
-     * and the module after jitting. Called by JITCompiledModule just
-     * after it jits. Does nothing by default. The third argument
-     * gives the target a chance to inject calls to target-specific
-     * module cleanup routines. */
-    virtual void jit_finalize(llvm::ExecutionEngine *, llvm::Module *,
-                              std::vector<JITCompiledModule::CleanupRoutine> *) {}
-
-    /** Initialize internal llvm state for the enabled targets. */
-    static void initialize_llvm();
-
-    /** Which built-in functions require a user-context first argument? */
-    static bool function_takes_user_context(const std::string &name);
-
-protected:
-
-    /** State needed by llvm for code generation, including the
-     * current module, function, context, builder, and most recently
-     * generated llvm value. */
-    //@{
-    static bool llvm_initialized;
-    static bool llvm_X86_enabled;
-    static bool llvm_ARM_enabled;
-    static bool llvm_AArch64_enabled;
-    static bool llvm_NVPTX_enabled;
-
-    llvm::Module *module;
-    bool owns_module;
-    llvm::Function *function;
-    llvm::LLVMContext *context;
-    llvm::IRBuilder<true, llvm::ConstantFolder, llvm::IRBuilderDefaultInserter<true> > *builder;
-    llvm::Value *value;
-    //@}
-
-    /** The target we're generating code for */
-    Halide::Target target;
-
-    /** Initialize the CodeGen internal state to compile a fresh
-     * module. This allows reuse of one CodeGen object to compiled
-     * multiple related modules (e.g. multiple device kernels). */
-    void init_module();
-
-    /** Run all of llvm's optimization passes on the module. */
-    void optimize_module();
-
-    /** Add an entry to the symbol table, hiding previous entries with
-     * the same name. Call this when new values come into scope. */
-    void sym_push(const std::string &name, llvm::Value *value);
-
-    /** Remove an entry for the symbol table, revealing any previous
-     * entries with the same name. Call this when values go out of
-     * scope. */
-    void sym_pop(const std::string &name);
-
-    /** Fetch an entry from the symbol table. If the symbol is not
-     * found, it either errors out (if the second arg is true), or
-     * returns NULL. */
-    llvm::Value* sym_get(const std::string &name,
-                         bool must_succeed = true) const;
-
-    /** Test if an item exists in the symbol table. */
-    bool sym_exists(const std::string &name) const;
-
-    /** Some useful llvm types */
-    // @{
-    llvm::Type *void_t, *i1, *i8, *i16, *i32, *i64, *f16, *f32, *f64;
-    llvm::StructType *buffer_t_type;
-    // @}
-
-    /** The name of the function being generated. */
-    std::string function_name;
-
-    /** Emit code that evaluates an expression, and return the llvm
-     * representation of the result of the expression. */
-    llvm::Value *codegen(Expr);
-
-    /** Emit code that runs a statement. */
-    void codegen(Stmt);
-
-    /** Take an llvm Value representing a pointer to a buffer_t,
-     * and populate the symbol table with its constituent parts.
-     */
-    void unpack_buffer(std::string name, llvm::Value *buffer);
-
-    /** Add a definition of buffer_t to the module if it isn't already there. */
-    void define_buffer_t();
-
-    /** Codegen an assertion. If false, it bails out and calls the error handler. */
-    void create_assertion(llvm::Value *condition, const std::string &message,
-                          const std::vector<llvm::Value *> &args = std::vector<llvm::Value *>());
-
-    /** Put a string constant in the module as a global variable and return a pointer to it. */
-    llvm::Constant *create_string_constant(const std::string &str);
-
-    /** Put a binary blob in the module as a global variable and return a pointer to it. */
-    llvm::Constant *create_constant_binary_blob(const std::vector<char> &data, const std::string &name);
-
-    /** Widen an llvm scalar into an llvm vector with the given number of lanes. */
-    llvm::Value *create_broadcast(llvm::Value *, int width);
-
-    /** Given an llvm value representing a pointer to a buffer_t, extract various subfields.
-     * The *_ptr variants return a pointer to the struct element, while the basic variants
-     * load the actual value. */
-    // @{
-    llvm::Value *buffer_host(llvm::Value *);
-    llvm::Value *buffer_dev(llvm::Value *);
-    llvm::Value *buffer_host_dirty(llvm::Value *);
-    llvm::Value *buffer_dev_dirty(llvm::Value *);
-    llvm::Value *buffer_min(llvm::Value *, int);
-    llvm::Value *buffer_extent(llvm::Value *, int);
-    llvm::Value *buffer_stride(llvm::Value *, int);
-    llvm::Value *buffer_elem_size(llvm::Value *);
-    llvm::Value *buffer_host_ptr(llvm::Value *);
-    llvm::Value *buffer_dev_ptr(llvm::Value *);
-    llvm::Value *buffer_host_dirty_ptr(llvm::Value *);
-    llvm::Value *buffer_dev_dirty_ptr(llvm::Value *);
-    llvm::Value *buffer_min_ptr(llvm::Value *, int);
-    llvm::Value *buffer_extent_ptr(llvm::Value *, int);
-    llvm::Value *buffer_stride_ptr(llvm::Value *, int);
-    llvm::Value *buffer_elem_size_ptr(llvm::Value *);
-    // @}
-
-    /** Generate a pointer into a named buffer at a given index, of a
-     * given type. The index counts according to the scalar type of
-     * the type passed in. */
-    // @{
-    llvm::Value *codegen_buffer_pointer(std::string buffer, Type type, llvm::Value *index);
-    llvm::Value *codegen_buffer_pointer(std::string buffer, Type type, Expr index);
-    // @}
-
-    /** Mark a load or store with type-based-alias-analysis metadata
-     * so that llvm knows it can reorder loads and stores across
-     * different buffers */
-    void add_tbaa_metadata(llvm::Instruction *inst, std::string buffer);
-
-    using IRVisitor::visit;
-
-    /** Generate code for various IR nodes. These can be overridden by
-     * architecture-specific code to perform peephole
-     * optimizations. The result of each is stored in \ref value */
-    // @{
-    virtual void visit(const IntImm *);
-    virtual void visit(const FloatImm *);
-    virtual void visit(const StringImm *);
-    virtual void visit(const Cast *);
-    virtual void visit(const Variable *);
-    virtual void visit(const Add *);
-    virtual void visit(const Sub *);
-    virtual void visit(const Mul *);
-    virtual void visit(const Div *);
-    virtual void visit(const Mod *);
-    virtual void visit(const Min *);
-    virtual void visit(const Max *);
-    virtual void visit(const EQ *);
-    virtual void visit(const NE *);
-    virtual void visit(const LT *);
-    virtual void visit(const LE *);
-    virtual void visit(const GT *);
-    virtual void visit(const GE *);
-    virtual void visit(const And *);
-    virtual void visit(const Or *);
-    virtual void visit(const Not *);
-    virtual void visit(const Select *);
-    virtual void visit(const Load *);
-    virtual void visit(const Ramp *);
-    virtual void visit(const Broadcast *);
-    virtual void visit(const Call *);
-    virtual void visit(const Let *);
-    virtual void visit(const LetStmt *);
-    virtual void visit(const AssertStmt *);
-    virtual void visit(const Pipeline *);
-    virtual void visit(const For *);
-    virtual void visit(const Store *);
-    virtual void visit(const Block *);
-    virtual void visit(const IfThenElse *);
-    virtual void visit(const Evaluate *);
-    // @}
-
-    /** Generate code for an allocate node. It has no default
-     * implementation - it must be handled in an architecture-specific
-     * way. */
-    virtual void visit(const Allocate *) = 0;
-
-    /** Generate code for a free node. It has no default
-     * implementation and must be handled in an architecture-specific
-     * way. */
-    virtual void visit(const Free *) = 0;
-
-    /** These IR nodes should have been removed during
-     * lowering. CodeGen will error out if they are present */
-    // @{
-    virtual void visit(const Provide *);
-    virtual void visit(const Realize *);
-    // @}
-
-    /** If we have to bail out of a pipeline midway, this should
-     * inject the appropriate target-specific cleanup code. */
-    virtual void prepare_for_early_exit() {}
-
-    /** Get the llvm type equivalent to the given halide type in the
-     * current context. */
-    llvm::Type *llvm_type_of(Type);
-
-    /** Perform an alloca at the function entrypoint. Will be cleaned
-     * on function exit. */
-    llvm::Value *create_alloca_at_entry(llvm::Type *type, int n, const std::string &name = "");
-
-    /** Which buffers came in from the outside world (and so we can't
-     * guarantee their alignment) */
-    std::set<std::string> might_be_misaligned;
-
-    llvm::Value *get_user_context() const;
-
-
-
-private:
-
-    /** All the values in scope at the current code location during
-     * codegen. Use sym_push and sym_pop to access. */
-    Scope<llvm::Value *> symbol_table;
-
-    /** Alignment info for Int(32) variables in scope. */
-    Scope<ModulusRemainder> alignment_info;
-
-    /** String constants already emitted to the module. Tracked to
-     * prevent emitting the same string many times. */
-    std::map<std::string, llvm::Constant *> string_constants;
-};
-
-}}
-
-#endif
-#ifndef HALIDE_CODEGEN_X86_H
-#define HALIDE_CODEGEN_X86_H
-
-/** \file
- * Defines the code-generator for producing x86 machine code
- */
-
-#ifndef HALIDE_CODEGEN_POSIX_H
-#define HALIDE_CODEGEN_POSIX_H
-
-/** \file
- * Defines a base-class for code-generators on posixy cpu platforms
- */
-
-
-namespace Halide {
-namespace Internal {
-
-/** A code generator that emits posix code from a given Halide stmt. */
-class CodeGen_Posix : public CodeGen {
-public:
-
-    /** Create an posix code generator. Processor features can be
-     * enabled using the appropriate arguments */
-    CodeGen_Posix(Target t);
-
-protected:
-
-    /** Some useful llvm types for subclasses */
-    // @{
-    llvm::Type *i8x8, *i8x16, *i8x32;
-    llvm::Type *i16x4, *i16x8, *i16x16;
-    llvm::Type *i32x2, *i32x4, *i32x8;
-    llvm::Type *i64x2, *i64x4;
-    llvm::Type *f32x2, *f32x4, *f32x8;
-    llvm::Type *f64x2, *f64x4;
-    // @}
-
-    /** Some wildcard variables used for peephole optimizations in
-     * subclasses */
-    // @{
-    Expr wild_i8x8, wild_i16x4, wild_i32x2; // 64-bit signed ints
-    Expr wild_u8x8, wild_u16x4, wild_u32x2; // 64-bit unsigned ints
-    Expr wild_i8x16, wild_i16x8, wild_i32x4, wild_i64x2; // 128-bit signed ints
-    Expr wild_u8x16, wild_u16x8, wild_u32x4, wild_u64x2; // 128-bit unsigned ints
-    Expr wild_i8x32, wild_i16x16, wild_i32x8, wild_i64x4; // 256-bit signed ints
-    Expr wild_u8x32, wild_u16x16, wild_u32x8, wild_u64x4; // 256-bit unsigned ints
-    Expr wild_f32x2; // 64-bit floats
-    Expr wild_f32x4, wild_f64x2; // 128-bit floats
-    Expr wild_f32x8, wild_f64x4; // 256-bit floats
-    Expr min_i8, max_i8, max_u8;
-    Expr min_i16, max_i16, max_u16;
-    Expr min_i32, max_i32, max_u32;
-    Expr min_i64, max_i64, max_u64;
-    Expr min_f32, max_f32, min_f64, max_f64;
-    // @}
-
-    using CodeGen::visit;
-
-    /** Posix implementation of Allocate. Small constant-sized allocations go
-     * on the stack. The rest go on the heap by calling "halide_malloc"
-     * and "halide_free" in the standard library. */
-    // @{
-    void visit(const Allocate *);
-    void visit(const Free *);
-    // @}
-
-    /** A struct describing heap or stack allocations. */
-    struct Allocation {
-        llvm::Value *ptr;
-
-        /** How many bytes this allocation is, or 0 if not
-         * constant. */
-        int constant_bytes;
-
-        /** How many bytes of stack space used. 0 implies it was a
-         * heap allocation. */
-        int stack_bytes;
-    };
-
-    /** The allocations currently in scope. The stack gets pushed when
-     * we enter a new function. */
-    Scope<Allocation> allocations;
-
-    /** Free all heap allocations in scope. */
-    void prepare_for_early_exit();
-
-    /** Initialize the CodeGen internal state to compile a fresh module */
-    void init_module();
-
-private:
-
-    /** Stack allocations that were freed, but haven't gone out of
-     * scope yet.  This allows us to re-use stack allocations when
-     * they aren't being used. */
-    std::vector<Allocation> free_stack_allocs;
-
-    /** Generates code for computing the size of an allocation from a
-     * list of its extents and its size. Fires a runtime assert
-     * (halide_error) if the size overflows 2^31 -1, the maximum
-     * positive number an int32_t can hold. */
-    llvm::Value *codegen_allocation_size(const std::string &name, Type type, const std::vector<Expr> &extents);
-
-    /** Allocates some memory on either the stack or the heap, and
-     * returns an Allocation object describing it. For heap
-     * allocations this calls halide_malloc in the runtime, and for
-     * stack allocations it either reuses an existing block from the
-     * free_stack_blocks list, or it saves the stack pointer and calls
-     * alloca.
-     *
-     * This call returns the allocation, pushes it onto the
-     * 'allocations' map, and adds an entry to the symbol table called
-     * name.host that provides the base pointer.
-     *
-     * When the allocation can be freed call 'free_allocation', and
-     * when it goes out of scope call 'destroy_allocation'. */
-    Allocation create_allocation(const std::string &name, Type type,
-                                 const std::vector<Expr> &extents,
-                                 Expr condition);
-
-    /** Free the memory backing an allocation and pop it from the
-     * symbol table and the allocations map. For heap allocations it
-     * calls halide_free in the runtime, for stack allocations it
-     * marks the block as free so it can be reused. */
-    void free_allocation(const std::string &name);
-};
-
-}}
-
-#endif
-
-namespace Halide {
-namespace Internal {
-
-/** A code generator that emits x86 code from a given Halide stmt. */
-class CodeGen_X86 : public CodeGen_Posix {
-public:
-    /** Create an x86 code generator. Processor features can be
-     * enabled using the appropriate flags in the target struct. */
-    CodeGen_X86(Target);
-
-    /** Compile to an internally-held llvm module. Takes a halide
-     * statement, the name of the function produced, and the arguments
-     * to the function produced. After calling this, call
-     * CodeGen::compile_to_file or
-     * CodeGen::compile_to_function_pointer to get at the x86 machine
-     * code. */
-    void compile(Stmt stmt, std::string name,
-                 const std::vector<Argument> &args,
-                 const std::vector<Buffer> &images_to_embed);
-
-    static void test();
-
-protected:
-
-    llvm::Triple get_target_triple() const;
-
-    /** Generate a call to an sse or avx intrinsic */
-    // @{
-    llvm::Value *call_intrin(Type t, const std::string &name, std::vector<Expr>);
-    llvm::Value *call_intrin(llvm::Type *t, const std::string &name, std::vector<llvm::Value *>);
-    // @}
-
-    using CodeGen_Posix::visit;
-
-    /** Nodes for which we want to emit specific sse/avx intrinsics */
-    // @{
-    void visit(const Cast *);
-    void visit(const Div *);
-    void visit(const Min *);
-    void visit(const Max *);
-    // @}
-
-    std::string mcpu() const;
-    std::string mattrs() const;
-    bool use_soft_float_abi() const;
-};
-
-}}
-
-#endif
-#ifndef HALIDE_CODEGEN_GPU_HOST_H
-#define HALIDE_CODEGEN_GPU_HOST_H
-
-/** \file
- * Defines the code-generator for producing GPU host code
- */
-
-#ifndef HALIDE_CODEGEN_ARM_H
-#define HALIDE_CODEGEN_ARM_H
-
-/** \file
- * Defines the code-generator for producing ARM machine code
- */
-
-
-namespace Halide {
-namespace Internal {
-
-/** A code generator that emits ARM code from a given Halide stmt. */
-class CodeGen_ARM : public CodeGen_Posix {
-public:
-    /** Create an ARM code generator for the given arm target. */
-    CodeGen_ARM(Target);
-
-    /** Compile to an internally-held llvm module. Takes a halide
-     * statement, the name of the function produced, and the arguments
-     * to the function produced. After calling this, call
-     * CodeGen::compile_to_file or
-     * CodeGen::compile_to_function_pointer to get at the ARM machine
-     * code. */
-    void compile(Stmt stmt, std::string name,
-                 const std::vector<Argument> &args,
-                 const std::vector<Buffer> &images_to_embed);
-
-    static void test();
-
-protected:
-
-    llvm::Triple get_target_triple() const;
-
-    /** Generate a call to a neon intrinsic */
-    // @{
-    llvm::Value *call_intrin(Type t, const std::string &name, std::vector<Expr>);
-    llvm::Value *call_intrin(llvm::Type *t, const std::string &name, std::vector<llvm::Value *>);
-    llvm::Instruction *call_void_intrin(const std::string &name, std::vector<Expr>);
-    llvm::Instruction *call_void_intrin(const std::string &name, std::vector<llvm::Value *>);
-    // @}
-
-    using CodeGen_Posix::visit;
-
-    /** Nodes for which we want to emit specific neon intrinsics */
-    // @{
-    void visit(const Cast *);
-    void visit(const Add *);
-    void visit(const Sub *);
-    void visit(const Div *);
-    void visit(const Mul *);
-    void visit(const Min *);
-    void visit(const Max *);
-    void visit(const LT *);
-    void visit(const LE *);
-    void visit(const Select *);
-    void visit(const Store *);
-    void visit(const Load *);
-    void visit(const Call *);
-    // @}
-
-    /** Various patterns to peephole match against */
-    struct Pattern {
-        std::string intrin;
-        Expr pattern;
-        enum PatternType {Simple = 0, LeftShift, RightShift, NarrowArgs};
-        PatternType type;
-        Pattern() {}
-        Pattern(std::string i, Expr p, PatternType t = Simple) : intrin(i), pattern(p), type(t) {}
-    };
-    std::vector<Pattern> casts, left_shifts, averagings, negations;
-
-
-    std::string mcpu() const;
-    std::string mattrs() const;
-    bool use_soft_float_abi() const;
-};
-
-}}
-
-#endif
-
-namespace Halide {
-namespace Internal {
-
-struct CodeGen_GPU_Dev;
-struct GPU_Argument;
-
-/** A code generator that emits GPU code from a given Halide stmt. */
-template<typename CodeGen_CPU>
-class CodeGen_GPU_Host : public CodeGen_CPU {
-public:
-
-    /** Create a GPU code generator. GPU target is selected via
-     * CodeGen_GPU_Options. Processor features can be enabled using the
-     * appropriate flags from CodeGen_X86_Options */
-    CodeGen_GPU_Host(Target);
-
-    virtual ~CodeGen_GPU_Host();
-
-    /** Compile to an internally-held llvm module. Takes a halide
-     * statement, the name of the function produced, and the arguments
-     * to the function produced. After calling this, call
-     * CodeGen::compile_to_file or
-     * CodeGen::compile_to_function_pointer to get at the x86 machine
-     * code. */
-    void compile(Stmt stmt, std::string name,
-                 const std::vector<Argument> &args,
-                 const std::vector<Buffer> &images_to_embed);
-
-protected:
-    /** Declare members of the base class that must exist to help the
-     * compiler do name lookup. Annoying but necessary, because the
-     * compiler doesn't know that CodeGen_CPU will in fact inherit
-     * from CodeGen for every instantiation of this template. */
-    using CodeGen_CPU::module;
-    using CodeGen_CPU::init_module;
-    using CodeGen_CPU::target;
-    using CodeGen_CPU::builder;
-    using CodeGen_CPU::context;
-    using CodeGen_CPU::function;
-    using CodeGen_CPU::get_user_context;
-    using CodeGen_CPU::visit;
-    using CodeGen_CPU::codegen;
-    using CodeGen_CPU::sym_push;
-    using CodeGen_CPU::sym_pop;
-    using CodeGen_CPU::sym_get;
-    using CodeGen_CPU::sym_exists;
-    using CodeGen_CPU::buffer_dev_dirty_ptr;
-    using CodeGen_CPU::buffer_host_dirty_ptr;
-    using CodeGen_CPU::buffer_elem_size_ptr;
-    using CodeGen_CPU::buffer_min_ptr;
-    using CodeGen_CPU::buffer_stride_ptr;
-    using CodeGen_CPU::buffer_extent_ptr;
-    using CodeGen_CPU::buffer_host_ptr;
-    using CodeGen_CPU::buffer_dev;
-    using CodeGen_CPU::buffer_dev_ptr;
-    using CodeGen_CPU::llvm_type_of;
-    using CodeGen_CPU::create_alloca_at_entry;
-    using CodeGen_CPU::i8;
-    using CodeGen_CPU::i32;
-    using CodeGen_CPU::i64;
-    using CodeGen_CPU::buffer_t_type;
-    using CodeGen_CPU::allocations;
-
-    /** Nodes for which we need to override default behavior for the GPU runtime */
-    // @{
-    void visit(const For *);
-    // @}
-
-    /** Finds and links in the CUDA runtime symbols prior to jitting */
-    void jit_init(llvm::ExecutionEngine *ee, llvm::Module *mod);
-
-    /** Reaches inside the module at sets it to use a single shared
-     * cuda context */
-    void jit_finalize(llvm::ExecutionEngine *ee, llvm::Module *mod,
-                      std::vector<JITCompiledModule::CleanupRoutine> *cleanup_routines);
-
-    static bool lib_cuda_linked;
-
-    static CodeGen_GPU_Dev* make_dev(Target);
-
-    llvm::Value *get_module_state();
-
-private:
-    /** Child code generator for device kernels. */
-    CodeGen_GPU_Dev *cgdev;
-};
-
-
-}}
-
-#endif
-#ifndef HALIDE_CODEGEN_PTX_DEV_H
-#define HALIDE_CODEGEN_PTX_DEV_H
-
-/** \file
- * Defines the code-generator for producing CUDA host code
- */
-
-#ifndef HALIDE_CODEGEN_GPU_DEV_H
-#define HALIDE_CODEGEN_GPU_DEV_H
-
-/** \file
- * Defines the code-generator interface for producing GPU device code
- */
-
-
-namespace Halide {
-namespace Internal {
-
-/** A bit more information attached to an argument useful for GPU backends. */
-struct GPU_Argument : public Argument {
-    /** The static size of the argument if known, or zero otherwise. */
-    size_t size;
-
-    GPU_Argument() : size(0) {}
-    GPU_Argument(const std::string &_name, bool _is_buffer, Type _type) :
-        Argument(_name, _is_buffer, _type), size(0) {}
-    GPU_Argument(const std::string &_name, bool _is_buffer, Type _type,
-                 size_t _size) :
-        Argument(_name, _is_buffer, _type), size(_size) {}
-};
-
-/** A code generator that emits GPU code from a given Halide stmt. */
-struct CodeGen_GPU_Dev {
-    virtual ~CodeGen_GPU_Dev();
-
-    /** Compile a GPU kernel into the module. This may be called many times
-     * with different kernels, which will all be accumulated into a single
-     * source module shared by a given Halide pipeline. */
-    virtual void add_kernel(Stmt stmt,
-                            std::string name,
-                            const std::vector<GPU_Argument> &args) = 0;
-
-    /** (Re)initialize the GPU kernel module. This is separate from compile,
-     * since a GPU device module will often have many kernels compiled into it
-     * for a single pipeline. */
-    virtual void init_module() = 0;
-
-    virtual std::vector<char> compile_to_src() = 0;
-
-    virtual std::string get_current_kernel_name() = 0;
-
-    virtual void dump() = 0;
-
-    static bool is_gpu_var(const std::string &name);
-    static bool is_gpu_block_var(const std::string &name);
-    static bool is_gpu_thread_var(const std::string &name);
-
-    /** Checks if expr is block uniform, i.e. does not depend on a thread
-     * var. */
-    static bool is_block_uniform(Expr expr);
-    /** Checks if the buffer is a candidate for constant storage. Most
-     * GPUs (APIs) support a constant memory storage class that cannot be
-     * written to and performs well for block uniform accesses. */
-    static bool is_buffer_constant(Stmt kernel, const std::string &buffer);
-};
-
-}}
-
-#endif
-
-namespace llvm {
-class BasicBlock;
-}
-
-namespace Halide {
-namespace Internal {
-
-/** A code generator that emits GPU code from a given Halide stmt. */
-class CodeGen_PTX_Dev : public CodeGen, public CodeGen_GPU_Dev {
-public:
-    friend class CodeGen_GPU_Host<CodeGen_X86>;
-    friend class CodeGen_GPU_Host<CodeGen_ARM>;
-
-    /** Create a PTX device code generator. */
-    CodeGen_PTX_Dev(Target host);
-
-    void add_kernel(Stmt stmt,
-                    std::string name,
-                    const std::vector<GPU_Argument> &args);
-
-    /** (Re)initialize the PTX module. This is separate from compile, since
-     * a PTX device module will often have many kernels compiled into it for
-     * a single pipeline. */
-    void init_module();
-
-    static void test();
-
-    std::vector<char> compile_to_src();
-    std::string get_current_kernel_name();
-
-    void dump();
-
-protected:
-    using CodeGen::visit;
-
-    /** We hold onto the basic block at the start of the device
-     * function in order to inject allocas */
-    llvm::BasicBlock *entry_block;
-
-    /** Nodes for which we need to override default behavior for the GPU runtime */
-    // @{
-    void visit(const For *);
-    void visit(const Allocate *);
-    void visit(const Free *);
-    // @}
-
-    std::string march() const;
-    std::string mcpu() const;
-    std::string mattrs() const;
-    bool use_soft_float_abi() const;
-
-    /** Map from simt variable names (e.g. foo.__block_id_x) to the llvm
-     * ptx intrinsic functions to call to get them. */
-    std::string simt_intrinsic(const std::string &name);
-};
-
-}}
-
-#endif
-#ifndef HALIDE_CODEGEN_OPENCL_DEV_H
-#define HALIDE_CODEGEN_OPENCL_DEV_H
-
-/** \file
- * Defines the code-generator for producing OpenCL C kernel code
- */
-
-#include <sstream>
-
-
-namespace Halide {
-namespace Internal {
-
-class CodeGen_OpenCL_Dev : public CodeGen_GPU_Dev {
-public:
-    CodeGen_OpenCL_Dev(Target target);
-
-    /** Compile a GPU kernel into the module. This may be called many times
-     * with different kernels, which will all be accumulated into a single
-     * source module shared by a given Halide pipeline. */
-    void add_kernel(Stmt stmt,
-                    std::string name,
-                    const std::vector<GPU_Argument> &args);
-
-    /** (Re)initialize the GPU kernel module. This is separate from compile,
-     * since a GPU device module will often have many kernels compiled into it
-     * for a single pipeline. */
-    void init_module();
-
-    std::vector<char> compile_to_src();
-
-    std::string get_current_kernel_name();
-
-    void dump();
-
-protected:
-
-    class CodeGen_OpenCL_C : public CodeGen_C {
-    public:
-        CodeGen_OpenCL_C(std::ostream &s) : CodeGen_C(s) {}
-        void add_kernel(Stmt stmt,
-                        std::string name,
-                        const std::vector<GPU_Argument> &args);
-
-    protected:
-        using CodeGen_C::visit;
-        std::string print_type(Type type);
-        std::string print_reinterpret(Type type, Expr e);
-
-        std::string get_memory_space(const std::string &);
-
-        void visit(const For *);
-        void visit(const Ramp *op);
-        void visit(const Broadcast *op);
-        void visit(const Load *op);
-        void visit(const Store *op);
-        void visit(const Cast *op);
-        void visit(const Allocate *op);
-        void visit(const Free *op);
-    };
-
-    std::ostringstream src_stream;
-    std::string cur_kernel_name;
-    CodeGen_OpenCL_C clc;
-    Target target;
-};
-
-}}
-
-#endif
-#ifndef DEINTERLEAVE_H
-#define DEINTERLEAVE_H
-
-/** \file
- *
- * Defines methods for splitting up a vector into the even lanes and
- * the odd lanes. Useful for optimizing expressions such as select(x %
- * 2, f(x/2), g(x/2))
- */
-
-
-namespace Halide {
-namespace Internal {
-
-/** Extract the odd-numbered lanes in a vector */
-Expr extract_odd_lanes(Expr a);
-
-/** Extract the even-numbered lanes in a vector */
-Expr extract_even_lanes(Expr a);
-
-/** Extract the nth lane of a vector */
-Expr extract_lane(Expr vec, int lane);
-
-/** Look through a statement for expressions of the form select(ramp %
- * 2 == 0, a, b) and replace them with calls to an interleave
- * intrinsic */
-Stmt rewrite_interleavings(Stmt s);
-
-void deinterleave_vector_test();
-
-}
-}
-
-#endif
-#ifndef HALIDE_DERIVATIVE_H
-#define HALIDE_DERIVATIVE_H
-
-/** \file
- *
- * Methods for taking derivatives of halide expressions. Not currently used anywhere
- */
-
-
-namespace Halide {
-namespace Internal {
-
-/** Compute the analytic derivative of the expression with respect to
- * the variable. May returned an undefined Expr if it's
- * non-differentiable. */
-//Expr derivative(Expr expr, const string &var);
-
-/**
- * Compute the finite difference version of the derivative:
- * expr(var+1) - expr(var). The reason to do this as a derivative,
- * instead of just explicitly constructing expr(var+1) -
- * expr(var), is so that we don't have to do so much
- * simplification later. For example, the finite-difference
- * derivative of 2*x is trivially 2, whereas 2*(x+1) - 2*x may or
- * may not simplify down to 2, depending on the quality of our
- * simplification routine.
- *
- * Most rules for the finite difference and the true derivative
- * are the same. The quotient and product rules are not.
- *
- */
-Expr finite_difference(Expr expr, const std::string &var);
-
-/**
- * Detect whether an expression is monotonic increasing in a variable,
- * decreasing, or unknown. Returns -1, 0, or 1 for decreasing,
- * unknown, and increasing.
- */
-enum MonotonicResult {Constant, MonotonicIncreasing, MonotonicDecreasing, Unknown};
-MonotonicResult is_monotonic(Expr e, const std::string &var);
-
-}
-}
-
-#endif
-#ifndef HALIDE_ONE_TO_ONE_H
-#define HALIDE_ONE_TO_ONE_H
-
-/** \file
- * 
- * Methods for determining if an Expr represents a one-to-one function
- * in its Variables.
- */
-
-
-namespace Halide { 
-namespace Internal {
-    
-/** Conservatively determine whether an integer expression is
- * one-to-one in its variables. For now this means it contains a
- * single variable and its derivative is provably strictly positive or
- * strictly negative. */
-bool is_one_to_one(Expr expr);
-
-void is_one_to_one_test();
-
-}
-}
-
-#endif
-#ifndef HALIDE_EXTERN_H
-#define HALIDE_EXTERN_H
-
-
-/** \file
- *
- * Convenience macros that lift functions that take C types into
- * functions that take and return exprs, and call the original
- * function at runtime under the hood. See test/c_function.cpp for
- * example usage.
- */
-
-#define _halide_check_arg_type(t, name, e, n)                     \
-    _halide_user_assert(e.type() == t) << "Type mismatch for argument " << n << " to extern function " << #name << ". Type expected is " << t << " but the argument " << e << " has type " << e.type() << ".\n";
-
-#define HalideExtern_1(rt, name, t1)                                    \
-    Halide::Expr name(Halide::Expr a1) {                                \
-        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);     \
-        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1), Halide::Internal::Call::Extern); \
-    }
-
-#define HalideExtern_2(rt, name, t1, t2)                                \
-    Halide::Expr name(Halide::Expr a1, Halide::Expr a2) {               \
-        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                        \
-        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                        \
-        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2), Halide::Internal::Call::Extern); \
-    }
-
-#define HalideExtern_3(rt, name, t1, t2, t3)                            \
-    Halide::Expr name(Halide::Expr a1, Halide::Expr a2, Halide::Expr a3) { \
-        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                                \
-        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                                \
-        _halide_check_arg_type(Halide::type_of<t3>(), name, a3, 3);                                \
-        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2, a3), Halide::Internal::Call::Extern); \
-    }
-
-#define HalideExtern_4(rt, name, t1, t2, t3, t4)                        \
-    Halide::Expr name(Halide::Expr a1, Halide::Expr a2, Halide::Expr a3, Halide::Expr a4) { \
-        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                                \
-        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                                \
-        _halide_check_arg_type(Halide::type_of<t3>(), name, a3, 3);                                \
-        _halide_check_arg_type(Halide::type_of<t4>(), name, a4, 4);                                \
-        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2, a3, a4), Halide::Internal::Call::Extern); \
-  }
-
-#define HalideExtern_5(rt, name, t1, t2, t3, t4, t5)                       \
-    Halide::Expr name(Halide::Expr a1, Halide::Expr a2, Halide::Expr a3, Halide::Expr a4, Halide::Expr a5) { \
-        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                                \
-        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                                \
-        _halide_check_arg_type(Halide::type_of<t3>(), name, a3, 3);                                \
-        _halide_check_arg_type(Halide::type_of<t4>(), name, a4, 4);                                \
-        _halide_check_arg_type(Halide::type_of<t5>(), name, a5, 5);                                \
-        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2, a3, a4, a5), Halide::Internal::Call::Extern); \
-  }
-
-#endif
-#ifndef HALIDE_FUNC_H
-#define HALIDE_FUNC_H
-
-/** \file
- *
- * Defines Func - the front-end handle on a halide function, and related classes.
- */
-
-#ifndef HALIDE_VAR_H
-#define HALIDE_VAR_H
-
-/** \file
- * Defines the Var - the front-end variable
- */
-
-#include <string>
-#include <sstream>
-
-namespace Halide {
-
-/** A Halide variable, to be used when defining functions. It is just
- * a name, and can be reused in places where no name conflict will
- * occur. It can be used in the left-hand-side of a function
- * definition, or as an Expr. As an Expr, it always has type
- * Int(32). */
-class Var {
-    std::string _name;
-public:
-    /** Construct a Var with the given name */
-    Var(const std::string &n) : _name(n) {
-        // Make sure we don't get a unique name with the same name as
-        // this later:
-        Internal::unique_name(n, false);
-    }
-
-    /** Construct a Var with an automatically-generated unique name. */
-    Var() : _name(Internal::make_entity_name(this, "Halide::Var", 'v')) {}
-
-    /** Get the name of a Var */
-    const std::string &name() const {return _name;}
-
-    /** Test if two Vars are the same. This simply compares the names. */
-    bool same_as(const Var &other) const {return _name == other._name;}
-
-    /** Implicit var constructor. Implicit variables are injected
-     * automatically into a function call if the number of arguments
-     * to the function are fewer than its dimensionality and a
-     * placeholder ("_") appears in its argument list. Defining a
-     * function to equal an expression containing implicit variables
-     * similarly appends those implicit variables, in the same order,
-     * to the left-hand-side of the definition where the placeholder
-     * ('_') appears.
-     *
-     * For example, consider the definition:
-     *
-     \code
-     Func f, g;
-     Var x, y;
-     f(x, y) = 3;
-     \endcode
-     *
-     * A call to f with the placeholder symbol \ref _
-     * will have implicit arguments injected automatically, so f(2, \ref _)
-     * is equivalent to f(2, \ref _0), where \ref _0 = Var::implicit(0), and f(\ref _)
-     * (and indeed f when cast to an Expr) is equivalent to f(\ref _0, \ref _1).
-     * The following definitions are all equivalent, differing only in the
-     * variable names.
-     *
-     \code
-     g(_) = f*3;
-     g(_) = f(_)*3;
-     g(x, _) = f(x, _)*3;
-     g(x, y) = f(x, y)*3;
-     \endcode
-     *
-     * These are expanded internally as follows:
-     *
-     \code
-     g(_0, _1) = f(_0, _1)*3;
-     g(_0, _1) = f(_0, _1)*3;
-     g(x, _0) = f(x, _0)*3;
-     g(x, y) = f(x, y)*3;
-     \endcode
-     *
-     * The following, however, defines g as four dimensional:
-     \code
-     g(x, y, _) = f*3;
-     \endcode
-     *
-     * It is equivalent to:
-     *
-     \code
-     g(x, y, _0, _1) = f(_0, _1)*3;
-     \endcode
-     *
-     * Expressions requiring differing numbers of implicit variables
-     * can be combined. The left-hand-side of a definition injects
-     * enough implicit variables to cover all of them:
-     *
-     \code
-     Func h;
-     h(x) = x*3;
-     g(x) = h + (f + f(x)) * f(x, y);
-     \endcode
-     *
-     * expands to:
-     *
-     \code
-     Func h;
-     h(x) = x*3;
-     g(x, _0, _1) = h(_0) + (f(_0, _1) + f(x, _0)) * f(x, y);
-     \endcode
-     *
-     * The first ten implicits, _0 through _9, are predeclared in this
-     * header and can be used for scheduling. They should never be
-     * used as arguments in a declaration or used in a call.
-     *
-     * While it is possible to use Var::implicit or the predeclared
-     * implicits to create expressions that can be treated as small
-     * anonymous functions (e.g. Func(_0 + _1)) this is considered
-     * poor style. Instead use \ref lambda.
-     */
-    static Var implicit(int n) {
-        std::ostringstream str;
-        str << "_" << n;
-        return Var(str.str());
-    }
-
-    /** Return whether a variable name is of the form for an implicit argument.
-     * TODO: This is almost guaranteed to incorrectly fire on user
-     * declared variables at some point. We should likely prevent
-     * user Var declarations from making names of this form.
-     */
-    //{
-    static bool is_implicit(const std::string &name) {
-        return Internal::starts_with(name, "_") &&
-            name.find_first_not_of("0123456789", 1) == std::string::npos;
-    }
-    bool is_implicit() const {
-        return is_implicit(name());
-    }
-    //}
-
-    /** Return the argument index for a placeholder argument given its
-     *  name. Returns 0 for \ref _0, 1 for \ref _1, etc. Returns -1 if
-     *  the variable is not of implicit form.
-     */
-    //{
-    static int implicit_index(const std::string &name) {
-        return is_implicit(name) ? atoi(name.c_str() + 1) : -1;
-    }
-    int implicit_index() const {
-        return implicit_index(name());
-    }
-    //}
-
-    /** Test if a var is the placeholder variable \ref _ */
-    //{
-    static bool is_placeholder(const std::string &name) {
-        return name == "_";
-    }
-    bool is_placeholder() const {
-        return is_placeholder(name());
-    }
-    //}
-
-    /** A Var can be treated as an Expr of type Int(32) */
-    operator Expr() const {
-        return Internal::Variable::make(Int(32), name());
-    }
-
-    /** Vars to use for scheduling producer/consumer pairs on the gpu. */
-    // @{
-    static Var gpu_blocks() {
-        return Var("__block_id_x");
-    }
-    static Var gpu_threads() {
-        return Var("__thread_id_x");
-    }
-    // @}
-
-    /** A Var that represents the location outside the outermost loop. */
-    static Var outermost() {
-        return Var("__outermost");
-    }
-
-};
-
-/** A placeholder variable for infered arguments. See \ref Var::implicit */
-EXPORT extern Var _;
-
-/** The first ten implicit Vars for use in scheduling. See \ref Var::implicit */
-// @{
-EXPORT extern Var _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
-// @}
-
-}
-
-#endif
-#ifndef HALIDE_PARAM_H
-#define HALIDE_PARAM_H
-
-/** \file
- *
- * Classes for declaring scalar and image parameters to halide pipelines
- */
-
-#include <sstream>
-#include <vector>
-
-
-namespace Halide {
-
-/** A scalar parameter to a halide pipeline. If you're jitting, this
- * should be bound to an actual value of type T using the set method
- * before you realize the function uses this. If you're statically
- * compiling, this param should appear in the argument list. */
-template<typename T>
-class Param {
-    /** A reference-counted handle on the internal parameter object */
-    Internal::Parameter param;
-
-public:
-    /** Construct a scalar parameter of type T with a unique
-     * auto-generated name */
-    Param() : param(type_of<T>(), false, Internal::make_entity_name(this, "Halide::Param<?", 'p')) {}
-
-    /** Construct a scalar parameter of type T with the given name */
-    Param(const std::string &n) : param(type_of<T>(), false, n) {}
-
-    /** Get the name of this parameter */
-    const std::string &name() const {
-        return param.name();
-    }
-
-    /** Get the current value of this parameter. Only meaningful when jitting. */
-    NO_INLINE T get() const {
-        return param.get_scalar<T>();
-    }
-
-    /** Set the current value of this parameter. Only meaningful when jitting */
-    NO_INLINE void set(T val) {
-        param.set_scalar<T>(val);
-    }
-
-    /** Get a pointer to the location that stores the current value of
-     * this parameter. Only meaningful for jitting. */
-    NO_INLINE T *get_address() const {
-        return (T *)(param.get_scalar_address());
-    }
-
-    /** Get the halide type of T */
-    Type type() const {
-        return type_of<T>();
-    }
-
-    /** Get or set the possible range of this parameter. Use undefined
-     * Exprs to mean unbounded. */
-    // @{
-    void set_range(Expr min, Expr max) {
-        set_min_value(min);
-        set_max_value(max);
-    }
-
-    void set_min_value(Expr min) {
-        if (min.type() != type_of<T>()) {
-            min = Internal::Cast::make(type_of<T>(), min);
-        }
-        param.set_min_value(min);
-    }
-
-    void set_max_value(Expr max) {
-        if (max.type() != type_of<T>()) {
-            max = Internal::Cast::make(type_of<T>(), max);
-        }
-        param.set_max_value(max);
-    }
-
-    Expr get_min_value() {
-        return param.get_min_value();
-    }
-
-    Expr get_max_value() {
-        return param.get_max_value();
-    }
-    // @}
-
-    /** You can use this parameter as an expression in a halide
-     * function definition */
-    operator Expr() const {
-        return Internal::Variable::make(type_of<T>(), name(), param);
-    }
-
-    /** Using a param as the argument to an external stage treats it
-     * as an Expr */
-    operator ExternFuncArgument() const {
-        return Expr(*this);
-    }
-
-    /** Construct the appropriate argument matching this parameter,
-     * for the purpose of generating the right type signature when
-     * statically compiling halide pipelines. */
-    operator Argument() const {
-        return Argument(name(), false, type());
-    }
-};
-
-/** Returns a Param corresponding to a pointer to a user context
- * structure; when the Halide function that takes such a parameter
- * calls a function from the Halide runtime (e.g. halide_printf()), it
- * passes the value of this pointer as the first argument to the
- * runtime function.  */
-inline Param<void *> user_context_param() {
-  return Param<void *>("__user_context");
-}
-
-/** A handle on the output buffer of a pipeline. Used to make static
- * promises about the output size and stride. */
-class OutputImageParam {
-protected:
-    /** A reference-counted handle on the internal parameter object */
-    Internal::Parameter param;
-
-    /** The dimensionality of this image. */
-    int dims;
-
-    void add_implicit_args_if_placeholder(std::vector<Expr> &args,
-                                          Expr last_arg,
-                                          int total_args,
-                                          bool *placeholder_seen) const;
-public:
-
-    /** Construct a NULL image parameter handle. */
-    OutputImageParam() : dims(0) {}
-
-    /** Construct an OutputImageParam that wraps an Internal Parameter object. */
-    EXPORT OutputImageParam(const Internal::Parameter &p, int d);
-
-    /** Get the name of this Param */
-    EXPORT const std::string &name() const;
-
-    /** Get the type of the image data this Param refers to */
-    EXPORT Type type() const;
-
-    /** Is this parameter handle non-NULL */
-    EXPORT bool defined();
-
-    /** Get an expression representing the minimum coordinates of this image
-     * parameter in the given dimension. */
-    EXPORT Expr min(int x) const;
-
-    /** Get an expression representing the extent of this image
-     * parameter in the given dimension */
-    EXPORT Expr extent(int x) const;
-
-    /** Get an expression representing the stride of this image in the
-     * given dimension */
-    EXPORT Expr stride(int x) const;
-
-    /** Set the extent in a given dimension to equal the given
-     * expression. Images passed in that fail this check will generate
-     * a runtime error. Returns a reference to the ImageParam so that
-     * these calls may be chained.
-     *
-     * This may help the compiler generate better
-     * code. E.g:
-     \code
-     im.set_extent(0, 100);
-     \endcode
-     * tells the compiler that dimension zero must be of extent 100,
-     * which may result in simplification of boundary checks. The
-     * value can be an arbitrary expression:
-     \code
-     im.set_extent(0, im.extent(1));
-     \endcode
-     * declares that im is a square image (of unknown size), whereas:
-     \code
-     im.set_extent(0, (im.extent(0)/32)*32);
-     \endcode
-     * tells the compiler that the extent is a multiple of 32. */
-    EXPORT OutputImageParam &set_extent(int dim, Expr extent);
-
-    /** Set the min in a given dimension to equal the given
-     * expression. Setting the mins to zero may simplify some
-     * addressing math. */
-    EXPORT OutputImageParam &set_min(int dim, Expr min);
-
-    /** Set the stride in a given dimension to equal the given
-     * value. This is particularly helpful to set when
-     * vectorizing. Known strides for the vectorized dimension
-     * generate better code. */
-    EXPORT OutputImageParam &set_stride(int dim, Expr stride);
-
-    /** Set the min and extent in one call. */
-    EXPORT OutputImageParam &set_bounds(int dim, Expr min, Expr extent);
-
-    /** Get the dimensionality of this image parameter */
-    EXPORT int dimensions() const;
-
-    /** Get an expression giving the minimum coordinate in dimension 0, which
-     * by convention is the coordinate of the left edge of the image */
-    EXPORT Expr left() const;
-
-    /** Get an expression giving the maximum coordinate in dimension 0, which
-     * by convention is the coordinate of the right edge of the image */
-    EXPORT Expr right() const;
-
-    /** Get an expression giving the minimum coordinate in dimension 1, which
-     * by convention is the top of the image */
-    EXPORT Expr top() const;
-
-    /** Get an expression giving the maximum coordinate in dimension 1, which
-     * by convention is the bottom of the image */
-    EXPORT Expr bottom() const;
-
-    /** Get an expression giving the extent in dimension 0, which by
-     * convention is the width of the image */
-    EXPORT Expr width() const;
-
-    /** Get an expression giving the extent in dimension 1, which by
-     * convention is the height of the image */
-    EXPORT Expr height() const;
-
-    /** Get an expression giving the extent in dimension 2, which by
-     * convention is the channel-count of the image */
-    EXPORT Expr channels() const;
-
-    /** Get at the internal parameter object representing this ImageParam. */
-    EXPORT Internal::Parameter parameter() const;
-
-    /** Construct the appropriate argument matching this parameter,
-     * for the purpose of generating the right type signature when
-     * statically compiling halide pipelines. */
-    EXPORT operator Argument() const;
-
-    /** Using a param as the argument to an external stage treats it
-     * as an Expr */
-    EXPORT operator ExternFuncArgument() const;
-};
-
-/** An Image parameter to a halide pipeline. E.g., the input image. */
-class ImageParam : public OutputImageParam {
-
-public:
-
-    /** Construct a NULL image parameter handle. */
-    ImageParam() : OutputImageParam() {}
-
-    /** Construct an image parameter of the given type and
-     * dimensionality, with an auto-generated unique name. */
-    EXPORT ImageParam(Type t, int d);
-
-    /** Construct an image parameter of the given type and
-     * dimensionality, with the given name */
-    EXPORT ImageParam(Type t, int d, const std::string &n);
-
-    /** Bind a buffer or image to this ImageParam. Only relevant for jitting */
-    EXPORT void set(Buffer b);
-
-    /** Get the buffer bound to this ImageParam. Only relevant for jitting */
-    EXPORT Buffer get() const;
-
-    /** Construct an expression which loads from this image
-     * parameter. The location is extended with enough implicit
-     * variables to match the dimensionality of the image
-     * (see \ref Var::implicit)
-     */
-    // @{
-    EXPORT Expr operator()() const;
-    EXPORT Expr operator()(Expr x) const;
-    EXPORT Expr operator()(Expr x, Expr y) const;
-    EXPORT Expr operator()(Expr x, Expr y, Expr z) const;
-    EXPORT Expr operator()(Expr x, Expr y, Expr z, Expr w) const;
-    EXPORT Expr operator()(std::vector<Expr>) const;
-    EXPORT Expr operator()(std::vector<Var>) const;
-    // @}
-
-    /** Treating the image parameter as an Expr is equivalent to call
-     * it with no arguments. For example, you can say:
-     *
-     \code
-     ImageParam im(UInt(8), 2);
-     Func f;
-     f = im*2;
-     \endcode
-     *
-     * This will define f as a two-dimensional function with value at
-     * position (x, y) equal to twice the value of the image parameter
-     * at the same location.
-     */
-    operator Expr() const {
-        return (*this)(_);
-    }
-
-};
-
-}
-
-#endif
-#ifndef HALIDE_RDOM_H
-#define HALIDE_RDOM_H
-
-/** \file
- * Defines the front-end syntax for reduction domains and reduction
- * variables.
- */
-
-
-namespace Halide {
-
-/** A reduction variable represents a single dimension of a reduction
- * domain (RDom). Don't construct them directly, instead construct an
- * RDom, and use RDom::operator[] to get at the variables. For
- * single-dimensional reduction domains, you can just cast a
- * single-dimensional RDom to an RVar. */
-class RVar {
-    std::string _name;
-    Expr _min, _extent;
-    Internal::ReductionDomain _domain;
-public:
-    /** An empty reduction variable. */
-    RVar() : _name(Internal::make_entity_name(this, "Halide::RVar", 'r')) {}
-
-    /** Construct an RVar with the given name */
-    explicit RVar(const std::string &n) : _name(n) {
-        // Make sure we don't get a unique name with the same name as
-        // this later:
-        Internal::unique_name(n, false);
-    }
-
-    /** Construct a reduction variable with the given name and
-     * bounds. Must be a member of the given reduction domain. */
-    RVar(std::string name, Expr min, Expr extent, Internal::ReductionDomain domain) :
-        _name(name), _min(min), _extent(extent), _domain(domain) {}
-
-    /** The minimum value that this variable will take on */
-    Expr min() const {return _min;}
-
-    /** The number that this variable will take on. The maximum value
-     * of this variable will be min() + extent() - 1 */
-    Expr extent() const {return _extent;}
-
-    /** The reduction domain this is associated with. */
-    Internal::ReductionDomain domain() const {return _domain;}
-
-    /** The name of this reduction variable */
-    const std::string &name() const {return _name;}
-
-    /** Reduction variables can be used as expressions. */
-    EXPORT operator Expr() const;
-};
-
-/** A multi-dimensional domain over which to iterate. Used when
- * defining functions as reductions.
- *
- * A reduction is a function with a two-part definition. It has an
- * initial value, which looks much like a pure function, and an update
- * rule, which refers to some RDom. Evaluating such a function first
- * initializes it over the required domain (which is inferred based on
- * usage), and then runs update rule for all points in the RDom. For
- * example:
- *
- \code
- Func f;
- Var x;
- RDom r(0, 10);
- f(x) = x; // the initial value
- f(r) = f(r) * 2;
- Image<int> result = f.realize(10);
- \endcode
- *
- * This function creates a single-dimensional buffer of size 10, in
- * which element x contains the value x*2. Internally, first the
- * initialization rule fills in x at every site, and then the update
- * rule doubles every site.
- *
- * One use of reductions is to build a function recursively (pure
- * functions in halide cannot be recursive). For example, this
- * function fills in an array with the first 20 fibonacci numbers:
- *
- \code
- Func f;
- Var x;
- RDom r(2, 18);
- f(x) = 1;
- f(r) = f(r-1) + f(r-2);
- \endcode
- *
- * Another use of reductions is to perform scattering operations, as
- * unlike a pure function declaration, the left-hand-side of a
- * reduction definition may contain general expressions:
- *
- \code
- ImageParam input(UInt(8), 2);
- Func histogram;
- Var x;
- RDom r(input); // Iterate over all pixels in the input
- histogram(x) = 0;
- histogram(input(r.x, r.y)) = histogram(input(r.x, r.y)) + 1;
- \endcode
- *
- * A reduction definition may also be multi-dimensional. This example
- * computes a summed-area table by first summing horizontally and then
- * vertically:
- *
- \code
- ImageParam input(Float(32), 2);
- Func sum_x, sum_y;
- Var x, y;
- RDom r(input);
- sum_x(x, y)     = input(x, y);
- sum_x(r.x, r.y) = sum_x(r.x, r.y) + sum_x(r.x-1, r.y);
- sum_y(x, y)     = sum_x(x, y);
- sum_y(r.x, r.y) = sum_y(r.x, r.y) + sum_y(r.x, r.y-1);
- \endcode
- *
- * You can also mix pure dimensions with reduction variables. In the
- * previous example, note that there's no need for the y coordinate in
- * sum_x to be traversed serially. The sum within each row is entirely
- * independent. The rows could be computed in parallel, or in a
- * different order, without changing the meaning. Therefore, we can
- * instead write this definition as follows:
- *
- \code
- ImageParam input(Float(32), 2);
- Func sum_x, sum_y;
- Var x, y;
- RDom r(input);
- sum_x(x, y)   = input(x, y);
- sum_x(r.x, y) = sum_x(r.x, y) + sum_x(r.x-1, y);
- sum_y(x, y)   = sum_x(x, y);
- sum_y(x, r.y) = sum_y(x, r.y) + sum_y(x, r.y-1);
- \endcode
- *
- * This lets us schedule it more flexibly. You can now parallelize the
- * update step of sum_x over y by calling:
- \code
- sum_x.update().parallel(y).
- \endcode
- *
- * Note that calling sum_x.parallel(y) only parallelizes the
- * initialization step, and not the update step! Scheduling the update
- * step of a reduction must be done using the handle returned by
- * \ref Func::update(). This code parallelizes both the initialization
- * step and the update step:
- *
- \code
- sum_x.parallel(y);
- sum_x.update().parallel(y);
- \endcode
- *
- * When you mix reduction variables and pure dimensions, the reduction
- * domain is traversed outermost. That is, for each point in the
- * reduction domain, the inferred pure domain is traversed in its
- * entirety. For the above example, this means that sum_x walks down
- * the columns, and sum_y walks along the rows. This may not be
- * cache-coherent, but you may not reorder these dimensions using the
- * schedule, as it risks changing the meaning of your function (even
- * though it doesn't in this case). The solution lies in clever
- * scheduling. If we say:
- *
- \code
- sum_x.compute_at(sum_y, r.y);
- \endcode
- *
- * Then the sum in x is computed only as necessary for each scanline
- * of the sum in y. This not only results in sum_x walking along the
- * rows, it also improves the locality of the entire pipeline.
- */
-class RDom {
-    Internal::ReductionDomain dom;
-public:
-    /** Construct an undefined reduction domain. */
-    EXPORT RDom() {}
-
-    /** Construct a single-dimensional reduction domain with the given
-     * name. If the name is left blank, a unique one is
-     * auto-generated. */
-    EXPORT RDom(Expr min, Expr extent, std::string name = "");
-
-    /** Construct a two-dimensional reduction domain with the given
-     * name. If the name is left blank, a unique one is
-     * auto-generated. */
-    EXPORT RDom(Expr min0, Expr extent0, Expr min1, Expr extent1, std::string name = "");
-
-    /** Construct a three-dimensional reduction domain with the given
-     * name. If the name is left blank, a unique one is
-     * auto-generated. */
-    EXPORT RDom(Expr min0, Expr extent0, Expr min1, Expr extent1, Expr min2, Expr extent2, std::string name = "");
-
-    /** Construct a four-dimensional reduction domain with the given
-     * name. If the name is left blank, a unique one is
-     * auto-generated. */
-    EXPORT RDom(Expr min0, Expr extent0, Expr min1, Expr extent1, Expr min2, Expr extent2, Expr min3, Expr extent3, std::string name = "");
-    /** Construct a reduction domain that iterates over all points in
-     * a given Buffer, Image, or ImageParam. Has the same
-     * dimensionality as the argument. */
-    // @{
-    EXPORT RDom(Buffer);
-    EXPORT RDom(ImageParam);
-    // @}
-
-    /** Construct a reduction domain that wraps an Internal ReductionDomain object. */
-    EXPORT RDom(Internal::ReductionDomain d);
-
-    /** Get at the internal reduction domain object that this wraps. */
-    Internal::ReductionDomain domain() const {return dom;}
-
-    /** Check if this reduction domain is non-NULL */
-    bool defined() const {return dom.defined();}
-
-    /** Compare two reduction domains for equality of reference */
-    bool same_as(const RDom &other) const {return dom.same_as(other.dom);}
-
-    /** Get the dimensionality of a reduction domain */
-    EXPORT int dimensions() const;
-
-    /** Get at one of the dimensions of the reduction domain */
-    EXPORT RVar operator[](int);
-
-    /** Single-dimensional reduction domains can be used as RVars directly. */
-    EXPORT operator RVar() const;
-
-    /** Single-dimensional reduction domains can be also be used as Exprs directly. */
-    EXPORT operator Expr() const;
-
-    /** Direct access to the four dimensions of the reduction
-     * domain. Some of these dimensions may be undefined if the
-     * reduction domain has fewer than four dimensions. */
-    // @{
-    RVar x, y, z, w;
-    // @}
-};
-
-/** Emit an RVar in a human-readable form */
-std::ostream &operator<<(std::ostream &stream, RVar);
-
-/** Emit an RDom in a human-readable form. */
-std::ostream &operator<<(std::ostream &stream, RDom);
-}
-
-#endif
-#ifndef HALIDE_IMAGE_H
-#define HALIDE_IMAGE_H
-
-/** \file
- * Defines Halide's Image data type
- */
-
-#ifndef HALIDE_TUPLE_H
-#define HALIDE_TUPLE_H
-
-/** \file
- *
- * Defines Tuple - the front-end handle on small arrays of expressions.
- */
-
 #ifndef HALIDE_IR_OPERATOR_H
 #define HALIDE_IR_OPERATOR_H
 
@@ -6126,6 +2697,14 @@ EXPORT bool is_positive_const(Expr e);
 /** Is the expression a const (as defined by is_const), and also
  * strictly less than zero (in all lanes, if a vector expression) */
 EXPORT bool is_negative_const(Expr e);
+
+/** Is the expression a const (as defined by is_const), and also
+ * strictly less than zero (in all lanes, if a vector expression) and
+ * is its negative value representable. (This excludes the most
+ * negative value of the Expr's type from inclusion. Intended to be
+ * used when the value will be negated as part of simplification.)
+ */
+EXPORT bool is_negative_negatable_const(Expr e);
 
 /** Is the expression a const (as defined by is_const), and also equal
  * to zero (in all lanes, if a vector expression) */
@@ -7274,10 +3853,3332 @@ inline Expr undef() {
     return undef(type_of<T>());
 }
 
+/** Control the values used in the memoization cache key for memoize.
+ * Normally parameters and other external dependencies are
+ * automatically inferred and added to the cache key. The memoize_tag
+ * operator allows computing one expression and using either the
+ * computed value, or one or more other expressions in the cache key
+ * instead of the parameter dependencies of the computation. The
+ * single argument version is completely safe in that the cache key
+ * will use the actual computed value -- it is difficult or imposible
+ * to produce erroneous caching this way. The more-than-one argument
+ * version allows generating cache keys that do not uniquely identify
+ * the computation and thus can result in caching errors.
+ *
+ * A potential use for the single argument version is to handle a
+ * floating-point parameter that is quantized to a small
+ * integer. Mutliple values of the float will produce the same integer
+ * and moving the caching to using the integer for the key is more
+ * efficient.
+ *
+ * The main use for the more-than-one argument version is to provide
+ * cache key information for Handles and ImageParams, which otherwise
+ * are not allowed inside compute_cached operations. E.g. when passing
+ * a group of parameters to an external array function via a Handle,
+ * memoize_tag can be used to isolate the actual values used by that
+ * computation. If an ImageParam is a constant image with a persistent
+ * digest, memoize_tag can be used to key computations using that image
+ * on the digest. */
+// @{
+EXPORT Expr memoize_tag(Expr result, const std::vector<Expr> &cache_key_values);
+inline Expr memoize_tag(Expr result) {
+    return memoize_tag(result, std::vector<Expr>());
+}
+inline Expr memoize_tag(Expr result, Expr a) {
+    return memoize_tag(result, Internal::vec<Expr>(a));
+}
+inline Expr memoize_tag(Expr result, Expr a, Expr b) {
+    return memoize_tag(result, Internal::vec<Expr>(a, b));
+}
+inline Expr memoize_tag(Expr result, Expr a, Expr b, Expr c) {
+    return memoize_tag(result, Internal::vec<Expr>(a, b, c));
+}
+inline Expr memoize_tag(Expr result, Expr a, Expr b, Expr c, Expr d) {
+    return memoize_tag(result, Internal::vec<Expr>(a, b, c, d));
+}
+inline Expr memoize_tag(Expr result, Expr a, Expr b, Expr c, Expr d, Expr e) {
+    return memoize_tag(result, Internal::vec<Expr>(a, b, c, d, e));
+}
+inline Expr memoize_tag(Expr result, Expr a, Expr b, Expr c, Expr d, Expr e, Expr f) {
+    return memoize_tag(result, Internal::vec<Expr>(a, b, c, d, e, f));
+}
+inline Expr memoize_tag(Expr result, Expr a, Expr b, Expr c, Expr d, Expr e, Expr f, Expr g) {
+    return memoize_tag(result, Internal::vec<Expr>(a, b, c, d, e, f, g));
+}
+inline Expr memoize_tag(Expr result, Expr a, Expr b, Expr c, Expr d, Expr e, Expr f, Expr g, Expr h) {
+    return memoize_tag(result, Internal::vec<Expr>(a, b, c, d, e, f, g, h));
+}
+// @}
+
+}
+
+#endif
+#ifndef HALIDE_SCOPE_H
+#define HALIDE_SCOPE_H
+
+#include <string>
+#include <map>
+#include <stack>
+#include <utility>
+#include <iostream>
+
+
+/** \file
+ * Defines the Scope class, which is used for keeping track of names in a scope while traversing IR
+ */
+
+namespace Halide {
+namespace Internal {
+
+/** A stack which can store one item very efficiently. Using this
+ * instead of std::stack speeds up Scope substantially. */
+template<typename T>
+class SmallStack {
+private:
+    T _top;
+    std::vector<T> _rest;
+    bool _empty;
+
+public:
+    SmallStack() : _empty(true) {}
+
+    void pop() {
+        if (_rest.empty()) {
+            _empty = true;
+            _top = T();
+        } else {
+            _top = _rest.back();
+            _rest.pop_back();
+        }
+    }
+
+    void push(const T &t) {
+        if (_empty) {
+            _empty = false;
+        } else {
+            _rest.push_back(_top);
+        }
+        _top = t;
+    }
+
+    T top() const {
+        return _top;
+    }
+
+    T &top_ref() {
+        return _top;
+    }
+
+    bool empty() const {
+        return _empty;
+    }
+};
+
+/** A common pattern when traversing Halide IR is that you need to
+ * keep track of stuff when you find a Let or a LetStmt, and that it
+ * should hide previous values with the same name until you leave the
+ * Let or LetStmt nodes This class helps with that. */
+template<typename T>
+class Scope {
+private:
+    std::map<std::string, SmallStack<T> > table;
+
+    // Copying a scope object copies a large table full of strings and
+    // stacks. Bad idea.
+    Scope(const Scope<T> &);
+    Scope<T> &operator=(const Scope<T> &);
+
+    const Scope<T> *containing_scope;
+
+
+public:
+    Scope() : containing_scope(NULL) {}
+
+    /** Set the parent scope. If lookups fail in this scope, they
+     * check the containing scope before returning an error. Caller is
+     * responsible for managing the memory of the containing scope. */
+    void set_containing_scope(const Scope<T> *s) {
+        containing_scope = s;
+    }
+
+    /** A const ref to an empty scope. Useful for default function
+     * arguments, which would otherwise require a copy constructor
+     * (with llvm in c++98 mode) */
+    static const Scope<T> &empty_scope() {
+        static Scope<T> _empty_scope;
+        return _empty_scope;
+    }
+
+    /** Retrieve the value referred to by a name */
+    T get(const std::string &name) const {
+        typename std::map<std::string, SmallStack<T> >::const_iterator iter = table.find(name);
+        if (iter == table.end() || iter->second.empty()) {
+            if (containing_scope) {
+                return containing_scope->get(name);
+            } else {
+                internal_error << "Symbol '" << name << "' not found\n";
+            }
+        }
+        return iter->second.top();
+    }
+
+    /** Return a reference to an entry. Does not consider the containing scope. */
+    T &ref(const std::string &name) {
+        typename std::map<std::string, SmallStack<T> >::iterator iter = table.find(name);
+        if (iter == table.end() || iter->second.empty()) {
+            internal_error << "Symbol '" << name << "' not found\n";
+        }
+        return iter->second.top_ref();
+    }
+
+    /** Tests if a name is in scope */
+    bool contains(const std::string &name) const {
+        typename std::map<std::string, SmallStack<T> >::const_iterator iter = table.find(name);
+        if (iter == table.end() || iter->second.empty()) {
+            if (containing_scope) {
+                return containing_scope->contains(name);
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Add a new (name, value) pair to the current scope. Hide old
+     * values that have this name until we pop this name.
+     */
+    void push(const std::string &name, const T &value) {
+        table[name].push(value);
+    }
+
+    /** A name goes out of scope. Restore whatever its old value
+     * was (or remove it entirely if there was nothing else of the
+     * same name in an outer scope) */
+    void pop(const std::string &name) {
+        typename std::map<std::string, SmallStack<T> >::iterator iter = table.find(name);
+        internal_assert(iter != table.end()) << "Name not in symbol table: " << name << "\n";
+        iter->second.pop();
+        if (iter->second.empty()) {
+            table.erase(iter);
+        }
+    }
+
+    /** Iterate through the scope. Does not capture any containing scope. */
+    class const_iterator {
+        typename std::map<std::string, SmallStack<T> >::const_iterator iter;
+    public:
+        explicit const_iterator(const typename std::map<std::string, SmallStack<T> >::const_iterator &i) :
+            iter(i) {
+        }
+
+        const_iterator() {}
+
+        bool operator!=(const const_iterator &other) {
+            return iter != other.iter;
+        }
+
+        void operator++() {
+            ++iter;
+        }
+
+        const std::string &name() {
+            return iter->first;
+        }
+
+        const SmallStack<T> &stack() {
+            return iter->second;
+        }
+
+        const T &value() {
+            return iter->second.top();
+        }
+    };
+
+    const_iterator cbegin() const {
+        return const_iterator(table.begin());
+    }
+
+    const_iterator cend() const {
+        return const_iterator(table.end());
+    }
+
+    class iterator {
+        typename std::map<std::string, SmallStack<T> >::iterator iter;
+    public:
+        explicit iterator(typename std::map<std::string, SmallStack<T> >::iterator i) :
+            iter(i) {
+        }
+
+        iterator() {}
+
+        bool operator!=(const iterator &other) {
+            return iter != other.iter;
+        }
+
+        void operator++() {
+            ++iter;
+        }
+
+        const std::string &name() {
+            return iter->first;
+        }
+
+        SmallStack<T> &stack() {
+            return iter->second;
+        }
+
+        T &value() {
+            return iter->second.top_ref();
+        }
+    };
+
+    iterator begin() {
+        return iterator(table.begin());
+    }
+
+    iterator end() {
+        return iterator(table.end());
+    }
+
+    void swap(Scope<T> &other) {
+        table.swap(other.table);
+        std::swap(containing_scope, other.containing_scope);
+    }
+};
+
+template<typename T>
+std::ostream &operator<<(std::ostream &stream, const Scope<T>& s) {
+    stream << "{\n";
+    typename Scope<T>::const_iterator iter;
+    for (iter = s.cbegin(); iter != s.cend(); ++iter) {
+        stream << "  " << iter.name() << "\n";
+    }
+    stream << "}";
+    return stream;
+}
+
+}
+}
+
+#endif
+#include <vector>
+
+/** \file
+ * Methods for computing the upper and lower bounds of an expression,
+ * and the regions of a function read or written by a statement.
+ */
+
+namespace Halide {
+namespace Internal {
+
+struct Interval {
+    Expr min, max;
+    Interval() {}
+    Interval(Expr min, Expr max) : min(min), max(max) {}
+};
+
+typedef std::map<std::pair<std::string, int>, Interval> FuncValueBounds;
+
+/** Given an expression in some variables, and a map from those
+ * variables to their bounds (in the form of (minimum possible value,
+ * maximum possible value)), compute two expressions that give the
+ * minimum possible value and the maximum possible value of this
+ * expression. Max or min may be undefined expressions if the value is
+ * not bounded above or below.
+ *
+ * This is for tasks such as deducing the region of a buffer
+ * loaded by a chunk of code.
+ */
+Interval bounds_of_expr_in_scope(Expr expr,
+                                 const Scope<Interval> &scope,
+                                 const FuncValueBounds &func_bounds = FuncValueBounds());
+
+/** Represents the bounds of a region of arbitrary dimension. Zero
+ * dimensions corresponds to a scalar region. */
+struct Box {
+    /** The conditions under which this region may be touched. */
+    Expr used;
+
+    /** The bounds if it is touched. */
+    std::vector<Interval> bounds;
+
+    Box() {}
+    Box(size_t sz) : bounds(sz) {}
+    Box(const std::vector<Interval> &b) : bounds(b) {}
+
+    size_t size() const {return bounds.size();}
+    bool empty() const {return bounds.empty();}
+    Interval &operator[](int i) {return bounds[i];}
+    const Interval &operator[](int i) const {return bounds[i];}
+    void resize(size_t sz) {bounds.resize(sz);}
+    void push_back(const Interval &i) {bounds.push_back(i);}
+
+    /** Check if the used condition is defined and not trivially true. */
+    bool maybe_unused() const {return used.defined() && !is_one(used);}
+};
+
+// Expand box a to encompass box b
+void merge_boxes(Box &a, const Box &b);
+// Test if box a could possibly overlap box b.
+bool boxes_overlap(const Box &a, const Box &b);
+
+/** Compute rectangular domains large enough to cover all the 'Call's
+ * to each function that occurs within a given statement or
+ * expression. This is useful for figuring out what regions of things
+ * to evaluate. */
+// @{
+std::map<std::string, Box> boxes_required(Expr e,
+                                          const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                                          const FuncValueBounds &func_bounds = FuncValueBounds());
+std::map<std::string, Box> boxes_required(Stmt s,
+                                          const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                                          const FuncValueBounds &func_bounds = FuncValueBounds());
+// @}
+
+/** Compute rectangular domains large enough to cover all the
+ * 'Provides's to each function that occurs within a given statement
+ * or expression. */
+// @{
+std::map<std::string, Box> boxes_provided(Expr e,
+                                          const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                                          const FuncValueBounds &func_bounds = FuncValueBounds());
+std::map<std::string, Box> boxes_provided(Stmt s,
+                                          const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                                          const FuncValueBounds &func_bounds = FuncValueBounds());
+// @}
+
+/** Compute rectangular domains large enough to cover all the 'Call's
+ * and 'Provides's to each function that occurs within a given
+ * statement or expression. */
+// @{
+std::map<std::string, Box> boxes_touched(Expr e,
+                                         const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                                         const FuncValueBounds &func_bounds = FuncValueBounds());
+std::map<std::string, Box> boxes_touched(Stmt s,
+                                         const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                                         const FuncValueBounds &func_bounds = FuncValueBounds());
+// @}
+
+/** Variants of the above that are only concerned with a single function. */
+// @{
+Box box_required(Expr e, std::string fn,
+                 const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                 const FuncValueBounds &func_bounds = FuncValueBounds());
+Box box_required(Stmt s, std::string fn,
+                 const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                 const FuncValueBounds &func_bounds = FuncValueBounds());
+
+Box box_provided(Expr e, std::string fn,
+                 const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                 const FuncValueBounds &func_bounds = FuncValueBounds());
+Box box_provided(Stmt s, std::string fn,
+                 const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                 const FuncValueBounds &func_bounds = FuncValueBounds());
+
+Box box_touched(Expr e, std::string fn,
+                const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                const FuncValueBounds &func_bounds = FuncValueBounds());
+Box box_touched(Stmt s, std::string fn,
+                const Scope<Interval> &scope = Scope<Interval>::empty_scope(),
+                const FuncValueBounds &func_bounds = FuncValueBounds());
+// @}
+
+/** Compute the maximum and minimum possible value for each function
+ * in an environment. */
+FuncValueBounds compute_function_value_bounds(const std::vector<std::string> &order,
+                                              const std::map<std::string, Function> &env);
+
+void bounds_test();
+
+}
+}
+
+#endif
+#ifndef HALIDE_BOUNDS_INFERENCE_H
+#define HALIDE_BOUNDS_INFERENCE_H
+
+/** \file
+ * Defines the bounds_inference lowering pass.
+ */
+
+#include <map>
+
+
+namespace Halide {
+namespace Internal {
+
+/** Take a partially lowered statement that includes symbolic
+ * representations of the bounds over which things should be realized,
+ * and inject expressions defining those bounds.
+ */
+Stmt bounds_inference(Stmt,
+                      const std::vector<std::string> &realization_order,
+                      const std::map<std::string, Function> &environment,
+                      const std::map<std::pair<std::string, int>, Interval> &func_bounds);
+
+}
+}
+
+#endif
+#ifndef HALIDE_CODEGEN_C_H
+#define HALIDE_CODEGEN_C_H
+
+/** \file
+ *
+ * Defines an IRPrinter that emits C++ code equivalent to a halide stmt
+ */
+
+#include <string>
+#include <vector>
+#include <ostream>
+#include <map>
+
+#ifndef HALIDE_IR_PRINTER_H
+#define HALIDE_IR_PRINTER_H
+
+#include <ostream>
+
+
+namespace Halide {
+
+/** \file
+ * This header file defines operators that let you dump a Halide
+ * expression, statement, or type directly into an output stream
+ * in a human readable form.
+ * E.g:
+ \code
+ Expr foo = ...
+ std::cout << "Foo is " << foo << std::endl;
+ \endcode
+ *
+ * These operators are implemented using \ref Halide::Internal::IRPrinter
+ */
+
+/** Emit an expression on an output stream (such as std::cout) in a
+ * human-readable form */
+EXPORT std::ostream &operator<<(std::ostream &stream, const Expr &);
+
+/** Emit a halide type on an output stream (such as std::cout) in a
+ * human-readable form */
+EXPORT std::ostream &operator<<(std::ostream &stream, const Type &);
+
+namespace Internal {
+
+/** Emit a halide statement on an output stream (such as std::cout) in
+ * a human-readable form */
+std::ostream &operator<<(std::ostream &stream, const Stmt &);
+
+/** Emit a halide for loop type (vectorized, serial, etc) in a human
+ * readable form */
+std::ostream &operator<<(std::ostream &stream, const For::ForType &);
+
+/** An IRVisitor that emits IR to the given output stream in a human
+ * readable form. Can be subclassed if you want to modify the way in
+ * which it prints.
+ */
+class IRPrinter : public IRVisitor {
+public:
+    /** Construct an IRPrinter pointed at a given output stream
+     * (e.g. std::cout, or a std::ofstream) */
+    IRPrinter(std::ostream &);
+
+    /** emit an expression on the output stream */
+    void print(Expr);
+
+    /** emit a statement on the output stream */
+    void print(Stmt);
+
+    static void test();
+
+protected:
+    /** The stream we're outputting on */
+    std::ostream &stream;
+
+    /** The current indentation level, useful for pretty-printing
+     * statements */
+    int indent;
+
+    /** Emit spaces according to the current indentation level */
+    void do_indent();
+
+    void visit(const IntImm *);
+    void visit(const FloatImm *);
+    void visit(const StringImm *);
+    void visit(const Cast *);
+    void visit(const Variable *);
+    void visit(const Add *);
+    void visit(const Sub *);
+    void visit(const Mul *);
+    void visit(const Div *);
+    void visit(const Mod *);
+    void visit(const Min *);
+    void visit(const Max *);
+    void visit(const EQ *);
+    void visit(const NE *);
+    void visit(const LT *);
+    void visit(const LE *);
+    void visit(const GT *);
+    void visit(const GE *);
+    void visit(const And *);
+    void visit(const Or *);
+    void visit(const Not *);
+    void visit(const Select *);
+    void visit(const Load *);
+    void visit(const Ramp *);
+    void visit(const Broadcast *);
+    void visit(const Call *);
+    void visit(const Let *);
+    void visit(const LetStmt *);
+    void visit(const AssertStmt *);
+    void visit(const Pipeline *);
+    void visit(const For *);
+    void visit(const Store *);
+    void visit(const Provide *);
+    void visit(const Allocate *);
+    void visit(const Free *);
+    void visit(const Realize *);
+    void visit(const Block *);
+    void visit(const IfThenElse *);
+    void visit(const Evaluate *);
+
+};
+}
+}
+
+#endif
+
+namespace Halide {
+
+struct Argument;
+
+namespace Internal {
+
+/** This class emits C++ code equivalent to a halide Stmt. It's
+ * mostly the same as an IRPrinter, but it's wrapped in a function
+ * definition, and some things are handled differently to be valid
+ * C++.
+ */
+class CodeGen_C : public IRPrinter {
+public:
+    /** Initialize a C code generator pointing at a particular output
+     * stream (e.g. a file, or std::cout) */
+    CodeGen_C(std::ostream &);
+
+    /** Emit source code equivalent to the given statement, wrapped in
+     * a function with the given type signature */
+    void compile(Stmt stmt, std::string name,
+                 const std::vector<Argument> &args,
+                 const std::vector<Buffer> &images_to_embed);
+
+    /** Emit a header file defining a halide pipeline with the given
+     * type signature */
+    void compile_header(const std::string &name, const std::vector<Argument> &args);
+
+    static void test();
+
+protected:
+    /** An ID for the most recently generated ssa variable */
+    std::string id;
+
+    /** A cache of generated values in scope */
+    std::map<std::string, std::string> cache;
+
+    /** Emit an expression as an assignment, then return the id of the
+     * resulting var */
+    std::string print_expr(Expr);
+
+    /** Emit a statement */
+    void print_stmt(Stmt);
+
+    /** Emit the C name for a halide type */
+    virtual std::string print_type(Type);
+
+    /** Emit a statement to reinterpret an expression as another type */
+    virtual std::string print_reinterpret(Type, Expr);
+
+    /** Emit a version of a string that is a valid identifier in C (. is replaced with _) */
+    virtual std::string print_name(const std::string &);
+
+    /** Emit an SSA-style assignment, and set id to the freshly generated name. Return id. */
+    std::string print_assignment(Type t, const std::string &rhs);
+
+    /** Open a new C scope (i.e. throw in a brace, increase the indent) */
+    void open_scope();
+
+    /** Close a C scope (i.e. throw in an end brace, decrease the indent) */
+    void close_scope(const std::string &comment);
+
+    /** Unpack a buffer into its constituent parts */
+    void unpack_buffer(Type t, const std::string &buffer_name);
+
+    /** Track the types of allocations to avoid unnecessary casts. */
+    Scope<Type> allocations;
+
+    /** Track which allocations actually went on the heap. */
+    Scope<int> heap_allocations;
+
+    /** True if there is a void * __user_context parameter in the arguments. */
+    bool have_user_context;
+
+    using IRPrinter::visit;
+
+    void visit(const Variable *);
+    void visit(const IntImm *);
+    void visit(const StringImm *);
+    void visit(const FloatImm *);
+    void visit(const Cast *);
+    void visit(const Add *);
+    void visit(const Sub *);
+    void visit(const Mul *);
+    void visit(const Div *);
+    void visit(const Mod *);
+    void visit(const Max *);
+    void visit(const Min *);
+    void visit(const EQ *);
+    void visit(const NE *);
+    void visit(const LT *);
+    void visit(const LE *);
+    void visit(const GT *);
+    void visit(const GE *);
+    void visit(const And *);
+    void visit(const Or *);
+    void visit(const Not *);
+    void visit(const Call *);
+    void visit(const Select *);
+    void visit(const Load *);
+    void visit(const Store *);
+    void visit(const Let *);
+    void visit(const LetStmt *);
+    void visit(const AssertStmt *);
+    void visit(const Pipeline *);
+    void visit(const For *);
+    void visit(const Provide *);
+    void visit(const Allocate *);
+    void visit(const Free *);
+    void visit(const Realize *);
+    void visit(const IfThenElse *);
+    void visit(const Evaluate *);
+
+    void visit_binop(Type t, Expr a, Expr b, const char *op);
+};
+
+}
+}
+
+#endif
+#ifndef HALIDE_CODEGEN_H
+#define HALIDE_CODEGEN_H
+
+/** \file
+ *
+ * Defines the base-class for all architecture-specific code
+ * generators that use llvm.
+ */
+
+namespace llvm {
+class Value;
+class Module;
+class Function;
+template<bool> class IRBuilderDefaultInserter;
+class ConstantFolder;
+template<bool, typename, typename> class IRBuilder;
+class LLVMContext;
+class Type;
+class StructType;
+class Instruction;
+class CallInst;
+class ExecutionEngine;
+class AllocaInst;
+class Constant;
+class Triple;
+class MDNode;
+}
+
+#include <map>
+#include <stack>
+#include <string>
+#include <vector>
+
+#ifndef HALIDE_JIT_COMPILED_MODULE_H
+#define HALIDE_JIT_COMPILED_MODULE_H
+
+/** \file
+ * Defines the struct representing a JIT compiled halide pipeline
+ */
+
+#ifndef HALIDE_HALIDERUNTIME_H
+#define HALIDE_HALIDERUNTIME_H
+
+#ifndef COMPILING_HALIDE_RUNTIME
+#include <stddef.h>
+#include <stdint.h>
+#else
+#ifndef HALIDE_RUNTIME_INTERNAL_H
+#define HALIDE_RUNTIME_INTERNAL_H
+
+#if __STDC_HOSTED__
+#error "Halide runtime files must be compiled with clang in freestanding mode."
+#endif
+
+#ifdef __UINT8_TYPE__
+typedef __INT64_TYPE__ int64_t;
+typedef __UINT64_TYPE__ uint64_t;
+typedef __INT32_TYPE__ int32_t;
+typedef __UINT32_TYPE__ uint32_t;
+typedef __INT16_TYPE__ int16_t;
+typedef __UINT16_TYPE__ uint16_t;
+typedef __INT8_TYPE__ int8_t;
+typedef __UINT8_TYPE__ uint8_t;
+#else
+typedef signed __INT64_TYPE__ int64_t;
+typedef unsigned __INT64_TYPE__ uint64_t;
+typedef signed __INT32_TYPE__ int32_t;
+typedef unsigned __INT32_TYPE__ uint32_t;
+typedef signed __INT16_TYPE__ int16_t;
+typedef unsigned __INT16_TYPE__ uint16_t;
+typedef signed __INT8_TYPE__ int8_t;
+typedef unsigned __INT8_TYPE__ uint8_t;
+#endif
+typedef __SIZE_TYPE__ size_t;
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+
+typedef ptrdiff_t ssize_t;
+
+#define NULL 0
+#define WEAK __attribute__((weak))
+
+#ifdef BITS_64
+#define INT64_C(c)  c ## L
+#define UINT64_C(c) c ## UL
+typedef uint64_t uintptr_t;
+typedef int64_t intptr_t;
+#endif
+
+#ifdef BITS_32
+#define INT64_C(c)  c ## LL
+#define UINT64_C(c) c ## ULL
+typedef uint32_t uintptr_t;
+typedef int32_t intptr_t;
+#endif
+
+typedef __builtin_va_list va_list;
+#define va_start(ap, param) __builtin_va_start(ap, param)
+#define va_end(ap)          __builtin_va_end(ap)
+#define va_arg(ap, type)    __builtin_va_arg(ap, type)
+
+// A convenient namespace for weak functions that are internal to the
+// halide runtime.
+namespace Halide { namespace Runtime { namespace Internal {}}}
+using namespace Halide::Runtime::Internal;
+
+#define STDOUT_FILENO 1
+#define STDERR_FILENO 2
+
+// Commonly-used extern functions
+extern "C" {
+int64_t halide_current_time_ns(void *user_context);
+
+char *getenv(const char *);
+void free(void *);
+void *malloc(size_t);
+int snprintf(char *, size_t, const char *, ...);
+const char *strstr(const char *, const char *);
+int atoi(const char *);
+int strcmp(const char* s, const char* t);
+int strncmp(const char* s, const char* t, size_t n);
+size_t strlen(const char* s);
+char *strchr(const char* s, char c);
+void* memcpy(void* s1, const void* s2, size_t n);
+int memcmp(const void* s1, const void* s2, size_t n);
+void *memset(void *s, int val, size_t n);
+int open(const char *filename, int opts, int mode);
+int close(int fd);
+ssize_t write(int fd, const void *buf, size_t bytes);
+int vsnprintf(char *, size_t, const char *, va_list);
+void exit(int);
+
 }
 
 
 #endif
+
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** \file
+ *
+ * This file exports all routines which can be replaced by an
+ * application hosting code generated by %Halide. These are used when
+ * doing Ahead Of Time (AOT) compilation and must be supplied to the
+ * linker to override a routine. I.e., just define your own version of
+ * any of these functions with extern "C" linkage, and it should
+ * replace the default one.
+ *
+ * When doing Just In Time (JIT) compilation methods on the Func being
+ * compiled must be called instead. The corresponding methods are
+ * documented below.
+ *
+ * All of these functions take a "void *user_context" parameter as their
+ * first argument; if the Halide kernel that calls back to any of these
+ * funcions has been defined with a "__user_context" parameter XXXXXXXX,
+ * then the value of that pointer passed from the code that calls the
+ * Halide kernel is piped through to the function.
+ *
+ * Some of these are also useful to call when using the default
+ * implementation. E.g. halide_shutdown_thread_pool.
+ *
+ * Note that some linker setups may not respect the override you
+ * provide. E.g. if the override is in a shared library and the halide
+ * object files are linked directly into the output, the builtin
+ * versions of the runtime functions will be called. See your linker
+ * documentation for more details. On Linux, LD_DYNAMIC_WEAK=1 may
+ * help.
+ *
+ */
+
+/** Define halide_printf to catch debugging output, informational
+  * messages, etc. Main use is to support HL_TRACE functionality and
+  * PrintStmt in IR. Also called by the default halide_error
+  * implementation.
+  *
+  * This function is implemented using \ref halide_print.
+  */
+extern int halide_printf(void *user_context, const char *, ...);
+
+/** Unformatted print used to support halide_printf. This function
+ * can be replaced in JITed code by using halide_custom_print
+ * and providing an implementation of halide_print in AOT code. See
+ * Func::set_custom_print.
+ */
+extern void halide_print(void *user_context, const char *);
+
+/** Define halide_error to catch errors messages at runtime, for
+ * example bounds checking failures. This function can be replaced
+ * in JITed code by using halide_set_error_handler and providing an
+ * implementation of halide_error in AOT code. See
+ * Func::set_error_handler.
+ */
+//@{
+extern void halide_error(void *user_context, const char *);
+extern void halide_error_varargs(void *user_context, const char *, ...);
+//@}
+
+/** A macro that calls halide_error if the supplied condition is false. */
+#define halide_assert(user_context, cond) if (!(cond)) halide_error(user_context, #cond);
+
+/** These are allocated statically inside the runtime, hence the fixed
+ * size. They must be initialized with zero. The first time
+ * halide_mutex_lock is called, the lock must be initialized in a
+ * thread safe manner. This incurs a small overhead for a once
+ * mechanism, but makes the lock reliably easy to setup and use
+ * without depending on e.g. C++ constructor logic.
+ */
+struct halide_mutex {
+    unsigned char _private[64];
+};
+
+/** A basic set of mutex functions, which call platform specific code
+ * for mutual exclusion.
+ */
+//@{
+extern void halide_mutex_lock(struct halide_mutex *mutex);
+extern void halide_mutex_unlock(struct halide_mutex *mutex);
+extern void halide_mutex_cleanup(struct halide_mutex *mutex_arg);
+//@}
+
+/** Define halide_do_par_for to replace the default thread pool
+ * implementation. halide_shutdown_thread_pool can also be called to
+ * release resources used by the default thread pool on platforms
+ * where it makes sense. (E.g. On Mac OS, Grand Central Dispatch is
+ * used so %Halide does not own the threads backing the pool and they
+ * cannot be released.)  See Func::set_custom_do_task and
+ * Func::set_custom_do_par_for. Should return zero if all the jobs
+ * return zero, or an arbitrarily chosen return value from one of the
+ * jobs otherwise.
+ */
+//@{
+extern int halide_do_par_for(void *user_context,
+                             int (*f)(void *ctx, int, uint8_t *),
+                             int min, int size, uint8_t *closure);
+extern void halide_shutdown_thread_pool();
+//@}
+
+/** Set the number of threads used by Halide's thread pool. No effect
+ * on OS X or iOS. If changed after the first use of a parallel Halide
+ * routine, shuts down and then reinitializes the thread pool. */
+extern void halide_set_num_threads(int n);
+
+/** Define halide_malloc and halide_free to replace the default memory
+ * allocator.  See Func::set_custom_allocator. (Specifically note that
+ * halide_malloc must return a 32-byte aligned pointer, and it must be
+ * safe to read at least 8 bytes before the start and beyond the
+ * end.)
+ */
+//@{
+extern void *halide_malloc(void *user_context, size_t x);
+extern void halide_free(void *user_context, void *ptr);
+//@}
+
+/** Called when debug_to_file is used inside %Halide code.  See
+ * Func::debug_to_file for how this is called
+ *
+ * Cannot be replaced in JITted code at present.
+ */
+extern int32_t halide_debug_to_file(void *user_context, const char *filename,
+                                    uint8_t *data, int32_t s0, int32_t s1, int32_t s2,
+                                    int32_t s3, int32_t type_code,
+                                    int32_t bytes_per_element);
+
+
+enum halide_trace_event_code {halide_trace_load = 0,
+                              halide_trace_store = 1,
+                              halide_trace_begin_realization = 2,
+                              halide_trace_end_realization = 3,
+                              halide_trace_produce = 4,
+                              halide_trace_update = 5,
+                              halide_trace_consume = 6,
+                              halide_trace_end_consume = 7};
+
+struct halide_trace_event {
+    const char *func;
+    halide_trace_event_code event;
+    int32_t parent_id;
+    int32_t type_code;
+    int32_t bits;
+    int32_t vector_width;
+    int32_t value_index;
+    void *value;
+    int32_t dimensions;
+    int32_t *coordinates;
+};
+
+/** Called when Funcs are marked as trace_load, trace_store, or
+ * trace_realization. See Func::set_custom_trace. The default
+ * implementation either prints events via halide_printf, or if
+ * HL_TRACE_FILE is defined, dumps the trace to that file in a
+ * yet-to-be-documented binary format (see src/runtime/tracing.cpp to
+ * reverse engineer the format). If the trace is going to be large,
+ * you may want to make the file a named pipe, and then read from that
+ * pipe into gzip.
+ *
+ * halide_trace returns a unique ID which will be passed to future
+ * events that "belong" to the earlier event as the parent id. The
+ * ownership hierarchy looks like:
+ *
+ * begin_realization
+ *    produce
+ *      store
+ *      update
+ *      load/store
+ *      consume
+ *      load
+ *      end_consume
+ *    end_realization
+ *
+ * Threading means that ownership cannot be inferred from the ordering
+ * of events. There can be many active realizations of a given
+ * function, or many active productions for a single
+ * realization. Within a single production, the ordering of events is
+ * meaningful.
+ */
+extern int32_t halide_trace(void *user_context, const halide_trace_event *event);
+
+/** Set the file descriptor that Halide should write binary trace
+ * events to. If called with 0 as the argument, Halide outputs trace
+ * information to stdout in a human-readable format. If never called,
+ * Halide checks the for existence of an environment variable called
+ * HL_TRACE_FILE and opens that file. If HL_TRACE_FILE is not defined,
+ * it outputs trace information to stdout in a human-readable
+ * format. */
+extern void halide_set_trace_file(int fd);
+
+/** Halide calls this to retrieve the file descriptor to write binary
+ * trace events to. The default implementation returns the value set
+ * by halide_set_trace_file. Implement it yourself if you wish to use
+ * a custom file descriptor per user_context. Return zero from your
+ * implementation to tell Halide to print human-readable trace
+ * information to stdout. */
+extern int halide_get_trace_file(void *user_context);
+
+/** If tracing is writing to a file. This call closes that file
+ * (flushing the trace). Returns zero on success. */
+extern int halide_shutdown_trace();
+
+/** Release all data associated with the current GPU backend, in particular
+ * all resources (memory, texture, context handles) allocated by Halide. Must
+ * be called explicitly when using AOT compilation. */
+extern void halide_release(void *user_context);
+
+/** Copy image data from device memory to host memory. This must be called
+ * explicitly to copy back the results of a GPU-based filter. */
+extern int halide_copy_to_host(void *user_context, struct buffer_t *buf);
+
+/** Copy image data from host memory to device memory. This should not be
+ * called directly; Halide handles copying to the device automatically. */
+extern int halide_copy_to_dev(void *user_context, struct buffer_t *buf);
+
+/** Wait for current GPU operations to complete. Calling this explicitly
+ * should rarely be necessary, except maybe for profiling. */
+extern int halide_dev_sync(void *user_context);
+
+/** Allocate device memory to back a buffer_t. */
+extern int halide_dev_malloc(void *user_context, struct buffer_t *buf);
+
+/** Free any device memory associated with a buffer_t. */
+extern int halide_dev_free(void *user_context, struct buffer_t *buf);
+
+/** These are forward declared here to ensure they have the same
+ * signature across different Halide gpu backends. Do not call
+ * them. */
+// @{
+extern int halide_init_kernels(void *user_context, void **state_ptr,
+                               const char *src, int size);
+extern int halide_dev_run(void *user_context,
+                          void *state_ptr,
+                          const char *entry_name,
+                          int blocksX, int blocksY, int blocksZ,
+                          int threadsX, int threadsY, int threadsZ,
+                          int shared_mem_bytes,
+                          size_t arg_sizes[],
+                          void *args[]);
+// @}
+
+/** Set the platform name for OpenCL to use (e.g. "Intel" or
+ * "NVIDIA"). The argument is copied internally. The opencl runtime
+ * will select a platform that includes this as a substring. If never
+ * called, Halide uses the environment variable HL_OCL_PLATFORM_NAME,
+ * or defaults to the first available platform. */
+extern void halide_set_ocl_platform_name(const char *n);
+
+/** Halide calls this to get the desired OpenCL platform
+ * name. Implement this yourself to use a different platform per
+ * user_context. The default implementation returns the value set by
+ * halide_set_ocl_platform_name, or the value of the environment
+ * variable HL_OCL_PLATFORM_NAME. The output is valid until the next
+ * call to halide_set_ocl_platform_name. */
+extern const char *halide_get_ocl_platform_name(void *user_context);
+
+/** Set the device type for OpenCL to use. The argument is copied
+ * internally. It must be "cpu", "gpu", or "acc". If never called,
+ * Halide uses the environment variable HL_OCL_DEVICE_TYPE. */
+extern void halide_set_ocl_device_type(const char *n);
+
+/** Halide calls this to gets the desired OpenCL device
+ * type. Implement this yourself to use a different device type per
+ * user_context. The default implementation returns the value set by
+ * halide_set_ocl_device_type, or the environment variable
+ * HL_OCL_DEVICE_TYPE. The result is valid until the next call to
+ * halide_set_ocl_device_type. */
+extern const char *halide_get_ocl_device_type(void *user_context);
+
+/** Selects which gpu device to use. 0 is usually the display
+ * device. If never called, Halide uses the environment variable
+ * HL_GPU_DEVICE. If that variable is unset, Halide uses the last
+ * device. Set this to -1 to use the last device. */
+extern void halide_set_gpu_device(int n);
+
+/** Halide calls this to get the desired halide gpu device
+ * setting. Implement this yourself to use a different gpu device per
+ * user_context. The default implementation returns the value set by
+ * halide_set_gpu_device, or the environment variable
+ * HL_GPU_DEVICE. */
+extern int halide_get_gpu_device(void *user_context);
+
+/** Set the soft maximum amount of memory, in bytes, that the LRU
+ *  cache will use to memoize Func results.  This is not a strict
+ *  maximum in that concurrency and simultaneous use of memoized
+ *  reults larger than the cache size can both cause it to
+ *  temporariliy be larger than the size specified here.
+ */
+extern void halide_memoization_cache_set_size(int64_t size);
+
+/** Given a cache key for a memoized result, currently constructed
+ *  from the Func name and top-level Func name plus the arguments of
+ *  the computation, determine if the result is in the cache and
+ *  return it if so. (The internals of the cache key should be
+ *  considered opaque by this function.) If this routine returns true,
+ *  it is a cache miss. Otherwise, it will return false and the
+ *  buffers passed in will be filled, via copying, with memoized
+ *  data. The last argument is a list if buffer_t pointers which
+ *  represents the outputs of the memoized Func. If the Func does not
+ *  return a Tuple, there will only be one buffer_t in the list. The
+ *  tuple_count parameters determines the length of the list.
+ */
+extern bool halide_memoization_cache_lookup(void *user_context, const uint8_t *cache_key, int32_t size,
+                                            buffer_t *realized_bounds, int32_t tuple_count, ... /* list of buffer_t * */);
+
+/** Given a cache key for a memoized result, currently constructed
+ *  from the Func name and top-level Func name plus the arguments of
+ *  the computation, store the result in the cache for futre access by
+ *  halide_memoization_cache_lookup. (The internals of the cache key
+ *  should be considered opaque by this function.) Data is copied out
+ *  from the inputs and inputs are unmodified. The last argument is a
+ *  list if buffer_t pointers which represents the outputs of the
+ *  memoized Func. If the Func does not return a Tuple, there will
+ *  only be one buffer_t in the list. The tuple_count parameters
+ *  determines the length of the list.
+ */
+extern void halide_memoization_cache_store(void *user_context, const uint8_t *cache_key, int32_t size,
+                                           buffer_t *realized_bounds, int32_t tuple_count, ... /* list of buffer_t * */);
+
+
+/** Free all memory and resources associated with the memoization cache.
+ * Must be called at a time when no other threads are accessing the cache.
+ */
+extern void halide_memoization_cache_cleanup();
+
+#ifdef __cplusplus
+} // End extern "C"
+#endif
+
+#endif // HALIDE_HALIDERUNTIME_H
+
+namespace llvm {
+class Module;
+}
+
+namespace Halide {
+namespace Internal {
+
+class JITModuleHolder;
+class CodeGen;
+
+/** Function pointers into a compiled halide module. These function
+ * pointers are meaningless once the last copy of a JITCompiledModule
+ * is deleted, so don't cache them. */
+struct JITCompiledModule {
+    /** A pointer to the raw halide function. It's true type depends
+     * on the Argument vector passed to CodeGen::compile. Image
+     * parameters become (buffer_t *), and scalar parameters become
+     * pointers to the appropriate values. The final argument is a
+     * pointer to the buffer_t defining the output. */
+    void *function;
+
+    /** A slightly more type-safe wrapper around the raw halide
+     * module. Takes it arguments as an array of pointers that
+     * correspond to the arguments to \ref function */
+    int (*wrapped_function)(const void **);
+
+    /** JITed helpers to interact with device-mapped buffer_t
+     * objects. These pointers may be NULL if not compiling for a
+     * gpu-like target. */
+    // @{
+    int (*copy_to_host)(void *user_context, struct buffer_t*);
+    int (*copy_to_dev)(void *user_context, struct buffer_t*);
+    int (*free_dev_buffer)(void *user_context, struct buffer_t*);
+    // @}
+
+    /** The type of a halide runtime error handler function */
+    typedef void (*ErrorHandler)(void *user_context, const char *);
+
+    /** Set the runtime error handler for this module */
+    void (*set_error_handler)(ErrorHandler);
+
+    /** Set a custom malloc and free for this module to use. See
+     * \ref Func::set_custom_allocator */
+    void (*set_custom_allocator)(void *(*malloc)(void *user_context, size_t),
+                                 void (*free)(void *user_context, void *ptr));
+
+    /** Set a custom parallel for loop launcher. See
+     * \ref Func::set_custom_do_par_for */
+    typedef int (*HalideTask)(void *user_context, int, uint8_t *);
+    void (*set_custom_do_par_for)(int (*custom_do_par_for)(void *user_context, HalideTask,
+                                                           int, int, uint8_t *));
+
+    /** Set a custom do parallel task. See
+     * \ref Func::set_custom_do_task */
+    void (*set_custom_do_task)(int (*custom_do_task)(void *user_context, HalideTask,
+                                                     int, uint8_t *));
+
+    /** Set a custom trace function. See \ref Func::set_custom_trace. */
+    typedef int (*TraceFn)(void *, const halide_trace_event *);
+    void (*set_custom_trace)(TraceFn);
+
+    /** Set a custom print function for this module. See
+     * \ref Func::set_custom_print. */
+    void (*set_custom_print)(void (*custom_print)(void *, const char *));
+
+    /** Shutdown the thread pool maintained by this JIT module. This
+     * is also done automatically when the last reference to this
+     * module is destroyed. */
+    void (*shutdown_thread_pool)();
+
+    /** Set the maximum number of bytes occupied by the cache for compute_cached. */
+    void (*memoization_cache_set_size)(uint64_t size);
+
+    // The JIT Module Allocator holds onto the memory storing the functions above.
+    IntrusivePtr<JITModuleHolder> module;
+
+    JITCompiledModule() :
+        function(NULL),
+        wrapped_function(NULL),
+        copy_to_host(NULL),
+        copy_to_dev(NULL),
+        free_dev_buffer(NULL),
+        set_error_handler(NULL),
+        set_custom_allocator(NULL),
+        set_custom_do_par_for(NULL),
+        set_custom_do_task(NULL),
+        set_custom_trace(NULL),
+        set_custom_print(NULL),
+        shutdown_thread_pool(NULL),
+        memoization_cache_set_size(NULL) {}
+
+    /** Take an llvm module and compile it. Populates the function
+     * pointer members above with the result. */
+    void compile_module(CodeGen *cg, llvm::Module *mod, const std::string &function_name);
+
+    /** Holds a cleanup routine and context parameter. */
+    struct CleanupRoutine {
+        void (*fn)(void *);
+        void *context;
+
+        CleanupRoutine() : fn(NULL), context(NULL) {}
+        CleanupRoutine(void (*fn)(void *), void *context) : fn(fn), context(context) {}
+    };
+};
+
+}
+}
+
+
+#endif
+#ifndef HALIDE_MODULUS_REMAINDER_H
+#define HALIDE_MODULUS_REMAINDER_H
+
+/** \file
+ * Routines for statically determining what expressions are divisible by.
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** The result of modulus_remainder analysis */
+struct ModulusRemainder {
+    ModulusRemainder() : modulus(0), remainder(0) {}
+    ModulusRemainder(int m, int r) : modulus(m), remainder(r) {}
+    int modulus, remainder;
+};
+
+/** For things like alignment analysis, often it's helpful to know
+ * if an integer expression is some multiple of a constant plus
+ * some other constant. For example, it is straight-forward to
+ * deduce that ((10*x + 2)*(6*y - 3) - 1) is congruent to five
+ * modulo six.
+ *
+ * We get the most information when the modulus is large. E.g. if
+ * something is congruent to 208 modulo 384, then we also know it's
+ * congruent to 0 mod 8, and we can possibly use it as an index for an
+ * aligned load. If all else fails, we can just say that an integer is
+ * congruent to zero modulo one.
+ */
+EXPORT ModulusRemainder modulus_remainder(Expr e);
+
+/** If we have alignment information about external variables, we can
+ * let the analysis know about that using this version of
+ * modulus_remainder: */
+ModulusRemainder modulus_remainder(Expr e, const Scope<ModulusRemainder> &scope);
+
+/** Reduce an expression modulo some integer. Returns true and assigns
+ * to remainder if an answer could be found. */
+bool reduce_expr_modulo(Expr e, int modulus, int *remainder);
+
+void modulus_remainder_test();
+
+/** The greatest common divisor of two integers */
+int gcd(int, int);
+
+/** The least common multiple of two integers */
+int lcm(int, int);
+
+}
+}
+
+#endif
+#ifndef HALIDE_TARGET_H
+#define HALIDE_TARGET_H
+
+/** \file
+ * Defines the structure that describes a Halide target.
+ */
+
+#include <bitset>
+#include <stdint.h>
+#include <string>
+
+namespace llvm {
+class Module;
+class LLVMContext;
+}
+
+namespace Halide {
+
+/** A struct representing a target machine and os to generate code for. */
+struct Target {
+    /** The operating system used by the target. Determines which
+     * system calls to generate. */
+    enum OS {OSUnknown = 0, Linux, Windows, OSX, Android, IOS, NaCl} os;
+
+    /** The architecture used by the target. Determines the
+     * instruction set to use. For the PNaCl target, the "instruction
+     * set" is actually llvm bitcode. */
+    enum Arch {ArchUnknown = 0, X86, ARM, PNaCl, MIPS} arch;
+
+    /** The bit-width of the target machine. Must be 0 for unknown, or 32 or 64. */
+    int bits;
+
+    /** Optional features a target can have. */
+    enum Feature {
+        JIT,  ///< Generate code that will run immediately inside the calling process.
+        GPUDebug,  ///< Increase the level of checking and the verbosity of the gpu runtimes.
+        NoAsserts,  ///< Disable all runtime checks, for slightly tighter code.
+        NoBoundsQuery, ///< Disable the bounds querying functionality.
+
+        SSE41,  ///< Use SSE 4.1 and earlier instructions. Only relevant on x86.
+        AVX,  ///< Use AVX 1 instructions. Only relevant on x86.
+        AVX2,  ///< Use AVX 2 instructions. Only relevant on x86.
+        FMA,  ///< Enable x86 FMA instruction
+        FMA4,  ///< Enable x86 (AMD) FMA4 instruction set
+        F16C,  ///< Enable x86 16-bit float support
+
+        ARMv7s,  ///< Generate code for ARMv7s. Only relevant for 32-bit ARM.
+
+        CUDA,  ///< Enable the CUDA runtime. Defaults to compute capability 2.0 (Fermi)
+        CUDACapability30,  ///< Enable CUDA compute capability 3.0 (Kepler)
+        CUDACapability32,  ///< Enable CUDA compute capability 3.2 (Tegra K1)
+        CUDACapability35,  ///< Enable CUDA compute capability 3.5 (Kepler)
+        CUDACapability50,  ///< Enable CUDA compute capability 5.0 (Maxwell)
+
+        OpenCL,  ///< Enable the OpenCL runtime.
+        CLDoubles,  ///< Enable double support on OpenCL targets
+
+        OpenGL,  ///< Enable the OpenGL runtime.
+
+        FeatureEnd
+        // NOTE: Changes to this enum must be reflected in the definition of
+        // to_string()!
+    };
+
+    Target() : os(OSUnknown), arch(ArchUnknown), bits(0) {}
+    Target(OS o, Arch a, int b, std::vector<Feature> initial_features = std::vector<Feature>())
+        : os(o), arch(a), bits(b) {
+        for (size_t i = 0; i < initial_features.size(); i++) {
+            set_feature(initial_features[i]);
+        }
+    }
+
+    void set_feature(Feature f, bool value = true) {
+        user_assert(f < FeatureEnd) << "Invalid Target feature.\n";
+        features.set(f, value);
+    }
+
+    void set_features(std::vector<Feature> features_to_set, bool value = true) {
+        for (size_t i = 0; i < features_to_set.size(); i++) {
+            set_feature(features_to_set[i]);
+        }
+    }
+
+    bool has_feature(Feature f) const {
+        user_assert(f < FeatureEnd) << "Invalid Target feature.\n";
+        return features[f];
+    }
+
+    bool features_any_of(std::vector<Feature> test_features) const {
+        for (size_t i = 0; i < test_features.size(); i++) {
+            user_assert(test_features[i] < FeatureEnd) << "Invalid Target feature.\n";
+
+            if (features[test_features[i]]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool features_all_of(std::vector<Feature> test_features) const {
+        for (size_t i = 0; i < test_features.size(); i++) {
+            user_assert(test_features[i] < FeatureEnd) << "Invalid Target feature.\n";
+
+            if (!features[test_features[i]]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Is OpenCL or CUDA enabled in this target? I.e. is
+     * Func::gpu_tile and similar going to work? We do not include
+     * OpenGL, because it is not capable of gpgpu, and is not
+     * scheduled via Func::gpu_tile. */
+    bool has_gpu_feature() const {
+        return has_feature(CUDA) || has_feature(OpenCL);
+    }
+
+    bool operator==(const Target &other) const {
+      return os == other.os &&
+          arch == other.arch &&
+          bits == other.bits &&
+          features == other.features;
+    }
+
+    bool operator!=(const Target &other) const {
+      return !(*this == other);
+    }
+
+    /** Convert the Target into a string form that can be reconstituted
+     * by merge_string(), which will always be of the form
+     *
+     *   arch-bits-os-feature1-feature2...featureN.
+     *
+     * Note that is guaranteed that t2.from_string(t1.to_string()) == t1,
+     * but not that from_string(s).to_string() == s (since there can be
+     * multiple strings that parse to the same Target)...
+     * *unless* t1 contains 'unknown' fields (in which case you'll get a string
+     * that can't be parsed, which is intentional).
+     */
+    EXPORT std::string to_string() const;
+
+    /**
+     * Parse the contents of 'target' and merge into 'this',
+     * replacing only the parts that are specified. (e.g., if 'target' specifies
+     * only an arch, only the arch field of 'this' will be changed, leaving
+     * the other fields untouched). Any features specified in 'target'
+     * are added to 'this', whether or not originally present.
+     *
+     * If the string contains unknown tokens, or multiple tokens of the
+     * same category (e.g. multiple arch values), return false
+     * (possibly leaving 'this' munged). (Multiple feature specifications
+     * will not cause a failure.)
+     *
+     * If 'target' contains "host" as the first token, it replaces the entire
+     * contents of 'this' with get_host_target(), then proceeds to parse the
+     * remaining tokens (allowing for things like "host-opencl" to mean
+     * "host configuration, but with opencl added").
+     *
+     * Note that unlike parse_from_string(), this will never print to cerr or
+     * assert in the event of a parse failure. Note also that an empty target
+     * string is essentially a no-op, leaving 'this' unaffected.
+     */
+    EXPORT bool merge_string(const std::string &target);
+
+    /**
+     * Like merge_string(), but reset the contents of 'this' first.
+     */
+    EXPORT bool from_string(const std::string &target) {
+        *this = Target();
+        return merge_string(target);
+    }
+
+private:
+    /** A bitmask that stores the active features. */
+    std::bitset<FeatureEnd> features;
+};
+
+/** Return the target corresponding to the host machine. */
+EXPORT Target get_host_target();
+
+/** Return the target that Halide will use. If HL_TARGET is set it
+ * uses that. Otherwise calls \ref get_host_target */
+EXPORT Target get_target_from_environment();
+
+/** Return the target that Halide will use for jit-compilation. If
+ * HL_JIT_TARGET is set it uses that. Otherwise calls \ref
+ * get_host_target. Throws an error if the architecture, bit width,
+ * and OS of the target do not match the host target, so this is only
+ * useful for controlling the feature set. */
+EXPORT Target get_jit_target_from_environment();
+
+/** Given a string of the form used in HL_TARGET (e.g. "x86-64-avx"),
+ * return the Target it specifies. Note that this always starts with
+ * the result of get_host_target(), replacing only the parts found in the
+ * target string, so if you omit (say) an OS specification, the host OS
+ * will be used instead. An empty string is exactly equivalent to get_host_target().
+ */
+EXPORT Target parse_target_string(const std::string &target);
+
+namespace Internal {
+
+/** Create an llvm module containing the support code for a given target. */
+llvm::Module *get_initial_module_for_target(Target, llvm::LLVMContext *);
+
+/** Create an llvm module containing the support code for ptx device. */
+llvm::Module *get_initial_module_for_ptx_device(Target, llvm::LLVMContext *c);
+
+}
+
+}
+
+
+#endif
+
+namespace Halide {
+namespace Internal {
+
+/** A code generator abstract base class. Actual code generators
+ * (e.g. CodeGen_X86) inherit from this. This class is responsible
+ * for taking a Halide Stmt and producing llvm bitcode, machine
+ * code in an object file, or machine code accessible through a
+ * function pointer.
+ */
+class CodeGen : public IRVisitor {
+public:
+    mutable RefCount ref_count;
+
+    CodeGen(Target t);
+    virtual ~CodeGen();
+
+    /** Take a halide statement and compiles it to an llvm module held
+     * internally. Call this before calling compile_to_bitcode or
+     * compile_to_native. */
+    virtual void compile(Stmt stmt, std::string name,
+                         const std::vector<Argument> &args,
+                         const std::vector<Buffer> &images_to_embed);
+
+    /** Emit a compiled halide statement as llvm bitcode. Call this
+     * after calling compile. */
+    virtual void compile_to_bitcode(const std::string &filename);
+
+    /** Emit a compiled halide statement as either an object file, or
+     * as raw assembly, depending on the value of the second
+     * argument. Call this after calling compile. */
+    virtual void compile_to_native(const std::string &filename, bool assembly = false);
+
+    /** Compile to machine code stored in memory, and return some
+     * functions pointers into that machine code. */
+    JITCompiledModule compile_to_function_pointers();
+
+    /** What should be passed as -mcpu, -mattrs, and related for
+     * compilation. The architecture-specific code generator should
+     * define these. */
+    // @{
+    virtual std::string mcpu() const = 0;
+    virtual std::string mattrs() const = 0;
+    virtual bool use_soft_float_abi() const = 0;
+    // @}
+
+    /** Do any required target-specific things to the execution engine
+     * and the module prior to jitting. Called by JITCompiledModule
+     * just before it jits. Does nothing by default. */
+    virtual void jit_init(llvm::ExecutionEngine *, llvm::Module *) {}
+
+    /** Do any required target-specific things to the execution engine
+     * and the module after jitting. Called by JITCompiledModule just
+     * after it jits. Does nothing by default. The third argument
+     * gives the target a chance to inject calls to target-specific
+     * module cleanup routines. */
+    virtual void jit_finalize(llvm::ExecutionEngine *, llvm::Module *,
+                              std::vector<JITCompiledModule::CleanupRoutine> *);
+
+    /** Initialize internal llvm state for the enabled targets. */
+    static void initialize_llvm();
+
+    /** Which built-in functions require a user-context first argument? */
+    static bool function_takes_user_context(const std::string &name);
+
+protected:
+
+    /** State needed by llvm for code generation, including the
+     * current module, function, context, builder, and most recently
+     * generated llvm value. */
+    //@{
+    static bool llvm_initialized;
+    static bool llvm_X86_enabled;
+    static bool llvm_ARM_enabled;
+    static bool llvm_AArch64_enabled;
+    static bool llvm_NVPTX_enabled;
+
+    llvm::Module *module;
+    bool owns_module;
+    llvm::Function *function;
+    llvm::LLVMContext *context;
+    llvm::IRBuilder<true, llvm::ConstantFolder, llvm::IRBuilderDefaultInserter<true> > *builder;
+    llvm::Value *value;
+    llvm::MDNode *very_likely_branch;
+    //@}
+
+    /** The target we're generating code for */
+    Halide::Target target;
+
+    /** Initialize the CodeGen internal state to compile a fresh
+     * module. This allows reuse of one CodeGen object to compiled
+     * multiple related modules (e.g. multiple device kernels). */
+    void init_module();
+
+    /** Run all of llvm's optimization passes on the module. */
+    void optimize_module();
+
+    /** Add an entry to the symbol table, hiding previous entries with
+     * the same name. Call this when new values come into scope. */
+    void sym_push(const std::string &name, llvm::Value *value);
+
+    /** Remove an entry for the symbol table, revealing any previous
+     * entries with the same name. Call this when values go out of
+     * scope. */
+    void sym_pop(const std::string &name);
+
+    /** Fetch an entry from the symbol table. If the symbol is not
+     * found, it either errors out (if the second arg is true), or
+     * returns NULL. */
+    llvm::Value* sym_get(const std::string &name,
+                         bool must_succeed = true) const;
+
+    /** Test if an item exists in the symbol table. */
+    bool sym_exists(const std::string &name) const;
+
+    /** Some useful llvm types */
+    // @{
+    llvm::Type *void_t, *i1, *i8, *i16, *i32, *i64, *f16, *f32, *f64;
+    llvm::StructType *buffer_t_type;
+    // @}
+
+    /** The name of the function being generated. */
+    std::string function_name;
+
+    /** Emit code that evaluates an expression, and return the llvm
+     * representation of the result of the expression. */
+    llvm::Value *codegen(Expr);
+
+    /** Emit code that runs a statement. */
+    void codegen(Stmt);
+
+    /** Take an llvm Value representing a pointer to a buffer_t,
+     * and populate the symbol table with its constituent parts.
+     */
+    void unpack_buffer(std::string name, llvm::Value *buffer);
+
+    /** Add a definition of buffer_t to the module if it isn't already there. */
+    void define_buffer_t();
+
+    /** Codegen an assertion. If false, it bails out and calls the error handler. */
+    void create_assertion(llvm::Value *condition, const std::string &message,
+                          const std::vector<llvm::Value *> &args = std::vector<llvm::Value *>());
+
+    /** Put a string constant in the module as a global variable and return a pointer to it. */
+    llvm::Constant *create_string_constant(const std::string &str);
+
+    /** Put a binary blob in the module as a global variable and return a pointer to it. */
+    llvm::Constant *create_constant_binary_blob(const std::vector<char> &data, const std::string &name);
+
+    /** Widen an llvm scalar into an llvm vector with the given number of lanes. */
+    llvm::Value *create_broadcast(llvm::Value *, int width);
+
+    /** Given an llvm value representing a pointer to a buffer_t, extract various subfields.
+     * The *_ptr variants return a pointer to the struct element, while the basic variants
+     * load the actual value. */
+    // @{
+    llvm::Value *buffer_host(llvm::Value *);
+    llvm::Value *buffer_dev(llvm::Value *);
+    llvm::Value *buffer_host_dirty(llvm::Value *);
+    llvm::Value *buffer_dev_dirty(llvm::Value *);
+    llvm::Value *buffer_min(llvm::Value *, int);
+    llvm::Value *buffer_extent(llvm::Value *, int);
+    llvm::Value *buffer_stride(llvm::Value *, int);
+    llvm::Value *buffer_elem_size(llvm::Value *);
+    llvm::Value *buffer_host_ptr(llvm::Value *);
+    llvm::Value *buffer_dev_ptr(llvm::Value *);
+    llvm::Value *buffer_host_dirty_ptr(llvm::Value *);
+    llvm::Value *buffer_dev_dirty_ptr(llvm::Value *);
+    llvm::Value *buffer_min_ptr(llvm::Value *, int);
+    llvm::Value *buffer_extent_ptr(llvm::Value *, int);
+    llvm::Value *buffer_stride_ptr(llvm::Value *, int);
+    llvm::Value *buffer_elem_size_ptr(llvm::Value *);
+    // @}
+
+    /** Generate a pointer into a named buffer at a given index, of a
+     * given type. The index counts according to the scalar type of
+     * the type passed in. */
+    // @{
+    llvm::Value *codegen_buffer_pointer(std::string buffer, Type type, llvm::Value *index);
+    llvm::Value *codegen_buffer_pointer(std::string buffer, Type type, Expr index);
+    // @}
+
+    /** Mark a load or store with type-based-alias-analysis metadata
+     * so that llvm knows it can reorder loads and stores across
+     * different buffers */
+    void add_tbaa_metadata(llvm::Instruction *inst, std::string buffer, Expr index);
+
+    using IRVisitor::visit;
+
+    /** Generate code for various IR nodes. These can be overridden by
+     * architecture-specific code to perform peephole
+     * optimizations. The result of each is stored in \ref value */
+    // @{
+    virtual void visit(const IntImm *);
+    virtual void visit(const FloatImm *);
+    virtual void visit(const StringImm *);
+    virtual void visit(const Cast *);
+    virtual void visit(const Variable *);
+    virtual void visit(const Add *);
+    virtual void visit(const Sub *);
+    virtual void visit(const Mul *);
+    virtual void visit(const Div *);
+    virtual void visit(const Mod *);
+    virtual void visit(const Min *);
+    virtual void visit(const Max *);
+    virtual void visit(const EQ *);
+    virtual void visit(const NE *);
+    virtual void visit(const LT *);
+    virtual void visit(const LE *);
+    virtual void visit(const GT *);
+    virtual void visit(const GE *);
+    virtual void visit(const And *);
+    virtual void visit(const Or *);
+    virtual void visit(const Not *);
+    virtual void visit(const Select *);
+    virtual void visit(const Load *);
+    virtual void visit(const Ramp *);
+    virtual void visit(const Broadcast *);
+    virtual void visit(const Call *);
+    virtual void visit(const Let *);
+    virtual void visit(const LetStmt *);
+    virtual void visit(const AssertStmt *);
+    virtual void visit(const Pipeline *);
+    virtual void visit(const For *);
+    virtual void visit(const Store *);
+    virtual void visit(const Block *);
+    virtual void visit(const IfThenElse *);
+    virtual void visit(const Evaluate *);
+    // @}
+
+    /** Generate code for an allocate node. It has no default
+     * implementation - it must be handled in an architecture-specific
+     * way. */
+    virtual void visit(const Allocate *) = 0;
+
+    /** Generate code for a free node. It has no default
+     * implementation and must be handled in an architecture-specific
+     * way. */
+    virtual void visit(const Free *) = 0;
+
+    /** These IR nodes should have been removed during
+     * lowering. CodeGen will error out if they are present */
+    // @{
+    virtual void visit(const Provide *);
+    virtual void visit(const Realize *);
+    // @}
+
+    /** If we have to bail out of a pipeline midway, this should
+     * inject the appropriate target-specific cleanup code. */
+    virtual void prepare_for_early_exit() {}
+
+    /** Get the llvm type equivalent to the given halide type in the
+     * current context. */
+    llvm::Type *llvm_type_of(Type);
+
+    /** Perform an alloca at the function entrypoint. Will be cleaned
+     * on function exit. */
+    llvm::Value *create_alloca_at_entry(llvm::Type *type, int n, const std::string &name = "");
+
+    /** Which buffers came in from the outside world (and so we can't
+     * guarantee their alignment) */
+    std::set<std::string> might_be_misaligned;
+
+    llvm::Value *get_user_context() const;
+
+    /** Implementation of the intrinsic call to
+     * interleave_vectors. This implementation allows for interleaving
+     * an arbitrary number of vectors.*/
+    llvm::Value *interleave_vectors(Type, const std::vector<Expr>&);
+
+
+private:
+
+    /** All the values in scope at the current code location during
+     * codegen. Use sym_push and sym_pop to access. */
+    Scope<llvm::Value *> symbol_table;
+
+    /** Alignment info for Int(32) variables in scope. */
+    Scope<ModulusRemainder> alignment_info;
+
+    /** String constants already emitted to the module. Tracked to
+     * prevent emitting the same string many times. */
+    std::map<std::string, llvm::Constant *> string_constants;
+};
+
+}}
+
+#endif
+#ifndef HALIDE_CODEGEN_X86_H
+#define HALIDE_CODEGEN_X86_H
+
+/** \file
+ * Defines the code-generator for producing x86 machine code
+ */
+
+#ifndef HALIDE_CODEGEN_POSIX_H
+#define HALIDE_CODEGEN_POSIX_H
+
+/** \file
+ * Defines a base-class for code-generators on posixy cpu platforms
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** A code generator that emits posix code from a given Halide stmt. */
+class CodeGen_Posix : public CodeGen {
+public:
+
+    /** Create an posix code generator. Processor features can be
+     * enabled using the appropriate arguments */
+    CodeGen_Posix(Target t);
+
+protected:
+
+    /** Some useful llvm types for subclasses */
+    // @{
+    llvm::Type *i8x8, *i8x16, *i8x32;
+    llvm::Type *i16x4, *i16x8, *i16x16;
+    llvm::Type *i32x2, *i32x4, *i32x8;
+    llvm::Type *i64x2, *i64x4;
+    llvm::Type *f32x2, *f32x4, *f32x8;
+    llvm::Type *f64x2, *f64x4;
+    // @}
+
+    /** Some wildcard variables used for peephole optimizations in
+     * subclasses */
+    // @{
+    Expr wild_i8x8, wild_i16x4, wild_i32x2; // 64-bit signed ints
+    Expr wild_u8x8, wild_u16x4, wild_u32x2; // 64-bit unsigned ints
+    Expr wild_i8x16, wild_i16x8, wild_i32x4, wild_i64x2; // 128-bit signed ints
+    Expr wild_u8x16, wild_u16x8, wild_u32x4, wild_u64x2; // 128-bit unsigned ints
+    Expr wild_i8x32, wild_i16x16, wild_i32x8, wild_i64x4; // 256-bit signed ints
+    Expr wild_u8x32, wild_u16x16, wild_u32x8, wild_u64x4; // 256-bit unsigned ints
+    Expr wild_f32x2; // 64-bit floats
+    Expr wild_f32x4, wild_f64x2; // 128-bit floats
+    Expr wild_f32x8, wild_f64x4; // 256-bit floats
+    Expr min_i8, max_i8, max_u8;
+    Expr min_i16, max_i16, max_u16;
+    Expr min_i32, max_i32, max_u32;
+    Expr min_i64, max_i64, max_u64;
+    Expr min_f32, max_f32, min_f64, max_f64;
+    // @}
+
+    using CodeGen::visit;
+
+    /** Posix implementation of Allocate. Small constant-sized allocations go
+     * on the stack. The rest go on the heap by calling "halide_malloc"
+     * and "halide_free" in the standard library. */
+    // @{
+    void visit(const Allocate *);
+    void visit(const Free *);
+    // @}
+
+    /** A struct describing heap or stack allocations. */
+    struct Allocation {
+        llvm::Value *ptr;
+
+        /** How many bytes this allocation is, or 0 if not
+         * constant. */
+        int constant_bytes;
+
+        /** How many bytes of stack space used. 0 implies it was a
+         * heap allocation. */
+        int stack_bytes;
+    };
+
+    /** The allocations currently in scope. The stack gets pushed when
+     * we enter a new function. */
+    Scope<Allocation> allocations;
+
+    /** Free all heap allocations in scope. */
+    void prepare_for_early_exit();
+
+    /** Initialize the CodeGen internal state to compile a fresh module */
+    void init_module();
+
+private:
+
+    /** Stack allocations that were freed, but haven't gone out of
+     * scope yet.  This allows us to re-use stack allocations when
+     * they aren't being used. */
+    std::vector<Allocation> free_stack_allocs;
+
+    /** Generates code for computing the size of an allocation from a
+     * list of its extents and its size. Fires a runtime assert
+     * (halide_error) if the size overflows 2^31 -1, the maximum
+     * positive number an int32_t can hold. */
+    llvm::Value *codegen_allocation_size(const std::string &name, Type type, const std::vector<Expr> &extents);
+
+    /** Allocates some memory on either the stack or the heap, and
+     * returns an Allocation object describing it. For heap
+     * allocations this calls halide_malloc in the runtime, and for
+     * stack allocations it either reuses an existing block from the
+     * free_stack_blocks list, or it saves the stack pointer and calls
+     * alloca.
+     *
+     * This call returns the allocation, pushes it onto the
+     * 'allocations' map, and adds an entry to the symbol table called
+     * name.host that provides the base pointer.
+     *
+     * When the allocation can be freed call 'free_allocation', and
+     * when it goes out of scope call 'destroy_allocation'. */
+    Allocation create_allocation(const std::string &name, Type type,
+                                 const std::vector<Expr> &extents,
+                                 Expr condition);
+
+    /** Free the memory backing an allocation and pop it from the
+     * symbol table and the allocations map. For heap allocations it
+     * calls halide_free in the runtime, for stack allocations it
+     * marks the block as free so it can be reused. */
+    void free_allocation(const std::string &name);
+};
+
+}}
+
+#endif
+
+namespace Halide {
+namespace Internal {
+
+/** A code generator that emits x86 code from a given Halide stmt. */
+class CodeGen_X86 : public CodeGen_Posix {
+public:
+    /** Create an x86 code generator. Processor features can be
+     * enabled using the appropriate flags in the target struct. */
+    CodeGen_X86(Target);
+
+    /** Compile to an internally-held llvm module. Takes a halide
+     * statement, the name of the function produced, and the arguments
+     * to the function produced. After calling this, call
+     * CodeGen::compile_to_file or
+     * CodeGen::compile_to_function_pointer to get at the x86 machine
+     * code. */
+    void compile(Stmt stmt, std::string name,
+                 const std::vector<Argument> &args,
+                 const std::vector<Buffer> &images_to_embed);
+
+    static void test();
+
+protected:
+
+    llvm::Triple get_target_triple() const;
+
+    /** Generate a call to an sse or avx intrinsic */
+    // @{
+    llvm::Value *call_intrin(Type t, const std::string &name, std::vector<Expr>);
+    llvm::Value *call_intrin(llvm::Type *t, const std::string &name, std::vector<llvm::Value *>);
+    // @}
+
+    using CodeGen_Posix::visit;
+
+    /** Nodes for which we want to emit specific sse/avx intrinsics */
+    // @{
+    void visit(const Add *);
+    void visit(const Sub *);
+    void visit(const Cast *);
+    void visit(const Div *);
+    void visit(const Min *);
+    void visit(const Max *);
+    // @}
+
+    std::string mcpu() const;
+    std::string mattrs() const;
+    bool use_soft_float_abi() const;
+};
+
+}}
+
+#endif
+#ifndef HALIDE_CODEGEN_GPU_HOST_H
+#define HALIDE_CODEGEN_GPU_HOST_H
+
+/** \file
+ * Defines the code-generator for producing GPU host code
+ */
+
+#ifndef HALIDE_CODEGEN_ARM_H
+#define HALIDE_CODEGEN_ARM_H
+
+/** \file
+ * Defines the code-generator for producing ARM machine code
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** A code generator that emits ARM code from a given Halide stmt. */
+class CodeGen_ARM : public CodeGen_Posix {
+public:
+    /** Create an ARM code generator for the given arm target. */
+    CodeGen_ARM(Target);
+
+    /** Compile to an internally-held llvm module. Takes a halide
+     * statement, the name of the function produced, and the arguments
+     * to the function produced. After calling this, call
+     * CodeGen::compile_to_file or
+     * CodeGen::compile_to_function_pointer to get at the ARM machine
+     * code. */
+    void compile(Stmt stmt, std::string name,
+                 const std::vector<Argument> &args,
+                 const std::vector<Buffer> &images_to_embed);
+
+    static void test();
+
+protected:
+
+    llvm::Triple get_target_triple() const;
+
+    /** Generate a call to a neon intrinsic */
+    // @{
+    llvm::Value *call_intrin(Type t, const std::string &name, std::vector<Expr>);
+    llvm::Value *call_intrin(llvm::Type *t, const std::string &name, std::vector<llvm::Value *>);
+    llvm::Instruction *call_void_intrin(const std::string &name, std::vector<Expr>);
+    llvm::Instruction *call_void_intrin(const std::string &name, std::vector<llvm::Value *>);
+    // @}
+
+    using CodeGen_Posix::visit;
+
+    /** Nodes for which we want to emit specific neon intrinsics */
+    // @{
+    void visit(const Cast *);
+    void visit(const Add *);
+    void visit(const Sub *);
+    void visit(const Div *);
+    void visit(const Mul *);
+    void visit(const Min *);
+    void visit(const Max *);
+    void visit(const LT *);
+    void visit(const LE *);
+    void visit(const Select *);
+    void visit(const Store *);
+    void visit(const Load *);
+    void visit(const Call *);
+    // @}
+
+    /** Various patterns to peephole match against */
+    struct Pattern {
+        std::string intrin;
+        Expr pattern;
+        enum PatternType {Simple = 0, LeftShift, RightShift, NarrowArgs};
+        PatternType type;
+        Pattern() {}
+        Pattern(std::string i, Expr p, PatternType t = Simple) : intrin(i), pattern(p), type(t) {}
+    };
+    std::vector<Pattern> casts, left_shifts, averagings, negations;
+
+
+    std::string mcpu() const;
+    std::string mattrs() const;
+    bool use_soft_float_abi() const;
+};
+
+}}
+
+#endif
+
+namespace Halide {
+namespace Internal {
+
+struct CodeGen_GPU_Dev;
+struct GPU_Argument;
+
+/** A code generator that emits GPU code from a given Halide stmt. */
+template<typename CodeGen_CPU>
+class CodeGen_GPU_Host : public CodeGen_CPU {
+public:
+
+    /** Create a GPU code generator. GPU target is selected via
+     * CodeGen_GPU_Options. Processor features can be enabled using the
+     * appropriate flags from CodeGen_X86_Options */
+    CodeGen_GPU_Host(Target);
+
+    virtual ~CodeGen_GPU_Host();
+
+    /** Compile to an internally-held llvm module. Takes a halide
+     * statement, the name of the function produced, and the arguments
+     * to the function produced. After calling this, call
+     * CodeGen::compile_to_file or
+     * CodeGen::compile_to_function_pointer to get at the x86 machine
+     * code. */
+    void compile(Stmt stmt, std::string name,
+                 const std::vector<Argument> &args,
+                 const std::vector<Buffer> &images_to_embed);
+
+protected:
+    /** Declare members of the base class that must exist to help the
+     * compiler do name lookup. Annoying but necessary, because the
+     * compiler doesn't know that CodeGen_CPU will in fact inherit
+     * from CodeGen for every instantiation of this template. */
+    using CodeGen_CPU::module;
+    using CodeGen_CPU::init_module;
+    using CodeGen_CPU::target;
+    using CodeGen_CPU::builder;
+    using CodeGen_CPU::context;
+    using CodeGen_CPU::function;
+    using CodeGen_CPU::get_user_context;
+    using CodeGen_CPU::visit;
+    using CodeGen_CPU::codegen;
+    using CodeGen_CPU::sym_push;
+    using CodeGen_CPU::sym_pop;
+    using CodeGen_CPU::sym_get;
+    using CodeGen_CPU::sym_exists;
+    using CodeGen_CPU::buffer_dev_dirty_ptr;
+    using CodeGen_CPU::buffer_host_dirty_ptr;
+    using CodeGen_CPU::buffer_elem_size_ptr;
+    using CodeGen_CPU::buffer_min_ptr;
+    using CodeGen_CPU::buffer_stride_ptr;
+    using CodeGen_CPU::buffer_extent_ptr;
+    using CodeGen_CPU::buffer_host_ptr;
+    using CodeGen_CPU::buffer_dev;
+    using CodeGen_CPU::buffer_dev_ptr;
+    using CodeGen_CPU::llvm_type_of;
+    using CodeGen_CPU::create_alloca_at_entry;
+    using CodeGen_CPU::i8;
+    using CodeGen_CPU::i32;
+    using CodeGen_CPU::i64;
+    using CodeGen_CPU::buffer_t_type;
+    using CodeGen_CPU::allocations;
+
+    /** Nodes for which we need to override default behavior for the GPU runtime */
+    // @{
+    void visit(const For *);
+    // @}
+
+    /** Finds and links in the CUDA runtime symbols prior to jitting */
+    void jit_init(llvm::ExecutionEngine *ee, llvm::Module *mod);
+
+    /** Reaches inside the module at sets it to use a single shared
+     * cuda context */
+    void jit_finalize(llvm::ExecutionEngine *ee, llvm::Module *mod,
+                      std::vector<JITCompiledModule::CleanupRoutine> *cleanup_routines);
+
+    static bool lib_cuda_linked;
+
+    static CodeGen_GPU_Dev* make_dev(Target);
+
+    llvm::Value *get_module_state();
+
+private:
+    /** Child code generator for device kernels. */
+    CodeGen_GPU_Dev *cgdev;
+};
+
+
+}}
+
+#endif
+#ifndef HALIDE_CODEGEN_PTX_DEV_H
+#define HALIDE_CODEGEN_PTX_DEV_H
+
+/** \file
+ * Defines the code-generator for producing CUDA host code
+ */
+
+#ifndef HALIDE_CODEGEN_GPU_DEV_H
+#define HALIDE_CODEGEN_GPU_DEV_H
+
+/** \file
+ * Defines the code-generator interface for producing GPU device code
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** A bit more information attached to an argument useful for GPU backends. */
+struct GPU_Argument : public Argument {
+    /** The static size of the argument if known, or zero otherwise. */
+    size_t size;
+
+    GPU_Argument() : size(0) {}
+    GPU_Argument(const std::string &_name, bool _is_buffer, Type _type) :
+        Argument(_name, _is_buffer, _type), size(0) {}
+    GPU_Argument(const std::string &_name, bool _is_buffer, Type _type,
+                 size_t _size) :
+        Argument(_name, _is_buffer, _type), size(_size) {}
+};
+
+/** A code generator that emits GPU code from a given Halide stmt. */
+struct CodeGen_GPU_Dev {
+    virtual ~CodeGen_GPU_Dev();
+
+    /** Compile a GPU kernel into the module. This may be called many times
+     * with different kernels, which will all be accumulated into a single
+     * source module shared by a given Halide pipeline. */
+    virtual void add_kernel(Stmt stmt,
+                            const std::string &name,
+                            const std::vector<GPU_Argument> &args) = 0;
+
+    /** (Re)initialize the GPU kernel module. This is separate from compile,
+     * since a GPU device module will often have many kernels compiled into it
+     * for a single pipeline. */
+    virtual void init_module() = 0;
+
+    virtual std::vector<char> compile_to_src() = 0;
+
+    virtual std::string get_current_kernel_name() = 0;
+
+    virtual void dump() = 0;
+
+    static bool is_gpu_var(const std::string &name);
+    static bool is_gpu_block_var(const std::string &name);
+    static bool is_gpu_thread_var(const std::string &name);
+
+    /** Checks if expr is block uniform, i.e. does not depend on a thread
+     * var. */
+    static bool is_block_uniform(Expr expr);
+    /** Checks if the buffer is a candidate for constant storage. Most
+     * GPUs (APIs) support a constant memory storage class that cannot be
+     * written to and performs well for block uniform accesses. */
+    static bool is_buffer_constant(Stmt kernel, const std::string &buffer);
+};
+
+}}
+
+#endif
+
+namespace llvm {
+class BasicBlock;
+}
+
+namespace Halide {
+namespace Internal {
+
+/** A code generator that emits GPU code from a given Halide stmt. */
+class CodeGen_PTX_Dev : public CodeGen, public CodeGen_GPU_Dev {
+public:
+    friend class CodeGen_GPU_Host<CodeGen_X86>;
+    friend class CodeGen_GPU_Host<CodeGen_ARM>;
+
+    /** Create a PTX device code generator. */
+    CodeGen_PTX_Dev(Target host);
+
+    void add_kernel(Stmt stmt,
+                    const std::string &name,
+                    const std::vector<GPU_Argument> &args);
+
+    /** (Re)initialize the PTX module. This is separate from compile, since
+     * a PTX device module will often have many kernels compiled into it for
+     * a single pipeline. */
+    void init_module();
+
+    static void test();
+
+    std::vector<char> compile_to_src();
+    std::string get_current_kernel_name();
+
+    void dump();
+
+protected:
+    using CodeGen::visit;
+
+    /** We hold onto the basic block at the start of the device
+     * function in order to inject allocas */
+    llvm::BasicBlock *entry_block;
+
+    /** Nodes for which we need to override default behavior for the GPU runtime */
+    // @{
+    void visit(const For *);
+    void visit(const Allocate *);
+    void visit(const Free *);
+    // @}
+
+    std::string march() const;
+    std::string mcpu() const;
+    std::string mattrs() const;
+    bool use_soft_float_abi() const;
+
+    /** Map from simt variable names (e.g. foo.__block_id_x) to the llvm
+     * ptx intrinsic functions to call to get them. */
+    std::string simt_intrinsic(const std::string &name);
+};
+
+}}
+
+#endif
+#ifndef HALIDE_CODEGEN_OPENCL_DEV_H
+#define HALIDE_CODEGEN_OPENCL_DEV_H
+
+/** \file
+ * Defines the code-generator for producing OpenCL C kernel code
+ */
+
+#include <sstream>
+
+
+namespace Halide {
+namespace Internal {
+
+class CodeGen_OpenCL_Dev : public CodeGen_GPU_Dev {
+public:
+    CodeGen_OpenCL_Dev(Target target);
+
+    /** Compile a GPU kernel into the module. This may be called many times
+     * with different kernels, which will all be accumulated into a single
+     * source module shared by a given Halide pipeline. */
+    void add_kernel(Stmt stmt,
+                    const std::string &name,
+                    const std::vector<GPU_Argument> &args);
+
+    /** (Re)initialize the GPU kernel module. This is separate from compile,
+     * since a GPU device module will often have many kernels compiled into it
+     * for a single pipeline. */
+    void init_module();
+
+    std::vector<char> compile_to_src();
+
+    std::string get_current_kernel_name();
+
+    void dump();
+
+protected:
+
+    class CodeGen_OpenCL_C : public CodeGen_C {
+    public:
+        CodeGen_OpenCL_C(std::ostream &s) : CodeGen_C(s) {}
+        void add_kernel(Stmt stmt,
+                        const std::string &name,
+                        const std::vector<GPU_Argument> &args);
+
+    protected:
+        using CodeGen_C::visit;
+        std::string print_type(Type type);
+        std::string print_reinterpret(Type type, Expr e);
+
+        std::string get_memory_space(const std::string &);
+
+        void visit(const For *);
+        void visit(const Ramp *op);
+        void visit(const Broadcast *op);
+        void visit(const Load *op);
+        void visit(const Store *op);
+        void visit(const Cast *op);
+        void visit(const Allocate *op);
+        void visit(const Free *op);
+    };
+
+    std::ostringstream src_stream;
+    std::string cur_kernel_name;
+    CodeGen_OpenCL_C clc;
+    Target target;
+};
+
+}}
+
+#endif
+#ifndef DEINTERLEAVE_H
+#define DEINTERLEAVE_H
+
+/** \file
+ *
+ * Defines methods for splitting up a vector into the even lanes and
+ * the odd lanes. Useful for optimizing expressions such as select(x %
+ * 2, f(x/2), g(x/2))
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** Extract the odd-numbered lanes in a vector */
+Expr extract_odd_lanes(Expr a);
+
+/** Extract the even-numbered lanes in a vector */
+Expr extract_even_lanes(Expr a);
+
+/** Extract the nth lane of a vector */
+Expr extract_lane(Expr vec, int lane);
+
+/** Look through a statement for expressions of the form select(ramp %
+ * 2 == 0, a, b) and replace them with calls to an interleave
+ * intrinsic */
+Stmt rewrite_interleavings(Stmt s);
+
+void deinterleave_vector_test();
+
+}
+}
+
+#endif
+#ifndef HALIDE_DERIVATIVE_H
+#define HALIDE_DERIVATIVE_H
+
+/** \file
+ *
+ * Methods for taking derivatives of halide expressions. Not currently used anywhere
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** Compute the analytic derivative of the expression with respect to
+ * the variable. May returned an undefined Expr if it's
+ * non-differentiable. */
+//Expr derivative(Expr expr, const string &var);
+
+/**
+ * Compute the finite difference version of the derivative:
+ * expr(var+1) - expr(var). The reason to do this as a derivative,
+ * instead of just explicitly constructing expr(var+1) -
+ * expr(var), is so that we don't have to do so much
+ * simplification later. For example, the finite-difference
+ * derivative of 2*x is trivially 2, whereas 2*(x+1) - 2*x may or
+ * may not simplify down to 2, depending on the quality of our
+ * simplification routine.
+ *
+ * Most rules for the finite difference and the true derivative
+ * are the same. The quotient and product rules are not.
+ *
+ */
+Expr finite_difference(Expr expr, const std::string &var);
+
+/**
+ * Detect whether an expression is monotonic increasing in a variable,
+ * decreasing, or unknown. Returns -1, 0, or 1 for decreasing,
+ * unknown, and increasing.
+ */
+enum MonotonicResult {Constant, MonotonicIncreasing, MonotonicDecreasing, Unknown};
+MonotonicResult is_monotonic(Expr e, const std::string &var);
+
+}
+}
+
+#endif
+#ifndef HALIDE_ONE_TO_ONE_H
+#define HALIDE_ONE_TO_ONE_H
+
+/** \file
+ *
+ * Methods for determining if an Expr represents a one-to-one function
+ * in its Variables.
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** Conservatively determine whether an integer expression is
+ * one-to-one in its variables. For now this means it contains a
+ * single variable and its derivative is provably strictly positive or
+ * strictly negative. */
+bool is_one_to_one(Expr expr);
+
+void is_one_to_one_test();
+
+}
+}
+
+#endif
+#ifndef HALIDE_EXTERN_H
+#define HALIDE_EXTERN_H
+
+
+/** \file
+ *
+ * Convenience macros that lift functions that take C types into
+ * functions that take and return exprs, and call the original
+ * function at runtime under the hood. See test/c_function.cpp for
+ * example usage.
+ */
+
+#define _halide_check_arg_type(t, name, e, n)                     \
+    _halide_user_assert(e.type() == t) << "Type mismatch for argument " << n << " to extern function " << #name << ". Type expected is " << t << " but the argument " << e << " has type " << e.type() << ".\n";
+
+#define HalideExtern_1(rt, name, t1)                                    \
+    Halide::Expr name(Halide::Expr a1) {                                \
+        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);     \
+        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1), Halide::Internal::Call::Extern); \
+    }
+
+#define HalideExtern_2(rt, name, t1, t2)                                \
+    Halide::Expr name(Halide::Expr a1, Halide::Expr a2) {               \
+        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                        \
+        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                        \
+        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2), Halide::Internal::Call::Extern); \
+    }
+
+#define HalideExtern_3(rt, name, t1, t2, t3)                            \
+    Halide::Expr name(Halide::Expr a1, Halide::Expr a2, Halide::Expr a3) { \
+        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                                \
+        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                                \
+        _halide_check_arg_type(Halide::type_of<t3>(), name, a3, 3);                                \
+        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2, a3), Halide::Internal::Call::Extern); \
+    }
+
+#define HalideExtern_4(rt, name, t1, t2, t3, t4)                        \
+    Halide::Expr name(Halide::Expr a1, Halide::Expr a2, Halide::Expr a3, Halide::Expr a4) { \
+        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                                \
+        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                                \
+        _halide_check_arg_type(Halide::type_of<t3>(), name, a3, 3);                                \
+        _halide_check_arg_type(Halide::type_of<t4>(), name, a4, 4);                                \
+        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2, a3, a4), Halide::Internal::Call::Extern); \
+  }
+
+#define HalideExtern_5(rt, name, t1, t2, t3, t4, t5)                       \
+    Halide::Expr name(Halide::Expr a1, Halide::Expr a2, Halide::Expr a3, Halide::Expr a4, Halide::Expr a5) { \
+        _halide_check_arg_type(Halide::type_of<t1>(), name, a1, 1);                                \
+        _halide_check_arg_type(Halide::type_of<t2>(), name, a2, 2);                                \
+        _halide_check_arg_type(Halide::type_of<t3>(), name, a3, 3);                                \
+        _halide_check_arg_type(Halide::type_of<t4>(), name, a4, 4);                                \
+        _halide_check_arg_type(Halide::type_of<t5>(), name, a5, 5);                                \
+        return Halide::Internal::Call::make(Halide::type_of<rt>(), #name, vec(a1, a2, a3, a4, a5), Halide::Internal::Call::Extern); \
+  }
+
+#endif
+#ifndef HALIDE_FUNC_H
+#define HALIDE_FUNC_H
+
+/** \file
+ *
+ * Defines Func - the front-end handle on a halide function, and related classes.
+ */
+
+#ifndef HALIDE_VAR_H
+#define HALIDE_VAR_H
+
+/** \file
+ * Defines the Var - the front-end variable
+ */
+
+#include <string>
+#include <sstream>
+
+namespace Halide {
+
+/** A Halide variable, to be used when defining functions. It is just
+ * a name, and can be reused in places where no name conflict will
+ * occur. It can be used in the left-hand-side of a function
+ * definition, or as an Expr. As an Expr, it always has type
+ * Int(32). */
+class Var {
+    std::string _name;
+public:
+    /** Construct a Var with the given name */
+    Var(const std::string &n) : _name(n) {
+        // Make sure we don't get a unique name with the same name as
+        // this later:
+        Internal::unique_name(n, false);
+    }
+
+    /** Construct a Var with an automatically-generated unique name. */
+    Var() : _name(Internal::make_entity_name(this, "Halide::Var", 'v')) {}
+
+    /** Get the name of a Var */
+    const std::string &name() const {return _name;}
+
+    /** Test if two Vars are the same. This simply compares the names. */
+    bool same_as(const Var &other) const {return _name == other._name;}
+
+    /** Implicit var constructor. Implicit variables are injected
+     * automatically into a function call if the number of arguments
+     * to the function are fewer than its dimensionality and a
+     * placeholder ("_") appears in its argument list. Defining a
+     * function to equal an expression containing implicit variables
+     * similarly appends those implicit variables, in the same order,
+     * to the left-hand-side of the definition where the placeholder
+     * ('_') appears.
+     *
+     * For example, consider the definition:
+     *
+     \code
+     Func f, g;
+     Var x, y;
+     f(x, y) = 3;
+     \endcode
+     *
+     * A call to f with the placeholder symbol \ref _
+     * will have implicit arguments injected automatically, so f(2, \ref _)
+     * is equivalent to f(2, \ref _0), where \ref _0 = Var::implicit(0), and f(\ref _)
+     * (and indeed f when cast to an Expr) is equivalent to f(\ref _0, \ref _1).
+     * The following definitions are all equivalent, differing only in the
+     * variable names.
+     *
+     \code
+     g(_) = f*3;
+     g(_) = f(_)*3;
+     g(x, _) = f(x, _)*3;
+     g(x, y) = f(x, y)*3;
+     \endcode
+     *
+     * These are expanded internally as follows:
+     *
+     \code
+     g(_0, _1) = f(_0, _1)*3;
+     g(_0, _1) = f(_0, _1)*3;
+     g(x, _0) = f(x, _0)*3;
+     g(x, y) = f(x, y)*3;
+     \endcode
+     *
+     * The following, however, defines g as four dimensional:
+     \code
+     g(x, y, _) = f*3;
+     \endcode
+     *
+     * It is equivalent to:
+     *
+     \code
+     g(x, y, _0, _1) = f(_0, _1)*3;
+     \endcode
+     *
+     * Expressions requiring differing numbers of implicit variables
+     * can be combined. The left-hand-side of a definition injects
+     * enough implicit variables to cover all of them:
+     *
+     \code
+     Func h;
+     h(x) = x*3;
+     g(x) = h + (f + f(x)) * f(x, y);
+     \endcode
+     *
+     * expands to:
+     *
+     \code
+     Func h;
+     h(x) = x*3;
+     g(x, _0, _1) = h(_0) + (f(_0, _1) + f(x, _0)) * f(x, y);
+     \endcode
+     *
+     * The first ten implicits, _0 through _9, are predeclared in this
+     * header and can be used for scheduling. They should never be
+     * used as arguments in a declaration or used in a call.
+     *
+     * While it is possible to use Var::implicit or the predeclared
+     * implicits to create expressions that can be treated as small
+     * anonymous functions (e.g. Func(_0 + _1)) this is considered
+     * poor style. Instead use \ref lambda.
+     */
+    static Var implicit(int n) {
+        std::ostringstream str;
+        str << "_" << n;
+        return Var(str.str());
+    }
+
+    /** Return whether a variable name is of the form for an implicit argument.
+     * TODO: This is almost guaranteed to incorrectly fire on user
+     * declared variables at some point. We should likely prevent
+     * user Var declarations from making names of this form.
+     */
+    //{
+    static bool is_implicit(const std::string &name) {
+        return Internal::starts_with(name, "_") &&
+            name.find_first_not_of("0123456789", 1) == std::string::npos;
+    }
+    bool is_implicit() const {
+        return is_implicit(name());
+    }
+    //}
+
+    /** Return the argument index for a placeholder argument given its
+     *  name. Returns 0 for \ref _0, 1 for \ref _1, etc. Returns -1 if
+     *  the variable is not of implicit form.
+     */
+    //{
+    static int implicit_index(const std::string &name) {
+        return is_implicit(name) ? atoi(name.c_str() + 1) : -1;
+    }
+    int implicit_index() const {
+        return implicit_index(name());
+    }
+    //}
+
+    /** Test if a var is the placeholder variable \ref _ */
+    //{
+    static bool is_placeholder(const std::string &name) {
+        return name == "_";
+    }
+    bool is_placeholder() const {
+        return is_placeholder(name());
+    }
+    //}
+
+    /** A Var can be treated as an Expr of type Int(32) */
+    operator Expr() const {
+        return Internal::Variable::make(Int(32), name());
+    }
+
+    /** Vars to use for scheduling producer/consumer pairs on the gpu. */
+    // @{
+    static Var gpu_blocks() {
+        return Var("__block_id_x");
+    }
+    static Var gpu_threads() {
+        return Var("__thread_id_x");
+    }
+    // @}
+
+    /** A Var that represents the location outside the outermost loop. */
+    static Var outermost() {
+        return Var("__outermost");
+    }
+
+};
+
+/** A placeholder variable for infered arguments. See \ref Var::implicit */
+EXPORT extern Var _;
+
+/** The first ten implicit Vars for use in scheduling. See \ref Var::implicit */
+// @{
+EXPORT extern Var _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
+// @}
+
+}
+
+#endif
+#ifndef HALIDE_PARAM_H
+#define HALIDE_PARAM_H
+
+/** \file
+ *
+ * Classes for declaring scalar and image parameters to halide pipelines
+ */
+
+#include <sstream>
+#include <vector>
+
+
+namespace Halide {
+
+/** A scalar parameter to a halide pipeline. If you're jitting, this
+ * should be bound to an actual value of type T using the set method
+ * before you realize the function uses this. If you're statically
+ * compiling, this param should appear in the argument list. */
+template<typename T>
+class Param {
+    /** A reference-counted handle on the internal parameter object */
+    Internal::Parameter param;
+
+public:
+    /** Construct a scalar parameter of type T with a unique
+     * auto-generated name */
+    Param() : param(type_of<T>(), false, Internal::make_entity_name(this, "Halide::Param<?", 'p')) {}
+
+    /** Construct a scalar parameter of type T with the given name */
+    Param(const std::string &n) : param(type_of<T>(), false, n) {}
+
+    /** Get the name of this parameter */
+    const std::string &name() const {
+        return param.name();
+    }
+
+    /** Get the current value of this parameter. Only meaningful when jitting. */
+    NO_INLINE T get() const {
+        return param.get_scalar<T>();
+    }
+
+    /** Set the current value of this parameter. Only meaningful when jitting */
+    NO_INLINE void set(T val) {
+        param.set_scalar<T>(val);
+    }
+
+    /** Get a pointer to the location that stores the current value of
+     * this parameter. Only meaningful for jitting. */
+    NO_INLINE T *get_address() const {
+        return (T *)(param.get_scalar_address());
+    }
+
+    /** Get the halide type of T */
+    Type type() const {
+        return type_of<T>();
+    }
+
+    /** Get or set the possible range of this parameter. Use undefined
+     * Exprs to mean unbounded. */
+    // @{
+    void set_range(Expr min, Expr max) {
+        set_min_value(min);
+        set_max_value(max);
+    }
+
+    void set_min_value(Expr min) {
+        if (min.type() != type_of<T>()) {
+            min = Internal::Cast::make(type_of<T>(), min);
+        }
+        param.set_min_value(min);
+    }
+
+    void set_max_value(Expr max) {
+        if (max.type() != type_of<T>()) {
+            max = Internal::Cast::make(type_of<T>(), max);
+        }
+        param.set_max_value(max);
+    }
+
+    Expr get_min_value() {
+        return param.get_min_value();
+    }
+
+    Expr get_max_value() {
+        return param.get_max_value();
+    }
+    // @}
+
+    /** You can use this parameter as an expression in a halide
+     * function definition */
+    operator Expr() const {
+        return Internal::Variable::make(type_of<T>(), name(), param);
+    }
+
+    /** Using a param as the argument to an external stage treats it
+     * as an Expr */
+    operator ExternFuncArgument() const {
+        return Expr(*this);
+    }
+
+    /** Construct the appropriate argument matching this parameter,
+     * for the purpose of generating the right type signature when
+     * statically compiling halide pipelines. */
+    operator Argument() const {
+        return Argument(name(), false, type());
+    }
+};
+
+/** Returns a Param corresponding to a pointer to a user context
+ * structure; when the Halide function that takes such a parameter
+ * calls a function from the Halide runtime (e.g. halide_printf()), it
+ * passes the value of this pointer as the first argument to the
+ * runtime function.  */
+inline Param<void *> user_context_param() {
+  return Param<void *>("__user_context");
+}
+
+/** A handle on the output buffer of a pipeline. Used to make static
+ * promises about the output size and stride. */
+class OutputImageParam {
+protected:
+    /** A reference-counted handle on the internal parameter object */
+    Internal::Parameter param;
+
+    /** The dimensionality of this image. */
+    int dims;
+
+    void add_implicit_args_if_placeholder(std::vector<Expr> &args,
+                                          Expr last_arg,
+                                          int total_args,
+                                          bool *placeholder_seen) const;
+public:
+
+    /** Construct a NULL image parameter handle. */
+    OutputImageParam() : dims(0) {}
+
+    /** Construct an OutputImageParam that wraps an Internal Parameter object. */
+    EXPORT OutputImageParam(const Internal::Parameter &p, int d);
+
+    /** Get the name of this Param */
+    EXPORT const std::string &name() const;
+
+    /** Get the type of the image data this Param refers to */
+    EXPORT Type type() const;
+
+    /** Is this parameter handle non-NULL */
+    EXPORT bool defined();
+
+    /** Get an expression representing the minimum coordinates of this image
+     * parameter in the given dimension. */
+    EXPORT Expr min(int x) const;
+
+    /** Get an expression representing the extent of this image
+     * parameter in the given dimension */
+    EXPORT Expr extent(int x) const;
+
+    /** Get an expression representing the stride of this image in the
+     * given dimension */
+    EXPORT Expr stride(int x) const;
+
+    /** Set the extent in a given dimension to equal the given
+     * expression. Images passed in that fail this check will generate
+     * a runtime error. Returns a reference to the ImageParam so that
+     * these calls may be chained.
+     *
+     * This may help the compiler generate better
+     * code. E.g:
+     \code
+     im.set_extent(0, 100);
+     \endcode
+     * tells the compiler that dimension zero must be of extent 100,
+     * which may result in simplification of boundary checks. The
+     * value can be an arbitrary expression:
+     \code
+     im.set_extent(0, im.extent(1));
+     \endcode
+     * declares that im is a square image (of unknown size), whereas:
+     \code
+     im.set_extent(0, (im.extent(0)/32)*32);
+     \endcode
+     * tells the compiler that the extent is a multiple of 32. */
+    EXPORT OutputImageParam &set_extent(int dim, Expr extent);
+
+    /** Set the min in a given dimension to equal the given
+     * expression. Setting the mins to zero may simplify some
+     * addressing math. */
+    EXPORT OutputImageParam &set_min(int dim, Expr min);
+
+    /** Set the stride in a given dimension to equal the given
+     * value. This is particularly helpful to set when
+     * vectorizing. Known strides for the vectorized dimension
+     * generate better code. */
+    EXPORT OutputImageParam &set_stride(int dim, Expr stride);
+
+    /** Set the min and extent in one call. */
+    EXPORT OutputImageParam &set_bounds(int dim, Expr min, Expr extent);
+
+    /** Get the dimensionality of this image parameter */
+    EXPORT int dimensions() const;
+
+    /** Get an expression giving the minimum coordinate in dimension 0, which
+     * by convention is the coordinate of the left edge of the image */
+    EXPORT Expr left() const;
+
+    /** Get an expression giving the maximum coordinate in dimension 0, which
+     * by convention is the coordinate of the right edge of the image */
+    EXPORT Expr right() const;
+
+    /** Get an expression giving the minimum coordinate in dimension 1, which
+     * by convention is the top of the image */
+    EXPORT Expr top() const;
+
+    /** Get an expression giving the maximum coordinate in dimension 1, which
+     * by convention is the bottom of the image */
+    EXPORT Expr bottom() const;
+
+    /** Get an expression giving the extent in dimension 0, which by
+     * convention is the width of the image */
+    EXPORT Expr width() const;
+
+    /** Get an expression giving the extent in dimension 1, which by
+     * convention is the height of the image */
+    EXPORT Expr height() const;
+
+    /** Get an expression giving the extent in dimension 2, which by
+     * convention is the channel-count of the image */
+    EXPORT Expr channels() const;
+
+    /** Get at the internal parameter object representing this ImageParam. */
+    EXPORT Internal::Parameter parameter() const;
+
+    /** Construct the appropriate argument matching this parameter,
+     * for the purpose of generating the right type signature when
+     * statically compiling halide pipelines. */
+    EXPORT operator Argument() const;
+
+    /** Using a param as the argument to an external stage treats it
+     * as an Expr */
+    EXPORT operator ExternFuncArgument() const;
+};
+
+/** An Image parameter to a halide pipeline. E.g., the input image. */
+class ImageParam : public OutputImageParam {
+
+public:
+
+    /** Construct a NULL image parameter handle. */
+    ImageParam() : OutputImageParam() {}
+
+    /** Construct an image parameter of the given type and
+     * dimensionality, with an auto-generated unique name. */
+    EXPORT ImageParam(Type t, int d);
+
+    /** Construct an image parameter of the given type and
+     * dimensionality, with the given name */
+    EXPORT ImageParam(Type t, int d, const std::string &n);
+
+    /** Bind a buffer or image to this ImageParam. Only relevant for jitting */
+    EXPORT void set(Buffer b);
+
+    /** Get the buffer bound to this ImageParam. Only relevant for jitting */
+    EXPORT Buffer get() const;
+
+    /** Construct an expression which loads from this image
+     * parameter. The location is extended with enough implicit
+     * variables to match the dimensionality of the image
+     * (see \ref Var::implicit)
+     */
+    // @{
+    EXPORT Expr operator()() const;
+    EXPORT Expr operator()(Expr x) const;
+    EXPORT Expr operator()(Expr x, Expr y) const;
+    EXPORT Expr operator()(Expr x, Expr y, Expr z) const;
+    EXPORT Expr operator()(Expr x, Expr y, Expr z, Expr w) const;
+    EXPORT Expr operator()(std::vector<Expr>) const;
+    EXPORT Expr operator()(std::vector<Var>) const;
+    // @}
+
+    /** Treating the image parameter as an Expr is equivalent to call
+     * it with no arguments. For example, you can say:
+     *
+     \code
+     ImageParam im(UInt(8), 2);
+     Func f;
+     f = im*2;
+     \endcode
+     *
+     * This will define f as a two-dimensional function with value at
+     * position (x, y) equal to twice the value of the image parameter
+     * at the same location.
+     */
+    operator Expr() const {
+        return (*this)(_);
+    }
+
+};
+
+}
+
+#endif
+#ifndef HALIDE_RDOM_H
+#define HALIDE_RDOM_H
+
+/** \file
+ * Defines the front-end syntax for reduction domains and reduction
+ * variables.
+ */
+
+
+namespace Halide {
+
+/** A reduction variable represents a single dimension of a reduction
+ * domain (RDom). Don't construct them directly, instead construct an
+ * RDom, and use RDom::operator[] to get at the variables. For
+ * single-dimensional reduction domains, you can just cast a
+ * single-dimensional RDom to an RVar. */
+class RVar {
+    std::string _name;
+    Expr _min, _extent;
+    Internal::ReductionDomain _domain;
+public:
+    /** An empty reduction variable. */
+    RVar() : _name(Internal::make_entity_name(this, "Halide::RVar", 'r')) {}
+
+    /** Construct an RVar with the given name */
+    explicit RVar(const std::string &n) : _name(n) {
+        // Make sure we don't get a unique name with the same name as
+        // this later:
+        Internal::unique_name(n, false);
+    }
+
+    /** Construct a reduction variable with the given name and
+     * bounds. Must be a member of the given reduction domain. */
+    RVar(std::string name, Expr min, Expr extent, Internal::ReductionDomain domain) :
+        _name(name), _min(min), _extent(extent), _domain(domain) {}
+
+    /** The minimum value that this variable will take on */
+    Expr min() const {return _min;}
+
+    /** The number that this variable will take on. The maximum value
+     * of this variable will be min() + extent() - 1 */
+    Expr extent() const {return _extent;}
+
+    /** The reduction domain this is associated with. */
+    Internal::ReductionDomain domain() const {return _domain;}
+
+    /** The name of this reduction variable */
+    const std::string &name() const {return _name;}
+
+    /** Reduction variables can be used as expressions. */
+    EXPORT operator Expr() const;
+};
+
+/** A multi-dimensional domain over which to iterate. Used when
+ * defining functions with update definitions.
+ *
+ * An reduction is a function with a two-part definition. It has an
+ * initial value, which looks much like a pure function, and an update
+ * definition, which may refer to some RDom. Evaluating such a
+ * function first initializes it over the required domain (which is
+ * inferred based on usage), and then runs update rule for all points
+ * in the RDom. For example:
+ *
+ \code
+ Func f;
+ Var x;
+ RDom r(0, 10);
+ f(x) = x; // the initial value
+ f(r) = f(r) * 2;
+ Image<int> result = f.realize(10);
+ \endcode
+ *
+ * This function creates a single-dimensional buffer of size 10, in
+ * which element x contains the value x*2. Internally, first the
+ * initialization rule fills in x at every site, and then the update
+ * definition doubles every site.
+ *
+ * One use of reductions is to build a function recursively (pure
+ * functions in halide cannot be recursive). For example, this
+ * function fills in an array with the first 20 fibonacci numbers:
+ *
+ \code
+ Func f;
+ Var x;
+ RDom r(2, 18);
+ f(x) = 1;
+ f(r) = f(r-1) + f(r-2);
+ \endcode
+ *
+ * Another use of reductions is to perform scattering operations, as
+ * unlike a pure function declaration, the left-hand-side of an update
+ * definition may contain general expressions:
+ *
+ \code
+ ImageParam input(UInt(8), 2);
+ Func histogram;
+ Var x;
+ RDom r(input); // Iterate over all pixels in the input
+ histogram(x) = 0;
+ histogram(input(r.x, r.y)) = histogram(input(r.x, r.y)) + 1;
+ \endcode
+ *
+ * An update definition may also be multi-dimensional. This example
+ * computes a summed-area table by first summing horizontally and then
+ * vertically:
+ *
+ \code
+ ImageParam input(Float(32), 2);
+ Func sum_x, sum_y;
+ Var x, y;
+ RDom r(input);
+ sum_x(x, y)     = input(x, y);
+ sum_x(r.x, r.y) = sum_x(r.x, r.y) + sum_x(r.x-1, r.y);
+ sum_y(x, y)     = sum_x(x, y);
+ sum_y(r.x, r.y) = sum_y(r.x, r.y) + sum_y(r.x, r.y-1);
+ \endcode
+ *
+ * You can also mix pure dimensions with reduction variables. In the
+ * previous example, note that there's no need for the y coordinate in
+ * sum_x to be traversed serially. The sum within each row is entirely
+ * independent. The rows could be computed in parallel, or in a
+ * different order, without changing the meaning. Therefore, we can
+ * instead write this definition as follows:
+ *
+ \code
+ ImageParam input(Float(32), 2);
+ Func sum_x, sum_y;
+ Var x, y;
+ RDom r(input);
+ sum_x(x, y)   = input(x, y);
+ sum_x(r.x, y) = sum_x(r.x, y) + sum_x(r.x-1, y);
+ sum_y(x, y)   = sum_x(x, y);
+ sum_y(x, r.y) = sum_y(x, r.y) + sum_y(x, r.y-1);
+ \endcode
+ *
+ * This lets us schedule it more flexibly. You can now parallelize the
+ * update step of sum_x over y by calling:
+ \code
+ sum_x.update().parallel(y).
+ \endcode
+ *
+ * Note that calling sum_x.parallel(y) only parallelizes the
+ * initialization step, and not the update step! Scheduling the update
+ * step of a reduction must be done using the handle returned by
+ * \ref Func::update(). This code parallelizes both the initialization
+ * step and the update step:
+ *
+ \code
+ sum_x.parallel(y);
+ sum_x.update().parallel(y);
+ \endcode
+ *
+ * When you mix reduction variables and pure dimensions, the reduction
+ * domain is traversed outermost. That is, for each point in the
+ * reduction domain, the inferred pure domain is traversed in its
+ * entirety. For the above example, this means that sum_x walks down
+ * the columns, and sum_y walks along the rows. This may not be
+ * cache-coherent. You may try reordering these dimensions using the
+ * schedule, but Halide will return an error if it decides that this
+ * risks changing the meaning of your function. The solution lies in
+ * clever scheduling. If we say:
+ *
+ \code
+ sum_x.compute_at(sum_y, r.y);
+ \endcode
+ *
+ * Then the sum in x is computed only as necessary for each scanline
+ * of the sum in y. This not only results in sum_x walking along the
+ * rows, it also improves the locality of the entire pipeline.
+ */
+class RDom {
+    Internal::ReductionDomain dom;
+public:
+    /** Construct an undefined reduction domain. */
+    EXPORT RDom() {}
+
+    /** Construct a single-dimensional reduction domain with the given
+     * name. If the name is left blank, a unique one is
+     * auto-generated. */
+    EXPORT RDom(Expr min, Expr extent, std::string name = "");
+
+    /** Construct a two-dimensional reduction domain with the given
+     * name. If the name is left blank, a unique one is
+     * auto-generated. */
+    EXPORT RDom(Expr min0, Expr extent0, Expr min1, Expr extent1, std::string name = "");
+
+    /** Construct a three-dimensional reduction domain with the given
+     * name. If the name is left blank, a unique one is
+     * auto-generated. */
+    EXPORT RDom(Expr min0, Expr extent0, Expr min1, Expr extent1, Expr min2, Expr extent2, std::string name = "");
+
+    /** Construct a four-dimensional reduction domain with the given
+     * name. If the name is left blank, a unique one is
+     * auto-generated. */
+    EXPORT RDom(Expr min0, Expr extent0, Expr min1, Expr extent1, Expr min2, Expr extent2, Expr min3, Expr extent3, std::string name = "");
+    /** Construct a reduction domain that iterates over all points in
+     * a given Buffer, Image, or ImageParam. Has the same
+     * dimensionality as the argument. */
+    // @{
+    EXPORT RDom(Buffer);
+    EXPORT RDom(ImageParam);
+    // @}
+
+    /** Construct a reduction domain that wraps an Internal ReductionDomain object. */
+    EXPORT RDom(Internal::ReductionDomain d);
+
+    /** Get at the internal reduction domain object that this wraps. */
+    Internal::ReductionDomain domain() const {return dom;}
+
+    /** Check if this reduction domain is non-NULL */
+    bool defined() const {return dom.defined();}
+
+    /** Compare two reduction domains for equality of reference */
+    bool same_as(const RDom &other) const {return dom.same_as(other.dom);}
+
+    /** Get the dimensionality of a reduction domain */
+    EXPORT int dimensions() const;
+
+    /** Get at one of the dimensions of the reduction domain */
+    EXPORT RVar operator[](int);
+
+    /** Single-dimensional reduction domains can be used as RVars directly. */
+    EXPORT operator RVar() const;
+
+    /** Single-dimensional reduction domains can be also be used as Exprs directly. */
+    EXPORT operator Expr() const;
+
+    /** Direct access to the four dimensions of the reduction
+     * domain. Some of these dimensions may be undefined if the
+     * reduction domain has fewer than four dimensions. */
+    // @{
+    RVar x, y, z, w;
+    // @}
+};
+
+/** Emit an RVar in a human-readable form */
+std::ostream &operator<<(std::ostream &stream, RVar);
+
+/** Emit an RDom in a human-readable form. */
+std::ostream &operator<<(std::ostream &stream, RDom);
+}
+
+#endif
+#ifndef HALIDE_IMAGE_H
+#define HALIDE_IMAGE_H
+
+/** \file
+ * Defines Halide's Image data type
+ */
+
+#ifndef HALIDE_TUPLE_H
+#define HALIDE_TUPLE_H
+
+/** \file
+ *
+ * Defines Tuple - the front-end handle on small arrays of expressions.
+ */
+
 #include <vector>
 
 namespace Halide {
@@ -7701,12 +7602,12 @@ public:
 
 namespace Halide {
 
-/** A fragment of front-end syntax of the form f(x, y, z), where x,
- * y, z are Vars. It could be the left-hand side of a function
- * definition, or it could be a call to a function. We don't know
- * until we see how this object gets used.
- */
-class FuncRefExpr;
+enum GPUAPI {
+    GPU_Default,
+    GPU_CUDA,
+    GPU_OpenCL,
+    GPU_GLSL
+};
 
 /** A class that can represent Vars or RVars. Used for reorder calls
  * which can accept a mix of either. */
@@ -7726,6 +7627,139 @@ struct VarOrRVar {
     const bool is_rvar;
 };
 
+/** A single definition of a Func. May be a pure or update definition. */
+class Stage {
+    Internal::Schedule schedule;
+    void set_dim_type(VarOrRVar var, Internal::For::ForType t);
+    void split(const std::string &old, const std::string &outer, const std::string &inner, Expr factor, bool exact);
+    std::string dump_argument_list();
+public:
+    Stage(Internal::Schedule s) : schedule(s) {s.touched();}
+
+    /** Scheduling calls that control how the domain of this stage is
+     * traversed. See the documentation for Func for the meanings. */
+    // @{
+
+    EXPORT Stage &split(VarOrRVar old, VarOrRVar outer, VarOrRVar inner, Expr factor);
+    EXPORT Stage &fuse(VarOrRVar inner, VarOrRVar outer, VarOrRVar fused);
+    EXPORT Stage &serial(VarOrRVar var);
+    EXPORT Stage &parallel(VarOrRVar var);
+    EXPORT Stage &vectorize(VarOrRVar var);
+    EXPORT Stage &unroll(VarOrRVar var);
+    EXPORT Stage &parallel(VarOrRVar var, Expr task_size);
+    EXPORT Stage &vectorize(VarOrRVar var, int factor);
+    EXPORT Stage &unroll(VarOrRVar var, int factor);
+    EXPORT Stage &tile(VarOrRVar x, VarOrRVar y,
+                                VarOrRVar xo, VarOrRVar yo,
+                                VarOrRVar xi, VarOrRVar yi, Expr
+                                xfactor, Expr yfactor);
+    EXPORT Stage &tile(VarOrRVar x, VarOrRVar y,
+                                VarOrRVar xi, VarOrRVar yi,
+                                Expr xfactor, Expr yfactor);
+    EXPORT Stage &reorder(const std::vector<VarOrRVar> &vars);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                   VarOrRVar w);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                   VarOrRVar w, VarOrRVar t);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
+                                   VarOrRVar t3);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
+                                   VarOrRVar t3, VarOrRVar t4);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
+                                   VarOrRVar t3, VarOrRVar t4, VarOrRVar t5);
+    EXPORT Stage &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
+                                   VarOrRVar t3, VarOrRVar t4, VarOrRVar t5,
+                                   VarOrRVar t6);
+    EXPORT Stage &rename(VarOrRVar old_name, VarOrRVar new_name);
+    EXPORT Stage specialize(Expr condition);
+
+    EXPORT Stage &gpu_threads(VarOrRVar thread_x, GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_threads(VarOrRVar thread_x, VarOrRVar thread_y, GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_threads(VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z, GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_single_thread(GPUAPI gpu_api = GPU_Default);
+
+    EXPORT Stage &gpu_blocks(VarOrRVar block_x, GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_blocks(VarOrRVar block_x, VarOrRVar block_y, GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_blocks(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z, GPUAPI gpu_api = GPU_Default);
+
+    EXPORT Stage &gpu(VarOrRVar block_x, VarOrRVar thread_x, GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu(VarOrRVar block_x, VarOrRVar block_y,
+                               VarOrRVar thread_x, VarOrRVar thread_y,
+                               GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z,
+                               VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z,
+                               GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_tile(VarOrRVar x, Expr x_size, GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_tile(VarOrRVar x, VarOrRVar y, Expr x_size, Expr y_size,
+                                    GPUAPI gpu_api = GPU_Default);
+    EXPORT Stage &gpu_tile(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                    Expr x_size, Expr y_size, Expr z_size, GPUAPI gpu_api = GPU_Default);
+
+    EXPORT Stage &allow_race_conditions();
+    // @}
+
+    // These calls are for legacy compatibility only.
+    EXPORT Stage &cuda_threads(VarOrRVar thread_x) {
+        return gpu_threads(thread_x);
+    }
+    EXPORT Stage &cuda_threads(VarOrRVar thread_x, VarOrRVar thread_y) {
+        return gpu_threads(thread_x, thread_y);
+    }
+    EXPORT Stage &cuda_threads(VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z) {
+        return gpu_threads(thread_x, thread_y, thread_z);
+    }
+
+    EXPORT Stage &cuda_blocks(VarOrRVar block_x) {
+        return gpu_blocks(block_x);
+    }
+    EXPORT Stage &cuda_blocks(VarOrRVar block_x, VarOrRVar block_y) {
+        return gpu_blocks(block_x, block_y);
+    }
+    EXPORT Stage &cuda_blocks(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z) {
+        return gpu_blocks(block_x, block_y, block_z);
+    }
+
+    EXPORT Stage &cuda(VarOrRVar block_x, VarOrRVar thread_x) {
+        return gpu(block_x, thread_x);
+    }
+    EXPORT Stage &cuda(VarOrRVar block_x, VarOrRVar block_y,
+                                VarOrRVar thread_x, VarOrRVar thread_y) {
+        return gpu(block_x, thread_x, block_y, thread_y);
+    }
+    EXPORT Stage &cuda(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z,
+                                VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z) {
+        return gpu(block_x, thread_x, block_y, thread_y, block_z, thread_z);
+    }
+    EXPORT Stage &cuda_tile(VarOrRVar x, int x_size) {
+        return gpu_tile(x, x_size);
+    }
+    EXPORT Stage &cuda_tile(VarOrRVar x, VarOrRVar y, int x_size, int y_size) {
+        return gpu_tile(x, y, x_size, y_size);
+    }
+    EXPORT Stage &cuda_tile(VarOrRVar x, VarOrRVar y, VarOrRVar z,
+                                     int x_size, int y_size, int z_size) {
+        return gpu_tile(x, y, z, x_size, y_size, z_size);
+    }
+};
+
+// For backwards compatibility, keep the ScheduleHandle name.
+typedef Stage ScheduleHandle;
+
+/** A fragment of front-end syntax of the form f(x, y, z), where x,
+ * y, z are Vars. It could be the left-hand side of a function
+ * definition, or it could be a call to a function. We don't know
+ * until we see how this object gets used.
+ */
+class FuncRefExpr;
+
 class FuncRefVar {
     Internal::Function func;
     int implicit_placeholder_pos;
@@ -7735,46 +7769,46 @@ public:
     FuncRefVar(Internal::Function, const std::vector<Var> &, int placeholder_pos = -1);
 
     /**  Use this as the left-hand-side of a definition. */
-    EXPORT void operator=(Expr);
+    EXPORT Stage operator=(Expr);
 
     /** Use this as the left-hand-side of a definition for a Func with
      * multiple outputs. */
-    EXPORT void operator=(const Tuple &);
+    EXPORT Stage operator=(const Tuple &);
 
     /** Define this function as a sum reduction over the negative of
      * the given expression. The expression should refer to some RDom
      * to sum over. If the function does not already have a pure
      * definition, this sets it to zero.
      */
-    EXPORT void operator+=(Expr);
+    EXPORT Stage operator+=(Expr);
 
     /** Define this function as a sum reduction over the given
      * expression. The expression should refer to some RDom to sum
      * over. If the function does not already have a pure definition,
      * this sets it to zero.
      */
-    EXPORT void operator-=(Expr);
+    EXPORT Stage operator-=(Expr);
 
     /** Define this function as a product reduction. The expression
      * should refer to some RDom to take the product over. If the
      * function does not already have a pure definition, this sets it
      * to 1.
      */
-    EXPORT void operator*=(Expr);
+    EXPORT Stage operator*=(Expr);
 
     /** Define this function as the product reduction over the inverse
      * of the expression. The expression should refer to some RDom to
      * take the product over. If the function does not already have a
      * pure definition, this sets it to 1.
      */
-    EXPORT void operator/=(Expr);
+    EXPORT Stage operator/=(Expr);
 
     /** Override the usual assignment operator, so that
      * f(x, y) = g(x, y) defines f.
      */
     // @{
-    EXPORT void operator=(const FuncRefVar &e);
-    EXPORT void operator=(const FuncRefExpr &e);
+    EXPORT Stage operator=(const FuncRefVar &e);
+    EXPORT Stage operator=(const FuncRefExpr &e);
     // @}
 
     /** Use this FuncRefVar as a call to the function, and not as the
@@ -7796,7 +7830,7 @@ public:
 };
 
 /** A fragment of front-end syntax of the form f(x, y, z), where x, y,
- * z are Exprs. If could be the left hand side of a reduction
+ * z are Exprs. If could be the left hand side of an update
  * definition, or it could be a call to a function. We don't know
  * until we see how this object gets used.
  */
@@ -7811,49 +7845,49 @@ public:
     FuncRefExpr(Internal::Function, const std::vector<std::string> &,
                 int placeholder_pos = -1);
 
-    /** Use this as the left-hand-side of a reduction definition (see
+    /** Use this as the left-hand-side of an update definition (see
      * \ref RDom). The function must already have a pure definition.
      */
-    EXPORT void operator=(Expr);
+    EXPORT Stage operator=(Expr);
 
-    /** Use this as the left-hand-side of a reduction definition for a
+    /** Use this as the left-hand-side of an update definition for a
      * Func with multiple outputs. */
-    EXPORT void operator=(const Tuple &);
+    EXPORT Stage operator=(const Tuple &);
 
     /** Define this function as a sum reduction over the negative of
      * the given expression. The expression should refer to some RDom
      * to sum over. If the function does not already have a pure
      * definition, this sets it to zero.
      */
-    EXPORT void operator+=(Expr);
+    EXPORT Stage operator+=(Expr);
 
     /** Define this function as a sum reduction over the given
      * expression. The expression should refer to some RDom to sum
      * over. If the function does not already have a pure definition,
      * this sets it to zero.
      */
-    EXPORT void operator-=(Expr);
+    EXPORT Stage operator-=(Expr);
 
     /** Define this function as a product reduction. The expression
      * should refer to some RDom to take the product over. If the
      * function does not already have a pure definition, this sets it
      * to 1.
      */
-    EXPORT void operator*=(Expr);
+    EXPORT Stage operator*=(Expr);
 
     /** Define this function as the product reduction over the inverse
      * of the expression. The expression should refer to some RDom to
      * take the product over. If the function does not already have a
      * pure definition, this sets it to 1.
      */
-    EXPORT void operator/=(Expr);
+    EXPORT Stage operator/=(Expr);
 
     /* Override the usual assignment operator, so that
      * f(x, y) = g(x, y) defines f.
      */
     // @{
-    EXPORT void operator=(const FuncRefVar &);
-    EXPORT void operator=(const FuncRefExpr &);
+    EXPORT Stage operator=(const FuncRefVar &);
+    EXPORT Stage operator=(const FuncRefExpr &);
     // @}
 
     /** Use this as a call to the function, and not the left-hand-side
@@ -7873,134 +7907,12 @@ public:
     EXPORT Internal::Function function() const {return func;}
 };
 
-enum GPUAPI {
-    GPU_Default,
-    GPU_CUDA,
-    GPU_OpenCL,
-    GPU_GLSL
-};
-
-/** A temporary wrapper around a schedule used for common schedule manipulations */
-class ScheduleHandle {
-    Internal::Schedule schedule;
-    void set_dim_type(VarOrRVar var, Internal::For::ForType t);
-    void split(const std::string &old, const std::string &outer, const std::string &inner, Expr factor, bool exact);
-    std::string dump_argument_list();
-public:
-    ScheduleHandle(Internal::Schedule s) : schedule(s) {s.touched();}
-
-    /** Scheduling calls that control how the domain of this stage is
-     * traversed. See the documentation for Func for the meanings. */
-    // @{
-
-    EXPORT ScheduleHandle &split(VarOrRVar old, VarOrRVar outer, VarOrRVar inner, Expr factor);
-    EXPORT ScheduleHandle &fuse(VarOrRVar inner, VarOrRVar outer, VarOrRVar fused);
-    EXPORT ScheduleHandle &serial(VarOrRVar var);
-    EXPORT ScheduleHandle &parallel(VarOrRVar var);
-    EXPORT ScheduleHandle &vectorize(VarOrRVar var);
-    EXPORT ScheduleHandle &unroll(VarOrRVar var);
-    EXPORT ScheduleHandle &parallel(VarOrRVar var, Expr task_size);
-    EXPORT ScheduleHandle &vectorize(VarOrRVar var, int factor);
-    EXPORT ScheduleHandle &unroll(VarOrRVar var, int factor);
-    EXPORT ScheduleHandle &tile(VarOrRVar x, VarOrRVar y,
-                                VarOrRVar xo, VarOrRVar yo,
-                                VarOrRVar xi, VarOrRVar yi, Expr
-                                xfactor, Expr yfactor);
-    EXPORT ScheduleHandle &tile(VarOrRVar x, VarOrRVar y,
-                                VarOrRVar xi, VarOrRVar yi,
-                                Expr xfactor, Expr yfactor);
-    EXPORT ScheduleHandle &reorder(const std::vector<VarOrRVar> &vars);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                   VarOrRVar w);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                   VarOrRVar w, VarOrRVar t);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
-                                   VarOrRVar t3);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
-                                   VarOrRVar t3, VarOrRVar t4);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
-                                   VarOrRVar t3, VarOrRVar t4, VarOrRVar t5);
-    EXPORT ScheduleHandle &reorder(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                   VarOrRVar w, VarOrRVar t1, VarOrRVar t2,
-                                   VarOrRVar t3, VarOrRVar t4, VarOrRVar t5,
-                                   VarOrRVar t6);
-    EXPORT ScheduleHandle &rename(VarOrRVar old_name, VarOrRVar new_name);
-    EXPORT ScheduleHandle specialize(Expr condition);
-
-    EXPORT ScheduleHandle &gpu_threads(VarOrRVar thread_x, GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_threads(VarOrRVar thread_x, VarOrRVar thread_y, GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_threads(VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z, GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_single_thread(GPUAPI gpu_api = GPU_Default);
-
-    EXPORT ScheduleHandle &gpu_blocks(VarOrRVar block_x, GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_blocks(VarOrRVar block_x, VarOrRVar block_y, GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_blocks(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z, GPUAPI gpu_api = GPU_Default);
-
-    EXPORT ScheduleHandle &gpu(VarOrRVar block_x, VarOrRVar thread_x, GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu(VarOrRVar block_x, VarOrRVar block_y,
-                               VarOrRVar thread_x, VarOrRVar thread_y,
-			       GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z,
-                               VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z,
-			       GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_tile(VarOrRVar x, Expr x_size, GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_tile(VarOrRVar x, VarOrRVar y, Expr x_size, Expr y_size,
-				    GPUAPI gpu_api = GPU_Default);
-    EXPORT ScheduleHandle &gpu_tile(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                    Expr x_size, Expr y_size, Expr z_size, GPUAPI gpu_api = GPU_Default);
-
-    EXPORT ScheduleHandle &allow_race_conditions();
-    // @}
-
-    // These calls are for legacy compatibility only.
-    EXPORT ScheduleHandle &cuda_threads(VarOrRVar thread_x) {
-        return gpu_threads(thread_x);
-    }
-    EXPORT ScheduleHandle &cuda_threads(VarOrRVar thread_x, VarOrRVar thread_y) {
-        return gpu_threads(thread_x, thread_y);
-    }
-    EXPORT ScheduleHandle &cuda_threads(VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z) {
-        return gpu_threads(thread_x, thread_y, thread_z);
-    }
-
-    EXPORT ScheduleHandle &cuda_blocks(VarOrRVar block_x) {
-        return gpu_blocks(block_x);
-    }
-    EXPORT ScheduleHandle &cuda_blocks(VarOrRVar block_x, VarOrRVar block_y) {
-        return gpu_blocks(block_x, block_y);
-    }
-    EXPORT ScheduleHandle &cuda_blocks(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z) {
-        return gpu_blocks(block_x, block_y, block_z);
-    }
-
-    EXPORT ScheduleHandle &cuda(VarOrRVar block_x, VarOrRVar thread_x) {
-        return gpu(block_x, thread_x);
-    }
-    EXPORT ScheduleHandle &cuda(VarOrRVar block_x, VarOrRVar block_y,
-                                VarOrRVar thread_x, VarOrRVar thread_y) {
-        return gpu(block_x, thread_x, block_y, thread_y);
-    }
-    EXPORT ScheduleHandle &cuda(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z,
-                                VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z) {
-        return gpu(block_x, thread_x, block_y, thread_y, block_z, thread_z);
-    }
-    EXPORT ScheduleHandle &cuda_tile(VarOrRVar x, int x_size) {
-        return gpu_tile(x, x_size);
-    }
-    EXPORT ScheduleHandle &cuda_tile(VarOrRVar x, VarOrRVar y, int x_size, int y_size) {
-        return gpu_tile(x, y, x_size, y_size);
-    }
-    EXPORT ScheduleHandle &cuda_tile(VarOrRVar x, VarOrRVar y, VarOrRVar z,
-                                     int x_size, int y_size, int z_size) {
-        return gpu_tile(x, y, z, x_size, y_size, z_size);
-    }
+/**
+ * Used to determine if the output printed to file should be as a normal string
+ * or as an HTML file which can be opened in a browerser and manipulated via JS and CSS.*/
+enum StmtOutputFormat {
+     Text,
+     HTML
 };
 
 /** A halide function. This class represents one stage in a Halide
@@ -8022,10 +7934,13 @@ class Func {
     int add_implicit_vars(std::vector<Expr> &) const;
     // @}
 
-    /** The lowered imperative form of this function. Cached here so
-     * that recompilation for different targets doesn't require
-     * re-lowering */
+    /** The lowered imperative form of this function and the target
+     * this was lowered for. Cached here so that recompilation doesn't
+     * necessarily require re-lowering */
+    // @{
     Internal::Stmt lowered;
+    Target lowered_target;
+    // @}
 
     /** Lower the func if it hasn't been already. */
     void lower(const Target &t);
@@ -8067,6 +7982,8 @@ class Func {
     /** The current print function used for realizing this
      * function. May be NULL. Only relevant when jitting. */
     void (*custom_print)(void *user_context, const char *);
+
+    uint64_t cache_size;
 
     /** The random seed to use for realizations of this function. */
     uint32_t random_seed;
@@ -8235,10 +8152,83 @@ public:
                              const Target &target = get_target_from_environment());
 
     /** Write out an internal representation of lowered code. Useful
-     * for analyzing and debugging scheduling. Canonical extension is
-     * .stmt, which must be supplied in filename. */
+     * for analyzing and debugging scheduling. Can emit html or plain
+     * text. */
     EXPORT void compile_to_lowered_stmt(const std::string &filename,
+                                        StmtOutputFormat fmt = Text,
                                         const Target &target = get_target_from_environment());
+
+    /** Write out an internal representation of lowered code as above
+     * but simplified using the provided realization bounds and other
+     * concrete parameter values. Can emit html or plain text. */
+    //@{
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   Realization dst,
+                                                   const std::map<std::string, Expr> &additional_replacements,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   Realization dst,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   Buffer dst,
+                                                   const std::map<std::string, Expr> &additional_replacements,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &target = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   Buffer dst,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &target = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size, int y_size, int z_size, int w_size,
+                                                   const std::map<std::string, Expr> &additional_replacements,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size, int y_size, int z_size, int w_size,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size, int y_size, int z_size,
+                                                   const std::map<std::string, Expr> &additional_replacements,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size, int y_size, int z_size,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size, int y_size,
+                                                   const std::map<std::string, Expr> &additional_replacements,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size, int y_size,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size,
+                                                   const std::map<std::string, Expr> &additional_replacements,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    EXPORT void compile_to_simplified_lowered_stmt(const std::string &filename,
+                                                   int x_size,
+                                                   StmtOutputFormat fmt = Text,
+                                                   const Target &t = get_target_from_environment());
+
+    // @}
 
     /** Compile to object file and header pair, with the given
      * arguments. Also names the C function to match the first
@@ -8367,6 +8357,12 @@ public:
      */
     EXPORT void set_custom_print(void (*handler)(void *, const char *));
 
+    /** Set the maximum number of bytes used by memoization caching.
+     * If you are compiling statically, you should include HalideRuntime.h
+     * and call halide_memoization_cache_set_size() instead.
+     */
+    EXPORT void memoization_cache_set_size(uint64_t size);
+
     /** When this function is compiled, include code that dumps its
      * values to a file after it is realized, for the purpose of
      * debugging.
@@ -8407,33 +8403,33 @@ public:
     /** Does this function have at least a pure definition. */
     EXPORT bool defined() const;
 
-    /** Get the left-hand-side of the reduction definition. An empty
-     * vector if there's no reduction definition. If there are
-     * multiple reduction definitions for this function, use the
+    /** Get the left-hand-side of the update definition. An empty
+     * vector if there's no update definition. If there are
+     * multiple update definitions for this function, use the
      * argument to select which one you want. */
-    EXPORT const std::vector<Expr> &reduction_args(int idx = 0) const;
+    EXPORT const std::vector<Expr> &update_args(int idx = 0) const;
 
-    /** Get the right-hand-side of a reduction definition. An error if
-     * there's no reduction definition. If there are multiple
-     * reduction definitions for this function, use the argument to
+    /** Get the right-hand-side of an update definition. An error if
+     * there's no update definition. If there are multiple
+     * update definitions for this function, use the argument to
      * select which one you want. */
-    EXPORT Expr reduction_value(int idx = 0) const;
+    EXPORT Expr update_value(int idx = 0) const;
 
-    /** Get the right-hand-side of a reduction definition for
+    /** Get the right-hand-side of an update definition for
      * functions that returns multiple values. An error if there's no
-     * reduction definition. Returns a Tuple with one element for
+     * update definition. Returns a Tuple with one element for
      * functions that return a single value. */
-    EXPORT Tuple reduction_values(int idx = 0) const;
+    EXPORT Tuple update_values(int idx = 0) const;
 
-    /** Get the reduction domain for a reduction definition. */
+    /** Get the reduction domain for an update definition, if there is
+     * one. */
     EXPORT RDom reduction_domain(int idx = 0) const;
 
-    /** Is this function a reduction (i.e. does it have at least one
-     * reduction definition)? */
-    EXPORT bool is_reduction() const;
+    /** Does this function have at least one update definition? */
+    EXPORT bool has_update_definition() const;
 
-    /** How many reduction definitions does this function have? */
-    EXPORT int num_reduction_definitions() const;
+    /** How many update definitions does this function have? */
+    EXPORT int num_update_definitions() const;
 
     /** Is this function an external stage? That is, was it defined
      * using define_extern? */
@@ -8490,7 +8486,7 @@ public:
     // @}
 
     /** Either calls to the function, or the left-hand-side of a
-     * reduction definition (see \ref RDom). If the function has
+     * update definition (see \ref RDom). If the function has
      * already been defined, and fewer arguments are given than the
      * function has dimensions, then enough implicit vars are added to
      * the end of the argument list to make up the difference. (see
@@ -8813,7 +8809,7 @@ public:
      * When cond is true, this is equivalent to g.compute_at(f,y).
      * When it is false, this is equivalent to g.compute_at(f,x).
      */
-    EXPORT ScheduleHandle specialize(Expr condition);
+    EXPORT Stage specialize(Expr condition);
 
     /** Tell Halide that the following dimensions correspond to GPU
      * thread indices. This is useful if you compute a producer
@@ -8877,7 +8873,7 @@ public:
     // @{
     EXPORT Func &gpu(VarOrRVar block_x, VarOrRVar thread_x, GPUAPI gpu_api = GPU_Default);
     EXPORT Func &gpu(VarOrRVar block_x, VarOrRVar block_y,
-		     VarOrRVar thread_x, VarOrRVar thread_y, GPUAPI gpu_api = GPU_Default);
+                     VarOrRVar thread_x, VarOrRVar thread_y, GPUAPI gpu_api = GPU_Default);
     EXPORT Func &gpu(VarOrRVar block_x, VarOrRVar block_y, VarOrRVar block_z,
                      VarOrRVar thread_x, VarOrRVar thread_y, VarOrRVar thread_z, GPUAPI gpu_api = GPU_Default);
     // @}
@@ -8922,7 +8918,10 @@ public:
     }
     // @}
 
-    /** Scheduling for GLSL. */
+    /** Schedule for execution using GLSL. Conceptually, this is similar to
+     * parallelization over 'x' and 'y' (since GLSL shaders compute individual
+     * output pixels in parallel) and vectorization over 'c' (since GLSL
+     * implicitly vectorizes the color channel). */
     EXPORT Func &glsl(Var x, Var y, Var c);
 
     /** Specify how the storage for the function is laid out. These
@@ -9018,7 +9017,7 @@ public:
     EXPORT Func &compute_at(Func f, Var var);
 
     /** Schedule a function to be computed within the iteration over
-     * some dimension of a reduction domain. Produces equivalent code
+     * some dimension of an update domain. Produces equivalent code
      * to the version of compute_at that takes a Var. */
     EXPORT Func &compute_at(Func f, RVar var);
 
@@ -9058,6 +9057,13 @@ public:
      * allocates lots of temporary memory to store g.
      */
     EXPORT Func &compute_root();
+
+    /** Use the halide_memoization_cache_... interface to store a
+     *  computed version of this function across invocations of the
+     *  Func.
+     */
+    EXPORT Func &memoize();
+
 
     /** Allocate storage for this function within f's loop over
      * var. Scheduling storage is optional, and can be used to
@@ -9165,8 +9171,8 @@ public:
 
     /** Aggressively inline all uses of this function. This is the
      * default schedule, so you're unlikely to need to call this. For
-     * a reduction, that means it gets computed as close to the
-     * innermost loop as possible.
+     * a Func with an update definition, that means it gets computed
+     * as close to the innermost loop as possible.
      *
      * Consider once more the pipeline from \ref Func::compute_at :
      *
@@ -9190,10 +9196,9 @@ public:
      */
     EXPORT Func &compute_inline();
 
-    /** Get a handle on an update step of a reduction for the
-     * purposes of scheduling it. Only the pure dimensions of the
-     * update step can be meaningfully manipulated (see \ref RDom) */
-    EXPORT ScheduleHandle update(int idx = 0);
+    /** Get a handle on an update step for the purposes of scheduling
+     * it. */
+    EXPORT Stage update(int idx = 0);
 
     /** Trace all loads from this Func by emitting calls to
      * halide_trace. If the Func is inlined, this has no
@@ -9215,6 +9220,10 @@ public:
     Internal::Function function() const {
         return func;
     }
+
+    /** You can cast a Func to its pure stage for the purposes of
+     * scheduling it. */
+    operator Stage() const;
 
     /** Get a handle on the output buffer for this Func. Only relevant
      * if this is the output Func in a pipeline. Useful for making
@@ -9246,6 +9255,16 @@ public:
     operator ExternFuncArgument() const {
         return ExternFuncArgument(func);
     }
+
+    /** Infer the arguments to the Func, sorted into a canonical order:
+     * all buffers (sorted alphabetically by name), followed by all non-buffers
+     * (sorted alphabetically by name).
+     This lets you write things like:
+     \code
+     func.compile_to_assembly("/dev/stdout", func.infer_arguments());
+     \endcode
+     */
+    EXPORT std::vector<Argument> infer_arguments() const;
 
 };
 
@@ -9352,7 +9371,7 @@ NO_INLINE T evaluate_may_gpu(Expr e) {
     Func f;
     f() = e;
     if (has_gpu_feature) {
-	f.gpu_single_thread();
+        f.gpu_single_thread();
     }
     Image<T> im = f.realize();
     return im(0);
@@ -9376,7 +9395,7 @@ NO_INLINE void evaluate_may_gpu(Tuple t, A *a, B *b) {
     Func f;
     f() = t;
     if (has_gpu_feature) {
-	f.gpu_single_thread();
+        f.gpu_single_thread();
     }
     Realization r = f.realize();
     *a = Image<A>(r[0])(0);
@@ -9726,17 +9745,17 @@ protected:
 namespace Halide {
 namespace Internal {
 
-/** Construct a map from name to Function definition object for all Halide 
+/** Construct a map from name to Function definition object for all Halide
  *  functions called directly in the definition of the Function f, including
  *  in update definitions, update index expressions, and RDom extents. This map
- *  _does not_ include the Function f, unless it is called recursively by 
+ *  _does not_ include the Function f, unless it is called recursively by
  *  itself.
  */
 std::map<std::string, Function> find_direct_calls(Function f);
 
-/** Construct a map from name to Function definition object for all Halide 
- *  functions called directly in the definition of the Function f, or 
- *  indirectly in those functions' definitions, recursively. This map always 
+/** Construct a map from name to Function definition object for all Halide
+ *  functions called directly in the definition of the Function f, or
+ *  indirectly in those functions' definitions, recursively. This map always
  *  _includes_ the Function f.
  */
 std::map<std::string, Function> find_transitive_calls(Function f);
@@ -9945,12 +9964,12 @@ namespace Internal {
  * repeated variable names.
  */
 // @{
-EXPORT Stmt simplify(Stmt, bool remove_dead_lets = true,
-                     const Scope<Interval> &bounds = Scope<Interval>(),
-                     const Scope<ModulusRemainder> &alignment = Scope<ModulusRemainder>());
-EXPORT Expr simplify(Expr, bool remove_dead_lets = true,
-                     const Scope<Interval> &bounds = Scope<Interval>(),
-                     const Scope<ModulusRemainder> &alignment = Scope<ModulusRemainder>());
+EXPORT Stmt simplify(Stmt, bool simplify_lets = true,
+                     const Scope<Interval> &bounds = Scope<Interval>::empty_scope(),
+                     const Scope<ModulusRemainder> &alignment = Scope<ModulusRemainder>::empty_scope());
+EXPORT Expr simplify(Expr, bool simplify_lets = true,
+                     const Scope<Interval> &bounds = Scope<Interval>::empty_scope(),
+                     const Scope<ModulusRemainder> &alignment = Scope<ModulusRemainder>::empty_scope());
 // @}
 
 /** Simplify expressions found in a statement, but don't simplify
@@ -10309,7 +10328,7 @@ Stmt debug_to_file(Stmt s, std::string output, const std::map<std::string, Funct
 #ifndef HALIDE_EARLY_FREE_H
 #define HALIDE_EARLY_FREE_H
 
-/** \file 
+/** \file
  * Defines the lowering pass that injects markers just after
  * the last use of each buffer so that they can potentially be freed
  * earlier.
@@ -10362,9 +10381,9 @@ namespace Internal {
 
 /** Replace each common sub-expression in the argument with a
  * variable, and wrap the resulting expr in a let statement giving a
- * value to that variable. 
- * 
-* This is important to do within Halide (instead of punting to llvm),
+ * value to that variable.
+ *
+ * This is important to do within Halide (instead of punting to llvm),
  * because exprs that come in from the front-end are small when
  * considered as a graph, but combinatorially large when considered as
  * a tree. For an example of a such a case, see
@@ -10735,6 +10754,8 @@ Expr lower_random(Expr e, const std::vector<std::string> &free_vars, int tag);
 
 
 #include <sstream>
+#include <map>
+#include <string>
 
 namespace Halide {
 namespace Internal {
@@ -10747,8 +10768,7 @@ public:
     ~CodeGen_OpenGL_Dev();
 
     // CodeGen_GPU_Dev interface
-    void add_kernel(Stmt stmt,
-                    std::string name,
+    void add_kernel(Stmt stmt, const std::string &name,
                     const std::vector<GPU_Argument> &args);
     void init_module();
     std::vector<char> compile_to_src();
@@ -10766,18 +10786,20 @@ private:
 /** Compile one statement into GLSL. */
 class CodeGen_GLSL : public CodeGen_C {
 public:
-    CodeGen_GLSL(std::ostream &s) : CodeGen_C(s) {}
+    CodeGen_GLSL(std::ostream &s);
     void compile(Stmt stmt,
                  std::string name,
                  const std::vector<GPU_Argument> &args,
                  const Target &target);
+
+    static void test();
 
 protected:
     using CodeGen_C::visit;
     std::string print_type(Type type);
     std::string print_name(const std::string &);
 
-    void visit(const FloatImm *op);
+    void visit(const FloatImm *);
 
     void visit(const Cast *);
     void visit(const For *);
@@ -10785,6 +10807,9 @@ protected:
 
     void visit(const Max *);
     void visit(const Min *);
+    void visit(const Div *);
+    void visit(const Mod *);
+
     void visit(const Load *);
     void visit(const Store *);
 
@@ -10792,11 +10817,12 @@ protected:
     void visit(const AssertStmt *);
     void visit(const Broadcast *);
 
-    void visit(const Evaluate *op);
+    void visit(const Evaluate *);
 
 private:
     std::string get_vector_suffix(Expr e);
 
+    std::map<std::string, std::string> builtin;
 };
 
 }}
@@ -10880,7 +10906,7 @@ Stmt inject_dev_frees(Stmt s);
 
 /** \file
  *
- * Method for checking if it's safe to parallelize a reduction
+ * Method for checking if it's safe to parallelize an update
  * definition across a reduction variable.
  */
 
@@ -10888,13 +10914,13 @@ namespace Halide {
 namespace Internal {
 
 /** Returns whether or not Halide can prove that it is safe to
- * parallelize a reduction definition across a specific variable. If
+ * parallelize an update definition across a specific variable. If
  * this returns true, it's definitely safe. If this returns false, it
  * may still be safe, but Halide couldn't prove it.
  */
 bool can_parallelize_rvar(const std::string &rvar,
                           const std::string &func,
-                          const ReductionDefinition &r);
+                          const UpdateDefinition &r);
 
 }
 }
@@ -11543,6 +11569,120 @@ inline NO_INLINE Func mirror_interior(T func_like,
 }
 
 }
+
+#endif
+#ifndef HALIDE_INTERNAL_CACHING_H
+#define HALIDE_INTERNAL_CACHING_H
+
+/** \file
+ *
+ * Defines the interface to the pass that injects support for
+ * compute_cached roots.
+ */
+
+#include <map>
+
+namespace Halide {
+namespace Internal {
+
+/** Transform pipeline calls for Funcs scheduled with memoize to do a
+ *  lookup call to the runtime cache implementation, and if there is a
+ *  miss, compute the results and call the runtime to store it back to
+ *  the cache.
+ *  Should leave non-memoized Funcs unchanged.
+ */
+Stmt inject_memoization(Stmt s, const std::map<std::string, Function> &env,
+                        const std::string &name);
+
+}
+}
+
+#endif
+#ifndef HALIDE_HUMAN_READABLE_STMT
+#define HALIDE_HUMAN_READABLE_STMT
+
+/** \file
+* Defines methods for simplifying a stmt into a human-readable form.
+*/
+
+
+namespace Halide {
+namespace Internal {
+
+/**
+ * Returns a Stmt simplified using a concrete size of the output, and
+ * other optional values for parameters.
+ */
+// @{
+EXPORT Stmt human_readable_stmt(Function f, Stmt s, Buffer buf);
+EXPORT Stmt human_readable_stmt(Function f, Stmt s, Buffer buf,
+                                std::map<std::string, Expr> additional_replacements);
+// @}
+
+}}
+
+#endif
+#ifndef HALIDE_STMT_TO_HTML
+#define HALIDE_STMT_TO_HTML
+
+/** \file
+ * Defines a function to dump an HTML-formatted stmt to a file.
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/**
+ * Dump an HTML-formatted print of a Stmt to filename.
+ */
+EXPORT void print_to_html(std::string filename, Stmt s);
+
+}}
+
+#endif
+#ifndef HALIDE_CODEGEN_MIPS_H
+#define HALIDE_CODEGEN_MIPS_H
+
+/** \file
+ * Defines the code-generator for producing MIPS machine code.
+ */
+
+
+namespace Halide {
+namespace Internal {
+
+/** A code generator that emits mips code from a given Halide stmt. */
+class CodeGen_MIPS : public CodeGen_Posix {
+public:
+    /** Create a mips code generator. Processor features can be
+     * enabled using the appropriate flags in the target struct. */
+    CodeGen_MIPS(Target);
+
+    /** Compile to an internally-held llvm module. Takes a halide
+     * statement, the name of the function produced, and the arguments
+     * to the function produced. After calling this, call
+     * CodeGen::compile_to_file or
+     * CodeGen::compile_to_function_pointer to get at the mips machine
+     * code. */
+    void compile(Stmt stmt, std::string name,
+                 const std::vector<Argument> &args,
+                 const std::vector<Buffer> &images_to_embed);
+
+    static void test();
+
+protected:
+
+    llvm::Triple get_target_triple() const;
+
+    using CodeGen_Posix::visit;
+
+    std::string mcpu() const;
+    std::string mattrs() const;
+    bool use_soft_float_abi() const;
+};
+
+}}
 
 #endif
 // This file gets included at the end of Halide.h
