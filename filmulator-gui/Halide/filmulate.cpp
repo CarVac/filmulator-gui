@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
 
     ImageParam input(UInt(8), 3);
     
-    Func inInt = BoundaryConditions::mirror_interior(input);
+    Func inInt = lambda(x, y, c, input(x, y, c));;
     Func in;
     in(x,y,c) = cast<float>(256.0*inInt(x,y,c));
     Func activeCrystalsPerPixel;
@@ -198,6 +198,7 @@ int main(int argc, char **argv) {
     Func dDevelConc[12];
     Func sumDx[12];
     Func layerMixed[12];
+    Func initialDeveloperMirrored[12];
     
     Expr crystalGrowthConst = 0.00001;
     Expr activeLayerThickness = 0.1;
@@ -217,8 +218,12 @@ int main(int argc, char **argv) {
                              developerConsumptionConst, silverSaltConsumptionConst, totalTime/numSteps);
       developed[i].compute_root();
 
+      //std::pair<Expr,Expr> xDim(0,input.width());
+      //std::pair<Expr,Expr> yDim(0,input.height());
+      //std::vector<std::pair<Expr,Expr> > dimensions(xDim,yDim);
       initialDeveloper[i](x,y) = developed[i](x,y,DEVEL_CONC);
-      diffused[i] = diffuse(initialDeveloper[i],sigmaConst,pixelsPerMillimeter, totalTime/numSteps);
+      initialDeveloperMirrored[i] = BoundaryConditions::mirror_interior(initialDeveloper[i],0,input.width(),0,input.height());
+      diffused[i] = diffuse(initialDeveloperMirrored[i],sigmaConst,pixelsPerMillimeter, totalTime/numSteps);
       diffused[i].compute_root();
 
       dDevelConc[i] = calcLayerMix(diffused[i], layerMixConst, totalTime/numSteps, layerTimeDivisor, reservoirConc[i-1]);
@@ -293,7 +298,7 @@ int main(int argc, char **argv) {
     //blurred.debug_to_file("output.tiff");
 
     // Make a test input image of a circle.
-    Image<uint8_t> input_image = load<uint8_t>("P1040567-med.png");
+    Image<uint8_t> input_image = load<uint8_t>("P1040567.png");
     input.set(input_image);
 
     //Buffer out(UInt(8), 4768, 3184,3);
