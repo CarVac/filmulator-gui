@@ -30,16 +30,16 @@ Item {
     Loader {
         id: loadThumb
         asynchronous: true
-        anchors.fill: parent
     }
 
     Component {
         id: thumbImage
         Image {
             id: thumb
+            x: 0
+            y: root.height*0.03125
             width: root.width
-            height: root.height
-            anchors.centerIn: parent
+            height: root.height*0.9375
             fillMode: Image.PreserveAspectFit
             source: root.__thumbPath
             sourceSize.width: 600
