@@ -214,11 +214,8 @@ ApplicationWindow {
         tabOverlap: -4
         frameOverlap: -4
 
-        frame: Rectangle {
-            gradient: Gradient {
-                GradientStop { color:"#505050"; position: 0 }
-                GradientStop { color:"#000000"; position: 0 }
-            }
+        frame: Rectangle { //The contents of the tab.
+            color: "#505050"
         }
 
         tab: Rectangle {
@@ -226,8 +223,15 @@ ApplicationWindow {
             implicitWidth: Math.min ((styleData.availableWidth + totalOverlap) / control.count - 4, 100)
             implicitHeight: 30
             radius: 8
-            border.color: styleData.selected ? "#B0B0B0" : "#808080"
+            border.color: styleData.selected ? "#E0E0E0" : "#808080"
             color: "#111111"
+            gradient: Gradient {
+                GradientStop {color: styleData.selected ? "#000000" : "#222222"; position: 0.0}
+                GradientStop {color: "#111111";                                  position: 0.3}
+                GradientStop {color: "#111111";                                  position: 0.7}
+                GradientStop {color: styleData.selected ? "#222222" : "#000000"; position: 1.0}
+            }
+
             Text {
                 text: styleData.title
                 color: "#ffffff"
