@@ -80,7 +80,7 @@ Rectangle {
             }
         }
 
-        style: ToolButtonStyle
+        style: ToolButtonStyle {}
     }
 
     ToolTip {
