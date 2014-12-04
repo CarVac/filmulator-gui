@@ -1,6 +1,8 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
+import "../colors.js" as Colors
+import "."
 
 Rectangle {
     id: root
@@ -70,11 +72,22 @@ Rectangle {
             groove: Rectangle {
                 height: 4
                 color: "#FF8800"
+                gradient: Gradient {
+                    GradientStop {color: Colors.brightOrange; position: 0.0}
+                    GradientStop {color: Colors.medOrange;   position: 0.3}
+                    GradientStop {color: Colors.medOrange;   position: 1.0}
+                }
             }
             handle: Rectangle {
                 height: 8
                 width: 20
                 radius: 3
+                gradient: Gradient {
+                    GradientStop {color: control.pressed ? Colors.brightOrange : Colors.brightGray; position: 0.0}
+                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 0.1}
+                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 1.0}
+                }
+
                 color: control.pressed ? "#A0A0A0" : "#808080"
             }
         }
@@ -91,24 +104,7 @@ Rectangle {
                 slider.value = defaultValue
             }
         }
-
-        style: ButtonStyle {
-            background: Rectangle {
-                implicitWidth: 26
-                implicitHeight: 26
-                border.width: 2
-                border.color: "#202020"
-                radius: 5
-                color: control.pressed ? "#A0A0A0" : "#808080"
-            }
-            label: Text {
-                color: "white"
-                anchors.centerIn: parent
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                text: control.text
-            }
-        }
+        style: ToolButtonStyle {}
     }
     MouseArea {
         id: rightclickreset

@@ -2,12 +2,14 @@ import QtQuick 2.2
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Dialogs 1.1
+import "../colors.js" as Colors
+import "."
 
 Rectangle {
     id: root
     implicitHeight: 50
     implicitWidth: parent.width
-    color: "#303030"
+    color: Colors.darkGray
     property alias title: label.text
     property alias tooltipText: labelTooltip.tooltipText
     property alias dirDialogTitle: dirDialog.title
@@ -29,7 +31,7 @@ Rectangle {
     }
     Rectangle {
         id: textEntryRect
-        color: root.erroneous ? "#FF9922" : "black"
+        color: root.erroneous ? Colors.lightOrange : "black"
         width: parent.width - 2*__padding
         height: 25 - 2*__padding
         x: __padding
@@ -59,23 +61,7 @@ Rectangle {
             }
         }
 
-        style: ButtonStyle {
-            background: Rectangle {
-                implicitWidth: 118
-                implicitHeight: 23
-                border.width: 2
-                border.color: "#202020"
-                radius: 5
-                color: control.pressed ? "#A0A0A0" : "#808080"
-            }
-            label: Text {
-                color: "white"
-                anchors.centerIn: parent
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                text: control.text
-            }
-        }
+        style: ToolButtonStyle {}
     }
     FileDialog {
         id: dirDialog

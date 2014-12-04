@@ -1,6 +1,8 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
+import "../colors.js" as Colors
+import "."
 
 Rectangle {
     id: root
@@ -15,7 +17,7 @@ Rectangle {
 
     signal tooltipWanted(string text, int coordX, int coordY)
 
-    color: "#303030"
+    color: Colors.darkGray
 
     state: defaultOn ? "ON" : "OFF"
 
@@ -28,17 +30,28 @@ Rectangle {
                 implicitWidth: 70
                 implicitHeight: 20
                 radius: 3
-                color: control.checked ? "#FF9922" : "#B0B0B0"
+                gradient: Gradient {
+                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGrayL; position: 0.0}
+                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 0.1}
+                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 1.0}
+                }
+
                 border.width: 1
-                border.color: control.checked ? "#A87848" : "#808080"
+                border.color: control.checked ? Colors.weakOrange : Colors.middleGray
             }
             handle: Rectangle {
                 implicitWidth: 30
                 implicitHeight: 20
                 radius: 3
-                color: "#606060"
+                gradient: Gradient {
+                    GradientStop {color: Colors.lowGrayH; position: 0.0}
+                    GradientStop {color: Colors.lowGray; position: 0.15}
+                    GradientStop {color: Colors.lowGray; position: 0.9}
+                    GradientStop {color: Colors.lowGrayL; position: 1.0}
+                }
+
                 border.width: 1
-                border.color: control.checked ? "#A87848" : "#808080"
+                border.color: control.checked ? Colors.weakOrange : Colors.middleGray
             }
         }
     }
@@ -67,23 +80,7 @@ Rectangle {
             }
         }
 
-        style: ButtonStyle {
-            background: Rectangle {
-                implicitWidth: 26
-                implicitHeight: 26
-                border.width: 2
-                border.color: "#202020"
-                radius: 5
-                color: control.pressed ? "#A0A0A0" : "#808080"
-            }
-            label: Text{
-                color: "white"
-                anchors.centerIn: parent
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                text: control.text
-            }
-        }
+        style: ToolButtonStyle
     }
 
     ToolTip {
