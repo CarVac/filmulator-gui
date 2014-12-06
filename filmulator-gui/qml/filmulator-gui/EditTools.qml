@@ -6,11 +6,12 @@ import "generateHistogram.js" as Script
 
 SplitView {
     id: root
+    property real uiScale: 2
     //width: 250
-    anchors.margins: 3
-    property real maxWidth: 500
+    anchors.margins: 3 * uiScale
+    property real maxWidth: 500 * uiScale
     Layout.maximumWidth: maxWidth
-    Layout.minimumWidth: 250
+    Layout.minimumWidth: 250 * uiScale
     orientation: Qt.Vertical
 
     //Here we set up the properties that let us communicate
@@ -36,17 +37,17 @@ SplitView {
 
     Item {
         width: parent.width
-        Layout.minimumHeight: 50
-        Layout.maximumHeight: 500
-        height: 250
+        Layout.minimumHeight: 50 * uiScale
+        Layout.maximumHeight: 500 * uiScale
+        height: 250 * uiScale
         Canvas {
             id: mainHistoCanvas
             anchors.fill: parent
-            property int lineWidth: 1
+            property int lineWidth: 1 * uiScale
             property real alpha: 1.0
-            property int padding: 5
+            property int padding: 5 * uiScale
             canvasSize.width: root.maxWidth
-            canvasSize.height: 500
+            canvasSize.height: 500 * uiScale
 
             onWidthChanged: requestPaint()
             Connections {
@@ -54,7 +55,7 @@ SplitView {
                 onHistFinalChanged: mainHistoCanvas.requestPaint()
             }
 
-            onPaint: Script.generateHistogram(1,this.getContext('2d'),width,height,padding,lineWidth)
+            onPaint: Script.generateHistogram(1,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
 
         }
     }
@@ -73,14 +74,14 @@ SplitView {
             boundsBehavior: Flickable.StopAtBounds
             ColumnLayout {
                 id: toolLayout
-                spacing: 0
-                x: 3
-                width: toolListItem.width - 6
+                spacing: 0 * uiScale
+                x: 3 * uiScale
+                width: toolListItem.width - 6 * uiScale
 
                 Rectangle {
                     id: topSpacer
                     color: "#00000000"//transparent
-                    height: 3
+                    height: 3 * uiScale
                 }
 
                 ToolSwitch {
@@ -101,6 +102,7 @@ SplitView {
                         caSwitch.tooltipWanted.connect(root.tooltipWanted)
                         caSwitch.isOn = defaultCaEnabled
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -124,6 +126,7 @@ SplitView {
                     Component.onCompleted: {
                         highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -146,6 +149,7 @@ SplitView {
                     Component.onCompleted: {
                         temperatureSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -169,6 +173,7 @@ SplitView {
                     Component.onCompleted: {
                         tintSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -192,6 +197,7 @@ SplitView {
                     Component.onCompleted: {
                         exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 Canvas {
@@ -199,11 +205,13 @@ SplitView {
                     Layout.fillWidth: true
                     //It seems that since this is in a layout, you can't bind dimensions or locations.
                     // Makes sense, given that the layout is supposed to abstract that away.
-                    height: 30
-                    property int lineWidth: 1
+                    height: 30 * uiScale
+                    property int lineWidth: 1 * uiScale
                     property real alpha: 1.0
-                    property int padding: 3
+                    property int padding: 3 * uiScale
+
                     canvasSize.width: root.maxWidth
+                    canvasSize.height: height
 
                     onWidthChanged: requestPaint();
                     Connections {
@@ -211,7 +219,7 @@ SplitView {
                         onHistPreFilmChanged: preFilmHistoCanvas.requestPaint()
                     }
 
-                    onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth)
+                    onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
 
                     ToolTip {
                         id: preFilmTooltip
@@ -245,6 +253,7 @@ SplitView {
                     Component.onCompleted: {
                         filmSizeSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -267,6 +276,7 @@ SplitView {
                     Component.onCompleted: {
                         filmDramaSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSwitch {
@@ -287,6 +297,7 @@ SplitView {
                         overdriveSwitch.tooltipWanted.connect(root.tooltipWanted)
                         overdriveSwitch.isOn = defaultOverdriveEnabled
                     }
+                    uiScale: root.uiScale
                 }
 
                 Canvas {
@@ -294,12 +305,13 @@ SplitView {
                     Layout.fillWidth: true
                     //It seems that since this is in a layout, you can't bind dimensions or locations.
                     // Makes sense, given that the layout is supposed to abstract that away.
-                    height: 30
-                    property int lineWidth: 1
+                    height: 30 * uiScale
+                    property int lineWidth: 1 * uiScale
                     property real alpha: 1.0
-                    property int padding: 3
+                    property int padding: 3 * uiScale
 
                     canvasSize.width: root.maxWidth
+                    canvasSize.height: height
 
                     onWidthChanged: requestPaint();
                     Connections {
@@ -307,7 +319,7 @@ SplitView {
                         onHistPostFilmChanged: postFilmHistoCanvas.requestPaint()
                     }
 
-                    onPaint: Script.generateHistogram(3,this.getContext('2d'),width,height,padding,lineWidth)
+                    onPaint: Script.generateHistogram(3,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
                     Rectangle {
                         id: blackpointLine
                         height: parent.height
@@ -355,6 +367,7 @@ SplitView {
                     Component.onCompleted: {
                         blackpointSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -378,6 +391,7 @@ SplitView {
                     Component.onCompleted: {
                         whitepointSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -401,6 +415,7 @@ SplitView {
                     Component.onCompleted: {
                         shadowBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -424,6 +439,7 @@ SplitView {
                     Component.onCompleted: {
                         highlightBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -447,6 +463,7 @@ SplitView {
                     Component.onCompleted: {
                         vibranceSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -470,12 +487,13 @@ SplitView {
                     Component.onCompleted: {
                         saturationSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
 
                 Rectangle {
                     id: bottomSpacer
                     color: "#00000000"//transparent
-                    height: 3
+                    height: 3 * uiScale
                 }
             }
         }
@@ -500,13 +518,14 @@ SplitView {
     Item {
         id: saveButtons
         width: parent.width
-        height: 40
-        Layout.minimumHeight: 40
-        Layout.maximumHeight: 40
+        height: 40 * uiScale
+        Layout.minimumHeight: 40 * uiScale
+        Layout.maximumHeight: 40 * uiScale
         ToolButton {
             id: saveTIFFButton
             width: parent.width/2
-            height: 40
+            height: 40 * uiScale
+            uiScale: root.uiScale
             x: 0
             y: 0
             text: qsTr("Save TIFF")
@@ -521,7 +540,8 @@ SplitView {
         ToolButton {
             id: saveJPEGButton
             width: parent.width/2
-            height: 40
+            height: 40 * uiScale
+            uiScale: root.uiScale
             x: width
             y: 0
             text: qsTr("Save JPEG")

@@ -6,14 +6,15 @@ import "."
 
 Rectangle {
     id: root
-    implicitHeight: 36
+    property real uiScale: 1
+    implicitHeight: 36 * uiScale
     implicitWidth: parent.width
     property alias text: label.text
     property alias tooltipText: tooltip.tooltipText
     property alias isOn: toggleSwitch.checked
     property bool defaultOn
 
-    property real __padding: 4
+    property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
 
@@ -28,22 +29,22 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         style: SwitchStyle {
             groove: Rectangle {
-                implicitWidth: 70
-                implicitHeight: 20
-                radius: 3
+                implicitWidth: 70 * uiScale
+                implicitHeight: 20 * uiScale
+                radius: 3 * uiScale
                 gradient: Gradient {
                     GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGrayL; position: 0.0}
                     GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 0.1}
                     GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 1.0}
                 }
 
-                border.width: 1
+                border.width: 1 * uiScale
                 border.color: control.checked ? Colors.weakOrange : Colors.middleGray
             }
             handle: Rectangle {
-                implicitWidth: 30
-                implicitHeight: 20
-                radius: 3
+                implicitWidth: 30 * uiScale
+                implicitHeight: 20 * uiScale
+                radius: 3 * uiScale
                 gradient: Gradient {
                     GradientStop {color: Colors.lowGrayH; position: 0.0}
                     GradientStop {color: Colors.lowGray; position: 0.15}
@@ -51,7 +52,7 @@ Rectangle {
                     GradientStop {color: Colors.lowGrayL; position: 1.0}
                 }
 
-                border.width: 1
+                border.width: 1 * uiScale
                 border.color: control.checked ? Colors.weakOrange : Colors.middleGray
             }
         }
@@ -67,12 +68,13 @@ Rectangle {
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
+        font.pointSize: 9.0 * uiScale
     }
 
     Button {
         id: reset
-        width: 28
-        height: 28
+        width: 28 * uiScale
+        height: 28 * uiScale
         x: root.width-width-__padding
         y: __padding
         text: "[]"
@@ -82,7 +84,7 @@ Rectangle {
             }
         }
 
-        style: ToolButtonStyle {}
+        style: ToolButtonStyle {uiScale: root.uiScale}
     }
 
     ToolTip {

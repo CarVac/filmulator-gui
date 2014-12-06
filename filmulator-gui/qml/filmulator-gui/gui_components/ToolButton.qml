@@ -6,21 +6,22 @@ import "."
 
 Item {
     id: root
+    property real uiScale: 1
     property alias text: button.text
     property alias action: button.action
     property alias tooltipText: tooltip.tooltipText
-    property real __padding: 2
+    property real __padding: 2 * uiScale
 
     signal tooltipWanted(string text, int x, int y)
-    width: 30
-    height: 30
+    width: 30 * uiScale
+    height: 30 * uiScale
     Button {
         id: button
         width: parent.width - __padding * 2
         height: parent.height - __padding * 2
         x: __padding
         y: __padding
-        style: ToolButtonStyle {}
+        style: ToolButtonStyle {uiScale: root.uiScale}
     }
     ToolTip {
         id: tooltip
