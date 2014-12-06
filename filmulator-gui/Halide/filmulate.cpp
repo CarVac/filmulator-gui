@@ -290,7 +290,8 @@ int main(int argc, char **argv) {
 
     // Dump the assembly for inspection.
     //blur_in_y.compile_to_assembly("/dev/stdout", Internal::vec<Argument>(input, radius), "box_blur");
-    outputImage.compile_to_c("compiled.c", Internal::vec<Argument>(input), "outputImage");
+    //outputImage.compile_to_c("compiled.c", Internal::vec<Argument>(input), "outputImage");
+      outputImage.compile_to_lowered_stmt("compiled.html", HTML);
 
     // Save the output. Comment this out for benchmarking - it takes
     // way more time than the actual algorithm. Should look like a
