@@ -46,13 +46,13 @@ Rectangle {
         id: valueBox
         color: "black"
         width: 60
-        height: 20 - __padding
+        height: 21 - __padding
         x: parent.width - this.width - reset.width - __padding * 2
         y: __padding * 1.5
         Text {
             id: valueText
             x: __padding / 2
-            y: __padding / 2
+            y: 1//__padding / 2
             width: parent.width - x
             height: parent.height - y
             color: "white"
