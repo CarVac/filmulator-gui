@@ -74,7 +74,7 @@ Rectangle {
         width: 28
         height: 28
         x: root.width-width-__padding
-        y: __padding/2
+        y: __padding
         text: "[]"
         action: Action {
             onTriggered: {
