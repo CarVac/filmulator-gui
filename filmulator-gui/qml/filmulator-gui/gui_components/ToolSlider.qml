@@ -6,7 +6,7 @@ import "."
 
 Rectangle {
     id: root
-    implicitHeight: 35
+    implicitHeight: 36
     implicitWidth: parent.width
     property alias title: label.text
     property alias minimumValue: slider.minimumValue
@@ -48,7 +48,7 @@ Rectangle {
         width: 60
         height: 21 - __padding
         x: parent.width - this.width - reset.width - __padding * 2
-        y: __padding * 1.5
+        y: __padding * 1.5 - 1
         Text {
             id: valueText
             x: __padding / 2
@@ -64,7 +64,7 @@ Rectangle {
     Slider {
         id: slider
         x: __padding
-        y: 20 + __padding
+        y: 21 + __padding
         width: parent.width - reset.width - 3*__padding
         updateValueWhileDragging: true
         value: defaultValue

@@ -6,7 +6,7 @@ import "."
 
 Rectangle {
     id: root
-    implicitHeight: 35
+    implicitHeight: 36
     implicitWidth: parent.width
     property alias text: label.text
     property alias tooltipText: tooltip.tooltipText
