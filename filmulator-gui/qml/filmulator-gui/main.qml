@@ -9,7 +9,7 @@ import "colors.js" as Colors
 ApplicationWindow {
     id: root
     title: qsTr("Filmulator")
-    property real uiScale: 1
+    property real uiScale: 2
     property int tempVisibility
     width: 1366
     height: 768

@@ -74,7 +74,7 @@ Item {
 
                     }
                     itemDelegate.background: Rectangle {
-                        color: styleData.enabled ? (styleData.selected ? "black" : Colors.middleGray) : Colors.middleGray
+                        color: styleData.enabled ? (styleData.selected ? "black" : Colors.darkGray) : Colors.darkGray
                     }
                 }
             }
