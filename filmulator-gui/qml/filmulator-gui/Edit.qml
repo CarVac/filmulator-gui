@@ -286,6 +286,7 @@ SplitView {
             color: "white"
             text: paramManager.filename
             font.pointSize: 9.0 * uiScale
+            elide: Text.ElideRight
         }
         Text{
             id: text2
@@ -294,6 +295,7 @@ SplitView {
             color: "white"
             text: paramManager.exposureTime + " s"
             font.pointSize: 9.0 * uiScale
+            elide: Text.ElideRight
         }
         Text {
             id: text3
@@ -302,6 +304,7 @@ SplitView {
             color: "white"
             text: "ISO " + paramManager.sensitivity
             font.pointSize: 9.0 * uiScale
+            elide: Text.ElideRight
         }
         Text {
             id: text4
@@ -310,6 +313,7 @@ SplitView {
             color: "white"
             text: "f/" + paramManager.aperture
             font.pointSize: 9.0 * uiScale
+            elide: Text.ElideRight
         }
     }
     EditTools {
