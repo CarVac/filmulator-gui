@@ -5,12 +5,13 @@ import "../colors.js" as Colors
 
 ButtonStyle {
     id: style
+    property real uiScale: 1
     background: Rectangle {
-        implicitWidth: 26
-        implicitHeight: 26
-        border.width: 1
+        implicitWidth: 26 * uiScale
+        implicitHeight: 26 * uiScale
+        border.width: 1 * uiScale
         border.color: control.pressed ?  Colors.lightOrange : Colors.brightGray
-        radius: 5
+        radius: 5 * uiScale
         gradient: Gradient {
             GradientStop {color: control.pressed ? "#000000" : "#222222"; position: 0.0}
             GradientStop {color: control.pressed ? "#161106" : "#111111"; position: 0.3}
@@ -24,5 +25,6 @@ ButtonStyle {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         text: control.text
+        font.pointSize: 9.0 * uiScale
     }
 }

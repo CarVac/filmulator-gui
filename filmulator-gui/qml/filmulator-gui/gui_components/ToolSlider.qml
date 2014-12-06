@@ -6,7 +6,8 @@ import "."
 
 Rectangle {
     id: root
-    implicitHeight: 36
+    property real uiScale: 1
+    implicitHeight: 36 * uiScale
     implicitWidth: parent.width
     property alias title: label.text
     property alias minimumValue: slider.minimumValue
@@ -21,7 +22,7 @@ Rectangle {
 
     property alias tickmarksEnabled: slider.tickmarksEnabled
 
-    property real __padding: 4
+    property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
     signal released()
@@ -41,36 +42,38 @@ Rectangle {
         x: __padding
         y: __padding * 1.5
         elide: Text.ElideRight
+        font.pointSize: 9.0 * uiScale
     }
     Rectangle {
         id: valueBox
         color: "black"
-        width: 60
-        height: 21 - __padding
+        width: 60 * uiScale
+        height: 21 * uiScale - __padding
         x: parent.width - this.width - reset.width - __padding * 2
-        y: __padding * 1.5 - 1
+        y: __padding * 1.5 - 1 * uiScale
         Text {
             id: valueText
             x: __padding / 2
-            y: 1//__padding / 2
+            y: 1 * uiScale //__padding / 2
             width: parent.width - x
             height: parent.height - y
             color: "white"
             text: slider.value
             elide: Text.ElideRight
+            font.pointSize: 9.0 * uiScale
         }
     }
 
     Slider {
         id: slider
         x: __padding
-        y: 21 + __padding
+        y: 21 * uiScale + __padding
         width: parent.width - reset.width - 3*__padding
         updateValueWhileDragging: true
         value: defaultValue
         style: SliderStyle {
             groove: Rectangle {
-                height: 4
+                height: 4 * uiScale
                 color: "#FF8800"
                 gradient: Gradient {
                     GradientStop {color: Colors.brightOrange; position: 0.0}
@@ -79,9 +82,9 @@ Rectangle {
                 }
             }
             handle: Rectangle {
-                height: 8
-                width: 20
-                radius: 3
+                height: 8 * uiScale
+                width: 20 * uiScale
+                radius: 3 * uiScale
                 gradient: Gradient {
                     GradientStop {color: control.pressed ? Colors.brightOrange : Colors.brightGray; position: 0.0}
                     GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 0.1}
@@ -94,8 +97,8 @@ Rectangle {
     }
     Button {
         id: reset
-        width: 28
-        height: 28
+        width: 28 * uiScale
+        height: 28 * uiScale
         x: root.width-width-__padding
         y: __padding
         text: "[]"
@@ -104,7 +107,7 @@ Rectangle {
                 slider.value = defaultValue
             }
         }
-        style: ToolButtonStyle {}
+        style: ToolButtonStyle {uiScale: root.uiScale}
     }
     MouseArea {
         id: rightclickreset
