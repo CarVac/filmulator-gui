@@ -6,7 +6,7 @@ import "generateHistogram.js" as Script
 
 SplitView {
     id: root
-    property real uiScale: 2
+    property real uiScale: 1
     //width: 250
     anchors.margins: 3 * uiScale
     property real maxWidth: 500 * uiScale

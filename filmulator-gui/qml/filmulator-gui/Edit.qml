@@ -8,6 +8,7 @@ SplitView {
     id: root
     anchors.fill: parent
     orientation: Qt.Horizontal
+    property real uiScale: 1
 
     property alias defaultExposureComp: editTools.defaultExposureComp
     property alias defaultWhitepoint: editTools.defaultWhitepoint
@@ -32,10 +33,10 @@ SplitView {
         Layout.fillWidth: true
         Flickable {
             id: flicky
-            x: 0
-            y: 30
+            x: 0 * uiScale
+            y: 30 * uiScale
             width: parent.width
-            height: parent.height-30
+            height: parent.height - 30 * uiScale
             contentWidth:  Math.max(  bottomImage.width*bottomImage.scale, this.width );
             contentHeight: Math.max( bottomImage.height*bottomImage.scale, this.height );
             flickableDirection: Flickable.HorizontalAndVerticalFlick
@@ -166,9 +167,8 @@ SplitView {
         ToolButton {
             id: rotateLeft
             anchors.right: rotateRight.left
-            //x: parent.width - 200
-            y: 0
-            width: 90
+            y: 0 * uiScale
+            width: 90 * uiScale
             text: qsTr("Rotate Left")
             action: Action {
                 onTriggered: {
@@ -176,13 +176,14 @@ SplitView {
                     root.updateImage()
                 }
             }
+            uiScale: root.uiScale
         }
 
         ToolButton {
             id: rotateRight
             anchors.right: fitscreen.left
-            y: 0
-            width: 90
+            y: 0 * uiScale
+            width: 90 * uiScale
             text: qsTr("Rotate Right")
             action: Action {
                 onTriggered: {
@@ -190,13 +191,13 @@ SplitView {
                     root.updateImage()
                 }
             }
+            uiScale: root.uiScale
         }
 
         ToolButton {
             id: fitscreen
             anchors.right: fullzoom.left
-            //x: parent.width-120
-            y: 0
+            y: 0 * uiScale
             text: qsTr("Fit")
             action: Action {
                 onTriggered: {
@@ -210,12 +211,12 @@ SplitView {
                     flicky.fit = true
                 }
             }
+            uiScale: root.uiScale
         }
         ToolButton {
             id: fullzoom
             anchors.right: zoomin.left
-            //x: parent.width-90
-            y: 0
+            y: 0 * uiScale
             text: "1:1"
             action: Action {
                 onTriggered: {
@@ -228,12 +229,12 @@ SplitView {
                     else {flicky.fit = false}
                 }
             }
+            uiScale: root.uiScale
         }
         ToolButton {
             id: zoomin
             anchors.right: zoomout.left
-            //x: parent.width-60
-            y: 0
+            y: 0 * uiScale
             text: "+"
             action: Action {
                 onTriggered: {
@@ -246,12 +247,12 @@ SplitView {
                     else {flicky.fit = false}
                 }
             }
+            uiScale: root.uiScale
         }
         ToolButton {
             id: zoomout
             anchors.right: parent.right
-            //x: parent.width-30
-            y: 0
+            y: 0 * uiScale
             text: "-"
             action: Action {
                 onTriggered: {
@@ -266,6 +267,7 @@ SplitView {
                     else { flicky.fit = false }
                 }
             }
+            uiScale: root.uiScale
         }
         FilmProgressBar {
             id: progressBar
@@ -275,38 +277,44 @@ SplitView {
                 target: filmProvider
                 onProgressChanged: progressBar.value = filmProvider.progress
             }
+            uiScale: root.uiScale
         }
         Text {
             id: filenameText
-            x: 200
-            y: 0
+            x: 200 * uiScale
+            y: 0 * uiScale
             color: "white"
             text: paramManager.filename
+            font.pointSize: 9.0 * uiScale
         }
         Text{
             id: text2
-            x: 200
-            y: 15
+            x: 200 * uiScale
+            y: 15 * uiScale
             color: "white"
             text: paramManager.exposureTime + " s"
+            font.pointSize: 9.0 * uiScale
         }
         Text {
             id: text3
-            x: 350
-            y: 0
+            x: 350 * uiScale
+            y: 0 * uiScale
             color: "white"
             text: "ISO " + paramManager.sensitivity
+            font.pointSize: 9.0 * uiScale
         }
         Text {
             id: text4
-            x: 350
-            y: 15
+            x: 350 * uiScale
+            y: 15 * uiScale
             color: "white"
             text: "f/" + paramManager.aperture
+            font.pointSize: 9.0 * uiScale
         }
     }
     EditTools {
         id: editTools
+        uiScale: root.uiScale
         Component.onCompleted: {
             editTools.tooltipWanted.connect( root.tooltipWanted )
         }
