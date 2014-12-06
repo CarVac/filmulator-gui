@@ -8,15 +8,16 @@ SplitView {
     id: root
     anchors.fill: parent
     orientation: Qt.Horizontal
+    property real uiScale: 1
 
     signal tooltipWanted(string text, int x, int y)
 
     Rectangle {
         id: filterList
         color: "#202020"
-        width: 250
-        Layout.maximumWidth: 500
-        Layout.minimumWidth: 200
+        width: 250 * uiScale
+        Layout.maximumWidth: 500 * uiScale
+        Layout.minimumWidth: 200 * uiScale
         ColumnLayout {
             id: filterLayout
 
@@ -37,6 +38,7 @@ SplitView {
                 Component.onCompleted: {
                     timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
                 }
+                uiScale: root.uiScale
             }
 
             Calendar {
@@ -56,33 +58,34 @@ SplitView {
                     gridVisible: false
                     background: Rectangle {
                         color: "#303030"
-                        implicitWidth: 250
-                        implicitHeight: 250
+                        implicitWidth: 250 * uiScale
+                        implicitHeight: 250 * uiScale
                     }
 
                     dayDelegate: Rectangle {
                         color: "#303030"
                         border.color: styleData.selected ? "#FF8800" : "#303030"
-                        border.width: 2
-                        radius: 5
-                        Label {
+                        border.width: 2 * uiScale
+                        radius: 5 * uiScale
+                        Text {
                             text: styleData.date.getDate()
                             anchors.centerIn: parent
                             color: styleData.visibleMonth && styleData.valid ? "#FFFFFF" : "#888888"
+                            font.pointSize: 9.0 * uiScale
                         }
                     }
                     navigationBar: Rectangle {
                         id: calendarNavBar
                         color: "#303030"
-                        height: 30
+                        height: 30 * uiScale
                         ToolButton {
                             id: backYear
                             text: "<<"
                             tooltipText: qsTr("Previous year")
-                            width: 30
-                            height: 30
-                            x: 0
-                            y: 0
+                            width: 30 * uiScale
+                            height: 30 * uiScale
+                            x: 0 * uiScale
+                            y: 0 * uiScale
                             action: Action {
                                 onTriggered: {
                                     control.showPreviousYear()
@@ -91,71 +94,77 @@ SplitView {
                             Component.onCompleted: {
                                 backYear.tooltipWanted.connect(root.tooltipWanted)
                             }
+                            uiScale: root.uiScale
                         }
                         ToolButton {
                             id: backMonth
                             text: "<"
                             tooltipText: qsTr("Previous month")
-                            width: 30
-                            height: 30
-                            x: 30
-                            y: 0
+                            width: 30 * uiScale
+                            height: 30 * uiScale
+                            x: 30 * uiScale
+                            y: 0 * uiScale
                             action: Action {
                                 onTriggered: {
                                     control.showPreviousMonth()
                                 }
                             }
-                             Component.onCompleted: {
+                            Component.onCompleted: {
                                 backMonth.tooltipWanted.connect(root.tooltipWanted)
                             }
+                            uiScale: root.uiScale
                         }
-                        Label {
+                        Text {
                             text: (control.visibleMonth + 1) + "/" + control.visibleYear
                             anchors.centerIn: parent
                             color: "white"
+                            font.pointSize: 9.0 * uiScale
                         }
                         ToolButton {
                             id: forwardMonth
                             text: ">"
                             tooltipText: qsTr("Next month")
-                            width: 30
-                            height: 30
-                            x: parent.width-60
-                            y: 0
+                            width: 30 * uiScale
+                            height: 30 * uiScale
+                            x: parent.width - 60 * uiScale
+                            y: 0 * uiScale
                             action: Action {
                                 onTriggered: {
                                     control.showNextMonth()
                                 }
                             }
-                              Component.onCompleted: {
+                            Component.onCompleted: {
                                 forwardMonth.tooltipWanted.connect(root.tooltipWanted)
                             }
+                            uiScale: root.uiScale
                        }
                         ToolButton {
                             id: forwardYear
                             text: ">>"
                             tooltipText: qsTr("Next year")
-                            width: 30
-                            height: 30
-                            x: parent.width-30
-                            y: 0
+                            width: 30 * uiScale
+                            height: 30 * uiScale
+                            x: parent.width - 30 * uiScale
+                            y: 0 * uiScale
                             action: Action {
                                 onTriggered: {
                                     control.showNextYear()
                                 }
                             }
-                             Component.onCompleted: {
+                            Component.onCompleted: {
                                 forwardYear.tooltipWanted.connect(root.tooltipWanted)
                             }
+                            uiScale: root.uiScale
                         }
                     }
                     dayOfWeekDelegate: Rectangle {
                         color: "#303030"
-                        implicitHeight: 30
-                        Label {
+                        implicitHeight: 30 * uiScale
+                        Text {
                             text: control.__locale.dayName(styleData.dayOfWeek,control.dayOfWeekFormat)
                             color: "white"
                             anchors.centerIn: parent
+                            font.pointSize: 9.0 * uiScale
                         }
                     }
                 }
@@ -172,11 +181,11 @@ SplitView {
             id: gridView
             anchors.fill: parent
 
-            cellWidth: 320
-            cellHeight: 320
+            cellWidth: 320 * uiScale
+            cellHeight: 320 * uiScale
 
             boundsBehavior: Flickable.StopAtBounds
-            maximumFlickVelocity: 50000
+            maximumFlickVelocity: 50000 * uiScale
 
             delegate: OrganizeDelegate {
                 rootDir: organizeModel.thumbDir()
@@ -184,6 +193,8 @@ SplitView {
                 searchID: STsearchID
                 importTime: STimportTime
                 lastProcessedTime: STlastProcessedTime
+
+                uiScale: root.uiScale
 
                 MouseArea {
                     anchors.fill: parent

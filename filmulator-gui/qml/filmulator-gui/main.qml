@@ -4,12 +4,14 @@ import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
 import QtQuick.Controls.Styles 1.2
 import "gui_components"
+import "colors.js" as Colors
 
 ApplicationWindow {
     id: root
     title: qsTr("Filmulator")
+    property real uiScale: 1
     property int tempVisibility
-    width: 1024
+    width: 1366
     height: 768
     minimumHeight: 600
     minimumWidth:800
@@ -19,7 +21,7 @@ ApplicationWindow {
     Rectangle {
         id: fillRect
         anchors.fill: parent
-        color: "#FF303030"
+        color: Colors.darkGray
     }
 
     SplitView {
@@ -27,10 +29,10 @@ ApplicationWindow {
         orientation: Qt.Vertical
 
         TabView {
-            anchors.margins: Qt.platform.os === "osx" ? 12 : 2
+            anchors.margins: (Qt.platform.os === "osx" ? 12 : 2) * uiScale
             tabPosition: Qt.TopEdge
             Layout.fillHeight: true
-            Layout.minimumHeight: 300
+            Layout.minimumHeight: 200 * uiScale
             style: headerTabViewStyle
 
             Tab {
@@ -41,6 +43,7 @@ ApplicationWindow {
                     Component.onCompleted: {
                         importItem.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
             }
 
@@ -52,6 +55,7 @@ ApplicationWindow {
                     Component.onCompleted: {
                         organizeItem.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
             }
 
@@ -93,6 +97,7 @@ ApplicationWindow {
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
                 }
             }
 
@@ -105,12 +110,13 @@ ApplicationWindow {
 
         Rectangle {
             id: queue
-            color: "#303030"
-            height: 100
-            Layout.minimumHeight: 50
+            color: Colors.darkGray
+            height: 100 * uiScale
+            Layout.minimumHeight: 50 * uiScale
 
             Queue {
                 anchors.fill: parent
+                uiScale: root.uiScale
             }
         }
     }
@@ -159,14 +165,14 @@ ApplicationWindow {
 
         Rectangle {
             id: tooltipBox
-            color: "#EE303030"
-            border.color: "#EE808080"
-            border.width: 2
-            radius: 10
-            property int padding: 6
-            property int maxWidth: 250
-            property int minHeight: 30
-            property int posPad: 10
+            color: Colors.transDarkGray
+            border.color: Colors.transMiddleGray
+            border.width: 2 * uiScale
+            radius: 10 * uiScale
+            property int padding: 6 * uiScale
+            property int maxWidth: 250 * uiScale
+            property int minHeight: 30 * uiScale
+            property int posPad: 10 * uiScale
             width: Math.min(maxWidth, tooltipText.contentWidth + 2*padding)
             height: tooltipText.contentHeight + 2*padding
             Text {
@@ -176,6 +182,7 @@ ApplicationWindow {
                 width: parent.maxWidth - 2*parent.padding
                 wrapMode: Text.WordWrap
                 color: "#FFFFFFFF"
+                font.pointSize: 9.0 * uiScale
             }
         }
         function setPosition(xIn, yIn) {
@@ -211,20 +218,20 @@ ApplicationWindow {
 
     //styles
     property Component headerTabViewStyle: TabViewStyle {
-        tabOverlap: -4
-        frameOverlap: -4
+        tabOverlap: -4 * uiScale
+        frameOverlap: -4 * uiScale
 
         frame: Rectangle { //The contents of the tab.
-            color: "#505050"
+            color: Colors.lowGrayL
         }
 
         tab: Rectangle {
             property int totalOverlap: tabOverlap * (control.count - 1)
-            implicitWidth: Math.min ((styleData.availableWidth + totalOverlap) / control.count - 4, 100)
-            implicitHeight: 30
-            radius: 8
-            border.color: styleData.selected ? "#E0E0E0" : "#808080"
-            color: "#111111"
+            implicitWidth: Math.min ((styleData.availableWidth + totalOverlap) / control.count - 4, 100 * uiScale)
+            implicitHeight: 30 * uiScale
+            radius: 8 * uiScale
+            border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray
+            color: Colors.blackGray
             gradient: Gradient {
                 GradientStop {color: styleData.selected ? "#000000" : "#222222"; position: 0.0}
                 GradientStop {color: "#111111";                                  position: 0.3}
@@ -234,9 +241,10 @@ ApplicationWindow {
 
             Text {
                 text: styleData.title
-                color: "#ffffff"
+                color: "white"
                 anchors.centerIn: parent
                 font.bold: true
+                font.pointSize: 9.0 * uiScale
             }
         }
     }

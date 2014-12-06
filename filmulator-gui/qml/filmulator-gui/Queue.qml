@@ -3,9 +3,11 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.1
 import "gui_components"
+import "colors.js" as Colors
 
 Item {
     id: root
+    property real uiScale: 1
 
 //    ListView {
     GridView { //There is a bug in ListView that makes scrolling not smooth.
@@ -20,7 +22,7 @@ Item {
 
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 3000
-        maximumFlickVelocity: 10000
+        maximumFlickVelocity: 10000 * uiScale
 
         model: queueModel
 
@@ -62,16 +64,17 @@ Item {
 
                 style: MenuStyle {
                     frame: Rectangle {
-                        color: "#303030"
-                        border.color: "#808080"
-                        border.width: 2
+                        color: Colors.darkGray
+                        border.color: Colors.middleGray
+                        border.width: 2 * uiScale
                     }
                     itemDelegate.label: Text {
-                        color: styleData.enabled ? "#FFFFFF" : "#808080"
+                        color: styleData.enabled ? "white" : Colors.middleGray
                         text: styleData.text
+
                     }
                     itemDelegate.background: Rectangle {
-                        color: styleData.enabled ? (styleData.selected ? "#000000" : "#303030") : "#303030"
+                        color: styleData.enabled ? (styleData.selected ? "black" : Colors.middleGray) : Colors.middleGray
                     }
                 }
             }

@@ -1,3 +1,6 @@
+var whiteGrayH = "#E0E0E0"
+var whiteGray = "#D0D0D0"
+var whiteGrayL = "#C0C0C0"
 var brightGrayH = "#B0B0B0"
 var brightGray = "#A0A0A0"
 var brightGrayL = "#909090"
@@ -14,3 +17,6 @@ var brightOrange = "#FFBB66" //good for subtle highlights on orange things
 var lightOrange = "#FF9922" //good for thin lines
 var medOrange = "#FF8800" //perfect middle orange
 var weakOrange = "#A87848" //Low saturation for orange bleeding around gray
+
+var transDarkGray = "#EE303030" //for tooltip backgrounds
+var transMiddleGray = "#EE808080" //for tooltip borders
