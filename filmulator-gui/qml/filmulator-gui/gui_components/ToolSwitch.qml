@@ -61,7 +61,7 @@ Rectangle {
         id: label
         width: parent.width - toggleSwitch.width - reset.width - 5*__padding
         x: __padding*5 + toggleSwitch.width
-        y: __padding/2
+        y: __padding
         anchors.verticalCenter: parent.verticalCenter
         color: "white"
         horizontalAlignment: Text.AlignLeft
