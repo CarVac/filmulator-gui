@@ -6,14 +6,14 @@ import "."
 
 Rectangle {
     id: root
-    implicitHeight: 30
+    implicitHeight: 35
     implicitWidth: parent.width
     property alias text: label.text
     property alias tooltipText: tooltip.tooltipText
     property alias isOn: toggleSwitch.checked
     property bool defaultOn
 
-    property real __padding: 2
+    property real __padding: 4
 
     signal tooltipWanted(string text, int coordX, int coordY)
 
@@ -24,6 +24,7 @@ Rectangle {
     Switch {
         id: toggleSwitch
         x: __padding*2
+        y: __padding/2
         anchors.verticalCenter: parent.verticalCenter
         style: SwitchStyle {
             groove: Rectangle {
@@ -60,6 +61,7 @@ Rectangle {
         id: label
         width: parent.width - toggleSwitch.width - reset.width - 5*__padding
         x: __padding*5 + toggleSwitch.width
+        y: __padding/2
         anchors.verticalCenter: parent.verticalCenter
         color: "white"
         horizontalAlignment: Text.AlignLeft
@@ -71,7 +73,7 @@ Rectangle {
         id: reset
         width: 28
         height: 28
-        x: root.width-width-__padding/2
+        x: root.width-width-__padding
         y: __padding/2
         text: "[]"
         action: Action {

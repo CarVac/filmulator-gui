@@ -471,6 +471,12 @@ SplitView {
                         saturationSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                 }
+
+                Rectangle {
+                    id: bottomSpacer
+                    color: "#00000000"//transparent
+                    height: 3
+                }
             }
         }
         MouseArea {

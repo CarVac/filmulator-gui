@@ -6,7 +6,7 @@ import "."
 
 Rectangle {
     id: root
-    implicitHeight: 30
+    implicitHeight: 35
     implicitWidth: parent.width
     property alias title: label.text
     property alias minimumValue: slider.minimumValue
@@ -21,7 +21,7 @@ Rectangle {
 
     property alias tickmarksEnabled: slider.tickmarksEnabled
 
-    property real __padding: 2
+    property real __padding: 4
 
     signal tooltipWanted(string text, int coordX, int coordY)
     signal released()
@@ -47,7 +47,7 @@ Rectangle {
         color: "black"
         width: 60
         height: 20 - __padding
-        x: parent.width - this.width - reset.width - __padding * 1.5
+        x: parent.width - this.width - reset.width - __padding * 2
         y: __padding * 1.5
         Text {
             id: valueText
@@ -64,8 +64,8 @@ Rectangle {
     Slider {
         id: slider
         x: __padding
-        y: 20
-        width: parent.width - reset.width - 2.5*__padding
+        y: 20 + __padding
+        width: parent.width - reset.width - 3*__padding
         updateValueWhileDragging: true
         value: defaultValue
         style: SliderStyle {
@@ -96,7 +96,7 @@ Rectangle {
         id: reset
         width: 28
         height: 28
-        x: root.width-width-__padding/2
+        x: root.width-width-__padding
         y: __padding/2
         text: "[]"
         action: Action {
