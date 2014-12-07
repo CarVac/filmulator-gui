@@ -10,13 +10,6 @@ ApplicationWindow {
     id: root
     title: qsTr("Filmulator")
     property real uiScale: settings.getUiScale()
-    Connections {
-        target: settings
-        onUiScaleChanged: {
-            root.uiScale = settings.getUiScale()
-        }
-    }
-
     property int tempVisibility
     width: 1366 * uiScale
     height: 768 * uiScale
@@ -244,26 +237,32 @@ ApplicationWindow {
             color: Colors.lowGrayL
         }
 
-        tab: Rectangle {
+        tab: Item {
             property int totalOverlap: tabOverlap * (control.count - 1)
-            implicitWidth: Math.min ((styleData.availableWidth + totalOverlap) / control.count - 5, 100 * uiScale)
-            implicitHeight: 30 * uiScale
-            radius: 8 * uiScale
-            border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray
-            color: Colors.blackGray
-            gradient: Gradient {
-                GradientStop {color: styleData.selected ? "#000000" : "#222222"; position: 0.0}
-                GradientStop {color: "#111111";                                  position: 0.3}
-                GradientStop {color: "#111111";                                  position: 0.7}
-                GradientStop {color: styleData.selected ? "#222222" : "#000000"; position: 1.0}
-            }
+            implicitWidth: Math.min (((styleData.availableWidth + totalOverlap) / control.count) - control.count, 100 * uiScale)
+            implicitHeight: 32 * uiScale
+            Rectangle {
+                x: 4 * uiScale
+                y: 4 * uiScale
+                width: parent.implicitWidth - 1 * uiScale
+                height: parent.implicitHeight - 2 * uiScale
+                radius: 8 * uiScale
+                border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray
+                color: Colors.blackGray
+                gradient: Gradient {
+                    GradientStop {color: styleData.selected ? "#000000" : "#222222"; position: 0.0}
+                    GradientStop {color: "#111111";                                  position: 0.3}
+                    GradientStop {color: "#111111";                                  position: 0.7}
+                    GradientStop {color: styleData.selected ? "#222222" : "#000000"; position: 1.0}
+                }
 
-            Text {
-                text: styleData.title
-                color: "white"
-                anchors.centerIn: parent
-                font.bold: true
-                font.pointSize: 9.0 * uiScale
+                Text {
+                    text: styleData.title
+                    color: "white"
+                    anchors.centerIn: parent
+                    font.bold: true
+                    font.pointSize: 9.0 * uiScale
+                }
             }
         }
     }

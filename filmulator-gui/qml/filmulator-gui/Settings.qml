@@ -24,7 +24,7 @@ Rectangle {
         ToolSlider {
             id: uiScaleSlider
             title: qsTr("User Interface Scale")
-            tooltipText: qsTr("This is a multiplier for the size of all controls in the program.")
+            tooltipText: qsTr("This is a multiplier for the size of all controls in the program. It takes effect after restarting the program.")
             minimumValue: 0.5
             maximumValue: 4.0
             stepSize: 0.1
@@ -40,6 +40,7 @@ Rectangle {
             Component.onCompleted: {
                 uiScaleSlider.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
         ToolButton {
             id: saveSettings
@@ -54,6 +55,7 @@ Rectangle {
                     uiScaleSlider.changed = false
                 }
             }
+            uiScale: root.uiScale
         }
     }
 }
