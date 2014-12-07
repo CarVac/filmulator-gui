@@ -80,7 +80,7 @@ Rectangle {
 
     ToolTip {
         id: labelTooltip
-        anchors.fill: label
+        anchors.fill: labelBox
         Component.onCompleted: labelTooltip.tooltipWanted.connect( root.tooltipWanted )
     }
 }

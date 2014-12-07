@@ -21,6 +21,7 @@ Rectangle {
     property alias tooltipText: toolTooltip.tooltipText
 
     property alias tickmarksEnabled: slider.tickmarksEnabled
+    property bool changed: true
 
     property real __padding: 4 * uiScale
 
@@ -107,7 +108,10 @@ Rectangle {
                 slider.value = defaultValue
             }
         }
-        style: ToolButtonStyle {uiScale: root.uiScale}
+        style: ToolButtonStyle {
+            uiScale: root.uiScale
+            notDisabled: root.changed
+        }
     }
     MouseArea {
         id: rightclickreset

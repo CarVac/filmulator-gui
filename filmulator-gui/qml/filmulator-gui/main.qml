@@ -9,12 +9,19 @@ import "colors.js" as Colors
 ApplicationWindow {
     id: root
     title: qsTr("Filmulator")
-    property real uiScale: 2
+    property real uiScale: settings.getUiScale()
+    Connections {
+        target: settings
+        onUiScaleChanged: {
+            root.uiScale = settings.getUiScale()
+        }
+    }
+
     property int tempVisibility
-    width: 1366
-    height: 768
-    minimumHeight: 600
-    minimumWidth:800
+    width: 1366 * uiScale
+    height: 768 * uiScale
+    minimumHeight: 600 * uiScale
+    minimumWidth:800 * uiScale
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -104,6 +111,18 @@ ApplicationWindow {
             Tab {
                 id: outputTab
                 title: qsTr("Output")
+            }
+
+            Tab {
+                id: settingsTab
+                title: qsTr("Settings")
+                Settings {
+                    id: settingsItem
+                    Component.onCompleted: {
+                        settingsItem.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
             }
         }
 
@@ -218,8 +237,8 @@ ApplicationWindow {
 
     //styles
     property Component headerTabViewStyle: TabViewStyle {
-        tabOverlap: -4 * uiScale
-        frameOverlap: -4 * uiScale
+        tabOverlap: -5 * uiScale
+        frameOverlap: -5 * uiScale
 
         frame: Rectangle { //The contents of the tab.
             color: Colors.lowGrayL
@@ -227,7 +246,7 @@ ApplicationWindow {
 
         tab: Rectangle {
             property int totalOverlap: tabOverlap * (control.count - 1)
-            implicitWidth: Math.min ((styleData.availableWidth + totalOverlap) / control.count - 4, 100 * uiScale)
+            implicitWidth: Math.min ((styleData.availableWidth + totalOverlap) / control.count - 5, 100 * uiScale)
             implicitHeight: 30 * uiScale
             radius: 8 * uiScale
             border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray

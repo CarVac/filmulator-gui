@@ -15,6 +15,7 @@ class Settings : public QObject
     Q_PROPERTY(int importTZ READ getImportTZ WRITE setImportTZ NOTIFY importTZChanged)
     Q_PROPERTY(int organizeTZ READ getOrganizeTZ WRITE setOrganizeTZ NOTIFY organizeTZChanged)
     Q_PROPERTY(QDate organizeCaptureDate READ getOrganizeCaptureDate WRITE setOrganizeCaptureDate NOTIFY organizeCaptureDateChanged)
+    Q_PROPERTY(float uiScale READ getUiScale WRITE setUiScale NOTIFY uiScaleChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
@@ -25,6 +26,7 @@ public:
     void setImportTZ(int offsetIn);
     void setOrganizeTZ(int offsetIn);
     void setOrganizeCaptureDate(QDate dateIn);
+    void setUiScale(float uiScaleIn);
 
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
@@ -33,6 +35,7 @@ public:
     Q_INVOKABLE int getImportTZ();
     Q_INVOKABLE int getOrganizeTZ();
     Q_INVOKABLE QDate getOrganizeCaptureDate();
+    Q_INVOKABLE float getUiScale();
 
 protected:
     QString photoStorageDir;
@@ -42,6 +45,7 @@ protected:
     int importTZ;
     int organizeTZ;
     QDate organizeCaptureDate;
+    float uiScale;
 
 signals:
     void photoStorageDirChanged();
@@ -51,6 +55,7 @@ signals:
     void importTZChanged();
     void organizeTZChanged();
     void organizeCaptureDateChanged();
+    void uiScaleChanged();
 };
 
 #endif // SETTINGS_H

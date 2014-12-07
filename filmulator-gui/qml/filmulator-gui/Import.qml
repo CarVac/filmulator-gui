@@ -1,8 +1,8 @@
 import QtQuick 2.2
-import QtQuick.Controls 1.1
+import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 import "gui_components"
 import "colors.js" as Colors
 
@@ -135,7 +135,7 @@ Rectangle {
             y: 0 * uiScale
             text: qsTr("Import")
             tooltipText: qsTr("Copy photos from the source directory into the destination (and optional backup), as well as adding them to the database.")
-            width: importToolList.width
+            width: parent.width
             height: 40 * uiScale
             action: Action{
                 onTriggered: {
@@ -150,7 +150,7 @@ Rectangle {
 
         FilmProgressBar {
             id: importProgress
-            width: importToolList.width
+            width: parent.width
             value: importModel.progress
             Connections {
                 target: importModel

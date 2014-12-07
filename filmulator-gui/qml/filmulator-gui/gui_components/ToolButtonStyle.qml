@@ -6,6 +6,7 @@ import "../colors.js" as Colors
 ButtonStyle {
     id: style
     property real uiScale: 1
+    property bool notDisabled: true
     background: Rectangle {
         implicitWidth: 26 * uiScale
         implicitHeight: 26 * uiScale
@@ -20,7 +21,7 @@ ButtonStyle {
         }
     }
     label: Text {
-        color: control.pressed ? Colors.whiteOrange : "white"
+        color: notDisabled ? (control.pressed ? Colors.whiteOrange : "white") : Colors.middleGray
         anchors.centerIn: parent
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter

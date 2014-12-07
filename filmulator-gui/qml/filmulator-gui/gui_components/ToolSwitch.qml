@@ -13,6 +13,7 @@ Rectangle {
     property alias tooltipText: tooltip.tooltipText
     property alias isOn: toggleSwitch.checked
     property bool defaultOn
+    property bool changed: true
 
     property real __padding: 4 * uiScale
 
@@ -84,7 +85,10 @@ Rectangle {
             }
         }
 
-        style: ToolButtonStyle {uiScale: root.uiScale}
+        style: ToolButtonStyle {
+            uiScale: root.uiScale
+            notDisabled: root.changed
+        }
     }
 
     ToolTip {
