@@ -13,8 +13,8 @@ ApplicationWindow {
     property int tempVisibility
     width: 1366 * uiScale
     height: 768 * uiScale
-    minimumHeight: 600 * uiScale
-    minimumWidth:800 * uiScale
+    minimumHeight: 400 * uiScale
+    minimumWidth:700 * uiScale
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -247,6 +247,7 @@ ApplicationWindow {
                 width: parent.implicitWidth - 1 * uiScale
                 height: parent.implicitHeight - 2 * uiScale
                 radius: 8 * uiScale
+                border.width: 1 * uiScale
                 border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray
                 color: Colors.blackGray
                 gradient: Gradient {
