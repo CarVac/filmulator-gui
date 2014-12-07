@@ -31,7 +31,7 @@ Rectangle {
             defaultValue: settings.getUiScale()
             changed: false
             onValueChanged: {
-                if (value == defaultValue) {
+                if (Math.abs(value - defaultValue) < 0.05) {
                     uiScaleSlider.changed = false
                 } else {
                     uiScaleSlider.changed = true
