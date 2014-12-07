@@ -46,6 +46,9 @@ Tools and features of interest:
 * Film Area: Here's where it gets good. The program defaults to an approximate equivalent of 36x24 film. If you reduce the film size, the algorithm accentuates brightness in larger regions. If you increase the film size, the whole image becomes slightly flatter (reduced dynamic range), but it emphasizes smaller details.
 * Drama: This is effectively the strength of the 'filminess'. Higher values reduce the dynamic range of the output; you'll see the "post-filmulator" histogram shrink towards the left. With the default film area, feel free to turn this all the way up to 100 if you need to bright down the highlights, but with large-format equivalent film area it starts to get too flat-looking past 50.
 
+If you want the UI to appear larger on a high-pixel density display, use the User Interface Scale slider in the Settings tab to set a desired scale, save the setting, and then restart the program. While it cannot automatically read your display pixel density, this setting enables otherwise full HiDPI support.
+
+
 # Status
 
 If told to make a version number for it right now, I'd put it as 0.5 Alpha.
