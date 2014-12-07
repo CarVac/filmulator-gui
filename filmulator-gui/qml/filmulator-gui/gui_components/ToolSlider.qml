@@ -43,7 +43,7 @@ Rectangle {
         x: __padding
         y: __padding * 1.5
         elide: Text.ElideRight
-        font.pointSize: 9.0 * uiScale
+        font.pixelSize: 12.0 * uiScale
     }
     Rectangle {
         id: valueBox
@@ -61,7 +61,7 @@ Rectangle {
             color: "white"
             text: slider.value
             elide: Text.ElideRight
-            font.pointSize: 9.0 * uiScale
+            font.pixelSize: 12.0 * uiScale
         }
     }
 

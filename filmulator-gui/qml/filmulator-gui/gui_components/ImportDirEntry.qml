@@ -32,7 +32,7 @@ Rectangle {
             anchors.fill: parent
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
-            font.pointSize: 9.0 * uiScale
+            font.pixelSize: 12.0 * uiScale
         }
     }
     Rectangle {
@@ -51,7 +51,7 @@ Rectangle {
             color: root.erroneous ? "black" : "white"
             selectByMouse: true
             cursorVisible: focus
-            font.pointSize: 9.0 * uiScale
+            font.pixelSize: 12.0 * uiScale
         }
     }
 

@@ -26,6 +26,6 @@ ButtonStyle {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         text: control.text
-        font.pointSize: 9.0 * uiScale
+        font.pixelSize: 12.0 * uiScale
     }
 }

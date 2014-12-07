@@ -71,7 +71,7 @@ Item {
                     itemDelegate.label: Text {
                         color: styleData.enabled ? "white" : Colors.middleGray
                         text: styleData.text
-                        font.pointSize: 9.0 * uiScale
+                        font.pixelSize: 12.0 * uiScale
 
                     }
                     itemDelegate.background: Rectangle {

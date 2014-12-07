@@ -71,7 +71,7 @@ SplitView {
                             text: styleData.date.getDate()
                             anchors.centerIn: parent
                             color: styleData.visibleMonth && styleData.valid ? "#FFFFFF" : "#888888"
-                            font.pointSize: 9.0 * uiScale
+                            font.pixelSize: 12.0 * uiScale
                         }
                     }
                     navigationBar: Rectangle {
@@ -118,7 +118,7 @@ SplitView {
                             text: (control.visibleMonth + 1) + "/" + control.visibleYear
                             anchors.centerIn: parent
                             color: "white"
-                            font.pointSize: 9.0 * uiScale
+                            font.pixelSize: 12.0 * uiScale
                         }
                         ToolButton {
                             id: forwardMonth
@@ -164,7 +164,7 @@ SplitView {
                             text: control.__locale.dayName(styleData.dayOfWeek,control.dayOfWeekFormat)
                             color: "white"
                             anchors.centerIn: parent
-                            font.pointSize: 9.0 * uiScale
+                            font.pixelSize: 12.0 * uiScale
                         }
                     }
                 }

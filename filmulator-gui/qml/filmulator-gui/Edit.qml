@@ -285,7 +285,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             text: paramManager.filename
-            font.pointSize: 9.0 * uiScale
+            font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
         Text{
@@ -294,7 +294,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             text: paramManager.exposureTime + " s"
-            font.pointSize: 9.0 * uiScale
+            font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
         Text {
@@ -303,7 +303,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             text: "ISO " + paramManager.sensitivity
-            font.pointSize: 9.0 * uiScale
+            font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
         Text {
@@ -312,7 +312,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             text: "f/" + paramManager.aperture
-            font.pointSize: 9.0 * uiScale
+            font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
     }

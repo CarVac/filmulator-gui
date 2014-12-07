@@ -194,7 +194,7 @@ ApplicationWindow {
                 width: parent.maxWidth - 2*parent.padding
                 wrapMode: Text.WordWrap
                 color: "#FFFFFFFF"
-                font.pointSize: 9.0 * uiScale
+                font.pixelSize: 12.0 * uiScale
             }
         }
         function setPosition(xIn, yIn) {
@@ -262,7 +262,7 @@ ApplicationWindow {
                     color: "white"
                     anchors.centerIn: parent
                     font.bold: true
-                    font.pointSize: 9.0 * uiScale
+                    font.pixelSize: 12.0 * uiScale
                 }
             }
         }
