@@ -3,6 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.1
 import "gui_components"
+import "colors.js" as Colors
 
 SplitView {
     id: root
@@ -18,155 +19,57 @@ SplitView {
         width: 250 * uiScale
         Layout.maximumWidth: 500 * uiScale
         Layout.minimumWidth: 200 * uiScale
-        ColumnLayout {
-            id: filterLayout
+        Flickable {
+            id: filterListFlick
+            width: parent.width
+            height: parent.height
+            flickableDirection: Qt.Vertical
+            clip: true
+            contentHeight: filterLayout.height
+            boundsBehavior: Flickable.StopAtBounds
 
-            ToolSlider {
-                id: timezoneOffset
-                width: filterList.width
-                title: qsTr("Time zone")
-                tooltipText: qsTr("Controls when the day is divided for the date filters.")
-                minimumValue: -14
-                maximumValue: 14
-                stepSize: 1
-                defaultValue: settings.getOrganizeTZ()
-                onValueChanged: {
-                    organizeModel.timeZone = value
-                    settings.organizeTZ = value
-                    organizeModel.setOrganizeQuery()
-                }
-                Component.onCompleted: {
-                    timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
-                }
-                uiScale: root.uiScale
-            }
+            ColumnLayout {
+                id: filterLayout
+                x: 3 * uiScale
+                width: parent.width - 6 * uiScale
 
-            Calendar {
-                id: captureCalendar
-                width: filterList.width
-                minimumDate: "1970-01-01"
-                maximumDate: "2038-01-01"
-                selectedDate: settings.getOrganizeCaptureDate()
-                onClicked: {
-                    settings.organizeCaptureDate = selectedDate
-                    organizeModel.minCaptureTime = selectedDate
-                    organizeModel.maxCaptureTime = selectedDate
-                    organizeModel.setOrganizeQuery()
+                Rectangle {
+                    id: topSpacer
+                    color: "#00000000"
+                    height: 3 * uiScale
                 }
-                //Todo: style this.
-                style: CalendarStyle {
-                    gridVisible: false
-                    background: Rectangle {
-                        color: "#303030"
-                        implicitWidth: 250 * uiScale
-                        implicitHeight: 250 * uiScale
-                    }
 
-                    dayDelegate: Rectangle {
-                        color: "#303030"
-                        border.color: styleData.selected ? "#FF8800" : "#303030"
-                        border.width: 2 * uiScale
-                        radius: 5 * uiScale
-                        Text {
-                            text: styleData.date.getDate()
-                            anchors.centerIn: parent
-                            color: styleData.visibleMonth && styleData.valid ? "#FFFFFF" : "#888888"
-                            font.pixelSize: 12.0 * uiScale
-                        }
+                ToolSlider {
+                    id: timezoneOffset
+                    title: qsTr("Time zone")
+                    tooltipText: qsTr("Controls when the day is divided for the date filters.")
+                    minimumValue: -14
+                    maximumValue: 14
+                    stepSize: 1
+                    defaultValue: settings.getOrganizeTZ()
+                    onValueChanged: {
+                        organizeModel.timeZone = value
+                        settings.organizeTZ = value
+                        organizeModel.setOrganizeQuery()
                     }
-                    navigationBar: Rectangle {
-                        id: calendarNavBar
-                        color: "#303030"
-                        height: 30 * uiScale
-                        ToolButton {
-                            id: backYear
-                            text: "<<"
-                            tooltipText: qsTr("Previous year")
-                            width: 30 * uiScale
-                            height: 30 * uiScale
-                            x: 0 * uiScale
-                            y: 0 * uiScale
-                            action: Action {
-                                onTriggered: {
-                                    control.showPreviousYear()
-                                }
-                            }
-                            Component.onCompleted: {
-                                backYear.tooltipWanted.connect(root.tooltipWanted)
-                            }
-                            uiScale: root.uiScale
-                        }
-                        ToolButton {
-                            id: backMonth
-                            text: "<"
-                            tooltipText: qsTr("Previous month")
-                            width: 30 * uiScale
-                            height: 30 * uiScale
-                            x: 30 * uiScale
-                            y: 0 * uiScale
-                            action: Action {
-                                onTriggered: {
-                                    control.showPreviousMonth()
-                                }
-                            }
-                            Component.onCompleted: {
-                                backMonth.tooltipWanted.connect(root.tooltipWanted)
-                            }
-                            uiScale: root.uiScale
-                        }
-                        Text {
-                            text: (control.visibleMonth + 1) + "/" + control.visibleYear
-                            anchors.centerIn: parent
-                            color: "white"
-                            font.pixelSize: 12.0 * uiScale
-                        }
-                        ToolButton {
-                            id: forwardMonth
-                            text: ">"
-                            tooltipText: qsTr("Next month")
-                            width: 30 * uiScale
-                            height: 30 * uiScale
-                            x: parent.width - 60 * uiScale
-                            y: 0 * uiScale
-                            action: Action {
-                                onTriggered: {
-                                    control.showNextMonth()
-                                }
-                            }
-                            Component.onCompleted: {
-                                forwardMonth.tooltipWanted.connect(root.tooltipWanted)
-                            }
-                            uiScale: root.uiScale
-                       }
-                        ToolButton {
-                            id: forwardYear
-                            text: ">>"
-                            tooltipText: qsTr("Next year")
-                            width: 30 * uiScale
-                            height: 30 * uiScale
-                            x: parent.width - 30 * uiScale
-                            y: 0 * uiScale
-                            action: Action {
-                                onTriggered: {
-                                    control.showNextYear()
-                                }
-                            }
-                            Component.onCompleted: {
-                                forwardYear.tooltipWanted.connect(root.tooltipWanted)
-                            }
-                            uiScale: root.uiScale
-                        }
+                    Component.onCompleted: {
+                        timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
                     }
-                    dayOfWeekDelegate: Rectangle {
-                        color: "#303030"
-                        implicitHeight: 30 * uiScale
-                        Text {
-                            text: control.__locale.dayName(styleData.dayOfWeek,control.dayOfWeekFormat)
-                            color: "white"
-                            anchors.centerIn: parent
-                            font.pixelSize: 12.0 * uiScale
-                        }
+                    uiScale: root.uiScale
+                }
+
+                ToolCalendar {
+                    id: captureCalendar
+                    minimumDate: "1970-01-01"
+                    maximumDate: "2038-01-01"
+                    selectedDate: settings.getOrganizeCaptureDate()
+                    onClicked: {
+                        settings.organizeCaptureDate = selectedDate
+                        organizeModel.minCaptureTime = selectedDate
+                        organizeModel.maxCaptureTime = selectedDate
+                        organizeModel.setOrganizeQuery()
                     }
+                    uiScale: root.uiScale
                 }
             }
         }
