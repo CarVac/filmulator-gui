@@ -17,6 +17,7 @@ ApplicationWindow {
     minimumWidth:700 * uiScale
 
     signal tooltipWanted(string text, int x, int y)
+    signal imageURL(string newURL)
 
     Rectangle {
         id: fillRect
@@ -96,6 +97,7 @@ ApplicationWindow {
 
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
+                        editItem.imageURL.connect(root.imageURL)
                     }
                     uiScale: root.uiScale
                 }
@@ -127,8 +129,16 @@ ApplicationWindow {
             Layout.minimumHeight: 50 * uiScale
 
             Queue {
+                id: queueItem
                 anchors.fill: parent
                 uiScale: root.uiScale
+                Connections {
+                    target: root
+                    onImageURL: {
+                        console.log("main.qml queueItem update url")
+                        queueItem.url = newURL;
+                    }
+                }
             }
         }
     }

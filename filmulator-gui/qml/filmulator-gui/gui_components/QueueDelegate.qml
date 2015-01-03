@@ -18,13 +18,30 @@ Item {
 
     property string __thumbPath: rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
 
+    property bool __current: searchID===selectedID
+
+    property string freshURL
+    property string validFreshURL: ""
+
+    onFreshURLChanged: {
+        if (__current) {
+            validFreshURL = freshURL
+        }
+    }
+
+    on__CurrentChanged: {
+        if (!__current) {
+            validFreshURL = ""
+        }
+    }
+
     signal openThisImage( string filePath, string sensitivity, string exposureTime, real aperture, real focalLength, real initialDeveloperConcentration, real reservoirThickness, real activeLayerThickness, real crystalsPerPixel, real initialCrystalRadius, real initialSilverSaltDensity, real developerConsumptionConst, real crystalGrowthConst, real silverSaltConsumptionConst, real totalDevelopmentTime, int agitateCount, int developmentResolution, real filmArea, real sigmaConst, real layerMixConst, real layerTimeDivisor, int rolloffBoundary, real exposureComp, real whitepoint, real blackpoint, real shadowsX, real shadowsY, real highlightsX, real highlightsY, int highlightRecovery, bool caEnabled, real temperature, real tint, real vibrance, real saturation, int orientation )
 
     Rectangle {
         id: currentImageRect
         width: root.dim*0.9375
         height: root.dim*0.03125
-        color: searchID===selectedID ? "#FF8800" : "#00000000"
+        color: __current ? "#FF8800" : "#00000000"
     }
 
     Loader {
@@ -34,16 +51,26 @@ Item {
 
     Component {
         id: thumbImage
-        Image {
-            id: thumb
+        Item {
             x: 0
-            y: root.height*0.03125
+            y: root.height * 0.03125
             width: root.width
-            height: root.height*0.9375
-            fillMode: Image.PreserveAspectFit
-            source: root.__thumbPath
-            sourceSize.width: 600
-            sourceSize.height: 600
+            height: root.height * 0.9375
+            Image {
+                id: thumb
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectFit
+                source: root.__thumbPath
+                sourceSize.width: 600
+                sourceSize.height: 600
+            }
+            Image {
+                id: freshThumb
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectFit
+                visible: __current
+                source: validFreshURL
+            }
         }
     }
 

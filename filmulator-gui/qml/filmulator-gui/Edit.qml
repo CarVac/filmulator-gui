@@ -26,6 +26,7 @@ SplitView {
     property alias defaultOverdriveEnabled: editTools.defaultOverdriveEnabled
 
     signal tooltipWanted(string text, int x, int y)
+    signal imageURL(string newURL)
 
     Rectangle {
         id: photoBox
@@ -90,6 +91,7 @@ SplitView {
                     }
                     onStatusChanged: if (topImage.status == Image.Ready) {
                                          bottomImage.source = topImage.source
+                                         root.imageURL(topImage.source)
                                      }
                 }
                 Image {

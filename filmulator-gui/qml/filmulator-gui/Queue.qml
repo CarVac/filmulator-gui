@@ -8,6 +8,7 @@ import "colors.js" as Colors
 Item {
     id: root
     property real uiScale: 1
+    property string url: ""
 
 //    ListView {
     GridView { //There is a bug in ListView that makes scrolling not smooth.
@@ -34,6 +35,8 @@ Item {
             searchID: QTsearchID
             processed: QTprocessed
             exported: QTexported
+
+            freshURL: root.url
 
             MouseArea {
                 anchors.fill: parent
