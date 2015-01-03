@@ -49,10 +49,15 @@ class ImagePipeline
 {
 public:
     ImagePipeline(CacheAndHisto, QuickQuality);
+
+    //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
     matrix<unsigned short> processImage(const ProcessingParameters params, Interface* interface, bool &aborted,
                                          Exiv2::ExifData &exifOutput);
+
+    //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
     float getProgress(){ return progress; }
 
+    //Returns a copy of the latest image, in a full color interleaved 16-bit per color format.
     matrix<unsigned short> getLastImage();
 
 protected:
