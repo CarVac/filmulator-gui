@@ -4,6 +4,7 @@ ImagePipeline::ImagePipeline(CacheAndHisto cacheAndHistoIn, QuickQuality quality
 {
     cacheHisto = cacheAndHistoIn;
     quality = qualityIn;
+    valid = Valid::none;
 
     completionTimes.resize(Valid::count);
     completionTimes[Valid::none] = 0;
