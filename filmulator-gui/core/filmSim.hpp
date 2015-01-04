@@ -195,6 +195,7 @@ void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
 void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                   int rotation);
 
+//Changes the white balance, assuming sRGB D50 input.
 void white_balance (matrix<float> &input, matrix<float> &output,
                     double temp, double tone);
 
