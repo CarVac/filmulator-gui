@@ -26,8 +26,10 @@ Rectangle {
     property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
-    signal released()
 
+    //This is so that we don't continually write to the database
+    //as we drag the slider, which was a real performance hit.
+    signal released()
     onPressedChanged: {
         if (pressed == false) {
             released()
@@ -106,6 +108,9 @@ Rectangle {
         action: Action {
             onTriggered: {
                 slider.value = defaultValue
+                //We have to pretend that the slider was dragged
+                // so that it writes back to the database.
+                root.released()
             }
         }
         style: ToolButtonStyle {

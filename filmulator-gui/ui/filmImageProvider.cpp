@@ -96,11 +96,11 @@ void FilmImageProvider::writeJpeg()
     processMutex.unlock();
 }
 
-void FilmImageProvider::writeThumbnail()
+void FilmImageProvider::writeThumbnail(QString thumbPath)
 {
     writeDataMutex.lock();
     worker->setImage(last_image, exifData);
-    emit requestThumbnail(QString::fromStdString(outputFilename));
+    emit requestThumbnail(thumbPath);
     writeDataMutex.unlock();
 }
 

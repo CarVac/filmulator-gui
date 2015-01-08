@@ -18,6 +18,7 @@ Rectangle {
     property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
+    signal resetToDefault()
 
     color: Colors.darkGray
 
@@ -82,6 +83,7 @@ Rectangle {
         action: Action {
             onTriggered: {
                 toggleSwitch.checked = defaultOn
+                root.resetToDefault()
             }
         }
 

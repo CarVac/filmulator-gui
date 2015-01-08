@@ -18,8 +18,8 @@ struct ProcessingParameters {
     //demosaic is now valid
 
     std::vector<float> exposureComp;
-    double temperature;
-    double tint;
+    float temperature;
+    float tint;
     //prefilmulation stuff is now valid
 
     filmulateParams filmParams;

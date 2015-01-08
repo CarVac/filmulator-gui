@@ -19,6 +19,7 @@ Item {
     property string __thumbPath: rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
 
     property bool __current: searchID===selectedID
+    property bool __waitingForThumb: false
 
     property string freshURL
     property string validFreshURL: ""
@@ -30,8 +31,11 @@ Item {
     }
 
     on__CurrentChanged: {
-        if (!__current) {
-            validFreshURL = ""
+        if (!__current) {//no longer the selected image
+            if (!__waitingForThumb) {
+                //make sure we're not waiting for the thumb lest it flicker
+                validFreshURL = ""
+            }
         }
     }
 
@@ -63,18 +67,37 @@ Item {
                 source: root.__thumbPath
                 sourceSize.width: 600
                 sourceSize.height: 600
+                cache: false
+                Connections {
+                    target: filmProvider
+                    onThumbnailDone: {
+                        if (__waitingForThumb) {
+                            console.log('thumb received')
+                            //thumb.cache = false
+                            thumb.source = ""
+                            //thumb.cache = true
+                            thumb.source = __thumbPath
+                            __waitingForThumb = false
+                            if (!__current) {
+                                validFreshURL = ""
+                            }
+                        }
+                    }
+                }
             }
             Image {
                 id: freshThumb
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectFit
-                visible: __current
+                visible: (__current || __waitingForThumb)
                 source: validFreshURL
                 onSourceChanged: {
-                    filmProvider.writeThumbnail();
-                    var oldSource = thumb.source
-                    thumb.source = ""
-                    thumb.source = oldSource
+                    if (__current) {
+                        console.log('thumb source changed and current')
+                        var thumbSource = __thumbPath
+                        filmProvider.writeThumbnail(thumbSource.slice(0, -4))
+                        __waitingForThumb = true
+                    }
                 }
             }
         }

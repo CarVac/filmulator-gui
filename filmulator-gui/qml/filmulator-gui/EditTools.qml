@@ -92,6 +92,10 @@ SplitView {
                         paramManager.caEnabled = isOn
                         paramManager.writeback()
                     }
+                    onResetToDefault: {
+                        paramManager.caEnabled = isOn
+                        paramManager.writeback()
+                    }
                     Connections {
                         target: paramManager
                         onCaEnabledChanged: {
@@ -284,6 +288,10 @@ SplitView {
                     tooltipText: qsTr("In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you.")
                     text: qsTr("Overdrive Mode")
                     onIsOnChanged: {
+                        paramManager.agitateCount = isOn ? 0 : 1
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
                         paramManager.agitateCount = isOn ? 0 : 1
                         paramManager.writeback()
                     }
