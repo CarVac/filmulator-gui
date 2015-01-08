@@ -166,10 +166,11 @@ float yFromT( float t, float E, float F, float G, float H );
 //Applies the LUT to the extreme values while maintaining the relative position of the middle value.
 void film_like_curve( matrix<unsigned short> &input,
                       matrix<unsigned short> &output,
-                      LUT &lookup );
+                      LUT<unsigned short> &lookup );
 
 //Applies the LUT to the first and last values, interpolating the middle value.
-void midValueShift (unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup);
+void midValueShift (unsigned short& hi, unsigned short& mid, unsigned short& lo,
+                    LUT<unsigned short> &lookup);
 
 JSAMPLE dither_round(int full_int);
 
@@ -190,30 +191,67 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 
 //Applies LUTs individually to each color.
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
-                LUT lutR, LUT lutG, LUT lutB);
+                LUT<unsigned short> lutR, LUT<unsigned short> lutG, LUT<unsigned short> lutB);
 
 void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
                   int rotation);
 
 //Changes the white balance, assuming sRGB D50 input.
-void white_balance (matrix<float> &input, matrix<float> &output,
-                    double temp, double tone);
+//void white_balance (matrix<float> &input, matrix<float> &output,
+//                    float temp, float tone);
 
 //Computes the multipliers for the white balance.
-void whiteBalanceMults( double temperature, double tint, std::string inputFilename,
-                        double &rMult, double &gMult, double &bMult );
+void whiteBalanceMults( float temperature, float tint, std::string inputFilename,
+                        float &rMult, float &gMult, float &bMult );
 
 //Uses Nelder-Mead method to find the WB parameters that yield (1,1,1) RGB multipliers.
 void optimizeWBMults( std::string inputFilename,
-                      double &temperature, double &tint );
+                      float &temperature, float &tint );
 
 //Applies the desired temperature and tint adjustments to the image.
 void whiteBalance( matrix<float> &input, matrix<float> &output,
-                   double temperature, double tint, std::string inputFilename );
+                   float temperature, float tint, std::string inputFilename );
 
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
                          double vibrance, double saturation);
 
 void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputStartX, int inputStartY, int inputEndX, int inputEndY, int outputXSize, int outputYSize);
+
+//Converts sRGB with D50 illuminant to XYZ with D50 illuminant.
+void sRGB_to_XYZ(float  r, float  g, float  b,
+                 float &x, float &y, float &z);
+
+//Converts XYZ with D50 illuminant to sRGB with D50 illuminant.
+void XYZ_to_sRGB(float  x, float  y, float  z,
+                 float &r, float &g, float &b);
+
+//Linearizes gamma-curved sRGB floats. 0:1 values.
+float sRGB_inverse_gamma(float c);
+
+//Gamma-compresses linear into sRGB. 0:1 values.
+float sRGB_forward_gamma(float c);
+
+//Linearize L* curved XYZ coming from L*a*b*, 0:1 values
+float Lab_inverse_gamma(float c);
+
+//L* curve linear XYZ data in preparation to going to L*a*b*, 0:1 values
+float Lab_forward_gamma(float c);
+
+//Arithmetic operations from L*-curved XYZ to L*a*b*
+float XYZ_to_Lab(float fx, float fy, float fz,
+                 float &L, float &a, float &b);
+
+//Arithmetic operations from L*a*b* to L* curved XYZ
+float Lab_to_XYZ(float   L, float   a, float   b,
+                 float &fx, float &fy, float &fz);
+
+//Converts gamma-curved sRGB to linear, short int to float.
+void sRGB_linearize(matrix<unsigned short> &RGB,
+                    matrix<float> &out);
+
+//Converts linear SRGB to gamma-curved, float to short int.
+void sRGB_gammacurve(matrix<float> &RGB,
+                     matrix<unsigned short> &out);
+
 #endif // FILMSIM_H

@@ -11,6 +11,9 @@ Calendar {
     implicitWidth: parent.width
     minimumDate: "1970-01-01"
     maximumDate: "2038-01-01"
+
+    signal tooltipWanted(string text, int x, int y)
+
     style: CalendarStyle {
         gridVisible: false
         background: Rectangle {

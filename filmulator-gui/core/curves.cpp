@@ -20,7 +20,7 @@
 #include <cmath>
 #include <algorithm>
 
-float default_tonecurve( float input )
+float default_tonecurve(float input)
 {
 
     //These are the coordinates for a quadratic bezier curve's
@@ -39,26 +39,26 @@ float default_tonecurve( float input )
     double ay = p0y - 2*p1y + p2y;
     double bx = -2*p0x + 2*p1x;
     double by = -2*p0y + 2*p1y;
-    double cx = p0x - double( input );
+    double cx = p0x - double(input);
     double cy = p0y;
 
     //The bezier curves are defined parametrically, with respect to t.
     //We need to find with respect to x, so we need to find what t value
     //corresponds to the x.
-    double t_value = ( -bx + sqrt( bx*bx - 4*ax*cx ) ) / ( 2*ax );
+    double t_value = (-bx + sqrt(bx*bx - 4*ax*cx)) / (2*ax);
 
-    double y_out = ( ay*t_value*t_value + by*t_value + cy );
-    float output = float( y_out );
+    double y_out = (ay*t_value*t_value + by*t_value + cy);
+    float output = float(y_out);
     
 	return output;
 }
 
 
-float shadows_highlights ( float input,
+float shadows_highlights (float input,
                            float shadowsX,
                            float shadowsY,
                            float highlightsX,
-                           float highlightsY )
+                           float highlightsY)
 {
 
     float x = input;
@@ -90,34 +90,34 @@ float shadows_highlights ( float input,
     // Assume for the first guess that t = x.
     float currentt = x;
     int nRefinementIterations = 5;
-    for ( int i = 0; i < nRefinementIterations; i++ )
+    for (int i = 0; i < nRefinementIterations; i++)
     {
-        float currentx = xFromT( currentt, A, B, C, D );
-        float currentslope = slopeFromT( currentt, A, B, C );
-        currentt -= ( currentx - x ) * ( currentslope );
-        currentt = min( max( currentt, float( 0 ) ), float( 1 ) );
+        float currentx = xFromT(currentt, A, B, C, D);
+        float currentslope = slopeFromT(currentt, A, B, C);
+        currentt -= (currentx - x) * (currentslope);
+        currentt = min(max(currentt, float(0)), float(1));
     }
 
-    float y = yFromT ( currentt, E, F, G, H );
+    float y = yFromT (currentt, E, F, G, H);
     return y;
 }
 
 // Helper functions:
-float slopeFromT( float t, float A, float B, float C )
+float slopeFromT(float t, float A, float B, float C)
 {
-    float dtdx = 1.0 / ( 3.0*A*t*t + 2.0*B*t + C);
+    float dtdx = 1.0 / (3.0*A*t*t + 2.0*B*t + C);
     return dtdx;
 }
 
-float xFromT( float t, float A, float B, float C, float D )
+float xFromT(float t, float A, float B, float C, float D)
 {
-    float x = A*( t*t*t ) + B*( t*t ) + C*t + D;
+    float x = A*(t*t*t) + B*(t*t) + C*t + D;
     return x;
 }
 
-float yFromT( float t, float E, float F, float G, float H )
+float yFromT(float t, float E, float F, float G, float H)
 {
-    float y = E*( t*t*t ) + F*( t*t ) + G*t + H;
+    float y = E*(t*t*t) + F*(t*t) + G*t + H;
     return y;
 }
 
@@ -132,30 +132,30 @@ float yFromT( float t, float E, float F, float G, float H )
 //On the middle value, instead of using the tone curve, which would induce hue
 // shifts, it simply maintains the relative spacing between the color components.
 //It makes no difference for linear tone "curves".
-void film_like_curve( matrix<unsigned short> &input,
+void film_like_curve(matrix<unsigned short> &input,
                       matrix<unsigned short> &output,
-                      LUT &lookup )
+                      LUT<unsigned short> &lookup)
 {
     int xsize = input.nc();
     int ysize = input.nr();
-    output.set_size( ysize, xsize );
+    output.set_size(ysize, xsize);
 
-#pragma omp parallel shared( lookup, input, output, xsize, ysize )
+#pragma omp parallel shared(lookup, input, output, xsize, ysize)
     {
-#pragma omp for schedule( dynamic ) nowait
-    for ( int i = 0; i < ysize; i++ )
+#pragma omp for schedule(dynamic) nowait
+    for (int i = 0; i < ysize; i++)
     {
-        for ( int j = 0; j < xsize; j = j + 3 )
+        for (int j = 0; j < xsize; j = j + 3)
         {
-            unsigned short r = input( i, j   );
-            unsigned short g = input( i, j+1 );
-            unsigned short b = input( i, j+2 );
+            unsigned short r = input(i, j  );
+            unsigned short g = input(i, j+1);
+            unsigned short b = input(i, j+2);
 
-            if ( r >= g )
+            if (r >= g)
             {
-                if      ( g > b ) midValueShift ( r, g, b, lookup ); // Case1: r>= g>  b
-                else if ( b > r ) midValueShift ( b, r, g, lookup ); // Case2: b>  r>= g
-                else if ( b > g ) midValueShift ( r, b, g, lookup ); // Case3: r>= b>  g
+                if      (g > b) midValueShift (r, g, b, lookup); // Case1: r>= g>  b
+                else if (b > r) midValueShift (b, r, g, lookup); // Case2: b>  r>= g
+                else if (b > g) midValueShift (r, b, g, lookup); // Case3: r>= b>  g
                 else							           // Case4: r>= g== b
                 {
                     //RGBTone fails if the first and last arguments are the same.
@@ -167,13 +167,13 @@ void film_like_curve( matrix<unsigned short> &input,
             }
             else
             {
-                if      ( r >= b ) midValueShift ( g, r, b, lookup ); // Case5: g>  r>= b
-                else if ( b >  g ) midValueShift ( b, g, r, lookup ); // Case6: b>  g>  r
-                else               midValueShift ( g, b, r, lookup ); // Case7: g>= b>  r
+                if      (r >= b) midValueShift (g, r, b, lookup); // Case5: g>  r>= b
+                else if (b >  g) midValueShift (b, g, r, lookup); // Case6: b>  g>  r
+                else               midValueShift (g, b, r, lookup); // Case7: g>= b>  r
             }
-            output( i, j   ) = r;
-            output( i, j+1 ) = g;
-            output( i, j+2 ) = b;
+            output(i, j  ) = r;
+            output(i, j+1) = g;
+            output(i, j+2) = b;
         }
     }
     }
@@ -182,7 +182,8 @@ void film_like_curve( matrix<unsigned short> &input,
 //This is what does the actual computation of the middle value.
 //This was called RGBTone in RawTherapee.
 //It assumes that r and b are the extreme values, and that they are different.
-void midValueShift( unsigned short& hi, unsigned short& mid, unsigned short& lo, LUT &lookup )
+void midValueShift(unsigned short& hi, unsigned short& mid, unsigned short& lo,
+                   LUT<unsigned short> &lookup)
 {
     unsigned short oldHi = hi, oldMid = mid, oldLo = lo;
 
@@ -193,5 +194,5 @@ void midValueShift( unsigned short& hi, unsigned short& mid, unsigned short& lo,
     float oldHi_f = oldHi;
     float oldMid_f = oldMid;
     float oldLo_f = oldLo;
-    mid = lo_f + ( ( hi_f - lo_f ) * ( oldMid_f - oldLo_f ) / ( oldHi_f - oldLo_f ) );
+    mid = lo_f + ((hi_f - lo_f) * (oldMid_f - oldLo_f) / (oldHi_f - oldLo_f));
 }

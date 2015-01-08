@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
+#ifndef LUT_H
+#define LUT_H
+
 #define MAXVAL 65536
 #include <algorithm>
 #include <functional>
@@ -23,10 +26,11 @@
 
 using namespace std;
 
+template <class numberType>
 class LUT
 {
 private:
-    unsigned short table[MAXVAL];
+    numberType table[MAXVAL];
     bool unity;
     bool linear;
     float slope;
@@ -56,7 +60,7 @@ public:
         return unity;
     }
 
-    void fill(std::function<unsigned short (unsigned short)> func)
+    void fill(std::function<numberType (unsigned short)> func)
 	{
         linear = false;
         unity = false;
@@ -65,7 +69,7 @@ public:
             table[i] = func(i);
 	}
 	
-    unsigned short operator[](unsigned short index)
+    numberType operator[](unsigned short index)
 	{
         if (unity)
             return index;
@@ -74,3 +78,4 @@ public:
         return table[index];
 	}
 };
+#endif //LUT_H

@@ -70,6 +70,9 @@ SplitView {
                         organizeModel.setOrganizeQuery()
                     }
                     uiScale: root.uiScale
+                    Component.onCompleted: {
+                        captureCalendar.tooltipWanted.connect(root.tooltipWanted)
+                    }
                 }
             }
         }

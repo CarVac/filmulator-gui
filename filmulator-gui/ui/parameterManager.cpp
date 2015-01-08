@@ -99,7 +99,7 @@ void ParameterManager::setExposureComp(float exposureComp)
     paramChangeWrapper(QString("setExposureComp"));
 }
 
-void ParameterManager::setTemperature(double temperature)
+void ParameterManager::setTemperature(float temperature)
 {
     m_temperature = temperature;
     param.temperature = temperature;
@@ -108,7 +108,7 @@ void ParameterManager::setTemperature(double temperature)
     paramChangeWrapper(QString("setTemperature"));
 }
 
-void ParameterManager::setTint(double tint)
+void ParameterManager::setTint(float tint)
 {
     m_tint = tint;
     param.tint = tint;
@@ -620,12 +620,12 @@ void ParameterManager::selectImage(QString imageID)
     //Temperature
     nameCol = rec.indexOf("ProcTtemperature");
     if (-1 == nameCol) { std::cout << "paramManager ProcTtemperature" << endl; }
-    setTemperature(query.value(nameCol).toDouble());
+    setTemperature(query.value(nameCol).toFloat());
 
     //Tint
     nameCol = rec.indexOf("ProcTtint");
     if (-1 == nameCol) { std::cout << "paramManager ProcTtint" << endl; }
-    setTint(query.value(nameCol).toDouble());
+    setTint(query.value(nameCol).toFloat());
 
     //Initial developer concentration
     nameCol = rec.indexOf("ProcTinitialDeveloperConcentration");

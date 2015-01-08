@@ -33,8 +33,8 @@ class ParameterManager : public QObject
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
-    Q_PROPERTY(double temperature MEMBER m_temperature WRITE setTemperature NOTIFY temperatureChanged)
-    Q_PROPERTY(double tint MEMBER m_tint WRITE setTint NOTIFY tintChanged)
+    Q_PROPERTY(float temperature MEMBER m_temperature WRITE setTemperature NOTIFY temperatureChanged)
+    Q_PROPERTY(float tint MEMBER m_tint WRITE setTint NOTIFY tintChanged)
 
     //Filmulation
     Q_PROPERTY(float initialDeveloperConcentration MEMBER m_initialDeveloperConcentration WRITE setInitialDeveloperConcentration NOTIFY initialDeveloperConcentrationChanged)
@@ -112,8 +112,8 @@ protected:
 
     //Prefilmulation
     float m_exposureComp;
-    double m_temperature;
-    double m_tint;
+    float m_temperature;
+    float m_tint;
 
     //Filmulation
     float m_initialDeveloperConcentration;
@@ -170,8 +170,8 @@ protected:
 
     //Prefilmulation
     void setExposureComp(float);
-    void setTemperature(double);
-    void setTint(double);
+    void setTemperature(float);
+    void setTint(float);
 
     //Filmulation
     void setInitialDeveloperConcentration(float);

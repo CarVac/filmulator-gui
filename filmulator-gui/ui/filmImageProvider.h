@@ -11,6 +11,8 @@
 #include "../core/imagePipeline.h"
 #include <assert.h>
 #include "parameterManager.h"
+#include <QThread>
+#include "thumbWriteWorker.h"
 
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
@@ -42,14 +44,19 @@ public:
 
     Q_INVOKABLE void writeTiff();
     Q_INVOKABLE void writeJpeg();
+    Q_INVOKABLE void writeThumbnail();
 
 protected:
-    //ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, LowQuality );
     ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, HighQuality );
+
+    ThumbWriteWorker *worker = new ThumbWriteWorker;
+    QThread workerThread;
+
     ParameterManager * paramManager;
     bool abort;
     QMutex paramMutex;//locks the params
-    QMutex writeDataMutex;//locks the data that gets used when saving
+    QMutex processMutex;//Ensures that output files are only of the currently selected image.
+    QMutex writeDataMutex;//binds together the update of outputFilename and the outputImage.
     float progress;
 
     struct timeval request_start_time;
@@ -62,6 +69,7 @@ protected:
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
     matrix<unsigned short> vibrance_saturation_image;
+    matrix<unsigned short> last_image;
 
     Histogram finalHist;
     Histogram postFilmHist;
@@ -83,8 +91,12 @@ signals:
     void histPostFilmChanged();
     void histPreFilmChanged();
 
+    void requestThumbnail(QString outputFilename);
+    void thumbnailDone();
+
 public slots:
     void abortPipeline(QString source);
+    void thumbDoneWriting();
 
 };
 

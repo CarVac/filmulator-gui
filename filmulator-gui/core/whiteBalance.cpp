@@ -2,12 +2,12 @@
 #include <utility>
 
 //Generates the illuminant in XYZ for the given temperature temp.
-void temp_to_XYZ(double const temp, double &X, double &Y, double &Z)
+void temp_to_XYZ(float const temp, float &X, float &Y, float &Z)
 {
     //The temporary variables are in the xyY color space.
     //x and y are chromaticity.
-    double temp_x;
-    double temp_y;
+    float temp_x;
+    float temp_y;
 
     if(temp < 4000)
     {
@@ -58,28 +58,10 @@ void temp_to_XYZ(double const temp, double &X, double &Y, double &Z)
     return;
 }
 
-//sRGB with d50 illuminant to XYZ with d50 illuminant.
-void rgb_to_xyz(double  r, double  g, double  b,
-                double &x, double &y, double &z)
-{
-    x = 0.4124*r + 0.3576*g + 0.1805*b;
-    y = 0.2126*r + 0.7152*g + 0.0722*b;
-    z = 0.0193*r + 0.1192*g + 0.9502*b;
-}
-
-//XYZ with d50 illuminant to sRGB with d50 illuminant.
-void XYZ_to_sRGB(double  x, double  y, double  z,
-                 double &r, double &g, double &b)
-{
-    r =  3.1338561*x - 1.6168667*y - 0.4906146*z;
-    g = -0.9787674*x + 1.9161415*y + 0.0334540*z;
-    b =  0.0719453*x - 0.2289914*y + 1.4052427*z;
-}
-
 //Right-multiplies the 3x3 matrix mat by column vector [r g b]'
-void matrixVectorMult(double r,  double g,  double b,
-                      double &x, double &y, double &z,
-                      double mat[3][3])
+void matrixVectorMult(float r,  float g,  float b,
+                      float &x, float &y, float &z,
+                      float mat[3][3])
 {
     x = mat[0][0]*r + mat[0][1]*g + mat[0][2]*b;
     y = mat[1][0]*r + mat[1][1]*g + mat[1][2]*b;
@@ -87,12 +69,12 @@ void matrixVectorMult(double r,  double g,  double b,
 }
 
 //Self-explanatory.
-void inverse(double in[3][3], double (&out)[3][3])
+void inverse(float in[3][3], float (&out)[3][3])
 {
-    double det = in[0][0] * (in[1][1]*in[2][2] - in[2][1]*in[1][2]) -
+    float det = in[0][0] * (in[1][1]*in[2][2] - in[2][1]*in[1][2]) -
                  in[0][1] * (in[1][0]*in[2][2] - in[1][2]*in[2][0]) +
                  in[0][2] * (in[1][0]*in[2][1] - in[1][1]*in[2][0]);
-    double invdet = 1 / det;
+    float invdet = 1 / det;
 
     out[0][0] = (in[1][1]*in[2][2] - in[2][1]*in[1][2]) * invdet;
     out[0][1] = (in[0][2]*in[2][1] - in[0][1]*in[2][2]) * invdet;
@@ -106,7 +88,7 @@ void inverse(double in[3][3], double (&out)[3][3])
 }
 
 //Self-explanatory.
-void matrixMatrixMult(double left[3][3], double right[3][3], double (&output)[3][3])
+void matrixMatrixMult(float left[3][3], float right[3][3], float (&output)[3][3])
 {
     for (int i = 0; i < 3; i++)
     {
@@ -125,8 +107,8 @@ void matrixMatrixMult(double left[3][3], double right[3][3], double (&output)[3]
 //If we match the camera's WB, then the multipliers should be 1,1,1.
 //We don't actually know what that is, so later on this function gets optimized with the goal of 1,1,1
 // as the default value on importing an image.
-void whiteBalanceMults(double temperature, double tint, std::string inputFilename,
-                       double &rMult, double &gMult, double &bMult)
+void whiteBalanceMults(float temperature, float tint, std::string inputFilename,
+                       float &rMult, float &gMult, float &bMult)
 {
     //To compute the white balance, we have to reference the undo what the thingy did.
     //In order to get physically relevant temperatures, we trust dcraw
@@ -136,10 +118,10 @@ void whiteBalanceMults(double temperature, double tint, std::string inputFilenam
     //
     //The following values are our baseline estimate of what this temperature
     // and tint is.
-    double BASE_TEMP = 6594.9982;
-    double BASE_TINT = 0.9864318;
+    float BASE_TEMP = 6594.9982;
+    float BASE_TINT = 0.9864318;
 
-    double rBaseMult, gBaseMult, bBaseMult;
+    float rBaseMult, gBaseMult, bBaseMult;
     //Grab the existing white balance data from the raw file.
     LibRaw imageProcessor;
 #define COLOR imageProcessor.imgdata.color
@@ -154,8 +136,8 @@ void whiteBalanceMults(double temperature, double tint, std::string inputFilenam
         // raw color space to sRGB.
 
         //Grab the xyz2cam matrix.
-        double xyzToCam[3][3];
-        double camToRgb[3][3];
+        float xyzToCam[3][3];
+        float camToRgb[3][3];
 //        cout << "white_balance: camToRgb" << endl;
         for (int i = 0; i < 3; i++)
         {
@@ -168,10 +150,10 @@ void whiteBalanceMults(double temperature, double tint, std::string inputFilenam
 //            cout << endl;
         }
         //Now we divide the daylight multipliers by the camera multipliers.
-        double rrBaseMult = COLOR.pre_mul[0] / COLOR.cam_mul[0];
-        double grBaseMult = COLOR.pre_mul[1] / COLOR.cam_mul[1];
-        double brBaseMult = COLOR.pre_mul[2] / COLOR.cam_mul[2];
-        double rawMultMin = min(min(rrBaseMult, grBaseMult), brBaseMult);
+        float rrBaseMult = COLOR.pre_mul[0] / COLOR.cam_mul[0];
+        float grBaseMult = COLOR.pre_mul[1] / COLOR.cam_mul[1];
+        float brBaseMult = COLOR.pre_mul[2] / COLOR.cam_mul[2];
+        float rawMultMin = min(min(rrBaseMult, grBaseMult), brBaseMult);
         rrBaseMult /= rawMultMin;
         grBaseMult /= rawMultMin;
         brBaseMult /= rawMultMin;
@@ -211,17 +193,17 @@ void whiteBalanceMults(double temperature, double tint, std::string inputFilenam
 
     //Here we compute the ratio of the desired to the reference (kinda daylight) illuminant.
     //Value of the desired illuminant in XYZ coordinates.
-    double XIllum, YIllum, ZIllum;
+    float XIllum, YIllum, ZIllum;
     //Value of the base illuminant in XYZ coordinates.
-    double XBase, YBase, ZBase;
+    float XBase, YBase, ZBase;
 
     //Now we compute the coordinates.
     temp_to_XYZ(temperature, XIllum, YIllum, ZIllum);
     temp_to_XYZ(BASE_TEMP, XBase, YBase, ZBase);
 
     //Next, we convert them to sRGB.
-    double rIllum, gIllum, bIllum;
-    double rBase, gBase, bBase;
+    float rIllum, gIllum, bIllum;
+    float rBase, gBase, bBase;
     XYZ_to_sRGB(XIllum, YIllum, ZIllum,
                 rIllum, gIllum, bIllum);
     XYZ_to_sRGB(XBase, YBase, ZBase,
@@ -238,9 +220,9 @@ void whiteBalanceMults(double temperature, double tint, std::string inputFilenam
     //cout << rMult << endl << gMult << endl << bMult << endl;
 
     //Clip negative values.
-    rMult = max(rMult, 0.0);
-    gMult = max(gMult, 0.0);
-    bMult = max(bMult, 0.0);
+    rMult = max(rMult, 0.0f);
+    gMult = max(gMult, 0.0f);
+    bMult = max(bMult, 0.0f);
 
     //Multiply our desired WB by the base offsets to compensate for
     // libraw already having applied them.
@@ -249,35 +231,35 @@ void whiteBalanceMults(double temperature, double tint, std::string inputFilenam
     bMult *= bBaseMult;
 
     //Normalize so that no component shrinks ever. (It should never go to below zero.)
-    double multMin = min(min(rMult, gMult), bMult)+0.00001;
+    float multMin = min(min(rMult, gMult), bMult)+0.00001;
     rMult /= multMin;
     gMult /= multMin;
     bMult /= multMin;
 }
 
 //Computes the Eulerian distance from the WB coefficients to (1,1,1). Also adds the temp to it.
-double wbDistance(std::string inputFilename, array<double,2> tempTint)
+float wbDistance(std::string inputFilename, array<float,2> tempTint)
 {
-    double rMult, gMult, bMult;
+    float rMult, gMult, bMult;
     whiteBalanceMults(tempTint[0], tempTint[1], inputFilename,
                       rMult, gMult, bMult);
     rMult -= 1;
     gMult -= 1;
     bMult -= 1;
 
-    double output;
+    float output;
     output = sqrt(rMult*rMult + gMult*gMult + bMult*bMult);
     return output;
 }
 
 //Run a Nelder-Mead simplex optimization on wbDistance.
 void optimizeWBMults(std::string file,
-                     double &temperature, double &tint)
+                     float &temperature, float &tint)
 {
     //This is nelder-mead in 2d, so we have 3 points.
-    array<double,2> lowCoord, midCoord, hiCoord;
+    array<float,2> lowCoord, midCoord, hiCoord;
     //Some temporary coordinates for use in optimizing.
-    array<double,2> meanCoord, reflCoord, expCoord, contCoord;
+    array<float,2> meanCoord, reflCoord, expCoord, contCoord;
     //Temperature
     lowCoord[0] = 4000.0;
     midCoord[0] = 5200.0;
@@ -287,11 +269,11 @@ void optimizeWBMults(std::string file,
     midCoord[1] = 1.05;
     hiCoord[1]  = 1.0;
 
-    double low, mid, hi, oldLow;
+    float low, mid, hi, oldLow;
     low = wbDistance(file, lowCoord);
     mid = wbDistance(file, midCoord);
     hi  = wbDistance(file, hiCoord);
-    double refl, exp, cont;
+    float refl, exp, cont;
 
 #define TOLERANCE 0.000000001
 #define ITER_LIMIT 10000
@@ -398,10 +380,10 @@ void optimizeWBMults(std::string file,
 
 //Actually apply a white balance to image data.
 void whiteBalance(matrix<float> &input, matrix<float> &output,
-                   double temperature, double tint,
+                   float temperature, float tint,
                    std::string inputFilename)
 {
-    double rMult, gMult, bMult;
+    float rMult, gMult, bMult;
     whiteBalanceMults(temperature, tint, inputFilename,
                        rMult, gMult, bMult);
 

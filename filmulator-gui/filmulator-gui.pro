@@ -45,7 +45,9 @@ SOURCES += main.cpp \
     database/queueModel.cpp \
     ui/parameterManager.cpp \
     core/scale.cpp \
-    database/signalSwitchboard.cpp
+    database/signalSwitchboard.cpp \
+    ui/thumbWriteWorker.cpp \
+    core/colorSpaces.cpp
 
 # Installation path
 # target.path =
@@ -79,7 +81,8 @@ HEADERS += \
     database/importWorker.h \
     database/queueModel.h \
     ui/parameterManager.h \
-    database/signalSwitchboard.h
+    database/signalSwitchboard.h \
+    ui/thumbWriteWorker.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp

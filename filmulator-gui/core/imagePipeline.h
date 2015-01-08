@@ -72,8 +72,8 @@ protected:
 
     ProcessingParameters oldParams;
 
-    LUT lutR, lutG, lutB;
-    LUT filmLikeLUT;
+    LUT<unsigned short> lutR, lutG, lutB;
+    LUT<unsigned short> filmLikeLUT;
 
     struct timeval timeRequested;
     Valid valid;

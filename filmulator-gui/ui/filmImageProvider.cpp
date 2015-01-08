@@ -17,6 +17,11 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     zeroHistogram(postFilmHist);
     zeroHistogram(preFilmHist);
     QObject::connect(paramManager, SIGNAL(paramChanged(QString)), this, SLOT(abortPipeline(QString)));
+
+    worker->moveToThread(&workerThread);
+    connect(this, &FilmImageProvider::requestThumbnail, worker, &ThumbWriteWorker::writeThumb);
+    connect(worker, &ThumbWriteWorker::doneWritingThumb, this, &FilmImageProvider::thumbDoneWriting);
+    workerThread.start(QThread::LowPriority);
 }
 
 FilmImageProvider::~FilmImageProvider()
@@ -35,15 +40,25 @@ QImage FilmImageProvider::requestImage(const QString &id,
     abort = false;
     paramMutex.unlock();
 
+    //Ensure that the tiff and jpeg outputs don't write the previous image.
+    processMutex.lock();
+
+    //Run the pipeline.
+    Exiv2::ExifData data;
+    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort, data );
+
+    //Ensure that the thumbnail writer writes matching filenames and images
     writeDataMutex.lock();
+    //Prepare the exif data for output.
+    exifData = data;
     //Prepare the output filename.
     outputFilename = tempParams.filenameList[0].substr(0,tempParams.filenameList[0].length()-4);
     outputFilename.append("-output");
-
-
-    //Run the pipeline.
-    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort, exifData );
+    //Copy the image over.
+    last_image = image;
     writeDataMutex.unlock();
+
+    processMutex.unlock();
 
     int nrows = image.nr();
     int ncols = image.nc();
@@ -69,17 +84,29 @@ QImage FilmImageProvider::requestImage(const QString &id,
 
 void FilmImageProvider::writeTiff()
 {
-    writeDataMutex.lock();
-    imwrite_tiff(pipeline.getLastImage(), outputFilename, exifData);
-    writeDataMutex.unlock();
+    processMutex.lock();
+    imwrite_tiff(last_image, outputFilename, exifData);
+    processMutex.unlock();
 }
 
 void FilmImageProvider::writeJpeg()
 {
+    processMutex.lock();
+    imwrite_jpeg(last_image, outputFilename, exifData, 95);
+    processMutex.unlock();
+}
+
+void FilmImageProvider::writeThumbnail()
+{
     writeDataMutex.lock();
-    matrix<unsigned short> outputData = pipeline.getLastImage();
-    imwrite_jpeg(outputData, outputFilename, exifData, 95);
+    worker->setImage(last_image, exifData);
+    emit requestThumbnail(QString::fromStdString(outputFilename));
     writeDataMutex.unlock();
+}
+
+void FilmImageProvider::thumbDoneWriting()
+{
+    emit thumbnailDone();
 }
 
 void FilmImageProvider::setProgress(float percentDone_in)

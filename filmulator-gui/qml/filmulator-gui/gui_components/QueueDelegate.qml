@@ -70,6 +70,12 @@ Item {
                 fillMode: Image.PreserveAspectFit
                 visible: __current
                 source: validFreshURL
+                onSourceChanged: {
+                    filmProvider.writeThumbnail();
+                    var oldSource = thumb.source
+                    thumb.source = ""
+                    thumb.source = oldSource
+                }
             }
         }
     }

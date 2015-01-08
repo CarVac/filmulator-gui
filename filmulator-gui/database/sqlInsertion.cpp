@@ -127,7 +127,7 @@ void createNewProfile(const QString fileHash,
     query.bindValue(24, defaultQuery.value(24).toFloat());//highlightsY
     query.bindValue(25, defaultQuery.value(25).toInt()  );//highlightRecovery
     query.bindValue(26, defaultQuery.value(26).toInt()  );//caEnabled
-    double temp, tint;
+    float temp, tint;
     optimizeWBMults(absoluteFilePath.toStdString(), temp, tint);
     query.bindValue(27, temp);//defaultQuery.value(27).toFloat());//temperature
     query.bindValue(28, tint);//defaultQuery.value(28).toFloat());//tint
