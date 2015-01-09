@@ -72,7 +72,6 @@ Item {
                     target: filmProvider
                     onThumbnailDone: {
                         if (__waitingForThumb) {
-                            console.log('thumb received')
                             //thumb.cache = false
                             thumb.source = ""
                             //thumb.cache = true
@@ -93,7 +92,6 @@ Item {
                 source: validFreshURL
                 onSourceChanged: {
                     if (__current) {
-                        console.log('thumb source changed and current')
                         var thumbSource = __thumbPath
                         filmProvider.writeThumbnail(thumbSource.slice(0, -4))
                         __waitingForThumb = true

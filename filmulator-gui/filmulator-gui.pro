@@ -8,46 +8,46 @@ QML_IMPORT_PATH =
 
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
-    core/agitate.cpp \
-    core/curves.cpp \
-    core/develop.cpp \
-    core/diffuse.cpp \
-    core/exposure.cpp \
-    core/imload.cpp \
-    core/imread.cpp \
-    core/filmulate.cpp \
-    ui/updateHistograms.cpp \
-    ui/settings.cpp \
-    core/imagePipeline.cpp \
-    core/timeDiff.cpp \
-    ui/filmImageProvider.cpp \
-    database/dbSetup.cpp \
-    database/exifFunctions.cpp \
-    database/organizeModel.cpp \
-    database/organizeProperties.cpp \
-    database/sqlModel.cpp \
-    core/colorCurves.cpp \
-    core/imreadJpeg.cpp \
-    core/imreadTiff.cpp \
-    core/imwriteTiff.cpp \
-    core/imwriteJpeg.cpp \
-    core/layerMix.cpp \
-    core/mergeExps.cpp \
-    core/outputFile.cpp \
-    core/rotateImage.cpp \
-    core/vibranceSaturation.cpp \
-    core/whiteBalance.cpp \
-    core/whitepointBlackpoint.cpp \
-    database/sqlInsertion.cpp \
-    database/importModel.cpp \
-    database/importProperties.cpp \
-    database/importWorker.cpp \
-    database/queueModel.cpp \
-    ui/parameterManager.cpp \
-    core/scale.cpp \
-    database/signalSwitchboard.cpp \
-    ui/thumbWriteWorker.cpp \
-    core/colorSpaces.cpp
+    ./core/agitate.cpp \
+    ./core/curves.cpp \
+    ./core/develop.cpp \
+    ./core/diffuse.cpp \
+    ./core/exposure.cpp \
+    ./core/imload.cpp \
+    ./core/imread.cpp \
+    ./core/filmulate.cpp \
+    ./ui/updateHistograms.cpp \
+    ./ui/settings.cpp \
+    ./core/imagePipeline.cpp \
+    ./core/timeDiff.cpp \
+    ./ui/filmImageProvider.cpp \
+    ./database/dbSetup.cpp \
+    ./database/exifFunctions.cpp \
+    ./database/organizeModel.cpp \
+    ./database/organizeProperties.cpp \
+    ./database/sqlModel.cpp \
+    ./core/colorCurves.cpp \
+    ./core/imreadJpeg.cpp \
+    ./core/imreadTiff.cpp \
+    ./core/imwriteTiff.cpp \
+    ./core/imwriteJpeg.cpp \
+    ./core/layerMix.cpp \
+    ./core/mergeExps.cpp \
+    ./core/outputFile.cpp \
+    ./core/rotateImage.cpp \
+    ./core/vibranceSaturation.cpp \
+    ./core/whiteBalance.cpp \
+    ./core/whitepointBlackpoint.cpp \
+    ./database/sqlInsertion.cpp \
+    ./database/importModel.cpp \
+    ./database/importProperties.cpp \
+    ./database/importWorker.cpp \
+    ./database/queueModel.cpp \
+    ./ui/parameterManager.cpp \
+    ./core/scale.cpp \
+    ./database/signalSwitchboard.cpp \
+    ./ui/thumbWriteWorker.cpp \
+    ./core/colorSpaces.cpp
 
 # Installation path
 # target.path =
@@ -57,32 +57,32 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    Organize.qml \
-    Edit.qml \
-    EditTools.qml \
-    gui_components/SSlider.qml \
-    qml/filmulator-gui/gui_components/ToolSlider.qml \
-    qml/filmulator-gui/generateHistogram.js
+    #Organize.qml \
+    #Edit.qml \
+    #EditTools.qml #\
+    #qml/filmulator-gui/gui_components/ToolSlider.qml \
+    #qml/filmulator-gui/generateHistogram.js
+    #gui_components/SSlider.qml \
 
 HEADERS += \
-    core/lut.hpp \
-    core/matrix.hpp \
-    core/interface.h \
-    ui/settings.h \
-    core/imagePipeline.h \
-    ui/filmImageProvider.h \
-    database/exifFunctions.h \
-    database/organizeModel.h \
-    database/filmulatorDB.h \
-    database/sqlModel.h \
-    core/filmSim.hpp \
-    database/sqlInsertion.h \
-    database/importModel.h \
-    database/importWorker.h \
-    database/queueModel.h \
-    ui/parameterManager.h \
-    database/signalSwitchboard.h \
-    ui/thumbWriteWorker.h
+    ./core/lut.hpp \
+    ./core/matrix.hpp \
+    ./core/interface.h \
+    ./ui/settings.h \
+    ./core/imagePipeline.h \
+    ./ui/filmImageProvider.h \
+    ./database/exifFunctions.h \
+    ./database/organizeModel.h \
+    ./database/filmulatorDB.h \
+    ./database/sqlModel.h \
+    ./core/filmSim.hpp \
+    ./database/sqlInsertion.h \
+    ./database/importModel.h \
+    ./database/importWorker.h \
+    ./database/queueModel.h \
+    ./ui/parameterManager.h \
+    ./database/signalSwitchboard.h \
+    ./ui/thumbWriteWorker.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
