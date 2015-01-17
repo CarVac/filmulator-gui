@@ -9,49 +9,63 @@ void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end,
 
 
 
+//Scales the input to the output to fit within the output sizes.
 void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputStartX, int inputStartY, int inputEndX, int inputEndY, int outputXSize, int outputYSize)
 {
     int inputXSize = inputEndX - inputStartX + 1;
     int inputYSize = inputEndY - inputStartY + 1;
 
+    //Determine the split of the scaling between integer and bilinear scaling.
+    //Integer is much faster, but we can only do integer multiples.
+    //Bilinear can only do shrinks between 1 and 2.
     double overallScaleFactor = max(double(inputXSize)/double(outputXSize),double(inputYSize)/double(outputYSize));
     int integerScaleFactor = floor(overallScaleFactor);
     double bilinearScaleFactor = overallScaleFactor/double(integerScaleFactor);
+
+    //Downscale in one direction
     matrix<float> bilinearX;
     matrix<float> bothX;
     downscaleBilinear1D(input,bilinearX,inputStartX,inputEndX,bilinearScaleFactor,true);
     downscaleDivisible1D(bilinearX,bothX,integerScaleFactor,true);
+
+    //Then transpose
     matrix<float> bothXTransposed;
     bothXTransposed.set_size(bothX.nc(),bothX.nr());
     bothX.transpose_to(bothXTransposed);
+
+    //Then downscale in the other direction.
     matrix<float> bothXTransposedBilinearY;
-    downscaleBilinear1D(bothXTransposed,bothXTransposedBilinearY,inputStartY,inputEndY,bilinearScaleFactor,false);
     matrix<float> bothXTransposedBothY;
+    downscaleBilinear1D(bothXTransposed,bothXTransposedBilinearY,inputStartY,inputEndY,bilinearScaleFactor,false);
     downscaleDivisible1D(bothXTransposedBilinearY,bothXTransposedBothY,integerScaleFactor,false);
+
+    //Then transpose to the output.
     output.set_size(bothXTransposedBothY.nc(),bothXTransposedBothY.nr());
     bothXTransposedBothY.transpose_to(output);
     return;
 }
 
+//Scales the image such that the number of columns is redeuced by integer factor scaleFactor.
 template <typename T>
 void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, bool interleaved)
 {
     int inputNumRows = input.nr();
     int inputNumCols = input.nc();
     int outputNumRows = inputNumRows;
-    int outputNumCols = inputNumCols/scaleFactor;
+    //We must use the ceiling here in order to not undersize the output matrix.
+    int outputNumCols = ceil(inputNumCols/double(scaleFactor));
     output.set_size(outputNumRows,outputNumCols);
 
     if(interleaved)
     {
         #pragma omp parallel for shared(input, output)
-        for(int i = 0; i < outputNumRows; i++)
-            for(int j = 0; j < outputNumCols; j = j+3)
+        for (int i = 0; i < outputNumRows; i++)
+            for (int j = 0; j < outputNumCols; j = j+3)
             {
                 double sumR = 0;
                 double sumG = 0;
                 double sumB = 0;
-                for(int k = j*scaleFactor; k < (j+3)*scaleFactor; k = k + 3 )
+                for (int k = j*scaleFactor; k < (j+3)*scaleFactor; k = k + 3 )
                 {
                     sumR += input(i,k);
                     sumG += input(i,k+1);
@@ -65,11 +79,11 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
     else
     {
         #pragma omp parallel for shared(input, output)
-        for(int i = 0; i < outputNumRows; i++)
-            for(int j = 0; j < outputNumCols; j++)
+        for (int i = 0; i < outputNumRows; i++)
+            for (int j = 0; j < outputNumCols; j++)
             {
                 double sum = 0;
-                for(int k = j*scaleFactor; k < (j+1)*scaleFactor; k++)
+                for (int k = j*scaleFactor; k < (j+1)*scaleFactor; k++)
                 {
                     sum += input(i,k);
                 }
@@ -79,6 +93,7 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
     return;
 }
 
+//Scales the image such that the number of columns is reduced by a scaling factor between 1 and 2.
 template <typename T>
 void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end, double scaleFactor, bool interleaved)
 {
@@ -94,9 +109,9 @@ void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end,
         output.set_size(outputNumRows,outputNumCols);
 
     #pragma omp parallel for shared(input, output)
-    for(int i = 0; i < outputNumRows; i++)
+    for (int i = 0; i < outputNumRows; i++)
     {
-        for(int j = 0; j < outputNumCols-1; j++)
+        for (int j = 0; j < outputNumCols-1; j++)
         {
             double inputPoint = (double(j) + 0.5)*scaleFactor -0.5 + double(start);
             int inputStart = floor(inputPoint);
@@ -104,8 +119,8 @@ void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end,
             double notUsed;
             double endWeight = modf(inputPoint, &notUsed);
             double startWeight = 1 - endWeight;
-            if(interleaved)
-                for(int c = 0; c < 3; c++)
+            if (interleaved)
+                for (int c = 0; c < 3; c++)
                 {
                     output(i,3*j + c) = startWeight*double(input(i,3*inputStart + c)) + endWeight*double(input(i,3*inputEnd + c));
                 }
