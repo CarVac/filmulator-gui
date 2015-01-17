@@ -1,5 +1,4 @@
 #include "thumbWriteWorker.h"
-#include <iostream>
 
 ThumbWriteWorker::ThumbWriteWorker(QObject *parent) : QObject(parent)
 {
@@ -14,7 +13,6 @@ void ThumbWriteWorker::setImage(const matrix<unsigned short> imageIn,
 
 void ThumbWriteWorker::writeThumb(QString outputFilename)
 {
-    std::cout << "ThumbWriteWorker::writeThumb" << std::endl;
     int rows = image.nr();
     int cols = image.nc();
 
