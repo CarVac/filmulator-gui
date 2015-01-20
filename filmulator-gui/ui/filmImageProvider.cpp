@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <cmath>
 #include <QDebug>
+#include <iostream>
+
 #define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(ParameterManager * manager) :

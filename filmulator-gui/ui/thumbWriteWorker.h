@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include "../core/imagePipeline.h"
+#include <QMutex>
+#include <QMutexLocker>
 
 class ThumbWriteWorker : public QObject
 {
@@ -22,6 +24,7 @@ signals:
 protected:
     matrix<unsigned short> image;
     Exiv2::ExifData exifData;
+    QMutex dataMutex;
 };
 
 #endif // THUMBWRITEWORKER_H
