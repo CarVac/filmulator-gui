@@ -149,7 +149,14 @@ matrix<T>::matrix(const int nrows, const int ncols)
 	assert(nrows >= 0 && ncols >= 0);
 	num_rows = nrows;
 	num_cols = ncols;
-	data = new T[nrows*ncols];
+    if (nrows == 0 || ncols == 0)
+    {
+        data = nullptr;
+    }
+    else
+    {
+        data = new T[nrows*ncols];
+    }
 }
 
 template <class T>
@@ -172,7 +179,7 @@ matrix<T>::matrix(const matrix<T> &toCopy)
 template <class T>
 matrix<T>::~matrix()
 {
-	delete [] data;
+    delete [] data;
 }
 
 template <class T>
@@ -180,9 +187,11 @@ void matrix<T>::set_size(const int nrows, const int ncols)
 {
 	assert(nrows >= 0 && ncols >= 0);
 	num_rows = nrows;
-	num_cols = ncols;	
-	delete [] data;
-	data = new T[nrows*ncols];
+    num_cols = ncols;
+    delete [] data;
+    data = new (std::nothrow) T[nrows*ncols];
+    if (data == nullptr)
+        std::cout << "matrix::set_size memory could not be alloc'd" << std::endl;
 }
 
 template <class T>
@@ -372,7 +381,7 @@ template <class T>
 inline void matrix<T>::slow_transpose_to (const matrix<T> &target) const
 {
     assert(target.num_rows == num_cols && target.num_cols == num_rows);
-    
+
 #pragma omp parallel for shared(target)
 	for(int row = 0; row < num_rows; row++)
 		for(int col = 0; col < num_cols; col++)

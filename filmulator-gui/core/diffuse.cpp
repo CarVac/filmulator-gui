@@ -65,8 +65,8 @@ void diffuse(matrix<float> &developer_concentration,
     //Here we allocate a matrix sized the same as a row, plus room for padding
     //mirrored from the internal content.
     int pad = order*convrad;
-    int paddedwidth = 2*pad + width;
-    int paddedheight = 2*pad + length;
+    int paddedwidth = 2*pad + width + 1;
+    int paddedheight = 2*pad + length + 1;
 
     diffuse_x(developer_concentration,convlength,convrad,pad,paddedwidth,
               order, swell_factor);
@@ -115,7 +115,7 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
                 hpadded[col+pad] = developer_concentration(row,col);
             }
             //Mirror the row onto the end of padded.
-            for (col = 0; col < pad; col++)
+            for (col = 0; col < pad + 1; col++)
             {
                 hpadded[col+pad+width] = 
                     developer_concentration(row,width-2-col);
@@ -134,7 +134,7 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
 
                 //Start moving down the row.
                 for (col = (pass+1)*convrad;
-                     col < paddedwidth-(pass+1)*convrad;
+                     col < paddedwidth - 1 - (pass+1)*convrad;
                      col++)
                 {
                     htemp[col] = running_sum;

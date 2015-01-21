@@ -25,7 +25,7 @@ void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputSta
     //Downscale in one direction
     matrix<float> bilinearX;
     matrix<float> bothX;
-    downscaleBilinear1D(input,bilinearX,inputStartX,inputEndX,bilinearScaleFactor,true);
+    downscaleBilinear1D(input,bilinearX,inputStartX,inputEndX,overallScaleFactor,true);
     downscaleDivisible1D(bilinearX,bothX,integerScaleFactor,true);
 
     //Then transpose
@@ -36,7 +36,7 @@ void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputSta
     //Then downscale in the other direction.
     matrix<float> bothXTransposedBilinearY;
     matrix<float> bothXTransposedBothY;
-    downscaleBilinear1D(bothXTransposed,bothXTransposedBilinearY,inputStartY,inputEndY,bilinearScaleFactor,false);
+    downscaleBilinear1D(bothXTransposed,bothXTransposedBilinearY,inputStartY,inputEndY,overallScaleFactor,false);
     downscaleDivisible1D(bothXTransposedBilinearY,bothXTransposedBothY,integerScaleFactor,false);
 
     //Then transpose to the output.
@@ -53,10 +53,18 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
     int inputNumCols = input.nc();
     int outputNumRows = inputNumRows;
     //We must use the ceiling here in order to not undersize the output matrix.
-    int outputNumCols = ceil(inputNumCols/double(scaleFactor));
+    int outputNumCols;
+    if (interleaved)
+    {
+        outputNumCols = 3*ceil(inputNumCols/(3*double(scaleFactor)));
+    }
+    else
+    {
+        outputNumCols = ceil(inputNumCols/double(scaleFactor));
+    }
     output.set_size(outputNumRows,outputNumCols);
 
-    if(interleaved)
+    if (interleaved)
     {
         #pragma omp parallel for shared(input, output)
         for (int i = 0; i < outputNumRows; i++)
@@ -94,14 +102,25 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
 }
 
 //Scales the image such that the number of columns is reduced by a scaling factor between 1 and 2.
+//The scaling factor is computed from the overall scale factor such that it ends up an integer multiple
+// of the desired final size.
 template <typename T>
-void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end, double scaleFactor, bool interleaved)
+void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end, double overallScaleFactor, bool interleaved)
 {
     int inputNumRows = input.nr();
     int inputNumCols = end - start + 1;
 
     int outputNumRows = inputNumRows;
-    int outputNumCols = round(double(inputNumCols)/scaleFactor);
+
+    int endNumCols = round(double(inputNumCols)/overallScaleFactor);
+    //We need to make sure that it ends up being a whole multiple of the final size.
+    float newOverallScaleFactor = inputNumCols/double(endNumCols);
+    //We assume that floor of newOverallScaleFactor is the same as the original.
+    int intScaleFactor = floor(newOverallScaleFactor);
+    //This is the scale factor used for bilinear.
+    float scaleFactor = newOverallScaleFactor/intScaleFactor;
+
+    int outputNumCols = endNumCols * intScaleFactor;
 
     if(interleaved)
         output.set_size(outputNumRows,outputNumCols*3);
