@@ -125,3 +125,19 @@ QDate Settings::getOrganizeCaptureDate()
     emit organizeCaptureDateChanged();
     return organizeCaptureDate;
 }
+
+void Settings::setUiScale(float uiScaleIn)
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    uiScale = uiScaleIn;
+    settings.setValue("ui/uiScale", uiScaleIn);
+    emit uiScaleChanged();
+}
+
+float Settings::getUiScale()
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    uiScale = settings.value("ui/uiScale", 1).toFloat();
+    //emit uiScaleChanged();
+    return uiScale;
+}

@@ -47,12 +47,12 @@ public:
     void setBackupDir(const QString dirIn);
     void setDirConfig(const QString configIn);
 
-    int getImportTZ() { return importTZ/3600; }
-    int getCameraTZ() { return cameraTZ/3600; }
+    int getImportTZ() {return importTZ/3600;}
+    int getCameraTZ() {return cameraTZ/3600;}
 
-    QString getPhotoDir() { return photoDir; }
-    QString getBackupDir() { return backupDir; }
-    QString getDirConfig() { return dirConfig; }
+    QString getPhotoDir() {return photoDir;}
+    QString getBackupDir() {return backupDir;}
+    QString getDirConfig() {return dirConfig;}
 
     float getProgress() {return progress;}
     bool getEmptyDir() {return emptyDir;}

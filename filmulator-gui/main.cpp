@@ -9,6 +9,7 @@
 #include "database/organizeModel.h"
 #include "database/queueModel.h"
 #include "database/filmulatorDB.h"
+#include "database/signalSwitchboard.h"
 #include <QMetaType>
 #include <QFileInfo>
 #include <QIcon>
@@ -27,6 +28,9 @@ int main(int argc, char *argv[])
     translator.load("filmulatortr_la");
     app.installTranslator(&translator);
 
+    //Create the object for communicating between SQL classes.
+    SignalSwitchboard *switchboard = new SignalSwitchboard;
+
     //Create a settings object for persistent settings.
     Settings *settingsObj = new Settings;
     engine.rootContext()->setContextProperty("settings", settingsObj);
@@ -34,6 +38,8 @@ int main(int argc, char *argv[])
     //Prepare an object for managing the processing parameters.
     ParameterManager *paramManager = new ParameterManager;
     engine.rootContext()->setContextProperty("paramManager",paramManager);
+    QObject::connect(paramManager, SIGNAL(updateTable(QString, int)),
+                     switchboard, SLOT(updateTableIn(QString, int)));
 
     //Prepare an image provider object.
     FilmImageProvider *filmProvider = new FilmImageProvider(paramManager);
@@ -61,8 +67,10 @@ int main(int argc, char *argv[])
     //Prepare a model for the queue view.
     QueueModel *queueModel = new QueueModel;
     queueModel->setQueueQuery();
-    engine.rootContext()->setContextProperty("queueModel", queueModel);
 //    std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
+    QObject::connect(switchboard, SIGNAL(updateTableOut(QString,int)),
+                     queueModel, SLOT(updateTable(QString,int)));
+    engine.rootContext()->setContextProperty("queueModel", queueModel);
 
     engine.load(QUrl::fromLocalFile("qml/filmulator-gui/main.qml"));
 

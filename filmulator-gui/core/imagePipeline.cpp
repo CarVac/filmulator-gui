@@ -4,6 +4,7 @@ ImagePipeline::ImagePipeline(CacheAndHisto cacheAndHistoIn, QuickQuality quality
 {
     cacheHisto = cacheAndHistoIn;
     quality = qualityIn;
+    valid = Valid::none;
 
     completionTimes.resize(Valid::count);
     completionTimes[Valid::none] = 0;
@@ -191,7 +192,7 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
                                                      params.highlightsY);
                 return 65535*default_tonecurve(shResult);
             }
-       );
+        );
         matrix<unsigned short> film_curve_image;
         film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
         vibrance_saturation(film_curve_image,vibrance_saturation_image,params.vibrance,params.saturation);

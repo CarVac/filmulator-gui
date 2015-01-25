@@ -1,13 +1,15 @@
 import QtQuick 2.2
-import QtQuick.Controls 1.1
+import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 import "gui_components"
+import "colors.js" as Colors
 
 Rectangle {
     id: root
-    color: "#202020"
+    property real uiScale: 1
+    color: Colors.darkGrayL
     anchors.fill: parent
     property string folderPath: ""
 
@@ -16,9 +18,9 @@ Rectangle {
     ColumnLayout {
         id: importToolList
         spacing: 0
-        x: 3
-        y: 3
-        width: 300
+        x: 3 * uiScale
+        y: 3 * uiScale
+        width: 300 * uiScale
 
         ToolSlider {
             id: cameraOffset
@@ -36,6 +38,7 @@ Rectangle {
                 importModel.cameraTZ = value
                 cameraOffset.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
         ImportDirEntry {
             id: sourceDirEntry
@@ -56,6 +59,7 @@ Rectangle {
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
 
         ToolSlider {
@@ -74,6 +78,7 @@ Rectangle {
                 importModel.importTZ = value
                 localOffset.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
         ImportDirEntry {
             id: photoDirEntry
@@ -89,6 +94,7 @@ Rectangle {
                 importModel.photoDir = enteredText
                 photoDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
         ImportDirEntry {
             id: backupDirEntry
@@ -104,6 +110,7 @@ Rectangle {
                 importModel.backupDir = enteredText
                 photoDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
 
         ImportTextEntry {
@@ -119,16 +126,17 @@ Rectangle {
                 importModel.dirConfig = enteredText
                 dirStructureEntry.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
 
         ToolButton {
             id: importButton
-            x: 0
-            y: 0
+            x: 0 * uiScale
+            y: 0 * uiScale
             text: qsTr("Import")
             tooltipText: qsTr("Copy photos from the source directory into the destination (and optional backup), as well as adding them to the database.")
-            width: importToolList.width
-            height: 40
+            width: parent.width
+            height: 40 * uiScale
             action: Action{
                 onTriggered: {
                     importModel.importDirectory_r(root.folderPath)
@@ -137,16 +145,18 @@ Rectangle {
             Component.onCompleted: {
                 importButton.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
 
         FilmProgressBar {
             id: importProgress
-            width: importToolList.width
+            width: parent.width
             value: importModel.progress
             Connections {
                 target: importModel
                 onProgressChanged: importProgress.value = importModel.progress
             }
+            uiScale: root.uiScale
         }
     }
 }

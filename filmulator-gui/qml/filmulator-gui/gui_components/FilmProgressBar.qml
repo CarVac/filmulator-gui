@@ -4,11 +4,12 @@ import QtQuick.Controls.Styles 1.2
 
 Item {
     id: root
-    width: 200
-    height: 30
+    property real uiScale: 1
+    width: 200 * uiScale
+    height: 30 * uiScale
     property alias value: progressBar.value
 
-    property real __padding: 2
+    property real __padding: 2 * uiScale
 
     ProgressBar {
         id: progressBar
@@ -22,15 +23,15 @@ Item {
             background: Rectangle {
                 implicitWidth: root.width - __padding * 2
                 implicitHeight: root.height - __padding * 2
-                radius: 3
+                radius: 3 * uiScale
                 color: "#B0B0B0"
-                border.width: 1
+                border.width: 1 * uiScale
                 border.color: "#808080"
             }
             progress: Rectangle {
                 color: "#FF9922"
                 border.color: "#A87848"
-                radius: 3
+                radius: 3 * uiScale
             }
         }
     }

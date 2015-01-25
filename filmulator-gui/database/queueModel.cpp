@@ -6,6 +6,7 @@ using std::endl;
 
 QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
 {
+    tableName = "QueueTable";
     resetIndex();
 }
 
@@ -59,4 +60,5 @@ void QueueModel::enQueue(QString searchID)
     index++;
 
     emit queueChanged();
+    //emit updateTableOut("QueueTable", 1);
 }

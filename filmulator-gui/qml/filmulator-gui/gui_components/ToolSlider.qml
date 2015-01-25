@@ -1,10 +1,13 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
+import "../colors.js" as Colors
+import "."
 
 Rectangle {
     id: root
-    implicitHeight: 30
+    property real uiScale: 1
+    implicitHeight: 36 * uiScale
     implicitWidth: parent.width
     property alias title: label.text
     property alias minimumValue: slider.minimumValue
@@ -18,10 +21,20 @@ Rectangle {
     property alias tooltipText: toolTooltip.tooltipText
 
     property alias tickmarksEnabled: slider.tickmarksEnabled
+    property bool changed: true
 
-    property real __padding: 2
+    property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
+
+    //This is so that we don't continually write to the database
+    //as we drag the slider, which was a real performance hit.
+    signal released()
+    onPressedChanged: {
+        if (pressed == false) {
+            released()
+        }
+    }
 
     color: "#303030"
 
@@ -32,75 +45,77 @@ Rectangle {
         x: __padding
         y: __padding * 1.5
         elide: Text.ElideRight
+        font.pixelSize: 12.0 * uiScale
     }
     Rectangle {
         id: valueBox
         color: "black"
-        width: 60
-        height: 20 - __padding
-        x: parent.width - this.width - reset.width - __padding * 1.5
-        y: __padding * 1.5
+        width: 60 * uiScale
+        height: 21 * uiScale - __padding
+        x: parent.width - this.width - reset.width - __padding * 2
+        y: __padding * 1.5 - 1 * uiScale
         Text {
             id: valueText
             x: __padding / 2
-            y: __padding / 2
+            y: 1 * uiScale //__padding / 2
             width: parent.width - x
             height: parent.height - y
             color: "white"
             text: slider.value
             elide: Text.ElideRight
+            font.pixelSize: 12.0 * uiScale
         }
     }
 
     Slider {
         id: slider
         x: __padding
-        y: 20
-        width: parent.width - reset.width - 2.5*__padding
+        y: 21 * uiScale + __padding
+        width: parent.width - reset.width - 3*__padding
         updateValueWhileDragging: true
         value: defaultValue
         style: SliderStyle {
             groove: Rectangle {
-                height: 4
+                height: 4 * uiScale
                 color: "#FF8800"
+                gradient: Gradient {
+                    GradientStop {color: Colors.brightOrange; position: 0.0}
+                    GradientStop {color: Colors.medOrange;   position: 0.3}
+                    GradientStop {color: Colors.medOrange;   position: 1.0}
+                }
             }
             handle: Rectangle {
-                height: 8
-                width: 20
-                radius: 3
+                height: 8 * uiScale
+                width: 20 * uiScale
+                radius: 3 * uiScale
+                gradient: Gradient {
+                    GradientStop {color: control.pressed ? Colors.brightOrange : Colors.brightGray; position: 0.0}
+                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 0.1}
+                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 1.0}
+                }
+
                 color: control.pressed ? "#A0A0A0" : "#808080"
             }
         }
     }
     Button {
         id: reset
-        width: 28
-        height: 28
-        x: root.width-width-__padding/2
-        y: __padding/2
+        width: 28 * uiScale
+        height: 28 * uiScale
+        x: root.width-width-__padding
+        y: __padding
         text: "[]"
         action: Action {
             onTriggered: {
                 slider.value = defaultValue
+                //We have to pretend that the slider was dragged
+                // so that it writes back to the database.
+                root.released()
             }
         }
-
-        style: ButtonStyle {
-            background: Rectangle {
-                implicitWidth: 26
-                implicitHeight: 26
-                border.width: 2
-                border.color: "#202020"
-                radius: 5
-                color: control.pressed ? "#A0A0A0" : "#808080"
-            }
-            label: Text {
-                color: "white"
-                anchors.centerIn: parent
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                text: control.text
-            }
+        style: ToolButtonStyle {
+            uiScale: root.uiScale
+            notDisabled: root.changed
         }
     }
     MouseArea {

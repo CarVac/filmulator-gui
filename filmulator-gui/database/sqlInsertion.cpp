@@ -61,29 +61,29 @@ void createNewProfile(const QString fileHash,
     //searchID (filehash with the increment appended)
     QString searchID = fileHash;
     searchID.append(QString("%1").arg(increment, 4, 10, QLatin1Char('0')));
-    query.bindValue( 0, searchID);
+    query.bindValue(0, searchID);
     //captureTime (unix time)
-    query.bindValue( 1, captureTime.toTime_t());
+    query.bindValue(1, captureTime.toTime_t());
     //name (of instance)
-    query.bindValue( 2, "");
+    query.bindValue(2, "");
     //filename
-    query.bindValue( 3, fileName);
+    query.bindValue(3, fileName);
     //sourceHash
-    query.bindValue( 4, fileHash);
+    query.bindValue(4, fileHash);
     //rating
     //TODO: write function to get rating
-    query.bindValue( 5, 0);
+    query.bindValue(5, 0);
     //latitude
     //TODO: figure something out here to either grab from the exif or get user input.
-    query.bindValue( 6, 0);
+    query.bindValue(6, 0);
     //longitude
-    query.bindValue( 7, 0);
+    query.bindValue(7, 0);
 
     //importTime (unix time)
-    query.bindValue( 8, importTime.toTime_t());
+    query.bindValue(8, importTime.toTime_t());
     //lastProcessedTime (unix time)
     //It's the same as above, since we're making a new one.
-    query.bindValue( 9, importTime.toTime_t());
+    query.bindValue(9, importTime.toTime_t());
 
     query.exec();
 
@@ -127,7 +127,7 @@ void createNewProfile(const QString fileHash,
     query.bindValue(24, defaultQuery.value(24).toFloat());//highlightsY
     query.bindValue(25, defaultQuery.value(25).toInt()  );//highlightRecovery
     query.bindValue(26, defaultQuery.value(26).toInt()  );//caEnabled
-    double temp, tint;
+    float temp, tint;
     optimizeWBMults(absoluteFilePath.toStdString(), temp, tint);
     query.bindValue(27, temp);//defaultQuery.value(27).toFloat());//temperature
     query.bindValue(28, tint);//defaultQuery.value(28).toFloat());//tint

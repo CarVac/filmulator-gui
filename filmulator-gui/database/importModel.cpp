@@ -8,6 +8,7 @@ using std::endl;
 
 ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
 {
+    tableName = "SearchTable";
     ImportWorker *worker = new ImportWorker;
     worker->moveToThread(&workerThread);
     connect(this, &ImportModel::workForWorker, worker, &ImportWorker::importFile);

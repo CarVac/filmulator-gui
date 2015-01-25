@@ -1,0 +1,22 @@
+var whiteGrayH = "#E0E0E0"
+var whiteGray = "#D0D0D0"
+var whiteGrayL = "#C0C0C0"
+var brightGrayH = "#B0B0B0"
+var brightGray = "#A0A0A0"
+var brightGrayL = "#909090"
+var middleGray = "#808080"
+var lowGrayH = "#707070"
+var lowGray = "#606060"
+var lowGrayL = "#505050"
+var darkGrayH = "#404040"
+var darkGray = "#303030"
+var darkGrayL = "#202020"
+var blackGray = "#101010"
+var whiteOrange = "#FFEEDD" //good for orange on black text, strong highlights on orange things
+var brightOrange = "#FFBB66" //good for subtle highlights on orange things
+var lightOrange = "#FF9922" //good for thin lines
+var medOrange = "#FF8800" //perfect middle orange
+var weakOrange = "#A87848" //Low saturation for orange bleeding around gray
+
+var transDarkGray = "#EE303030" //for tooltip backgrounds
+var transMiddleGray = "#EE808080" //for tooltip borders

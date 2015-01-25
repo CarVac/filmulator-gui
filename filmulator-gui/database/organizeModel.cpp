@@ -9,6 +9,7 @@ using namespace std;
 OrganizeModel::OrganizeModel(QObject *parent) :
     SqlModel(parent)
 {
+    tableName = "SearchTable";
 }
 
 void OrganizeModel::setOrganizeQuery()

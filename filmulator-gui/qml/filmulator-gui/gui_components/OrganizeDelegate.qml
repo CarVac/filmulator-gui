@@ -2,8 +2,9 @@ import QtQuick 2.2
 
 Rectangle {
     id: root
-    width: 300
-    height: 300
+    property real uiScale: 1
+    width: 300 * uiScale
+    height: 300 * uiScale
     color: "#00000000"
     property string rootDir
     property string searchID
@@ -33,8 +34,8 @@ Rectangle {
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
             source: root.__thumbPath
-            sourceSize.width: 300
-            sourceSize.height: 300
+            sourceSize.width: 300 * uiScale
+            sourceSize.height: 300 * uiScale
         }
     }
     Component.onCompleted: {

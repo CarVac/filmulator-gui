@@ -1,4 +1,4 @@
-function generateHistogram(histNumber,ctx,width,height,padding,lineWidth)
+function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale)
 {
     var histFunc;
     switch (histNumber)
@@ -23,7 +23,7 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth)
     var endx = width - padding;
     var graphwidth = endx - startx;
     var starty = height - padding;
-    var endy = padding+1;
+    var endy = padding+1*uiScale;
     var graphheight = starty - endy;
     var histPoint = 0;
     var maxValue = 128.0
@@ -84,7 +84,7 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth)
     ctx.stroke();
 
     ctx.strokeStyle = "#000000";
-    ctx.strokeRect(startx,endy-1,graphwidth,graphheight+1);
+    ctx.strokeRect(startx,endy-1*uiScale,graphwidth,graphheight+1*uiScale);
 
     ctx.restore();
 }

@@ -2,56 +2,65 @@ import QtQuick 2.2
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Dialogs 1.1
+import "../colors.js" as Colors
+import "."
 
 Rectangle {
     id: root
-    implicitHeight: 50
+    property real uiScale: 1
+    property real __padding: 4 * uiScale
+    implicitHeight: 2*__padding + 49 * uiScale
     implicitWidth: parent.width
-    color: "#303030"
+    color: Colors.darkGray
     property alias title: label.text
     property alias tooltipText: labelTooltip.tooltipText
     property alias dirDialogTitle: dirDialog.title
     property alias enteredText: textEntryBox.text
     property bool erroneous: false
 
-    property real __padding: 2
-
     signal tooltipWanted( string text, int coordX, int coordY )
 
-    Text {
-        id: label
-        color: "white"
+    Item {
+        id: labelBox
         width: parent.width - openDirButton.width - 3*__padding
-        height: 25 - __padding
+        height: 25 * uiScale
         x: __padding
-        y: __padding * 1.5
-        elide: Text.ElideRight
+        y: __padding
+        Text {
+            id: label
+            color: "white"
+            anchors.fill: parent
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            font.pixelSize: 12.0 * uiScale
+        }
     }
     Rectangle {
         id: textEntryRect
-        color: root.erroneous ? "#FF9922" : "black"
+        color: root.erroneous ? Colors.lightOrange : "black"
         width: parent.width - 2*__padding
-        height: 25 - 2*__padding
+        height: 25 * uiScale
         x: __padding
-        y: 25
+        y: 25 * uiScale + __padding
         TextEdit {
             id: textEntryBox
             x: __padding
-            y: __padding * 1.5
+            y: __padding * 1.25
             width: parent.width - x
             height: parent.height - y
             color: root.erroneous ? "black" : "white"
             selectByMouse: true
             cursorVisible: focus
+            font.pixelSize: 12.0 * uiScale
         }
     }
 
     Button {
         id: openDirButton
-        width: 120
-        height: 25
-        x: root.width - width - __padding / 2
-        y: 0//__padding/2
+        width: 120 * uiScale
+        height: 25 * uiScale
+        x: root.width - width - __padding
+        y: __padding
         text: qsTr( "Select a directory" )
         action: Action {
             onTriggered: {
@@ -59,23 +68,7 @@ Rectangle {
             }
         }
 
-        style: ButtonStyle {
-            background: Rectangle {
-                implicitWidth: 118
-                implicitHeight: 23
-                border.width: 2
-                border.color: "#202020"
-                radius: 5
-                color: control.pressed ? "#A0A0A0" : "#808080"
-            }
-            label: Text {
-                color: "white"
-                anchors.centerIn: parent
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                text: control.text
-            }
-        }
+        style: ToolButtonStyle {uiScale: root.uiScale}
     }
     FileDialog {
         id: dirDialog
@@ -87,7 +80,7 @@ Rectangle {
 
     ToolTip {
         id: labelTooltip
-        anchors.fill: label
+        anchors.fill: labelBox
         Component.onCompleted: labelTooltip.tooltipWanted.connect( root.tooltipWanted )
     }
 }

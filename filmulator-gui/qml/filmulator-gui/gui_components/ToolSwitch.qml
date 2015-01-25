@@ -1,44 +1,61 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
+import "../colors.js" as Colors
+import "."
 
 Rectangle {
     id: root
-    implicitHeight: 30
+    property real uiScale: 1
+    implicitHeight: 36 * uiScale
     implicitWidth: parent.width
     property alias text: label.text
     property alias tooltipText: tooltip.tooltipText
     property alias isOn: toggleSwitch.checked
     property bool defaultOn
+    property bool changed: true
 
-    property real __padding: 2
+    property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
+    signal resetToDefault()
 
-    color: "#303030"
+    color: Colors.darkGray
 
     state: defaultOn ? "ON" : "OFF"
 
     Switch {
         id: toggleSwitch
         x: __padding*2
+        y: __padding/2
         anchors.verticalCenter: parent.verticalCenter
         style: SwitchStyle {
             groove: Rectangle {
-                implicitWidth: 70
-                implicitHeight: 20
-                radius: 3
-                color: control.checked ? "#FF9922" : "#B0B0B0"
-                border.width: 1
-                border.color: control.checked ? "#A87848" : "#808080"
+                implicitWidth: 70 * uiScale
+                implicitHeight: 20 * uiScale
+                radius: 3 * uiScale
+                gradient: Gradient {
+                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGrayL; position: 0.0}
+                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 0.1}
+                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 1.0}
+                }
+
+                border.width: 1 * uiScale
+                border.color: control.checked ? Colors.weakOrange : Colors.middleGray
             }
             handle: Rectangle {
-                implicitWidth: 30
-                implicitHeight: 20
-                radius: 3
-                color: "#606060"
-                border.width: 1
-                border.color: control.checked ? "#A87848" : "#808080"
+                implicitWidth: 30 * uiScale
+                implicitHeight: 20 * uiScale
+                radius: 3 * uiScale
+                gradient: Gradient {
+                    GradientStop {color: Colors.lowGrayH; position: 0.0}
+                    GradientStop {color: Colors.lowGray; position: 0.15}
+                    GradientStop {color: Colors.lowGray; position: 0.9}
+                    GradientStop {color: Colors.lowGrayL; position: 1.0}
+                }
+
+                border.width: 1 * uiScale
+                border.color: control.checked ? Colors.weakOrange : Colors.middleGray
             }
         }
     }
@@ -47,42 +64,32 @@ Rectangle {
         id: label
         width: parent.width - toggleSwitch.width - reset.width - 5*__padding
         x: __padding*5 + toggleSwitch.width
+        y: __padding
         anchors.verticalCenter: parent.verticalCenter
         color: "white"
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
+        font.pixelSize: 12.0 * uiScale
     }
 
     Button {
         id: reset
-        width: 28
-        height: 28
-        x: root.width-width-__padding/2
-        y: __padding/2
+        width: 28 * uiScale
+        height: 28 * uiScale
+        x: root.width-width-__padding
+        y: __padding
         text: "[]"
         action: Action {
             onTriggered: {
                 toggleSwitch.checked = defaultOn
+                root.resetToDefault()
             }
         }
 
-        style: ButtonStyle {
-            background: Rectangle {
-                implicitWidth: 26
-                implicitHeight: 26
-                border.width: 2
-                border.color: "#202020"
-                radius: 5
-                color: control.pressed ? "#A0A0A0" : "#808080"
-            }
-            label: Text{
-                color: "white"
-                anchors.centerIn: parent
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                text: control.text
-            }
+        style: ToolButtonStyle {
+            uiScale: root.uiScale
+            notDisabled: root.changed
         }
     }
 
