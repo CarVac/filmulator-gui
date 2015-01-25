@@ -197,7 +197,7 @@ ApplicationWindow {
             property int posPad: 10 * uiScale
             width: Math.min(maxWidth, tooltipText.contentWidth + 2*padding)
             height: tooltipText.contentHeight + 2*padding
-            z: 2
+            z: 10
             Text {
                 id: tooltipText
                 x: parent.padding

@@ -44,6 +44,9 @@ ParameterManager::ParameterManager() : QObject(0)
     param.vibrance = 0.0f;
     param.saturation = 0.0f;
     param.rotation = 0;
+
+    pasteable = false;
+    pasteSome = false;
 }
 
 ProcessingParameters ParameterManager::getParams()
@@ -807,5 +810,30 @@ void ParameterManager::paramChangeWrapper(QString source)
     {
         emit paramChanged(source);
         emit updateImage();
+    }
+    copyFromImageIndex = "";
+    pasteable = false;
+    emit pasteableChanged();
+}
+
+//This is for copying and pasting.
+void ParameterManager::copyAll(QString fromImageID)
+{
+    std::cout << "copy all" << std::endl;
+    copyFromImageIndex = fromImageID;
+    pasteable = true;
+    pasteSome = false;
+    emit pasteableChanged();
+}
+
+void ParameterManager::paste(QString toImageID)
+{
+    if (pasteable)
+    {
+        if (!pasteSome)
+        {
+            QMutexLocker paramLocker(&paramMutex);
+            writeToDB(loadParams(copyFromImageIndex), toImageID);
+        }
     }
 }

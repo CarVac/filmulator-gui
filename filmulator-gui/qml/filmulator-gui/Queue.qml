@@ -3,6 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.1
 import "gui_components"
+import "getRoot.js" as GetRootObject
 import "colors.js" as Colors
 
 Item {
@@ -52,37 +53,97 @@ Item {
                 anchors.fill: parent
                 acceptedButtons: Qt.RightButton
                 onClicked: {
-                    rightClickMenu.popup()
+                    loadMenu.sourceComponent = rightClickMenu
+                    queueDelegate.rightClicked = true
                 }
             }
 
-            Menu {
+            Loader {
+                id: loadMenu
+            }
+
+            Component {
                 id: rightClickMenu
-                visible: false
-                MenuItem {
-                    text: qsTr("Remove from queue")
-                    onTriggered: {
-                        queueModel.deQueue(QTsearchID)
+                Item {
+                    anchors.fill: parent
+                    Item {
+                        id: sizer
+                        parent: GetRootObject.getDocRoot(root)
+                        anchors.fill: parent
                     }
-                }
 
-                style: MenuStyle {
-                    frame: Rectangle {
-                        color: Colors.darkGray
-                        border.color: Colors.middleGray
-                        border.width: 2 * uiScale
+                    MouseArea {
+                        id: clickCatcher
+                        x: -queueDelegate.mapToItem(null,0,0).x - sizer.width
+                        y: -queueDelegate.mapToItem(null,0,0).y - sizer.height
+                        width: sizer.width * 3
+                        height: sizer.height * 3
+                        z: 1
+                        acceptedButtons: Qt.AllButtons
+                        onClicked: {
+                            queueDelegate.rightClicked = false
+                            loadMenu.sourceComponent = undefined
+                        }
+                        onWheel: {
+                            queueDelegate.rightClicked = false
+                            loadMenu.sourceComponent = undefined
+                        }
                     }
-                    itemDelegate.label: Text {
-                        color: styleData.enabled ? "white" : Colors.middleGray
-                        text: styleData.text
-                        font.pixelSize: 12.0 * uiScale
+                    ColumnLayout {
+                        id: menuLayout
+                        spacing: 0 * root.uiScale
+                        x: Math.min(Math.max(0,-queueDelegate.mapToItem(null,0,0).x), sizer.mapToItem(queueDelegate,sizer.width,0).x - width)
+                        y: -94 * root.uiScale
+                        z: 2
+                        width: 200 * root.uiScale
 
-                    }
-                    itemDelegate.background: Rectangle {
-                        color: styleData.enabled ? (styleData.selected ? "black" : Colors.darkGray) : Colors.darkGray
+                        ToolButton {
+                            id: removeFromQueue
+                            text: qsTr("Remove from queue")
+                            width: parent.width
+                            z: 2
+                            action: Action {
+                                onTriggered: {
+                                    queueModel.deQueue(QTsearchID)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                            }
+                            uiScale: root.uiScale
+                        }
+                        ToolButton {
+                            id: copyAll
+                            text: qsTr("Copy all settings")
+                            width: parent.width
+                            z: 2
+                            action: Action {
+                                onTriggered: {
+                                    paramManager.copyAll(QTsearchID)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                            }
+                            uiScale: root.uiScale
+                        }
+                        ToolButton {
+                            id: paste
+                            text: qsTr("Paste settings")
+                            width: parent.width
+                            z: 2
+                            notDisabled: paramManager.pasteable
+                            action: Action {
+                                onTriggered: {
+                                    paramManager.paste(QTsearchID)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                            }
+                            uiScale: root.uiScale
+                        }
                     }
                 }
             }
+
         }
 
         Connections {

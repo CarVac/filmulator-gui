@@ -70,6 +70,8 @@ class ParameterManager : public QObject
     //Rotation
     Q_PROPERTY(int rotation      MEMBER (param.rotation    ) WRITE setRotation NOTIFY rotationChanged)
 
+    Q_PROPERTY(bool pasteable READ getPasteable NOTIFY pasteableChanged)
+
 public:
     ParameterManager();
     ProcessingParameters getParams();
@@ -81,12 +83,18 @@ public:
 
     Q_INVOKABLE void writeback();
 
+    Q_INVOKABLE void copyAll(QString fromImageID);
+    Q_INVOKABLE void paste(QString toImageID);
+
 protected:
     ProcessingParameters param;
     QMutex paramMutex;
     QMutex signalMutex;
 
     QString imageIndex;
+    QString copyFromImageIndex;
+    bool pasteable;
+    bool pasteSome;
 
     ProcessingParameters loadParams(QString imageID);
     void writeToDB(ProcessingParameters params, QString imageID);
@@ -117,6 +125,8 @@ protected:
     QString getExposureTime(){return exposureTime;}
     float getAperture(){return aperture;}
     float getFocalLength(){return focalLength;}
+
+    bool getPasteable(){return pasteable;}
 
     //Setters for the properties.
     //Loading
@@ -175,6 +185,9 @@ signals:
     void exposureTimeChanged();
     void apertureChanged();
     void focalLengthChanged();
+
+    //Copy/pasteing
+    void pasteableChanged();
 
     //Loading
     void tiffInChanged();
