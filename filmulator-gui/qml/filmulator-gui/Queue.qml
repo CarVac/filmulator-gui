@@ -28,6 +28,7 @@ Item {
         model: queueModel
 
         delegate: QueueDelegate {
+            id: queueDelegate
             dim: root.height
             rootDir: organizeModel.thumbDir()
 
@@ -40,7 +41,7 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: parent.ListView.view.currentIndex = index
+                onClicked: queueDelegate.ListView.currentIndex = queueDelegate.index
                 onDoubleClicked: {
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)
@@ -102,14 +103,14 @@ Item {
         acceptedButtons: Qt.NoButton
         onWheel: {
             var velocity = listView.horizontalVelocity
-            if (wheel.angleDelta.y > 0 && !listView.atXBeginning) {
+            if (wheel.angleDelta.x + wheel.angleDelta.y > 0 && !listView.atXBeginning) {
                 //Leftward; up on the scroll wheel.
                 //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                listView.flick(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : 1000, 0)
+                listView.flick(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? 500 : 0), 0)
             }
-            if (wheel.angleDelta.y < 0 && !listView.atXEnd) {
+            if (wheel.angleDelta.x + wheel.angleDelta.y < 0 && !listView.atXEnd) {
                 //Rightward; down on the scroll wheel.
-                listView.flick(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : -1000, 0)
+                listView.flick(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? -500 : 0), 0)
             }
         }
     }
