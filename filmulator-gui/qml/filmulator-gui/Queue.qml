@@ -28,6 +28,7 @@ Item {
         model: queueModel
 
         delegate: QueueDelegate {
+            id: queueDelegate
             dim: root.height
             rootDir: organizeModel.thumbDir()
 
@@ -40,7 +41,8 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: parent.ListView.view.currentIndex = index
+                //onClicked: parent.ListView.view.currentIndex = queueDelegate.index
+                onClicked: queueDelegate.ListView.currentIndex = queueDelegate.index
                 onDoubleClicked: {
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)
