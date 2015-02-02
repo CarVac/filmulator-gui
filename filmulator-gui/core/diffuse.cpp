@@ -287,7 +287,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationX,\
     paddedWidth) firstprivate(devel_concX, row, col)
     {
-#pragma omp for schedule(dynamic)
+#pragma omp for simd schedule(dynamic)
         for (row = 0; row < height; row++)
         {
             //Copy data into the temp.
@@ -355,14 +355,16 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //Copy data into the temp.
             for (row = 0; row < height; row++)
             {
-                for (col = 0; col < iter; col++)
+#pragma omp simd
+                for (col = 0; col < 8; col++)
                 {
-                    devel_concY(row,col) = developer_concentration(row,col+offset);
+                    devel_concY(row,col) = developer_concentration(row,min(col+offset,width-1));
                 }
             }
 
             //Set up the boundary.
-            for (col = 0; col < iter; col++)
+#pragma omp simd
+            for (col = 0; col < 8; col++)
             {
                 devel_concY(0,col) = coeff[0] * devel_concY(0,col);
                 devel_concY(1,col) = coeff[0] * devel_concY(1,col) +
@@ -374,7 +376,8 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //Iterate over the main part of the image, except for the setup.
             for (row = 3; row < height; row++)
             {
-                for (col = 0; col < iter; col++)
+#pragma omp simd
+                for (col = 0; col < 8; col++)
                 {
                     devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
                                            coeff[1] * devel_concY(row-1,col) +
@@ -385,7 +388,8 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //Iterate over the zeroed tail
             for (row = height; row < paddedHeight; row++)
             {
-                for (col = 0; col < iter; col++)
+#pragma omp simd
+                for (col = 0; col < 8; col++)
                 {
                     devel_concY(row,col) = coeff[1] * devel_concY(row-1,col) +
                                            coeff[2] * devel_concY(row-2,col) +
@@ -395,7 +399,8 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //And go back
             for (row = paddedHeight - 3 - 1; row >= 0; row--)
             {
-                for (col = 0; col < iter; col++)
+#pragma omp simd
+                for (col = 0; col < 8; col++)
                 {
                     devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
                                            coeff[1] * devel_concY(row+1,col) +
@@ -406,9 +411,10 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             //And undo the attenuation, copying back from the temp.
             for (row = 0; row < height; row++)
             {
-                for (col = 0; col < iter; col++)
+#pragma omp simd
+                for (col = 0; col < 8; col++)
                 {
-                    developer_concentration(row,col+offset) = devel_concY(row,col)/attenuationY[row];
+                    developer_concentration(row,min(col+offset,width-1)) = devel_concY(row,min(col,iter-1))/attenuationY[row];
                 }
             }
         }
