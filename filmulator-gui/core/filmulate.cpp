@@ -136,10 +136,14 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
         //Now, we are going to perform the diffusion part.
         //Here we mix the layer among itself, which grants us the
         // local contrast increases.
-        diffuse(developer_concentration,
-                sigma_const,
-                pixels_per_millimeter,
-                timestep);
+//        diffuse(developer_concentration,
+//                sigma_const,
+//                pixels_per_millimeter,
+//                timestep);
+        diffuse_short_convolution(developer_concentration,
+                                  sigma_const,
+                                  pixels_per_millimeter,
+                                  timestep);
 
         diffuse_dif += timeDiff(diffuse_start);
 

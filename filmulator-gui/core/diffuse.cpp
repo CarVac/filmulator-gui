@@ -157,3 +157,260 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
         }   
     }
 }
+
+//This uses a convolution forward and backward with a particular
+// 4-length, 1-dimensional kernel to mimic a gaussian.
+//In the first pass, it starts at 0, then goes out 4 standard deviations
+// onto 0-clamped padding, then convolves back to the start.
+//Naturally this attenuates the edges, so it does the same to all ones,
+// and divides the image by that.
+void diffuse_short_convolution(matrix<float> &developer_concentration,
+                               const float sigma_const,
+                               const float pixels_per_millimeter,
+                               const float timestep)
+{
+    int height = developer_concentration.nr();
+    int width = developer_concentration.nc();
+
+    //Compute the standard deviation of the blur we want, in pixels.
+    double sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
+
+    //We set the padding to be 4 standard deviations so as to catch as much as possible.
+    int paddedWidth = width + 4*sigma + 3;
+    int paddedHeight = height + 4*sigma + 3;
+
+    double q;//constant for computing coefficients
+    if (sigma < 2.5)
+    {
+        q = 3.97156 - 4.14554*sqrt(1 - 0.26891*sigma);
+    }
+    else
+    {
+        q = 0.98711*sigma - 0.96330;
+    }
+
+    double denom = 1.57825 + 2.44413*q + 1.4281*q*q + 0.422205*q*q*q;
+    double coeff [4];
+
+    coeff[1] = (2.44413*q + 2.85619*q*q + 1.26661*q*q*q)/denom;
+    coeff[2] = (-1.4281*q*q - 1.26661*q*q*q)/denom;
+    coeff[3] = (0.422205*q*q*q)/denom;
+    coeff[0] = 1 - (coeff[1] + coeff[2] + coeff[3]);
+
+    //We blur ones in order to cancel the edge attenuation.
+
+    //First we do horizontally.
+    vector<double> attenuationX(paddedWidth);
+    //Set up the boundary
+    attenuationX[0] = coeff[0]; //times 1
+    attenuationX[1] = coeff[0] + coeff[1]*attenuationX[0];
+    attenuationX[2] = coeff[0] + coeff[1]*attenuationX[1] + coeff[2]*attenuationX[0];
+    //Go over the image width
+    for (int i = 3; i < width; i++)
+    {
+        attenuationX[i] = coeff[0] + //times 1
+                          coeff[1] * attenuationX[i-1] +
+                          coeff[2] * attenuationX[i-2] +
+                          coeff[3] * attenuationX[i-3];
+    }
+    //Fill in the padding (which is all zeros)
+    for (int i = width; i < paddedWidth; i++)
+    {
+        //All zeros, so no coeff[0]*1 here.
+        attenuationX[i] = coeff[1] * attenuationX[i-1] +
+                          coeff[2] * attenuationX[i-2] +
+                          coeff[3] * attenuationX[i-3];
+    }
+    //And go back.
+    for (int i = paddedWidth - 3 - 1; i >= 0; i--)
+    {
+        attenuationX[i] = coeff[0] * attenuationX[i] +
+                          coeff[1] * attenuationX[i+1] +
+                          coeff[2] * attenuationX[i+2] +
+                          coeff[3] * attenuationX[i+3];
+    }
+
+    for (int i = 0; i < width; i++)
+    {
+        if (attenuationX[i] <= 0)
+        {
+            std::cout << "gonna blow X" << std::endl;
+        }
+    }
+
+    //And now vertically.
+    vector<double> attenuationY(paddedHeight);
+    //Set up the boundary
+    attenuationY[0] = coeff[0]; //times 1
+    attenuationY[1] = coeff[0] + coeff[1]*attenuationY[0];
+    attenuationY[2] = coeff[0] + coeff[1]*attenuationY[1] + coeff[2]*attenuationY[0];
+    //Go over the image height
+    for (int i = 3; i < height; i++)
+    {
+        attenuationY[i] = coeff[0] + //times 1
+                          coeff[1] * attenuationY[i-1] +
+                          coeff[2] * attenuationY[i-2] +
+                          coeff[3] * attenuationY[i-3];
+    }
+    //Fill in the padding (which is all zeros)
+    for (int i = height; i < paddedHeight; i++)
+    {
+        //All zeros, so no coeff[0]*1 here.
+        attenuationY[i] = coeff[1] * attenuationY[i-1] +
+                          coeff[2] * attenuationY[i-2] +
+                          coeff[3] * attenuationY[i-3];
+    }
+    //And go back.
+    for (int i = paddedHeight - 3 - 1; i >= 0; i--)
+    {
+        attenuationY[i] = coeff[0] * attenuationY[i  ] +
+                          coeff[1] * attenuationY[i+1] +
+                          coeff[2] * attenuationY[i+2] +
+                          coeff[3] * attenuationY[i+3];
+    }
+
+    for (int i = 0; i < height; i++)
+    {
+        if (attenuationY[i] <= 0)
+        {
+            std::cout << "gonna blow Y" << std::endl;
+        }
+    }
+
+
+    //Set up variables for use inside loops
+    int row, col, slice, offset, iter;
+
+    //X direction blurring.
+    //We slice by individual rows.
+    vector<double> devel_concX(paddedWidth);
+#pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationX,\
+    paddedWidth) firstprivate(devel_concX, row, col)
+    {
+#pragma omp for schedule(dynamic)
+        for (row = 0; row < height; row++)
+        {
+            //Copy data into the temp.
+            for (col = 0; col < width; col++)
+            {
+                devel_concX[col] = double(developer_concentration(row,col));
+            }
+            //Set up the boundary
+            devel_concX[0] = coeff[0] * devel_concX[0];
+            devel_concX[1] = coeff[0] * devel_concX[1] +
+                             coeff[1] * devel_concX[0];
+            devel_concX[2] = coeff[0] * devel_concX[2] +
+                             coeff[1] * devel_concX[1] +
+                             coeff[2] * devel_concX[0];
+            //Iterate over the main part of the image, except for the setup
+            for (col = 3; col < width; col++)
+            {
+                devel_concX[col] = coeff[0] * devel_concX[col  ] +
+                                   coeff[1] * devel_concX[col-1] +
+                                   coeff[2] * devel_concX[col-2] +
+                                   coeff[3] * devel_concX[col-3];
+            }
+            //Iterate over the zeroed tail
+            for (col = width; col < paddedWidth; col++)
+            {
+                devel_concX[col] = coeff[1] * devel_concX[col-1] +
+                                   coeff[2] * devel_concX[col-2] +
+                                   coeff[3] * devel_concX[col-3];
+            }
+            //And go back
+            for (col = paddedWidth - 3 - 1; col >= 0; col--)
+            {
+                devel_concX[col] = coeff[0] * devel_concX[col  ] +
+                                   coeff[1] * devel_concX[col+1] +
+                                   coeff[2] * devel_concX[col+2] +
+                                   coeff[3] * devel_concX[col+3];
+            }
+            //And undo the attenuation, copying back from the temp.
+            for (col = 0; col < width; col++)
+            {
+                developer_concentration(row,col) = devel_concX[col]/attenuationX[col];
+            }
+        }
+    }
+
+    //Y direction blurring. We slice into columns a whole number of cache lines wide.
+    //Each cache line is 8 doubles wide.
+    matrix<double> devel_concY;
+    int thickness = 8;//of the slice
+    devel_concY.set_size(paddedHeight,thickness);
+    int slices = ceil(width/float(thickness));
+#pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationY,\
+    paddedHeight, slices, thickness) firstprivate(devel_concY, row, col, slice, offset, iter)
+    {
+#pragma omp for schedule(dynamic)
+        for (slice = 0; slice < slices; slice++)
+        {
+            offset = slice*thickness;
+            iter = thickness;//number of columns to loop through
+            if (offset + thickness > width) //If it's the last row,
+            {
+                iter = width - offset;//Don't go beyond the bounds
+            }
+
+            //Copy data into the temp.
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < iter; col++)
+                {
+                    devel_concY(row,col) = developer_concentration(row,col+offset);
+                }
+            }
+
+            //Set up the boundary.
+            for (col = 0; col < iter; col++)
+            {
+                devel_concY(0,col) = coeff[0] * devel_concY(0,col);
+                devel_concY(1,col) = coeff[0] * devel_concY(1,col) +
+                                     coeff[1] * devel_concY(0,col);
+                devel_concY(2,col) = coeff[0] * devel_concY(2,col) +
+                                     coeff[1] * devel_concY(1,col) +
+                                     coeff[2] * devel_concY(0,col);
+            }
+            //Iterate over the main part of the image, except for the setup.
+            for (row = 3; row < height; row++)
+            {
+                for (col = 0; col < iter; col++)
+                {
+                    devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
+                                           coeff[1] * devel_concY(row-1,col) +
+                                           coeff[2] * devel_concY(row-2,col) +
+                                           coeff[3] * devel_concY(row-3,col);
+                }
+            }
+            //Iterate over the zeroed tail
+            for (row = height; row < paddedHeight; row++)
+            {
+                for (col = 0; col < iter; col++)
+                {
+                    devel_concY(row,col) = coeff[1] * devel_concY(row-1,col) +
+                                           coeff[2] * devel_concY(row-2,col) +
+                                           coeff[3] * devel_concY(row-3,col);
+                }
+            }
+            //And go back
+            for (row = paddedHeight - 3 - 1; row >= 0; row--)
+            {
+                for (col = 0; col < iter; col++)
+                {
+                    devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
+                                           coeff[1] * devel_concY(row+1,col) +
+                                           coeff[2] * devel_concY(row+2,col) +
+                                           coeff[3] * devel_concY(row+3,col);
+                }
+            }
+            //And undo the attenuation, copying back from the temp.
+            for (row = 0; row < height; row++)
+            {
+                for (col = 0; col < iter; col++)
+                {
+                    developer_concentration(row,col+offset) = devel_concY(row,col)/attenuationY[row];
+                }
+            }
+        }
+    }
+}
