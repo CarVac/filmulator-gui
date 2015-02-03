@@ -353,12 +353,25 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
             }
 
             //Copy data into the temp.
-            for (row = 0; row < height; row++)
+            if (iter < 8) //we can't SIMD this nicely
             {
-#pragma omp simd
-                for (col = 0; col < 8; col++)
+                for (row = 0; row < height; row++)
                 {
-                    devel_concY(row,col) = developer_concentration(row,min(col+offset,width-1));
+                    for (col = 0; col < iter; col++)
+                    {
+                        devel_concY(row,col) = developer_concentration(row,col+offset);
+                    }
+                }
+            }
+            else //we can simd this
+            {
+                for (row = 0; row < height; row++)
+                {
+#pragma omp simd
+                    for (col = 0; col < 8; col++)
+                    {
+                        devel_concY(row,col) = developer_concentration(row,col+offset);
+                    }
                 }
             }
 
@@ -409,12 +422,25 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                 }
             }
             //And undo the attenuation, copying back from the temp.
-            for (row = 0; row < height; row++)
+            if (iter < 8) //we can't SIMD this nicely
             {
-#pragma omp simd
-                for (col = 0; col < 8; col++)
+                for (row = 0; row < height; row++)
                 {
-                    developer_concentration(row,min(col+offset,width-1)) = devel_concY(row,min(col,iter-1))/attenuationY[row];
+                    for (col = 0; col < iter; col++)
+                    {
+                        developer_concentration(row,col+offset) = devel_concY(row,col)/attenuationY[row];
+                    }
+                }
+            }
+            else
+            {
+                for (row = 0; row < height; row++)
+                {
+#pragma omp simd
+                    for (col = 0; col < 8; col++)
+                    {
+                        developer_concentration(row,col+offset) = devel_concY(row,col)/attenuationY[row];
+                    }
                 }
             }
         }
