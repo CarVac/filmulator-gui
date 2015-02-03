@@ -287,7 +287,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp parallel shared(developer_concentration, height, width, coeff, attenuationX,\
     paddedWidth) firstprivate(devel_concX, row, col)
     {
-#pragma omp for simd schedule(dynamic)
+#pragma omp for schedule(dynamic)
         for (row = 0; row < height; row++)
         {
             //Copy data into the temp.
@@ -326,6 +326,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                    coeff[3] * devel_concX[col+3];
             }
             //And undo the attenuation, copying back from the temp.
+#pragma omp simd
             for (col = 0; col < width; col++)
             {
                 developer_concentration(row,col) = devel_concX[col]/attenuationX[col];
