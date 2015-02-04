@@ -164,6 +164,11 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
 // onto 0-clamped padding, then convolves back to the start.
 //Naturally this attenuates the edges, so it does the same to all ones,
 // and divides the image by that.
+
+//Based on the paper "Recursive implementation of the Gaussian filter"
+// in Signal Processing 44 (1995) 139-151
+//Referencing code from here:
+//https://github.com/halide/Halide/blob/e23f83b9bde63ed64f4d9a2fbe1ed29b9cfbf2e6/test/generator/gaussian_blur_generator.cpp
 void diffuse_short_convolution(matrix<float> &developer_concentration,
                                const float sigma_const,
                                const float pixels_per_millimeter,
@@ -230,11 +235,16 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                           coeff[3] * attenuationX[i+3];
     }
 
+#pragma omp parallel for
     for (int i = 0; i < width; i++)
     {
         if (attenuationX[i] <= 0)
         {
             std::cout << "gonna blow X" << std::endl;
+        }
+        else //we can invert this
+        {
+            attenuationX[i] = 1.0/attenuationX[i];
         }
     }
 
@@ -269,11 +279,16 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                           coeff[3] * attenuationY[i+3];
     }
 
+#pragma omp parallel for
     for (int i = 0; i < height; i++)
     {
         if (attenuationY[i] <= 0)
         {
             std::cout << "gonna blow Y" << std::endl;
+        }
+        else
+        {
+            attenuationY[i] = 1.0/attenuationY[i];
         }
     }
 
@@ -329,7 +344,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
             for (col = 0; col < width; col++)
             {
-                developer_concentration(row,col) = devel_concX[col]/attenuationX[col];
+                developer_concentration(row,col) = devel_concX[col]*attenuationX[col];
             }
         }
     }
@@ -429,7 +444,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                 {
                     for (col = 0; col < iter; col++)
                     {
-                        developer_concentration(row,col+offset) = devel_concY(row,col)/attenuationY[row];
+                        developer_concentration(row,col+offset) = devel_concY(row,col)*attenuationY[row];
                     }
                 }
             }
@@ -440,7 +455,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
                     for (col = 0; col < 8; col++)
                     {
-                        developer_concentration(row,col+offset) = devel_concY(row,col)/attenuationY[row];
+                        developer_concentration(row,col+offset) = devel_concY(row,col)*attenuationY[row];
                     }
                 }
             }
