@@ -43,32 +43,21 @@ extern "C" {
  *
  */
 
-/** Define halide_printf to catch debugging output, informational
-  * messages, etc. Main use is to support HL_TRACE functionality and
-  * PrintStmt in IR. Also called by the default halide_error
-  * implementation.
-  *
-  * This function is implemented using \ref halide_print.
-  */
-extern int halide_printf(void *user_context, const char *, ...);
-
-/** Unformatted print used to support halide_printf. This function
- * can be replaced in JITed code by using halide_custom_print
- * and providing an implementation of halide_print in AOT code. See
- * Func::set_custom_print.
+/** Print a message to stderr. Main use is to support HL_TRACE
+ * functionality, print, and print_when calls. Also called by the default
+ * halide_error.  This function can be replaced in JITed code by using
+ * halide_custom_print and providing an implementation of halide_print
+ * in AOT code. See Func::set_custom_print.
  */
 extern void halide_print(void *user_context, const char *);
 
-/** Define halide_error to catch errors messages at runtime, for
- * example bounds checking failures. This function can be replaced
- * in JITed code by using halide_set_error_handler and providing an
+/** Define halide_error to catch errors messages at runtime (for
+ * example bounds checking failures). This function can be replaced in
+ * JITed code by using halide_set_error_handler and providing an
  * implementation of halide_error in AOT code. See
  * Func::set_error_handler.
  */
-//@{
 extern void halide_error(void *user_context, const char *);
-extern void halide_error_varargs(void *user_context, const char *, ...);
-//@}
 
 /** A macro that calls halide_error if the supplied condition is false. */
 #define halide_assert(user_context, cond) if (!(cond)) halide_error(user_context, #cond);
@@ -250,6 +239,17 @@ extern int halide_dev_run(void *user_context,
                           void *args[]);
 // @}
 
+/** This function is called to populate the buffer_t.dev field with a constant
+ * indicating that the OpenGL object corresponding to the buffer_t is bound by
+ * the app and not by the Halide runtime. For example, the buffer_t may be
+ * backed by an FBO already bound by the application. */
+extern uint64_t halide_opengl_output_client_bound();
+
+/** Forget all state associated with the previous OpenGL context.  This is
+ * similar to halide_opengl_release, except that we assume that all OpenGL
+ * resources have already been reclaimed by the OS. */
+extern void halide_opengl_context_lost(void *user_context);
+
 /** Set the platform name for OpenCL to use (e.g. "Intel" or
  * "NVIDIA"). The argument is copied internally. The opencl runtime
  * will select a platform that includes this as a substring. If never
@@ -312,7 +312,7 @@ extern void halide_memoization_cache_set_size(int64_t size);
  *  tuple_count parameters determines the length of the list.
  */
 extern bool halide_memoization_cache_lookup(void *user_context, const uint8_t *cache_key, int32_t size,
-                                            buffer_t *realized_bounds, int32_t tuple_count, ... /* list of buffer_t * */);
+                                            buffer_t *realized_bounds, int32_t tuple_count, buffer_t **tuple_buffers);
 
 /** Given a cache key for a memoized result, currently constructed
  *  from the Func name and top-level Func name plus the arguments of
@@ -326,7 +326,7 @@ extern bool halide_memoization_cache_lookup(void *user_context, const uint8_t *c
  *  determines the length of the list.
  */
 extern void halide_memoization_cache_store(void *user_context, const uint8_t *cache_key, int32_t size,
-                                           buffer_t *realized_bounds, int32_t tuple_count, ... /* list of buffer_t * */);
+                                           buffer_t *realized_bounds, int32_t tuple_count, buffer_t **tuple_buffers);
 
 
 /** Free all memory and resources associated with the memoization cache.

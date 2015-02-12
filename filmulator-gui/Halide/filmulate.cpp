@@ -8,17 +8,7 @@ using namespace std;
 
 using Halide::Image;
 #include "image_io.h"
-
-#define CRYSTAL_RAD_R 0
-#define CRYSTAL_RAD_G 1
-#define CRYSTAL_RAD_B 2
-#define ACTIVE_CRYSTALS_R 3
-#define ACTIVE_CRYSTALS_G 4
-#define ACTIVE_CRYSTALS_B 5
-#define SILVER_SALT_DEN_R 6
-#define SILVER_SALT_DEN_G 7
-#define SILVER_SALT_DEN_B 8
-#define DEVEL_CONC 9
+#include "halideFilmulate.h"
 
 Var x, y, c;
 
@@ -27,8 +17,8 @@ Func develop(Func inputs, Expr crystalGrowthConst,
              Expr silverSaltConsumptionConst, Expr timestep) {
 
   Expr cgc = crystalGrowthConst*timestep;
-  Expr dcc = 2.0*developerConsumptionConst / ( activeLayerThickness*3.0);
-  Expr sscc = silverSaltConsumptionConst * 2.0;
+  Expr dcc = 2.0f*developerConsumptionConst / ( activeLayerThickness*3.0f);
+  Expr sscc = silverSaltConsumptionConst * 2.0f;
 
   Expr dCrystalRadR = inputs(x,y,DEVEL_CONC) * inputs(x,y,SILVER_SALT_DEN_R) * cgc;
   Expr dCrystalRadG = inputs(x,y,DEVEL_CONC) * inputs(x,y,SILVER_SALT_DEN_G) * cgc;
@@ -42,7 +32,7 @@ Func develop(Func inputs, Expr crystalGrowthConst,
                       inputs(x,y,ACTIVE_CRYSTALS_B);
 
   Func outputs;
-  outputs(x,y,c) = cast<float>(0);
+  outputs(x,y,c) = undef<float>();
   outputs(x,y,CRYSTAL_RAD_R) = inputs(x,y,CRYSTAL_RAD_R) + dCrystalRadR;
   outputs(x,y,CRYSTAL_RAD_G) = inputs(x,y,CRYSTAL_RAD_G) + dCrystalRadG;
   outputs(x,y,CRYSTAL_RAD_B) = inputs(x,y,CRYSTAL_RAD_B) + dCrystalRadB;
@@ -60,98 +50,123 @@ Func develop(Func inputs, Expr crystalGrowthConst,
   return outputs;
 }
 
-Func exposure(Func input, Expr crystals_per_pixel, Expr rolloff_boundary){
-  Expr crystal_headroom = 65535.0f - rolloff_boundary;
-  Func rolloff;
-  rolloff(x,y,c) = select(input(x,y,c) > rolloff_boundary,
-                          65535.0f - crystal_headroom*crystal_headroom/
-                            (input(x,y,c) + crystal_headroom-rolloff_boundary),
-                          input(x,y,c));
-  Func output;
-  output(x,y,c) = rolloff(x,y,c)*crystals_per_pixel*0.00015387105f;
-  return output;
+Func performBlur(Func f, Func coeff, Expr size, Expr sigma) {
+    Func blurred;
+    blurred(x, y) = undef<float>();
+
+    // warm up
+    blurred(x, 0) = coeff(0) * f(x, 0);
+    blurred(x, 1) = (coeff(0) * f(x, 1) +
+                     coeff(1) * blurred(x, 0));
+    blurred(x, 2) = (coeff(0) * f(x, 2) +
+                     coeff(1) * blurred(x, 1) +
+                     coeff(2) * blurred(x, 0));
+
+    // top to bottom
+    RDom fwd(3, size - 3);
+    blurred(x, fwd) = (coeff(0) * f(x, fwd) +
+                       coeff(1) * blurred(x, fwd - 1) +
+                       coeff(2) * blurred(x, fwd - 2) +
+                       coeff(3) * blurred(x, fwd - 3));
+
+    // tail end
+    Expr padding = cast<int>(ceil(4*sigma) + 3);
+    RDom tail(size, padding);
+    blurred(x, tail) = (coeff(1) * blurred(x, tail - 1) +
+                        coeff(2) * blurred(x, tail - 2) +
+                        coeff(3) * blurred(x, tail - 3));
+
+    // bottom to top
+    Expr last = size + padding - 1;
+    RDom backwards(0, last - 2);
+    Expr b = last - 3 - backwards; // runs from last - 3 down to zero
+    blurred(x, b) = (coeff(0) * blurred(x, b) +
+                     coeff(1) * blurred(x, b + 1) +
+                     coeff(2) * blurred(x, b + 2) +
+                     coeff(3) * blurred(x, b + 3));
+    return blurred;
 }
 
-Func downscale(Func input, Expr radius) {
+Func blur_then_transpose(Func f, Func coeff, Expr size, Expr sigma) {
 
-    Func horizontalSum,verticalSum,average;
-    // Accumulate as a uint16
-    horizontalSum(x, y) = cast<float>(0);
-    verticalSum(x, y) = cast<float>(0);
+    Func blurred = performBlur(f, coeff, size, sigma);
+    //Func blurred = f;
 
-    // The first value is the sum over pixels [0, radius]
-    RDom r(-radius,2*radius+1);
-    horizontalSum(x,y) += input(cast<int>((2*radius+1)*x + r),cast<int>(y));
-    verticalSum(x,y) += horizontalSum(cast<int>(x),cast<int>((2*radius+1)*y + r));
+    // also compute attenuation due to zero boundary condition by
+    // blurring an image of ones in the same way. this gives a
+    // boundary condition equivalent to reweighting the gaussian
+    // near the edge. (todo: add a generator param to select
+    // different boundary conditions).
+    Func ones;
+    ones(x, y) = 1.0f;
+    Func attenuation = performBlur(ones, coeff, size, sigma);
 
-    Expr denominator = pow(2*radius+1,2);
+    // invert the attenuation so we can multiply by it. the
+    // attenuation is the same for every row/channel so we only
+    // need one column.
+    Func inverse_attenuation;
+    inverse_attenuation(y) = 1.0f / attenuation(0, y);
 
-    average(x,y) = verticalSum(x, y)/denominator;
-    Var xo,xi;
-    //d.bound(x,0,ceil(width/denominator)).bound(y,0,ceil(height/denominator));
-    horizontalSum.compute_root();//.gpu_tile(x,y,16,16);
-    verticalSum.compute_root();
-    //d.reorder(y,x).gpu_tile(x,y,16,16);
-    return average;
+    // transpose it
+    Func transposed;
+    transposed(x, y) = blurred(y, x);
+
+    // correct for attenuation
+    Func out;
+    out(x, y) = transposed(x, y) * inverse_attenuation(x);
+
+    // schedule it.
+    Var yi, xi, yii, xii;
+
+    attenuation.compute_root();
+    inverse_attenuation.compute_root().vectorize(y, 8);
+    out.compute_root()
+        .tile(x, y, xi, yi, 8, 32)
+        .tile(xi, yi, xii, yii, 8, 8)
+        .vectorize(xii).unroll(yii).parallel(y);
+    blurred.compute_at(out, y);
+    transposed.compute_at(out, xi).vectorize(y).unroll(x);
+
+    /*
+    for (int i = 0; i < blurred.num_update_definitions(); i++) {
+        RDom r = blurred.reduction_domain(i);
+        if (r.defined()) {
+            blurred.update(i).reorder(x, r);
+        }
+        blurred.update(i).vectorize(x, 8).unroll(x);
+    }
+    */
+
+    return out;
 }
 
-Func upscale(Func input, Expr radius){
-    Func output;
-    
-    Expr scaleFactor = cast<float>(2*radius+1);
-    Expr xf = (x % scaleFactor)/scaleFactor;
-    Expr yf = (y % scaleFactor)/scaleFactor;
-    Expr x0 = cast<int>(floor(cast<float>(x)/scaleFactor));
-    Expr y0 = cast<int>(floor(cast<float>(y)/scaleFactor));
-    Expr x1 = cast<int>( ceil(cast<float>(x)/scaleFactor));
-    Expr y1 = cast<int>( ceil(cast<float>(y)/scaleFactor));
-    Expr Ix0y0 = input(x0,y0);
-    Expr Ix0y1 = input(x0,y1);
-    Expr Ix1y0 = input(x1,y0);
-    Expr Ix1y1 = input(x1,y1);
-    output(x,y) = lerp(lerp(Ix0y0,Ix1y0,xf),
-                       lerp(Ix0y1,Ix1y1,xf),yf);
-    return output;
+Func blur(Func input, Expr sigma, Expr width, Expr height) {
+
+    // compute iir coefficients using the method of young and van vliet.
+    Func coeff;
+    Expr q = select(sigma < 2.5f,
+                    3.97156f - 4.14554f*sqrt(1 - 0.26891f*sigma),
+                    q = 0.98711f*sigma - 0.96330f);
+    Expr denom = 1.57825f + 2.44413f*q + 1.4281f*q*q + 0.422205f*q*q*q;
+    coeff(x) = undef<float>();
+    coeff(1) = (2.44413f*q + 2.85619f*q*q + 1.26661f*q*q*q)/denom;
+    coeff(2) = -(1.4281f*q*q + 1.26661f*q*q*q)/denom;
+    coeff(3) = (0.422205f*q*q*q)/denom;
+    coeff(0) = 1 - (coeff(1) + coeff(2) + coeff(3));
+    coeff.compute_root();
+
+    Func f;
+    f(x, y) = input(x, y);
+    f = blur_then_transpose(f, coeff, height, sigma);
+    f = blur_then_transpose(f, coeff, width, sigma);
+    return f;
 }
 
-Func gaussBlur(Func input){
-    Func blurx,blury;
-    blurx(x, y) = (input(x-2, y) +
-                   input(x-1, y)*4 +
-                   input(x  , y)*6 +
-                   input(x+1, y)*4 +
-                   input(x+2, y));
-    blury(x, y) = (blurx(x, y-2) +
-                   blurx(x, y-1)*4 +
-                   blurx(x, y  )*6 +
-                   blurx(x, y+1)*4 +
-                   blurx(x, y+2));
-    Func blur;
-    blurx.compute_root();
-    blur(x,y) = blury(x,y)/(16*16);
-    return blur;
-}
-
-Func diffuse(Func input, Expr sigma_const, Expr pixels_per_millimeter, Expr timestep){
+Func diffuse(Func input, Expr sigma_const, Expr pixels_per_millimeter, Expr timestep, Expr width, Expr height){
 
     Expr sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
-    Expr radius = round(sigma/2);
-    Func downscaled;
-    downscaled = downscale(input,radius);
-
-    Func blurred_small;
-    blurred_small = gaussBlur(downscaled);
-
-    Func blurred_float;
-    blurred_float = upscale(blurred_small,radius);
-
     Func blurred;
-    blurred(x,y) = blurred_float(x,y);
-
-    downscaled.compute_root();//.gpu_tile(x,y,16,16);
-    blurred_small.compute_root();//.gpu_tile(x,y,16,16);
-    blurred.compute_root();
-    //blured.gpu_tile(x,y,16,16);
+    blurred = blur(input,sigma,width,height);
     return blurred;
 }
 
@@ -168,166 +183,71 @@ Func calcLayerMix(Func developer_concentration, Expr layer_mix_const, Expr times
 
 int main(int argc, char **argv) {
 
-    ImageParam input(UInt(8), 3);
-    
-    Func inInt = lambda(x, y, c, input(x, y, c));;
-    Func in;
-    in(x,y,c) = cast<float>(256.0*inInt(x,y,c));
-    Func activeCrystalsPerPixel;
-    activeCrystalsPerPixel = exposure(in, 500, 51275);
+    Param<float> reservoirConcentration;
+    Param<float> reservoirThickness;
+    Param<float> activeLayerThickness;
+    Param<float> developerConsumptionConst;
+    Param<float> crystalGrowthConst;
+    Param<float> silverSaltConsumptionConst;
+    Param<float> stepTime;
+    Param<float> filmArea;
+    Param<float> sigmaConst;
+    Param<float> layerMixConst;
+    Param<float> layerTimeDivisor;
 
-    Func filmulationData[12];
-    filmulationData[0](x,y,c) = cast<float>(0);
-    filmulationData[0](x,y,CRYSTAL_RAD_R) = 0.00001;
-    filmulationData[0](x,y,CRYSTAL_RAD_G) = 0.00001;
-    filmulationData[0](x,y,CRYSTAL_RAD_B) = 0.00001;
-    filmulationData[0](x,y,ACTIVE_CRYSTALS_R) = activeCrystalsPerPixel(x,y,0);
-    filmulationData[0](x,y,ACTIVE_CRYSTALS_G) = activeCrystalsPerPixel(x,y,1);
-    filmulationData[0](x,y,ACTIVE_CRYSTALS_B) = activeCrystalsPerPixel(x,y,2);
-    filmulationData[0](x,y,SILVER_SALT_DEN_R) = 1.0;
-    filmulationData[0](x,y,SILVER_SALT_DEN_G) = 1.0;
-    filmulationData[0](x,y,SILVER_SALT_DEN_B) = 1.0;
-    filmulationData[0](x,y,DEVEL_CONC) = 1.0;
+    ImageParam input(type_of<float>(), 3);
+    Func filmulationData = lambda(x,y,c,input(x,y,c));
 
-    Expr reservoirConc[12];
-    reservoirConc[0]  = 1.0;
-    Func sumD[12];
-    Func diffused[12];
-    Func developed[12];
-    Func initialDeveloper[12];
-    Func dDevelConc[12];
-    Func sumDx[12];
-    Func layerMixed[12];
-    Func initialDeveloperMirrored[12];
-    
-    Expr crystalGrowthConst = 0.00001;
-    Expr activeLayerThickness = 0.1;
-    Expr developerConsumptionConst = 2000000.0;
-    Expr silverSaltConsumptionConst = 2000000.0;
-    Expr sigmaConst = 0.2;
-    Expr pixelsPerMillimeter = sqrt(input.width()*input.height()/864);
-    Expr layerMixConst = 0.2;
-    Expr layerTimeDivisor = 20.0;
-    Expr totalTime = 100.0;
-    Expr numSteps = 11.0;
-    Expr reservoirThickness = 1000.0;
+    Func sumD;
+    Func diffused;
+    Func developed;
+    Func initialDeveloper;
+    Func dDevelConc;
+    Func sumDx;
+    Func layerMixed;
+    Func initialDeveloperMirrored;
 
-    for(int i = 1; i < 12; i ++)
-    {
-      developed[i] = develop(filmulationData[i-1], crystalGrowthConst, activeLayerThickness,
-                             developerConsumptionConst, silverSaltConsumptionConst, totalTime/numSteps);
-      developed[i].compute_root();
-
-      //std::pair<Expr,Expr> xDim(0,input.width());
-      //std::pair<Expr,Expr> yDim(0,input.height());
-      //std::vector<std::pair<Expr,Expr> > dimensions(xDim,yDim);
-      initialDeveloper[i](x,y) = developed[i](x,y,DEVEL_CONC);
-      initialDeveloperMirrored[i] = BoundaryConditions::mirror_interior(initialDeveloper[i],0,input.width(),0,input.height());
-      diffused[i] = diffuse(initialDeveloperMirrored[i],sigmaConst,pixelsPerMillimeter, totalTime/numSteps);
-      diffused[i].compute_root();
-
-      dDevelConc[i] = calcLayerMix(diffused[i], layerMixConst, totalTime/numSteps, layerTimeDivisor, reservoirConc[i-1]);
-      RDom r(0 ,input.width(), 0, input.height());
-      sumD[i](x) = 0.0;
-      sumD[i](0) += dDevelConc[i](r.x,r.y);
-      sumD[i].compute_root();
-      reservoirConc[i] = reservoirConc[i-1] - sumD[i](0)*activeLayerThickness/
-                                                         (pow(pixelsPerMillimeter,2)*reservoirThickness);
-      layerMixed[i](x,y) = diffused[i](x,y) + dDevelConc[i](x,y);
-
-      filmulationData[i](x,y,c) = developed[i](x,y,c);
-      filmulationData[i](x,y,DEVEL_CONC) = layerMixed[i](x,y);
-    }
-
-    Func outputImage;
-    int endIter = 11;
-    
-    outputImage(x,y,c) = cast<uint8_t>(0);
-    outputImage(x,y,0) = cast<uint8_t>(1000.0*256.0*pow(filmulationData[endIter](x,y,CRYSTAL_RAD_R),2)*
-                                       filmulationData[endIter](x,y,ACTIVE_CRYSTALS_R));
-    outputImage(x,y,1) = cast<uint8_t>(1000.0*256.0*pow(filmulationData[endIter](x,y,CRYSTAL_RAD_G),2)*
-                                       filmulationData[endIter](x,y,ACTIVE_CRYSTALS_G));
-    outputImage(x,y,2) = cast<uint8_t>(1000.0*256.0*pow(filmulationData[endIter](x,y,CRYSTAL_RAD_B),2)*
-                                       filmulationData[endIter](x,y,ACTIVE_CRYSTALS_B));
-    
-    //outputImage(x,y,c) = cast<uint8_t>(100.0*filmulationData[3](x,y,ACTIVE_CRYSTALS_R));
-    Target target = get_target_from_environment();
-    std::cout << target.to_string() << std::endl;
-    if(target.has_gpu_feature())
-    {
-      Target target = get_host_target();
-      target.set_feature(Target::CUDA);
-      //target.set_feature(Target::GPUDebug);
-      outputImage.compile_jit(target);
-    }
-    else
-    {
-        /*blur_in_x.compute_root().vectorize(x, 8).split(x, xo, xi, 2).reorder(xi, y, xo).parallel(xo).unroll(xi);
-        // It makes sense to explicitly compute the transpose so that the
-        // blur can be done using dense vector loads
-        transpose_x.compute_at(blur_in_x, xo).vectorize(x, 8).unroll(x);
-        sum_in_x.compute_at(blur_in_x, xo);
-        for (int stage = 0; stage < 5; stage++) {
-            sum_in_x.update(stage).vectorize(x, 8).unroll(x);
-            if (stage > 0) {
-                RVar r = sum_in_x.reduction_domain(stage).x;
-                sum_in_x.update(stage).reorder(x, r);
-            }
-        }
+    developed = develop(filmulationData, crystalGrowthConst, activeLayerThickness,
+                        developerConsumptionConst, silverSaltConsumptionConst,
+                        stepTime);
+    std::vector<Argument> devArgs = developed.infer_arguments();
+    developed.compile_to_file("develop",devArgs);
 
 
-        blur_in_y.compute_root().vectorize(x, 8).split(x, xo, xi, 2).reorder(xi, y, xo).parallel(xo).unroll(xi);
-        transpose_y.compute_at(blur_in_y, xo).vectorize(x, 16).unroll(x);
-        sum_in_y.compute_at(blur_in_y, xo);
-        for (int stage = 0; stage < 5; stage++) {
-            sum_in_y.update(stage).vectorize(x, 8).unroll(x);
-            if (stage > 0) {
-                RVar r = sum_in_y.reduction_domain(stage).x;
-                sum_in_y.update(stage).reorder(x, r);
-            }
-        }*/
-    }
+    Expr pixelsPerMillimeter = sqrt(input.width()*input.height()/filmArea);
+    initialDeveloper(x,y) = filmulationData(x,y,DEVEL_CONC);
+    //initialDeveloperMirrored[i] = BoundaryConditions::mirror_interior(initialDeveloper[i],0,input.width(),0,input.height());
+    diffused = diffuse(initialDeveloper,sigmaConst,pixelsPerMillimeter, stepTime,
+                          input.width(), input.height());
+    std::vector<Argument> diffArgs = diffused.infer_arguments();
+    diffused.compile_to_file("diffuse", diffArgs);
 
-    // Dump the assembly for inspection.
-    //blur_in_y.compile_to_assembly("/dev/stdout", Internal::vec<Argument>(input, radius), "box_blur");
-    //outputImage.compile_to_c("compiled.c", Internal::vec<Argument>(input), "outputImage");
-      outputImage.compile_to_lowered_stmt("compiled.html", HTML);
 
-    // Save the output. Comment this out for benchmarking - it takes
-    // way more time than the actual algorithm. Should look like a
-    // blurry circle.
-    //blurred.debug_to_file("output.tiff");
+    ImageParam devConc(type_of<float>(),2);
+    Func developerConcentration = lambda(x,y,devConc(x,y));
+    dDevelConc = calcLayerMix(developerConcentration, layerMixConst, stepTime,
+                              layerTimeDivisor, reservoirConcentration);
+    std::vector<Argument> ddcArgs = dDevelConc.infer_arguments();
+    dDevelConc.compile_to_file("calcLayerMix",ddcArgs);
 
-    // Make a test input image of a circle.
-    Image<uint8_t> input_image = load<uint8_t>("P1040567.png");
-    input.set(input_image);
 
-    //Buffer out(UInt(8), 4768, 3184,3);
-    Buffer out(UInt(8), 47, 31,3);
-    Image<uint8_t> outImage(input_image.width(), input_image.height(),3);
-    // Realize it once to trigger compilation.
-    outputImage.realize(outImage);
-    save(outImage, "output.png");
-    timeval t1, t2;
-    gettimeofday(&t1, NULL);
-    float numIter = 1;
-    for (size_t i = 0; i < numIter; i++) {
-        // Realize numIter more times for timing.
-        outputImage.realize(out);
-    }
-    gettimeofday(&t2, NULL);
+    ImageParam devMoved(type_of<float>(),2);
+    Func developerMoved = lambda(x,y,devMoved(x,y));
+    Expr pixelsPerMillimeterSumD = sqrt(devMoved.width()*devMoved.height()/filmArea);
+    RDom r(0 ,devMoved.width(), 0, devMoved.height());
+    sumD(x) = 0.0f;
+    sumD(0) += developerMoved(r.x,r.y);
+    sumD(0) = reservoirConcentration - sumD(0)*activeLayerThickness/(pow(pixelsPerMillimeterSumD,2)*reservoirThickness);
+    std::vector<Argument> sumDArgs = sumD.infer_arguments();
+    sumD.compile_to_file("calcReservoirConcentration",sumDArgs);
 
-    int64_t dt = t2.tv_sec - t1.tv_sec;
-    dt *= 1000;
-    dt += (t2.tv_usec - t1.tv_usec) / 1000;
-    printf("%0.4f ms\n", dt / numIter);
 
-    /*std::vector<Argument> arguments;
-    arguments.push_back(input_image);
-    arguments.push_back(radius);
-    arguments.push_back(radius);
-    blur_in_y.compile_to_c("gradient.cpp", arguments, "attachment");*/
-    printf("Success!\n");
+    Func filmulationDataOut;
+    filmulationDataOut(x,y,c) = filmulationData(x,y,c);
+    filmulationDataOut(x,y,DEVEL_CONC) = developerConcentration(x,y) + developerMoved(x,y);
+    std::vector<Argument> combArgs = filmulationDataOut.infer_arguments();
+    filmulationDataOut.compile_to_file("performLayerMix",combArgs);
+
     return 0;
 }
 
