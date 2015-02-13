@@ -32,20 +32,20 @@ Func develop(Func inputs, Expr crystalGrowthConst,
                       inputs(x,y,ACTIVE_CRYSTALS_B);
 
   Func outputs;
-  outputs(x,y,c) = undef<float>();
-  outputs(x,y,CRYSTAL_RAD_R) = inputs(x,y,CRYSTAL_RAD_R) + dCrystalRadR;
-  outputs(x,y,CRYSTAL_RAD_G) = inputs(x,y,CRYSTAL_RAD_G) + dCrystalRadG;
-  outputs(x,y,CRYSTAL_RAD_B) = inputs(x,y,CRYSTAL_RAD_B) + dCrystalRadB;
+  outputs(x,y,c) = select(
+             c == CRYSTAL_RAD_R    , inputs(x,y,c) + dCrystalRadR,
+      select(c == CRYSTAL_RAD_G    , inputs(x,y,c) + dCrystalRadG,
+      select(c == CRYSTAL_RAD_B    , inputs(x,y,c) + dCrystalRadB,
 
-  outputs(x,y,DEVEL_CONC) = max(0,inputs(x,y,DEVEL_CONC) - dcc*(dCrystalVolR + dCrystalVolG + dCrystalVolB));
+      select(c == DEVEL_CONC       , max(0,inputs(x,y,DEVEL_CONC) -
+                                     dcc*(dCrystalVolR + dCrystalVolG + dCrystalVolB)),
 
-  outputs(x,y,SILVER_SALT_DEN_R) = inputs(x,y,SILVER_SALT_DEN_R) - sscc*dCrystalVolR;
-  outputs(x,y,SILVER_SALT_DEN_G) = inputs(x,y,SILVER_SALT_DEN_G) - sscc*dCrystalVolG;
-  outputs(x,y,SILVER_SALT_DEN_B) = inputs(x,y,SILVER_SALT_DEN_B) - sscc*dCrystalVolB;
+      select(c == SILVER_SALT_DEN_R, inputs(x,y,c) + sscc*dCrystalVolR,
+      select(c == SILVER_SALT_DEN_G, inputs(x,y,c) + sscc*dCrystalVolG,
+      select(c == SILVER_SALT_DEN_B, inputs(x,y,c) + sscc*dCrystalVolB,
 
-  outputs(x,y,ACTIVE_CRYSTALS_R) = inputs(x,y,ACTIVE_CRYSTALS_R);
-  outputs(x,y,ACTIVE_CRYSTALS_G) = inputs(x,y,ACTIVE_CRYSTALS_G);
-  outputs(x,y,ACTIVE_CRYSTALS_B) = inputs(x,y,ACTIVE_CRYSTALS_B);
+      //Otherwise (active crystals) output=input
+                                     inputs(x,y,c))))))));
 
   return outputs;
 }
@@ -66,8 +66,11 @@ int main(int argc, char **argv) {
     developed = develop(filmulationData, crystalGrowthConst, activeLayerThickness,
                         developerConsumptionConst, silverSaltConsumptionConst,
                         stepTime);
-    developed.parallel(y);
+    Var x_outer, x_inner;
+    developed.split(x,x_outer,x_inner,4).reorder(x_inner,c,x_outer,y)
+             .vectorize(x_inner).parallel(y);
     std::vector<Argument> devArgs = developed.infer_arguments();
     developed.compile_to_file("develop",devArgs);
+    developed.compile_to_lowered_stmt("develop.html");
     return 0;
 }
