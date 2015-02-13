@@ -12,44 +12,6 @@ using Halide::Image;
 
 Var x, y, c;
 
-Func develop(Func inputs, Expr crystalGrowthConst,
-             Expr activeLayerThickness, Expr developerConsumptionConst,
-             Expr silverSaltConsumptionConst, Expr timestep) {
-
-  Expr cgc = crystalGrowthConst*timestep;
-  Expr dcc = 2.0f*developerConsumptionConst / ( activeLayerThickness*3.0f);
-  Expr sscc = silverSaltConsumptionConst * 2.0f;
-
-  Expr dCrystalRadR = inputs(x,y,DEVEL_CONC) * inputs(x,y,SILVER_SALT_DEN_R) * cgc;
-  Expr dCrystalRadG = inputs(x,y,DEVEL_CONC) * inputs(x,y,SILVER_SALT_DEN_G) * cgc;
-  Expr dCrystalRadB = inputs(x,y,DEVEL_CONC) * inputs(x,y,SILVER_SALT_DEN_B) * cgc;
-
-  Expr dCrystalVolR = dCrystalRadR * inputs(x,y,CRYSTAL_RAD_R) * inputs(x,y,CRYSTAL_RAD_R) *
-                      inputs(x,y,ACTIVE_CRYSTALS_R);
-  Expr dCrystalVolG = dCrystalRadG * inputs(x,y,CRYSTAL_RAD_G) * inputs(x,y,CRYSTAL_RAD_G) *
-                      inputs(x,y,ACTIVE_CRYSTALS_G);
-  Expr dCrystalVolB = dCrystalRadB * inputs(x,y,CRYSTAL_RAD_B) * inputs(x,y,CRYSTAL_RAD_B) *
-                      inputs(x,y,ACTIVE_CRYSTALS_B);
-
-  Func outputs;
-  outputs(x,y,c) = undef<float>();
-  outputs(x,y,CRYSTAL_RAD_R) = inputs(x,y,CRYSTAL_RAD_R) + dCrystalRadR;
-  outputs(x,y,CRYSTAL_RAD_G) = inputs(x,y,CRYSTAL_RAD_G) + dCrystalRadG;
-  outputs(x,y,CRYSTAL_RAD_B) = inputs(x,y,CRYSTAL_RAD_B) + dCrystalRadB;
-
-  outputs(x,y,DEVEL_CONC) = max(0,inputs(x,y,DEVEL_CONC) - dcc*(dCrystalVolR + dCrystalVolG + dCrystalVolB));
-
-  outputs(x,y,SILVER_SALT_DEN_R) = inputs(x,y,SILVER_SALT_DEN_R) - sscc*dCrystalVolR;
-  outputs(x,y,SILVER_SALT_DEN_G) = inputs(x,y,SILVER_SALT_DEN_G) - sscc*dCrystalVolG;
-  outputs(x,y,SILVER_SALT_DEN_B) = inputs(x,y,SILVER_SALT_DEN_B) - sscc*dCrystalVolB;
-
-  outputs(x,y,ACTIVE_CRYSTALS_R) = inputs(x,y,ACTIVE_CRYSTALS_R);
-  outputs(x,y,ACTIVE_CRYSTALS_G) = inputs(x,y,ACTIVE_CRYSTALS_G);
-  outputs(x,y,ACTIVE_CRYSTALS_B) = inputs(x,y,ACTIVE_CRYSTALS_B);
-
-  return outputs;
-}
-
 Func performBlur(Func f, Func coeff, Expr size, Expr sigma) {
     Func blurred;
     blurred(x, y) = undef<float>();
@@ -127,15 +89,15 @@ Func blur_then_transpose(Func f, Func coeff, Expr size, Expr sigma) {
     blurred.compute_at(out, y);
     transposed.compute_at(out, xi).vectorize(y).unroll(x);
 
-    /*
-    for (int i = 0; i < blurred.num_update_definitions(); i++) {
+    // Crashes for RDoms < 3
+    for (int i = 3; i < blurred.num_update_definitions(); i++) {
         RDom r = blurred.reduction_domain(i);
         if (r.defined()) {
             blurred.update(i).reorder(x, r);
         }
         blurred.update(i).vectorize(x, 8).unroll(x);
     }
-    */
+    
 
     return out;
 }
@@ -144,124 +106,49 @@ Func blur(Func input, Expr sigma, Expr width, Expr height) {
 
     // compute iir coefficients using the method of young and van vliet.
     Func coeff;
-    cout << "before coeffs" << endl;
     Expr q = select(sigma < 2.5f,
                     3.97156f - 4.14554f*sqrt(1 - 0.26891f*sigma),
                     0.98711f*sigma - 0.96330f);
-    cout << "after q" << endl;
     Expr denom = 1.57825f + 2.44413f*q + 1.4281f*q*q + 0.422205f*q*q*q;
-    cout << "after denom" << endl;
     coeff(x) = undef<float>();
     coeff(1) = (2.44413f*q + 2.85619f*q*q + 1.26661f*q*q*q)/denom;
     coeff(2) = -(1.4281f*q*q + 1.26661f*q*q*q)/denom;
     coeff(3) = (0.422205f*q*q*q)/denom;
     coeff(0) = 1 - (coeff(1) + coeff(2) + coeff(3));
     coeff.compute_root();
-    cout << "after coeffs" << endl;
 
     Func f;
     f(x, y) = input(x, y);
     f = blur_then_transpose(f, coeff, height, sigma);
-    cout << "after first transpose" << endl;
     f = blur_then_transpose(f, coeff, width, sigma);
     return f;
 }
 
 Func diffuse(Func input, Expr sigma_const, Expr pixels_per_millimeter, Expr timestep, Expr width, Expr height){
 
-    cout << "in diffuse" << endl;
     Expr sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
     Func blurred;
-    cout << "before blurred" << endl;
     blurred = blur(input,sigma,width,height);
     return blurred;
 }
 
-Func calcLayerMix(Func developer_concentration, Expr layer_mix_const, Expr timestep,
-                  Expr layer_time_divisor, Expr reservoir_developer_concentration){
-    Expr layer_mix = pow(layer_mix_const,timestep/layer_time_divisor);
-    
-    Expr reservoir_portion = (1 - layer_mix) * reservoir_developer_concentration;
-
-    Func output;
-    output(x,y) = developer_concentration(x,y) * (layer_mix - 1) + reservoir_portion;
-    return output;
-}
-
 int main(int argc, char **argv) {
 
-    Param<float> reservoirConcentration;
-    Param<float> reservoirThickness;
-    Param<float> activeLayerThickness;
-    Param<float> developerConsumptionConst;
-    Param<float> crystalGrowthConst;
-    Param<float> silverSaltConsumptionConst;
     Param<float> stepTime;
     Param<float> filmArea;
     Param<float> sigmaConst;
-    Param<float> layerMixConst;
-    Param<float> layerTimeDivisor;
 
     ImageParam input(type_of<float>(), 3);
     Func filmulationData = lambda(x,y,c,input(x,y,c));
 
-    Func sumD;
-    Func diffused;
-    Func developed;
-    Func initialDeveloper;
-    Func dDevelConc;
-    Func sumDx;
-    Func layerMixed;
-    Func initialDeveloperMirrored;
-
-    developed = develop(filmulationData, crystalGrowthConst, activeLayerThickness,
-                        developerConsumptionConst, silverSaltConsumptionConst,
-                        stepTime);
-    std::vector<Argument> devArgs = developed.infer_arguments();
-    developed.compile_to_file("develop",devArgs);
-    cout << "finishedDevelop" << endl;
-
-
     Expr pixelsPerMillimeter = sqrt(input.width()*input.height()/filmArea);
+    Func initialDeveloper;
     initialDeveloper(x,y) = filmulationData(x,y,DEVEL_CONC);
     //initialDeveloperMirrored[i] = BoundaryConditions::mirror_interior(initialDeveloper[i],0,input.width(),0,input.height());
-    cout << "start diffuse" << endl;
+    Func diffused;
     diffused = diffuse(initialDeveloper,sigmaConst,pixelsPerMillimeter, stepTime,
                           input.width(), input.height());
-    cout << "args diffuse" << endl;
     std::vector<Argument> diffArgs = diffused.infer_arguments();
-    cout << "compile diffuse" << endl;
     diffused.compile_to_file("diffuse", diffArgs);
-    cout << "after diffuse" << endl;
-
-
-    ImageParam devConc(type_of<float>(),2);
-    Func developerConcentration = lambda(x,y,devConc(x,y));
-    dDevelConc = calcLayerMix(developerConcentration, layerMixConst, stepTime,
-                              layerTimeDivisor, reservoirConcentration);
-    std::vector<Argument> ddcArgs = dDevelConc.infer_arguments();
-    dDevelConc.compile_to_file("calcLayerMix",ddcArgs);
-
-
-    ImageParam devMoved(type_of<float>(),2);
-    Func developerMoved = lambda(x,y,devMoved(x,y));
-    Expr pixelsPerMillimeterSumD = sqrt(devMoved.width()*devMoved.height()/filmArea);
-    RDom r(0 ,devMoved.width(), 0, devMoved.height());
-    sumD(x) = 0.0f;
-    sumD(0) += developerMoved(r.x,r.y);
-    sumD(0) = reservoirConcentration - sumD(0)*activeLayerThickness/(pow(pixelsPerMillimeterSumD,2)*reservoirThickness);
-    std::vector<Argument> sumDArgs = sumD.infer_arguments();
-    sumD.compile_to_file("calcReservoirConcentration",sumDArgs);
-
-
-    Func filmulationDataOut;
-    filmulationDataOut(x,y,c) = filmulationData(x,y,c);
-    filmulationDataOut(x,y,DEVEL_CONC) = developerConcentration(x,y) + developerMoved(x,y);
-    std::vector<Argument> combArgs = filmulationDataOut.infer_arguments();
-    filmulationDataOut.compile_to_file("performLayerMix",combArgs);
-
     return 0;
 }
-
-
-

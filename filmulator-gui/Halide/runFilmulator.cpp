@@ -10,6 +10,7 @@
 #include "performLayerMix.h"
 #include "setupFilmulator.h"
 #include "generateFilmulatedImage.h"
+#include "clock.h"
 
 using namespace std;
 
@@ -90,22 +91,27 @@ int main(){
     resBuffer.extent[0] = 1;
     resBuffer.extent[1] = 1;
     resBuffer.elem_size = 4;
-    for (int i = 0; i < (developmentSteps-1); i++)
+
+    double totalDevelopTime = 0;
+    double totalDiffuseTime = 0;
+    current_time();
+    for (int i = 0; i < (developmentSteps-0); i++)
     {
       float timeStep = totalDevelTime/float(developmentSteps);
 
-      cout << "initial: " << filmulationDataMemory[0*width*height + 500] << endl;
+      double beforeDevelopTime = current_time();
       error = develop(&filmulationData,activeLayerThickness,crystalGrowthConst,
                       developerConsumptionConst,silverSaltConsumptionConst,
                       timeStep,&filmulationData);
       if (error)
         cout << "development error on iteration " << i << endl;
-      cout << "after develop: " << filmulationDataMemory[0*width*height + 500] << endl;
+      totalDevelopTime += current_time() - beforeDevelopTime;
 
+      double beforeDiffuseTime = current_time();
       error = diffuse(&filmulationData,filmArea,sigmaConst,timeStep,&devConc);
       if (error)
         cout << "diffuse error on iteration " << i << endl;
-      cout << "after diffuse: " << filmulationDataMemory[0*width*height + 500] << endl;
+      totalDiffuseTime += current_time() - beforeDiffuseTime;
 
       error = calcLayerMix(&devConc,layerMixConst,layerTimeDivisor,
                            reservoirConcentration,timeStep,&devMoved);
@@ -118,16 +124,15 @@ int main(){
       if (error)
         cout << "calcRes error on iteration " << i << endl;
 
-      reservoirConcentration = resBuffer.host[0];
+      reservoirConcentration = resMemory;
 
-      error = performLayerMix(&devConc,&devMoved,&filmulationData,&filmulationData);
+      error = performLayerMix(&devMoved,&devConc,&filmulationData,&filmulationData);
       if (error)
         cout << "perfLayer error on iteration " << i << endl;
-
-      cout << "after layerMixing: " << filmulationDataMemory[0*width*height + 500] << endl;
     }
-
-    cout << "to output: " << filmulationDataMemory[0*width*height + 500] << endl;
+    cout << "filmulation time: " << current_time() << "ms" << endl;
+    cout << "Develop time    : " << totalDevelopTime << "ms" << endl;
+    cout << "Diffuse time    : " << totalDiffuseTime << "ms" << endl;
     buffer_t outputImage = {0};
     uint8_t* outputImageMemory= new uint8_t[3*width*height];
     outputImage.host = outputImageMemory;
