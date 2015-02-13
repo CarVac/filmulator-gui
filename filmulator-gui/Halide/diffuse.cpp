@@ -16,25 +16,27 @@ Func performBlur(Func f, Func coeff, Expr size, Expr sigma) {
     Func blurred;
     blurred(x, y) = undef<float>();
 
+    Expr padding = cast<int>(ceil(3*sigma) + 3);
+
     // warm up
-    blurred(x, 0) = coeff(0) * f(x, 0);
-    blurred(x, 1) = (coeff(0) * f(x, 1) +
-                     coeff(1) * blurred(x, 0));
-    blurred(x, 2) = (coeff(0) * f(x, 2) +
-                     coeff(1) * blurred(x, 1) +
-                     coeff(2) * blurred(x, 0));
+    blurred(x, 0-padding) =  coeff(0) * f(x, 0);
+    blurred(x, 1-padding) = (coeff(0) * f(x, 1) +
+                             coeff(1) * blurred(x, 0));
+    blurred(x, 2-padding) = (coeff(0) * f(x, 2) +
+                             coeff(1) * blurred(x, 1) +
+                             coeff(2) * blurred(x, 0));
 
     // top to bottom
-    RDom fwd(3, size - 3);
+    RDom fwd(3-padding, size - 3+padding);
     blurred(x, fwd) = (coeff(0) * f(x, fwd) +
                        coeff(1) * blurred(x, fwd - 1) +
                        coeff(2) * blurred(x, fwd - 2) +
                        coeff(3) * blurred(x, fwd - 3));
 
     // tail end
-    Expr padding = cast<int>(ceil(4*sigma) + 3);
     RDom tail(size, padding);
-    blurred(x, tail) = (coeff(1) * blurred(x, tail - 1) +
+    blurred(x, tail) = (coeff(0) * f(x,tail) +
+                        coeff(1) * blurred(x, tail - 1) +
                         coeff(2) * blurred(x, tail - 2) +
                         coeff(3) * blurred(x, tail - 3));
 
@@ -89,15 +91,17 @@ Func blur_then_transpose(Func f, Func coeff, Expr size, Expr sigma) {
     blurred.compute_at(out, y);
     transposed.compute_at(out, xi).vectorize(y).unroll(x);
 
-    // Crashes for RDoms < 3
+    // Crashes on first 3 RDoms because this version of Halide doesn't
+    // allow for assigning an invalid Rdom to r.
     for (int i = 3; i < blurred.num_update_definitions(); i++) {
         RDom r = blurred.reduction_domain(i);
         if (r.defined()) {
             blurred.update(i).reorder(x, r);
         }
+    }
+    for (int i = 0; i < blurred.num_update_definitions(); i++) {
         blurred.update(i).vectorize(x, 8).unroll(x);
     }
-    
 
     return out;
 }
@@ -144,9 +148,10 @@ int main(int argc, char **argv) {
     Expr pixelsPerMillimeter = sqrt(input.width()*input.height()/filmArea);
     Func initialDeveloper;
     initialDeveloper(x,y) = filmulationData(x,y,DEVEL_CONC);
-    //initialDeveloperMirrored[i] = BoundaryConditions::mirror_interior(initialDeveloper[i],0,input.width(),0,input.height());
+    Func initialDeveloperMirrored;
+    initialDeveloperMirrored = BoundaryConditions::mirror_interior(initialDeveloper,input.width(),0,input.height(),0);
     Func diffused;
-    diffused = diffuse(initialDeveloper,sigmaConst,pixelsPerMillimeter, stepTime,
+    diffused = diffuse(initialDeveloperMirrored,sigmaConst,pixelsPerMillimeter, stepTime,
                           input.width(), input.height());
     std::vector<Argument> diffArgs = diffused.infer_arguments();
     diffused.compile_to_file("diffuse", diffArgs);
