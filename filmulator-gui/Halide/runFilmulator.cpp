@@ -126,7 +126,7 @@ int main(){
 
       reservoirConcentration = resMemory;
 
-      error = performLayerMix(&devMoved,&devConc,&filmulationData,&filmulationData);
+      error = performLayerMix(&devMoved,&devConc,&filmulationData);
       if (error)
         cout << "perfLayer error on iteration " << i << endl;
     }

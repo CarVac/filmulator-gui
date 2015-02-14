@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
     Func filmulationData = lambda(x,y,c,filmData(x,y,c));
 
     Func filmulationDataOut;
-    filmulationDataOut(x,y,c) = filmulationData(x,y,c);
-    filmulationDataOut(x,y,DEVEL_CONC) = developerConcentration(x,y) + developerMoved(x,y);
+    filmulationDataOut(x,y,c) = undef<float>(); //filmulationData(x,y,c);
+    filmulationDataOut(x,y,DEVEL_CONC) = developerMoved(x,y) + developerConcentration(x,y);
     std::vector<Argument> combArgs = filmulationDataOut.infer_arguments();
     filmulationDataOut.compile_to_file("performLayerMix",combArgs);
 
