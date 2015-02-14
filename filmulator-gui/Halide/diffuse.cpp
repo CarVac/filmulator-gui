@@ -19,15 +19,15 @@ Func performBlur(Func f, Func coeff, Expr size, Expr sigma) {
     Expr padding = cast<int>(ceil(3*sigma) + 3);
 
     // warm up
-    blurred(x, 0-padding) =  coeff(0) * f(x, 0);
-    blurred(x, 1-padding) = (coeff(0) * f(x, 1) +
-                             coeff(1) * blurred(x, 0));
-    blurred(x, 2-padding) = (coeff(0) * f(x, 2) +
-                             coeff(1) * blurred(x, 1) +
-                             coeff(2) * blurred(x, 0));
+    blurred(x, 0) =  coeff(0) * f(x, 0);
+    blurred(x, 1) = (coeff(0) * f(x, 1) +
+                     coeff(1) * blurred(x, 0));
+    blurred(x, 2) = (coeff(0) * f(x, 2) +
+                     coeff(1) * blurred(x, 1) +
+                     coeff(2) * blurred(x, 0));
 
     // top to bottom
-    RDom fwd(3-padding, size - 3+padding);
+    RDom fwd(3, size - 3);
     blurred(x, fwd) = (coeff(0) * f(x, fwd) +
                        coeff(1) * blurred(x, fwd - 1) +
                        coeff(2) * blurred(x, fwd - 2) +
@@ -35,8 +35,7 @@ Func performBlur(Func f, Func coeff, Expr size, Expr sigma) {
 
     // tail end
     RDom tail(size, padding);
-    blurred(x, tail) = (coeff(0) * f(x,tail) +
-                        coeff(1) * blurred(x, tail - 1) +
+    blurred(x, tail) = (coeff(1) * blurred(x, tail - 1) +
                         coeff(2) * blurred(x, tail - 2) +
                         coeff(3) * blurred(x, tail - 3));
 
