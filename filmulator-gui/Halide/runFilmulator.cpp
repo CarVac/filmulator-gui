@@ -94,11 +94,15 @@ int main(){
 
     double totalDevelopTime = 0;
     double totalDiffuseTime = 0;
+    double calcLayer = 0;
+    double calcRes = 0;
+    double perfLayer = 0;
     current_time();
-    for (int i = 0; i < (developmentSteps-0); i++)
+    for (int i = 0; i < 1*(developmentSteps-0); i++)
     {
       float timeStep = totalDevelTime/float(developmentSteps);
 
+      //*
       double beforeDevelopTime = current_time();
       error = develop(&filmulationData,activeLayerThickness,crystalGrowthConst,
                       developerConsumptionConst,silverSaltConsumptionConst,
@@ -107,32 +111,45 @@ int main(){
         cout << "development error on iteration " << i << endl;
       totalDevelopTime += current_time() - beforeDevelopTime;
 
+      //*/
+      //*
       double beforeDiffuseTime = current_time();
       error = diffuse(&filmulationData,filmArea,sigmaConst,timeStep,&devConc);
       if (error)
         cout << "diffuse error on iteration " << i << endl;
       totalDiffuseTime += current_time() - beforeDiffuseTime;
 
+      //*
+      double beforeCalcLayer = current_time();
       error = calcLayerMix(&devConc,layerMixConst,layerTimeDivisor,
                            reservoirConcentration,timeStep,&devMoved);
       if (error)
         cout << "calcLayer error on iteration " << i << endl;
+      calcLayer += current_time() - beforeCalcLayer;
 
+      double beforeCalcRes = current_time();
       error = calcReservoirConcentration(&devMoved,activeLayerThickness,
                                          filmArea,reservoirConcentration,
                                          reservoirThickness,&resBuffer);
       if (error)
         cout << "calcRes error on iteration " << i << endl;
+      calcRes += current_time() - beforeCalcRes;
 
       reservoirConcentration = resMemory;
 
+      double beforePerfLayer = current_time();
       error = performLayerMix(&devMoved,&devConc,&filmulationData);
       if (error)
         cout << "perfLayer error on iteration " << i << endl;
+      perfLayer += current_time() - beforePerfLayer;
+       //*/
     }
     cout << "filmulation time: " << current_time() << "ms" << endl;
     cout << "Develop time    : " << totalDevelopTime << "ms" << endl;
     cout << "Diffuse time    : " << totalDiffuseTime << "ms" << endl;
+    cout << "Calc Layer time : " << calcLayer << "ms" << endl;
+    cout << "Calc Res time   : " << calcRes << "ms" << endl;
+    cout << "Perf Layer time : " << perfLayer << "ms" << endl;
     buffer_t outputImage = {0};
     uint8_t* outputImageMemory= new uint8_t[3*width*height];
     outputImage.host = outputImageMemory;
