@@ -93,9 +93,54 @@ Item {
                         id: menuLayout
                         spacing: 0 * root.uiScale
                         x: Math.min(Math.max(0,-queueDelegate.mapToItem(null,0,0).x), sizer.mapToItem(queueDelegate,sizer.width,0).x - width)
-                        y: -94 * root.uiScale
+                        y: -124 * root.uiScale//#buttons*30+4
                         z: 2
                         width: 200 * root.uiScale
+
+                        ToolButton {
+                            id: clearQueue
+                            property bool active: false
+                            text: active ? qsTr("Are you sure?") : qsTr("...Wait a moment...")
+                            width: parent.width
+                            z: 2
+                            uiScale: root.uiScale
+                            action: Action {
+                                onTriggered: {
+                                    queueModel.clearQueue()
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                            }
+                            Timer {
+                                id: clearQueueDelay
+                                interval: 1000
+                                onTriggered: {
+                                    clearQueue.active = true
+                                    clearQueueTimeout.start()
+                                }
+                            }
+                            Timer {
+                                id: clearQueueTimeout
+                                interval: 5000
+                                onTriggered: {
+                                    clearQueueCover.visible = true
+                                    clearQueue.active = false
+                                }
+                            }
+
+                            ToolButton {
+                                id: clearQueueCover
+                                text: qsTr("Clear entire queue")
+                                anchors.fill: parent
+                                uiScale: root.uiScale
+                                action: Action {
+                                    onTriggered: {
+                                        clearQueueCover.visible = false
+                                        clearQueueDelay.start()
+                                    }
+                                }
+                            }
+                        }
 
                         ToolButton {
                             id: removeFromQueue

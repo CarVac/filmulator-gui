@@ -62,3 +62,11 @@ void QueueModel::enQueue(QString searchID)
     emit queueChanged();
     //emit updateTableOut("QueueTable", 1);
 }
+
+void QueueModel::clearQueue()
+{
+    QSqlQuery query;
+    query.exec("DELETE FROM QueueTable");
+    resetIndex();
+    emit queueChanged();
+}

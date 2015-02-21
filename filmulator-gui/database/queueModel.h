@@ -12,6 +12,7 @@ public:
     Q_INVOKABLE void setQueueQuery();
     Q_INVOKABLE void deQueue(QString searchID);
     Q_INVOKABLE void enQueue(QString searchID);
+    Q_INVOKABLE void clearQueue();
 
 protected:
     int index;
