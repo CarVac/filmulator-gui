@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtWebKit 3.0
@@ -71,7 +71,7 @@ SplitView {
                     source: "image://filmy/" + indexString
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
-                    layer.mipmap: true
+                    mipmap: true
                     property real realWidth: width * scale
                     property real realHeight: height * scale
                     property int index: 0
@@ -99,7 +99,7 @@ SplitView {
                     id: bottomImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
-                    layer.mipmap: true
+                    mipmap: true
                     onStatusChanged: {
                         if (flicky.fit) {
                             bottomImage.scale = flicky.fitScale
