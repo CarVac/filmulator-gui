@@ -137,17 +137,18 @@ SplitView {
                     id: temperatureSlider
                     title: qsTr("Temperature")
                     tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.")
-                    minimumValue: 1500
-                    maximumValue: 15000
-                    defaultValue: root.defaultTemperature
+                    minimumValue: Math.log(2000)
+                    maximumValue: Math.log(20000)
+                    defaultValue: Math.log(root.defaultTemperature)
+                    valueText: Math.exp(value)
                     onValueChanged: {
-                        paramManager.temperature = value
+                        paramManager.temperature = Math.exp(value)
                     }
                     onReleased: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onTemperatureChanged: {
-                            temperatureSlider.value = paramManager.temperature
+                            temperatureSlider.value = Math.log(paramManager.temperature)
                         }
                     }
                     Component.onCompleted: {
