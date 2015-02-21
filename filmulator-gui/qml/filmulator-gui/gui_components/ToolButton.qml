@@ -12,6 +12,7 @@ Item {
     property alias tooltipText: tooltip.tooltipText
     property real __padding: 2 * uiScale
     property bool notDisabled: true
+    property alias pressed: button.pressed
 
     signal tooltipWanted(string text, int x, int y)
     width: 30 * uiScale

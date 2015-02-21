@@ -106,11 +106,26 @@ Item {
                             uiScale: root.uiScale
                             action: Action {
                                 onTriggered: {
-                                    queueModel.clearQueue()
-                                    queueDelegate.rightClicked = false
-                                    loadMenu.sourceComponent = undefined
+                                    if (clearQueue.active) {
+                                        queueModel.clearQueue()
+                                        queueDelegate.rightClicked = false
+                                        loadMenu.sourceComponent = undefined
+                                    }
+                                    else {
+                                        clearQueueCover.visible = true
+                                        clearQueue.active = false
+                                        clearQueueDelay.stop()
+                                    }
                                 }
                             }
+                            onPressedChanged: {
+                                if (clearQueue.pressed && !clearQueue.active) {
+                                    clearQueue.active = false
+                                    clearQueueCover.visible = true
+                                    clearQueueDelay.stop()
+                                }
+                            }
+
                             Timer {
                                 id: clearQueueDelay
                                 interval: 1000
@@ -135,6 +150,7 @@ Item {
                                 uiScale: root.uiScale
                                 action: Action {
                                     onTriggered: {
+                                        clearQueue.active = false//just in case
                                         clearQueueCover.visible = false
                                         clearQueueDelay.start()
                                     }
