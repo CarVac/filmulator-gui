@@ -19,7 +19,7 @@ Item {
         //orientation: Qt.Horizontal
         layoutDirection: Qt.LeftToRight
         cacheBuffer: 10
-        cellWidth: root.height * 0.9375
+        cellWidth: root.height
         cellHeight: root.height
 
         boundsBehavior: Flickable.StopAtBounds

@@ -6,7 +6,7 @@ import "../colors.js" as Colors
 Item {
     id: root
     property real dim
-    width: dim * 0.9375
+    width: dim
     height: dim
 
     property string rootDir
@@ -46,7 +46,7 @@ Item {
 
     Rectangle {
         id: currentImageRect
-        width: root.dim*0.9375
+        width: root.dim
         height: root.dim*0.03125
         color: rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000")
     }
@@ -59,9 +59,9 @@ Item {
     Component {
         id: thumbImage
         Item {
-            x: 0
+            x: root.width * 0.03125
             y: root.height * 0.03125
-            width: root.width
+            width: root.width * 0.9375
             height: root.height * 0.9375
             Image {
                 id: thumb
@@ -108,7 +108,7 @@ Item {
 
     Rectangle {
         id: processedSavedRect
-        width: root.dim*0.9375
+        width: root.dim
         height: root.dim*0.03125
         y: root.dim*0.96875
         color: exported ? "green" : (processed ? Colors.medOrange : "#00000000")
