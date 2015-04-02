@@ -26,12 +26,15 @@ class ImportModel : public SqlModel
 {
     Q_OBJECT
 
-    Q_PROPERTY(int importTZ      READ getImportTZ      WRITE setImportTZ      NOTIFY importTZChanged)
-    Q_PROPERTY(int cameraTZ      READ getCameraTZ      WRITE setCameraTZ      NOTIFY cameraTZChanged)
+    Q_PROPERTY(int importTZ      READ getImportTZ  WRITE setImportTZ  NOTIFY importTZChanged)
+    Q_PROPERTY(int cameraTZ      READ getCameraTZ  WRITE setCameraTZ  NOTIFY cameraTZChanged)
 
-    Q_PROPERTY(QString photoDir  READ getPhotoDir      WRITE setPhotoDir      NOTIFY photoDirChanged)
-    Q_PROPERTY(QString backupDir READ getBackupDir     WRITE setBackupDir     NOTIFY backupDirChanged)
-    Q_PROPERTY(QString dirConfig READ getDirConfig     WRITE setDirConfig     NOTIFY dirConfigChanged)
+    Q_PROPERTY(QString photoDir  READ getPhotoDir  WRITE setPhotoDir  NOTIFY photoDirChanged)
+    Q_PROPERTY(QString backupDir READ getBackupDir WRITE setBackupDir NOTIFY backupDirChanged)
+    Q_PROPERTY(QString dirConfig READ getDirConfig WRITE setDirConfig NOTIFY dirConfigChanged)
+
+    //Whether or not to enqueue the image in the editor queue upon loading.
+    Q_PROPERTY(bool enqueue      READ getEnqueue   WRITE setEnqueue   NOTIFY enqueueChanged)
 
     Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
     Q_PROPERTY(bool emptyDir READ getEmptyDir NOTIFY emptyDirChanged)
@@ -47,6 +50,8 @@ public:
     void setBackupDir(const QString dirIn);
     void setDirConfig(const QString configIn);
 
+    void setEnqueue(const bool enqueueIn);
+
     int getImportTZ() {return importTZ/3600;}
     int getCameraTZ() {return cameraTZ/3600;}
 
@@ -54,11 +59,14 @@ public:
     QString getBackupDir() {return backupDir;}
     QString getDirConfig() {return dirConfig;}
 
+    bool getEnqueue() {return enqueue;}
+
     float getProgress() {return progress;}
     bool getEmptyDir() {return emptyDir;}
 
 public slots:
     void workerFinished();
+    void enqueueRequested(QString STsearchID);
 
 signals:
     void importTZChanged();
@@ -68,10 +76,13 @@ signals:
     void backupDirChanged();
     void dirConfigChanged();
 
+    void enqueueChanged();
+
     void progressChanged();
     void emptyDirChanged();
 
     void searchTableChanged();
+    void enqueueThis(QString STsearchID);
 
     void workForWorker(const QFileInfo infoIn,
                        const int importTZ,
@@ -81,12 +92,16 @@ signals:
                        const QString dirConfig,
                        const QDateTime importTime);
 protected:
+    QSqlQuery modelQuery();
+
     int importTZ;
     int cameraTZ;
 
     QString photoDir;
     QString backupDir;
     QString dirConfig;
+
+    bool enqueue;
 
     std::deque<importParams> queue;
     int maxQueue;

@@ -34,12 +34,13 @@ void fileInsert(const QString hash,
 }
 
 /*This function creates a default profile in the profile table, and a search entry in the searchtable.*/
-void createNewProfile(const QString fileHash,
-                      const QString fileName,
-                      const QString absoluteFilePath,
-                      const QDateTime captureTime,
-                      const QDateTime importTime,
-                      Exiv2::ExifData exifData)
+/*It returns a QString containing the STsearchID.*/
+QString createNewProfile(const QString fileHash,
+                         const QString fileName,
+                         const QString absoluteFilePath,
+                         const QDateTime captureTime,
+                         const QDateTime importTime,
+                         Exiv2::ExifData exifData)
 {
     QSqlQuery query;
     //Retrieve the usage count from the file table, and increment it by one.
@@ -163,6 +164,7 @@ void createNewProfile(const QString fileHash,
     bool doNotAbort = false;
     matrix<unsigned short> image = pipeline.processImage(params, &interface, doNotAbort, exif);
 
+    //Set up the thumbnail directory.
     QDir dir = QDir::home();
     dir.cd(".local/share/filmulator");
     if (!dir.cd("thumbs"))
@@ -179,5 +181,9 @@ void createNewProfile(const QString fileHash,
     }
     QString outputFilename = dir.absoluteFilePath(searchID);
 
+    //Write the thumbnail.
     imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
+
+    //Return STsearchID.
+    return searchID;
 }

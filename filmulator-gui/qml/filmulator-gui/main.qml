@@ -30,6 +30,7 @@ ApplicationWindow {
         orientation: Qt.Vertical
 
         TabView {
+            id: tabs
             anchors.margins: (Qt.platform.os === "osx" ? 12 : 2) * uiScale
             tabPosition: Qt.TopEdge
             Layout.fillHeight: true

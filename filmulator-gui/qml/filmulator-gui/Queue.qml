@@ -1,6 +1,6 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.3
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import QtQuick.Layouts 1.1
 import "gui_components"
 import "getRoot.js" as GetRootObject
@@ -215,6 +215,14 @@ Item {
                 listView.contentX = xPos
             }
             //onDataChanged: console.log("queue.qml data changed")
+        }
+        Connections {
+            target: importModel
+            onQueueTableChanged: {
+                var xPos = listView.contentX
+                queueModel.setQueueQuery()
+                listView.contentX = xPos
+            }
         }
     }
 

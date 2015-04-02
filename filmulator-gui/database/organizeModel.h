@@ -81,6 +81,8 @@ signals:
 public slots:
 
 protected:
+    QSqlQuery modelQuery();
+
     QDate minCaptureTime;
     QDate maxCaptureTime;
     QDate minImportTime;

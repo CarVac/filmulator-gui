@@ -12,7 +12,7 @@ OrganizeModel::OrganizeModel(QObject *parent) :
     tableName = "SearchTable";
 }
 
-void OrganizeModel::setOrganizeQuery()
+QSqlQuery OrganizeModel::modelQuery()
 {
     //We can't use the inbuilt relational table stuff; we have to
     // make our own writing functionality, and instead of setting the table,
@@ -101,8 +101,13 @@ void OrganizeModel::setOrganizeQuery()
         queryString.append("SearchTable.STfilename DESC;");
     }
 
-    setQuery(QSqlQuery(QString::fromStdString(queryString)));
+    return QSqlQuery(QString::fromStdString(queryString));
  }
+
+void OrganizeModel::setOrganizeQuery()
+{
+    setQuery(modelQuery());
+}
 
 QString OrganizeModel::thumbDir()
 {

@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import "gui_components"
@@ -92,6 +92,7 @@ SplitView {
                         paramManager.caEnabled = isOn
                         paramManager.writeback()
                     }
+                    defaultOn: defaultCaEnabled
                     onResetToDefault: {
                         paramManager.caEnabled = isOn
                         paramManager.writeback()
@@ -104,7 +105,7 @@ SplitView {
                     }
                     Component.onCompleted: {
                         caSwitch.tooltipWanted.connect(root.tooltipWanted)
-                        caSwitch.isOn = defaultCaEnabled
+                        //caSwitch.isOn = defaultCaEnabled
                     }
                     uiScale: root.uiScale
                 }

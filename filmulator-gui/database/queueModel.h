@@ -10,14 +10,17 @@ class QueueModel : public SqlModel
 public:
     explicit QueueModel(QObject *parent = 0);
     Q_INVOKABLE void setQueueQuery();
+    Q_INVOKABLE void clearQueue();
+
+public slots:
     Q_INVOKABLE void deQueue(QString searchID);
     Q_INVOKABLE void enQueue(QString searchID);
-    Q_INVOKABLE void clearQueue();
 
 protected:
     int index;
 
     void resetIndex();
+    QSqlQuery modelQuery();
 
 signals:
     void queueChanged();

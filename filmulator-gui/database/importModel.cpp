@@ -13,7 +13,13 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
     worker->moveToThread(&workerThread);
     connect(this, &ImportModel::workForWorker, worker, &ImportWorker::importFile);
     connect(worker, &ImportWorker::doneProcessing, this, &ImportModel::workerFinished);
+    connect(worker, &ImportWorker::enqueueThis, this, &ImportModel::enqueueRequested);
     workerThread.start(QThread::LowPriority);
+}
+
+QSqlQuery ImportModel::modelQuery()
+{
+    return QSqlQuery(QString(""));
 }
 
 void ImportModel::importDirectory_r(const QString dir)
@@ -107,6 +113,14 @@ void ImportModel::workerFinished()
     else if (!paused)
     {
         startWorker(queue.front());
+    }
+}
+
+void ImportModel::enqueueRequested(QString STsearchID)
+{
+    if (enqueue)
+    {
+        emit enqueueThis(STsearchID);
     }
 }
 

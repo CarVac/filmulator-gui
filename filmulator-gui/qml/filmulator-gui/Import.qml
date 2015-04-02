@@ -129,6 +129,26 @@ Rectangle {
             uiScale: root.uiScale
         }
 
+        ToolSwitch {
+            id: enqueueSwitch
+            text: qsTr("Enqueue imported photos")
+            tooltipText: qsTr("As photos get imported, append them to the work queue.")
+            onIsOnChanged: {
+                importModel.enqueue = isOn
+                settings.enqueue = isOn
+            }
+            defaultOn: false
+            onResetToDefault: {
+                importModel.enqueue = isOn
+                settings.enqueue = isOn
+            }
+            Component.onCompleted: {
+                importModel.enqueue = isOn
+                enqueueSwitch.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
         ToolButton {
             id: importButton
             x: 0 * uiScale

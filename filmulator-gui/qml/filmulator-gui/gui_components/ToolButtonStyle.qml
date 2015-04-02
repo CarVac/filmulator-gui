@@ -1,6 +1,6 @@
-import QtQuick 2.1
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.3
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import "../colors.js" as Colors
 
 ButtonStyle {

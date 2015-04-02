@@ -1,5 +1,6 @@
 #include "importWorker.h"
 #include <iostream>
+#include "queueModel.h"
 
 ImportWorker::ImportWorker(QObject *parent) : QObject(parent)
 {
@@ -78,12 +79,17 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         fileInsert(hashString, outputPathName, exifData);
 
         //Now create a profile and a search table entry, and a thumbnail.
-        createNewProfile(hashString,
-                         infoIn.fileName(),
-                         infoIn.absoluteFilePath(),
-                         exifUtcTime(exifData, cameraTZ),
-                         importTime,
-                         exifData);
+        QString STsearchID;
+        STsearchID = createNewProfile(hashString,
+                                      infoIn.fileName(),
+                                      infoIn.absoluteFilePath(),
+                                      exifUtcTime(exifData, cameraTZ),
+                                      importTime,
+                                      exifData);
+
+        //Request that we enqueue the image.
+        emit enqueueThis(STsearchID);
+        //It might be ignored downstream, but that's not our problem here.
     }
     else //it's already in the database, so just move the file.
     {

@@ -68,8 +68,10 @@ int main(int argc, char *argv[])
     QueueModel *queueModel = new QueueModel;
     queueModel->setQueueQuery();
 //    std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
-    QObject::connect(switchboard, SIGNAL(updateTableOut(QString,int)),
-                     queueModel, SLOT(updateTable(QString,int)));
+    QObject::connect(switchboard, &SignalSwitchboard::updateTableOut,
+                     queueModel, &QueueModel::updateTable);
+    QObject::connect(importModel, &ImportModel::enqueueThis,
+                     queueModel, &QueueModel::enQueue);
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
     engine.load(QUrl::fromLocalFile("qml/filmulator-gui/main.qml"));

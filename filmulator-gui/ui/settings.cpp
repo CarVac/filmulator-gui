@@ -141,3 +141,19 @@ float Settings::getUiScale()
     //emit uiScaleChanged();
     return uiScale;
 }
+
+void Settings::setEnqueue(bool enqueueIn)
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    enqueue = enqueueIn;
+    settings.setValue("import/enqueueAsImported", enqueueIn);
+    emit enqueueChanged();
+}
+
+bool Settings::getEnqueue()
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    enqueue = settings.value("import/enqueueAsImported", 1).toBool();
+    emit enqueueChanged();
+    return enqueue;
+}
