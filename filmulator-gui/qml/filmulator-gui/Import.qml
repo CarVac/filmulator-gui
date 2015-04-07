@@ -148,6 +148,20 @@ Rectangle {
             }
             uiScale: root.uiScale
         }
+        ToolSlider {
+            minimumValue: 0
+            maximumValue: 10
+            stepSize: 1
+            defaultValue: 3
+            uiScale: root.uiScale
+            Component.onCompleted: {
+                value = parent.test
+            }
+            onValueChanged: {
+                parent.test = value
+            }
+        }
+        property real test: 2
 
         ToolButton {
             id: importButton
