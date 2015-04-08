@@ -278,11 +278,11 @@ Item {
             pressX = mouse.x
             pressY = mouse.y
 
-            console.log("======================")
-            console.log("overDragThresh")
-            console.log(overDragThresh)
-            console.log("offSliderThresh")
-            console.log(Math.abs(clickOffset2) > fakeHandle.width/2)
+            //console.log("======================")
+            //console.log("overDragThresh")
+            //console.log(overDragThresh)
+            //console.log("offSliderThresh")
+            //console.log(Math.abs(clickOffset2) > fakeHandle.width/2)
 
             updateHandlePosition(mouse)
         }

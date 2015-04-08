@@ -20,10 +20,24 @@ Rectangle {
     property alias tooltipText: toolTooltip.tooltipText
 
     property bool changed: true
+    property bool editMade: false
 
     property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
+
+    signal editComplete()
+
+    //handler for limiting updates.
+    onValueChanged: editMade = true
+    onPressedChanged: {
+        if (!pressed) {
+            if (editMade) {
+                editMade = false
+                editComplete()
+            }
+        }
+    }
 
     color: "#303030"
 

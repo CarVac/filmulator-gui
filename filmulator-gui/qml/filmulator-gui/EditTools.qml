@@ -120,9 +120,8 @@ SplitView {
                     defaultValue: root.defaultHighlightRecovery
                     onValueChanged: {
                         paramManager.highlights = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onHighlightsChanged: {
@@ -145,9 +144,8 @@ SplitView {
                     valueText: Math.exp(value)
                     onValueChanged: {
                         paramManager.temperature = Math.exp(value)
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onTemperatureChanged: {
@@ -170,9 +168,8 @@ SplitView {
                     defaultValue: root.defaultTint
                     onValueChanged: {
                         paramManager.tint = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onTintChanged: {
@@ -189,15 +186,14 @@ SplitView {
                     id: exposureCompSlider
                     title: qsTr("Exposure Compensation")
                     tooltipText: qsTr("The amount the program should to over- or under-expose the \"film\" relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.")
-                    minimumValue: -5.0
-                    maximumValue: 5.0
+                    minimumValue: -5
+                    maximumValue: 5
                     stepSize: 1/6
                     defaultValue: root.defaultExposureComp
                     onValueChanged: {
                         paramManager.exposureComp = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onExposureCompChanged: {
@@ -252,9 +248,8 @@ SplitView {
                     valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
                     onValueChanged: {
                         paramManager.filmArea = value*value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onFilmAreaChanged: {
@@ -276,9 +271,8 @@ SplitView {
                     defaultValue: 100*root.defaultLayerMixConst
                     onValueChanged: {
                         paramManager.layerMixConst = value/100;
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onLayerMixConstChanged: {
@@ -372,9 +366,8 @@ SplitView {
                     valueText: value*value/2
                     onValueChanged: {
                         paramManager.blackpoint = value*value/1000
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onBlackpointChanged: {
@@ -397,9 +390,8 @@ SplitView {
                     valueText: value*500// 1000/2
                     onValueChanged: {
                         paramManager.whitepoint = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onWhitepointChanged: {
@@ -422,9 +414,8 @@ SplitView {
                     valueText: value*1000
                     onValueChanged: {
                         paramManager.shadowsY = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onShadowsYChanged: {
@@ -447,9 +438,8 @@ SplitView {
                     valueText: value*1000
                     onValueChanged: {
                         paramManager.highlightsY = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onHighlightsYChanged: {
@@ -472,9 +462,8 @@ SplitView {
                     valueText: value*200
                     onValueChanged: {
                         paramManager.vibrance = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onVibranceChanged: {
@@ -497,9 +486,8 @@ SplitView {
                     valueText: value*200
                     onValueChanged: {
                         paramManager.saturation = value
-                        if (pressed == false)
-                            paramManager.writeback()
                     }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onSaturationChanged: {

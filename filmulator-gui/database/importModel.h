@@ -91,8 +91,12 @@ signals:
                        const QString backupDir,
                        const QString dirConfig,
                        const QDateTime importTime);
+
+    void importChanged();
+
 protected:
     QSqlQuery modelQuery();
+    void emitChange() {emit importChanged();}
 
     int importTZ;
     int cameraTZ;

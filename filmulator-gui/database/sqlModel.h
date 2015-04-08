@@ -29,6 +29,7 @@ private:
 protected:
     QString tableName;
     virtual QSqlQuery modelQuery()=0;
+    virtual void emitChange()=0;
 
 };
 

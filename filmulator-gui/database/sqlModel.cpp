@@ -66,7 +66,10 @@ void SqlModel::updateTable(QString table, int operation)
     if (operation == 0) //an update of data, not addition or removal
     {
         //It doesn't refresh the internal data model unless you reset the query.
-        QSqlQueryModel::setQuery(modelQuery());
+        //QSqlQueryModel::setQuery(modelQuery());
+        //We don't want to reset the query directly because that leads to bad handling of the change in the views.
+        //So we have a virtual function that tells the view that things have changed.
+        emitChange();
         //Eventually we'll have to separate the QSqlQueryModel from the model seen by qml.
         //That'll require us to use the dataChanged() method.
     }

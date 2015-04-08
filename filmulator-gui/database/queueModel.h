@@ -21,6 +21,7 @@ protected:
 
     void resetIndex();
     QSqlQuery modelQuery();
+    void emitChange() {emit queueChanged();}
 
 signals:
     void queueChanged();

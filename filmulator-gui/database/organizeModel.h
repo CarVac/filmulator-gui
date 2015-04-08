@@ -46,19 +46,19 @@ public:
     void setRatingSort(int sortMode);
     void setTimeZone(int timeZoneIn);
 
-    QDate getMinCaptureTime() { return minCaptureTime; }
-    QDate getMaxCaptureTime() { return maxCaptureTime; }
-    QDate getMinImportTime() { return minImportTime; }
-    QDate getMaxImportTime() { return maxImportTime; }
-    QDate getMinProcessedTime() { return minProcessedTime; }
-    QDate getMaxProcessedTime() { return maxProcessedTime; }
-    int getMinRating() { return minRating; }
-    int getMaxRating() { return maxRating; }
+    QDate getMinCaptureTime() {return minCaptureTime;}
+    QDate getMaxCaptureTime() {return maxCaptureTime;}
+    QDate getMinImportTime() {return minImportTime;}
+    QDate getMaxImportTime() {return maxImportTime;}
+    QDate getMinProcessedTime() {return minProcessedTime;}
+    QDate getMaxProcessedTime() {return maxProcessedTime;}
+    int getMinRating() {return minRating;}
+    int getMaxRating() {return maxRating;}
 
-    int getCaptureSort() { return captureSort; }
-    int getImportSort() { return importSort; }
-    int getProcessedSort() { return processedSort; }
-    int getRatingSort() { return ratingSort; }
+    int getCaptureSort() {return captureSort;}
+    int getImportSort() {return importSort;}
+    int getProcessedSort() {return processedSort;}
+    int getRatingSort() {return ratingSort;}
 
 signals:
     void minCaptureTimeChanged();
@@ -82,6 +82,7 @@ public slots:
 
 protected:
     QSqlQuery modelQuery();
+    void emitChange() {emit organizeFilterChanged();}
 
     QDate minCaptureTime;
     QDate maxCaptureTime;
