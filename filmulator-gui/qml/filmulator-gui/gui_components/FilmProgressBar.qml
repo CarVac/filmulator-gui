@@ -8,8 +8,11 @@ Item {
     width: 200 * uiScale
     height: 30 * uiScale
     property alias value: progressBar.value
+    property alias tooltipText: tooltip.tooltipText
 
     property real __padding: 2 * uiScale
+
+    signal tooltipWanted(string text, int coordX, int coordY)
 
     ProgressBar {
         id: progressBar
@@ -33,6 +36,14 @@ Item {
                 border.color: "#A87848"
                 radius: 3 * uiScale
             }
+        }
+    }
+    ToolTip {
+        id: tooltip
+        anchors.fill: root
+        Component.onCompleted: {
+            //forward tooltipWanted to root
+            tooltip.tooltipWanted.connect(root.tooltipWanted)
         }
     }
 }

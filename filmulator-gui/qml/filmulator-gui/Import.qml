@@ -172,10 +172,15 @@ Rectangle {
             id: importProgress
             width: parent.width
             value: importModel.progress
+            tooltipText: importModel.progressFrac
             Connections {
                 target: importModel
                 onProgressChanged: importProgress.value = importModel.progress
             }
+            Component.onCompleted: {
+                importProgress.tooltipWanted.connect(root.tooltipWanted)
+            }
+
             uiScale: root.uiScale
         }
     }

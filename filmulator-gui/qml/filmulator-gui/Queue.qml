@@ -218,7 +218,7 @@ Item {
         }
         Connections {
             target: importModel
-            onQueueTableChanged: {
+            onImportChanged: {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos

@@ -79,7 +79,9 @@ void ImportModel::importDirectory_r(const QString dir)
     }
 
     progress = float(maxQueue - queue.size())/float(maxQueue);
+    progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
     emit progressChanged();
+    emit progressFracChanged();
 
     paused = false;
 
@@ -101,8 +103,10 @@ void ImportModel::workerFinished()
     if (maxQueue != 0)
     {
         progress = float(maxQueue - queue.size())/float(maxQueue);
+        progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
         cout << "ImportModel::workerFinished; progress = " << progress << endl;
         emit progressChanged();
+        emit progressFracChanged();
     }
 
     if (queue.size() <= 0)

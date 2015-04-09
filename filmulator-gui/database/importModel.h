@@ -37,6 +37,7 @@ class ImportModel : public SqlModel
     Q_PROPERTY(bool enqueue      READ getEnqueue   WRITE setEnqueue   NOTIFY enqueueChanged)
 
     Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
+    Q_PROPERTY(QString progressFrac READ getProgressFrac NOTIFY progressFracChanged)
     Q_PROPERTY(bool emptyDir READ getEmptyDir NOTIFY emptyDirChanged)
 
 public:
@@ -62,6 +63,7 @@ public:
     bool getEnqueue() {return enqueue;}
 
     float getProgress() {return progress;}
+    QString getProgressFrac() {return progressFrac;}
     bool getEmptyDir() {return emptyDir;}
 
 public slots:
@@ -79,6 +81,7 @@ signals:
     void enqueueChanged();
 
     void progressChanged();
+    void progressFracChanged();
     void emptyDirChanged();
 
     void searchTableChanged();
@@ -110,6 +113,7 @@ protected:
     std::deque<importParams> queue;
     int maxQueue;
     float progress = 1;
+    QString progressFrac = "Progress: 0/0";
     bool emptyDir = false;
 
     QThread workerThread;
