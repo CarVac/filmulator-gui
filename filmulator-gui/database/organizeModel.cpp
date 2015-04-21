@@ -10,6 +10,7 @@ OrganizeModel::OrganizeModel(QObject *parent) :
     SqlModel(parent)
 {
     tableName = "SearchTable";
+    captureSort = 1;
 }
 
 QSqlQuery OrganizeModel::modelQuery()

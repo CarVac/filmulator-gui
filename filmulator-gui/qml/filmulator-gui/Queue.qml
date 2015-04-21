@@ -207,6 +207,7 @@ Item {
 
         }
 
+        //Once we get incremental updates, this should also probably go away.
         Connections {
             target: queueModel
             onQueueChanged: {
@@ -216,6 +217,8 @@ Item {
             }
             //onDataChanged: console.log("queue.qml data changed")
         }
+
+        //This one will have to go away when we get proper updates.
         Connections {
             target: importModel
             onImportChanged: {

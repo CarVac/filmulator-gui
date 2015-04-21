@@ -10,44 +10,57 @@
 using namespace std;
 
 SqlModel::SqlModel(QObject *parent) :
-    QSqlQueryModel(parent)
+    QAbstractTableModel(parent)
 {
     //columnCount = 0;
 }
 
-void SqlModel::setQuery( const QSqlQuery &query )
+void SqlModel::setQuery(const QSqlQuery &query)
 {
-    QSqlQueryModel::setQuery( query );
+    beginResetModel();
+    //QSqlQueryModel::setQuery( query );
+    queryModel.setQuery(query);
     generateRoleNames();
+    endResetModel();
 }
 
 void SqlModel::generateRoleNames()
 {
     //cout << record().count() << endl;
-    for( int i=0; i<record().count(); i++ )
+    for(int i=0; i<queryModel.record().count(); i++)
     {
-        this->m_roleNames[ Qt::UserRole + i + 1 ] = record().fieldName( i ).toLatin1();
+        this->m_roleNames[Qt::UserRole + i + 1] = queryModel.record().fieldName(i).toLatin1();
     }
 }
 
-QVariant SqlModel::data( const QModelIndex &index, int role ) const
+QVariant SqlModel::data(const QModelIndex &index, int role) const
 {
     QVariant value;
     //Roles are numbers. If it's greater than the UserRole constant, it's a custom one.
     if( role < Qt::UserRole )
     {
-        value = QSqlQueryModel::data( index,role );
+        value = queryModel.data( index,role );
         //cout << "SqlModel::data: nonUserRole" << endl;
     }
     else
     {
         int columnIndex = role - Qt::UserRole - 1;
         QModelIndex modelIndex = this->index( index.row(), columnIndex );
-        value = QSqlQueryModel::data( modelIndex, Qt::DisplayRole );
+        value = queryModel.data( modelIndex, Qt::DisplayRole );
         //cout << "SqlModel::data row: " << index.row() << " column: " << columnIndex << endl;
         //cout << "SqlModel::data row count: " << this->rowCount() << endl;
     }
     return value;
+}
+
+int SqlModel::columnCount(const QModelIndex &parent) const
+{
+    return queryModel.columnCount(parent);
+}
+
+int SqlModel::rowCount(const QModelIndex &parent) const
+{
+    return queryModel.rowCount(parent);
 }
 
 QHash<int,QByteArray> SqlModel::roleNames() const
@@ -66,10 +79,11 @@ void SqlModel::updateTable(QString table, int operation)
     if (operation == 0) //an update of data, not addition or removal
     {
         //It doesn't refresh the internal data model unless you reset the query.
-        //QSqlQueryModel::setQuery(modelQuery());
+        queryModel.setQuery(modelQuery());
         //We don't want to reset the query directly because that leads to bad handling of the change in the views.
         //So we have a virtual function that tells the view that things have changed.
-        emitChange();
+        emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
+        //emitChange();
         //Eventually we'll have to separate the QSqlQueryModel from the model seen by qml.
         //That'll require us to use the dataChanged() method.
     }
