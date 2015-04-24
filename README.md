@@ -24,7 +24,7 @@ libraw
 
 Some libraw package maintainers don't include the GPL demosaic packs, so we highly encourage you to compile it yourself.
 
-It also requires Qt 5.3: open the .pro file from Qt Creator and select Build in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the -j# flag to the Make build parameters to speed compilation.
+It also requires Qt 5.4: open the .pro file from Qt Creator and select Build in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the -j# flag to the Make build parameters to speed compilation.
 
 A note: Use a standalone git client to clone the repository initially, and then you can use Qt Creator's built-in git tools.
 
