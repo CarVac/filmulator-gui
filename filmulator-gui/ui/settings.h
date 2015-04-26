@@ -15,6 +15,7 @@ class Settings : public QObject
     Q_PROPERTY(int importTZ READ getImportTZ WRITE setImportTZ NOTIFY importTZChanged)
     Q_PROPERTY(int organizeTZ READ getOrganizeTZ WRITE setOrganizeTZ NOTIFY organizeTZChanged)
     Q_PROPERTY(QDate organizeCaptureDate READ getOrganizeCaptureDate WRITE setOrganizeCaptureDate NOTIFY organizeCaptureDateChanged)
+    Q_PROPERTY(int organizeRating READ getOrganizeRating WRITE setOrganizeRating NOTIFY organizeRatingChanged)
     Q_PROPERTY(float uiScale READ getUiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool enqueue READ getEnqueue WRITE setEnqueue NOTIFY enqueueChanged)
 
@@ -27,6 +28,7 @@ public:
     void setImportTZ(int offsetIn);
     void setOrganizeTZ(int offsetIn);
     void setOrganizeCaptureDate(QDate dateIn);
+    void setOrganizeRating(int ratingIn);
     void setUiScale(float uiScaleIn);
     void setEnqueue(bool enqueueIn);
 
@@ -37,6 +39,7 @@ public:
     Q_INVOKABLE int getImportTZ();
     Q_INVOKABLE int getOrganizeTZ();
     Q_INVOKABLE QDate getOrganizeCaptureDate();
+    Q_INVOKABLE int getOrganizeRating();
     Q_INVOKABLE float getUiScale();
     Q_INVOKABLE bool getEnqueue();
 
@@ -48,6 +51,7 @@ protected:
     int importTZ;
     int organizeTZ;
     QDate organizeCaptureDate;
+    int organizeRating;
     float uiScale;
     bool enqueue;
 
@@ -59,6 +63,7 @@ signals:
     void importTZChanged();
     void organizeTZChanged();
     void organizeCaptureDateChanged();
+    void organizeRatingChanged();
     void uiScaleChanged();
     void enqueueChanged();
 };

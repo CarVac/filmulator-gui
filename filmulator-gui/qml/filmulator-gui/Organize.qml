@@ -74,6 +74,25 @@ SplitView {
                         captureCalendar.tooltipWanted.connect(root.tooltipWanted)
                     }
                 }
+
+                ToolSlider {
+                    id: ratingSlider
+                    title: qsTr("Rating")
+                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    minimumValue: 0
+                    maximumValue: 5
+                    stepSize: 1
+                    defaultValue: settings.getOrganizeRating()
+                    onValueChanged: {
+                        settings.organizeRating = value
+                        organizeModel.minRating = value
+                        organizeModel.setOrganizeQuery()
+                    }
+                    uiScale: root.uiScale
+                    Component.onCompleted: {
+                        ratingSlider.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                }
             }
         }
     }
@@ -94,21 +113,28 @@ SplitView {
             maximumFlickVelocity: 50000 * uiScale
 
             delegate: OrganizeDelegate {
+                id: organizeDelegate
                 rootDir: organizeModel.thumbDir()
 
                 searchID: STsearchID
                 importTime: STimportTime
                 lastProcessedTime: STlastProcessedTime
+                rating: STrating
+                filename: STfilename
+
+                isCurrentItem: index === gridView.currentIndex
+
+                //Toggles selection
+                onSelectImage: gridView.currentIndex = (isCurrentItem ? -1 : index)
+
+                //Enqueues the image when double clicked
+                onEnqueueImage: queueModel.enQueue(STsearchID)
+
+                //Writes the rating back to the database.
+                onRate: organizeModel.setRating(STsearchID, ratingIn)
 
                 uiScale: root.uiScale
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: parent.GridView.view.currentIndex = index
-                    onDoubleClicked: {
-                        queueModel.enQueue(STsearchID)
-                    }
-                }
+                Component.onCompleted: organizeDelegate.tooltipWanted.connect(root.tooltipWanted)
             }
 
             Connections {

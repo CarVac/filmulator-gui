@@ -126,6 +126,22 @@ QDate Settings::getOrganizeCaptureDate()
     return organizeCaptureDate;
 }
 
+void Settings::setOrganizeRating(int ratingIn)
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    organizeRating = ratingIn;
+    settings.setValue("photoDB/organizeRating", ratingIn);
+    emit organizeRatingChanged();
+}
+
+int Settings::getOrganizeRating()
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    organizeRating = settings.value("photoDB/organizeRating", 0).toInt();
+    emit organizeRatingChanged();
+    return organizeRating;
+}
+
 void Settings::setUiScale(float uiScaleIn)
 {
     QSettings settings(QSettings::UserScope, QString("Filmulator"));

@@ -30,6 +30,7 @@ public:
     explicit OrganizeModel(QObject *parent = 0);
     Q_INVOKABLE void setOrganizeQuery();
     Q_INVOKABLE QString thumbDir();
+    Q_INVOKABLE void setRating(QString searchID, int rating);
 
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);

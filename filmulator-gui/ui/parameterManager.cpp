@@ -436,7 +436,7 @@ void ParameterManager::writeToDB(ProcessingParameters params, QString imageID)
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
-    query.prepare("UPDATE SearchTable SET STlastProcessedTime = ? WHERE STSearchID = ?;");
+    query.prepare("UPDATE SearchTable SET STlastProcessedTime = ? WHERE STsearchID = ?;");
     query.bindValue(0, QVariant(now.toTime_t()));
     query.bindValue(1, imageID);
     query.exec();

@@ -42,7 +42,9 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: queueDelegate.ListView.currentIndex = queueDelegate.index
+                onClicked: {
+                    listView.currentIndex = index
+                }
                 onDoubleClicked: {
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)

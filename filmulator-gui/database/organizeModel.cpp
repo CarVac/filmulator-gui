@@ -82,8 +82,8 @@ QSqlQuery OrganizeModel::modelQuery()
     //First we need to actually write ORDER BY
     queryString.append("ORDER BY ");
 
-    if (ratingSort == 1){ queryString.append("SearchTable.STRating ASC, "); }
-    else if (ratingSort == -1){ queryString.append("SearchTable.STRating DESC, "); }
+    if (ratingSort == 1){ queryString.append("SearchTable.STrating ASC, "); }
+    else if (ratingSort == -1){ queryString.append("SearchTable.STrating DESC, "); }
 
     if (processedSort == 1){ queryString.append("SearchTable.STlastProcessedTime ASC, "); }
     else if (processedSort == -1){ queryString.append("SearchTable.STlastProcessedTime DESC, "); }
@@ -115,4 +115,14 @@ QString OrganizeModel::thumbDir()
     QDir homeDir = QDir::home();
     homeDir.cd(".local/share/filmulator/thumbs");
     return homeDir.absolutePath();
+}
+
+void OrganizeModel::setRating(QString searchID, int rating)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
+    query.bindValue(0, QVariant(max(min(rating,5),0)));
+    query.bindValue(1, searchID);
+    query.exec();
+    emit updateTable("SearchTable", 0);//An edit made to the search table.
 }
