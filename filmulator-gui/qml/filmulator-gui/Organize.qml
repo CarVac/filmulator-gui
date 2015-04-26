@@ -1,6 +1,6 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.3
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import QtQuick.Layouts 1.1
 import "gui_components"
 import "colors.js" as Colors
@@ -27,6 +27,7 @@ SplitView {
             clip: true
             contentHeight: filterLayout.height
             boundsBehavior: Flickable.StopAtBounds
+            //interactive: false
 
             ColumnLayout {
                 id: filterLayout
@@ -62,13 +63,65 @@ SplitView {
                     id: captureCalendar
                     minimumDate: "1970-01-01"
                     maximumDate: "2038-01-01"
-                    selectedDate: settings.getOrganizeCaptureDate()
-                    onClicked: {
-                        settings.organizeCaptureDate = selectedDate
-                        organizeModel.minCaptureTime = selectedDate
-                        organizeModel.maxCaptureTime = selectedDate
-                        organizeModel.setOrganizeQuery()
+                    selectedDate: settings.organizeCaptureDate
+                    onPressed: {
+                        filterListFlick.interactive = false
+                        var isChanged = 0
+                        if (!initialClick && !secondClick) {
+                            initialClick = true
+                            if (tempDate.toString() !== date.toString()) {
+                                isChanged = 1
+                            }
+                            if (tempDate.toDateString().slice(4,7) !== date.toDateString().slice(4,7)) {
+                                //If the month changed, we don't want to update on any further movements.
+                                //We start a counter to ignore x frames of movement.
+                                monthChanged = 15
+                            }
+                            tempDate = date
+                        } else {
+                            initialClick = false
+                            secondClick = true
+                            if (monthChanged <= 0) {
+                                // If the ignore counter is empty
+                                if (tempDate.toString() !== date.toString()) {
+                                    isChanged = 1
+                                }
+                                tempDate = date
+                            } else {
+                                //If we still have to see
+                                monthChanged = monthChanged - 1;
+                            }
+                        }
+                        if (isChanged === 1) {
+                            organizeModel.minCaptureTime = tempDate
+                            organizeModel.maxCaptureTime = tempDate
+                            organizeModel.setOrganizeQuery()
+                        }
                     }
+
+                    onReleased: {
+                        var isChanged = 0
+                        //If the mouse has moved, and to a new date, and in the same month
+                        if (!initialClick && tempDate.toString() !== date.toString() && monthChanged <= 0) {
+                            //Use the new position.
+                            tempDate = date
+                            //Then do have it update the model.
+                            isChanged = 1
+                        }
+
+                        initialClick = false
+                        secondClick = false
+                        monthChanged = 0
+                        settings.organizeCaptureDate = tempDate
+                        if (isChanged === 1) {
+                            organizeModel.minCaptureTime = tempDate
+                            organizeModel.maxCaptureTime = tempDate
+                            organizeModel.setOrganizeQuery()
+                        }
+                        selectedDate = tempDate
+                        filterListFlick.interactive = true
+                    }
+
                     uiScale: root.uiScale
                     Component.onCompleted: {
                         captureCalendar.tooltipWanted.connect(root.tooltipWanted)

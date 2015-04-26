@@ -11,6 +11,10 @@ Calendar {
     implicitWidth: parent.width
     minimumDate: "1970-01-01"
     maximumDate: "2038-01-01"
+    property date tempDate
+    property int monthChanged: 0
+    property bool initialClick: false
+    property bool secondClick: false
 
     signal tooltipWanted(string text, int x, int y)
 
