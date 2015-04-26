@@ -82,7 +82,6 @@ Rectangle {
         width: 300 * uiScale
         height: 20 * uiScale
         onClicked: {
-            console.log(ratingArea.mouseX > root.width/10 ? Math.ceil(ratingArea.mouseX * 5 / root.width) : 0)
             root.rate(ratingArea.mouseX > root.width/10 ? Math.ceil(ratingArea.mouseX * 5 / root.width) : 0)
         }
         Rectangle {
