@@ -170,6 +170,7 @@ SplitView {
                 rootDir: organizeModel.thumbDir()
 
                 searchID: STsearchID
+                captureTime: STcaptureTime
                 importTime: STimportTime
                 lastProcessedTime: STlastProcessedTime
                 rating: STrating

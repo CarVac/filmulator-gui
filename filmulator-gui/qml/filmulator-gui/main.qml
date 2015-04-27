@@ -136,6 +136,8 @@ ApplicationWindow {
                 Connections {
                     target: root
                     onImageURL: {
+                        //This is for telling the queue to grab the same image as the main editor
+                        // so that the queue matches what you see in the editor.
                         console.log("main.qml queueItem update url")
                         queueItem.url = newURL;
                     }

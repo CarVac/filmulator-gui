@@ -31,6 +31,7 @@ public:
     Q_INVOKABLE void setOrganizeQuery();
     Q_INVOKABLE QString thumbDir();
     Q_INVOKABLE void setRating(QString searchID, int rating);
+    Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
 
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);

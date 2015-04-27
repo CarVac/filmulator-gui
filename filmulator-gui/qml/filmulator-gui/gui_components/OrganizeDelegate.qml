@@ -10,6 +10,7 @@ Rectangle {
     property bool isCurrentItem
     property string rootDir
     property string searchID
+    property int captureTime
     property int importTime
     property int lastProcessedTime
     property int rating
@@ -54,7 +55,7 @@ Rectangle {
     ToolTip {
         id: tooltip
         anchors.fill: loadThumb
-        tooltipText: root.filename
+        tooltipText: root.filename + '\n' + organizeModel.getDateTimeString(root.captureTime)
         Component.onCompleted: {
             tooltip.tooltipWanted.connect(root.tooltipWanted)
         }
