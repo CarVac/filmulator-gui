@@ -63,7 +63,7 @@ SplitView {
                     id: captureCalendar
                     minimumDate: "1970-01-01"
                     maximumDate: "2038-01-01"
-                    selectedDate: settings.organizeCaptureDate
+                    selectedDate: settings.getOrganizeCaptureDate()
                     onPressed: {
                         filterListFlick.interactive = false
                         var isChanged = 0
