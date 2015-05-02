@@ -75,6 +75,7 @@ Rectangle {
         y: 21 * uiScale + __padding
         width: parent.width - reset.width - 3*__padding
         value: defaultValue
+        uiScale: root.uiScale
     }
 
 //    Slider {
