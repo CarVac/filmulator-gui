@@ -29,6 +29,7 @@ Rectangle {
             minimumValue: -14
             maximumValue: 14
             stepSize: 1
+            value: settings.getCameraTZ()
             defaultValue: settings.getCameraTZ()
             onValueChanged: {
                 importModel.cameraTZ = value
@@ -69,6 +70,7 @@ Rectangle {
             minimumValue: -14
             maximumValue: 14
             stepSize: 1
+            value: settings.getImportTZ()
             defaultValue: settings.getImportTZ()
             onValueChanged: {
                 importModel.importTZ = value
@@ -133,6 +135,7 @@ Rectangle {
             id: enqueueSwitch
             text: qsTr("Enqueue imported photos")
             tooltipText: qsTr("As photos get imported, append them to the work queue.")
+            isOn: false
             onIsOnChanged: {
                 importModel.enqueue = isOn
                 settings.enqueue = isOn

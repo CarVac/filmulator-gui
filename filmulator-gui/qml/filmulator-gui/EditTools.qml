@@ -88,11 +88,12 @@ SplitView {
                     id: caSwitch
                     tooltipText: qsTr("Automatically correct directional color fringing.")
                     text: qsTr("CA correction")
+                    isOn: paramManager.caEnabled
+                    defaultOn: root.defaultCaEnabled
                     onIsOnChanged: {
                         paramManager.caEnabled = isOn
                         paramManager.writeback()
                     }
-                    defaultOn: defaultCaEnabled
                     onResetToDefault: {
                         paramManager.caEnabled = isOn
                         paramManager.writeback()
@@ -105,7 +106,6 @@ SplitView {
                     }
                     Component.onCompleted: {
                         caSwitch.tooltipWanted.connect(root.tooltipWanted)
-                        //caSwitch.isOn = defaultCaEnabled
                     }
                     uiScale: root.uiScale
                 }
@@ -117,6 +117,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 9
                     stepSize: 1
+                    value: paramManager.highlights
                     defaultValue: root.defaultHighlightRecovery
                     onValueChanged: {
                         paramManager.highlights = value
@@ -140,6 +141,7 @@ SplitView {
                     tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.")
                     minimumValue: Math.log(2000)
                     maximumValue: Math.log(20000)
+                    value: Math.log(paramManager.temperature)
                     defaultValue: Math.log(root.defaultTemperature)
                     valueText: Math.exp(value)
                     onValueChanged: {
@@ -164,7 +166,7 @@ SplitView {
                     tooltipText: qsTr("Correct for a green/magenta tinted light source. Positive values are greener, and negative values are magenta.")
                     minimumValue: 0.1
                     maximumValue: 3
-                    //stepSize: 0.002
+                    value: paramManager.tint
                     defaultValue: root.defaultTint
                     onValueChanged: {
                         paramManager.tint = value
@@ -189,6 +191,7 @@ SplitView {
                     minimumValue: -5
                     maximumValue: 5
                     stepSize: 1/6
+                    value: paramManager.exposureComp
                     defaultValue: root.defaultExposureComp
                     onValueChanged: {
                         paramManager.exposureComp = value
@@ -242,6 +245,7 @@ SplitView {
                     tooltipText: qsTr("Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.")
                     minimumValue: 10
                     maximumValue: 300
+                    value: Math.sqrt(paramManager.filmArea)
                     defaultValue: Math.sqrt(root.defaultFilmSize)
                     //The following thresholds are 24mmx65mm and twice 6x9cm film's
                     // areas, respectively.
@@ -268,6 +272,7 @@ SplitView {
                     tooltipText: qsTr("Pulls down highlights to retain detail. This is the real \"filmy\" effect. This not only helps bring down bright highlights, but it can also rescue extremely saturated regions such as flowers.")
                     minimumValue: 0
                     maximumValue: 100
+                    value: 100*paramManager.layerMixConst
                     defaultValue: 100*root.defaultLayerMixConst
                     onValueChanged: {
                         paramManager.layerMixConst = value/100;
@@ -289,6 +294,8 @@ SplitView {
                     id: overdriveSwitch
                     tooltipText: qsTr("In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you.")
                     text: qsTr("Overdrive Mode")
+                    isOn: (paramManager.agitateCount == 0)
+                    defaultOn: root.defaultOverdriveEnabled
                     onIsOnChanged: {
                         paramManager.agitateCount = isOn ? 0 : 1
                         paramManager.writeback()
@@ -305,7 +312,6 @@ SplitView {
                     }
                     Component.onCompleted: {
                         overdriveSwitch.tooltipWanted.connect(root.tooltipWanted)
-                        overdriveSwitch.isOn = defaultOverdriveEnabled
                     }
                     uiScale: root.uiScale
                 }
@@ -362,6 +368,7 @@ SplitView {
                     tooltipText: qsTr("This controls the threshold for crushing the shadows. You can see its position in the post-film histogram.")
                     minimumValue: 0
                     maximumValue: 1.4
+                    value: Math.sqrt(paramManager.blackpoint*1000)
                     defaultValue: Math.sqrt(root.defaultBlackpoint*1000)
                     valueText: value*value/2
                     onValueChanged: {
@@ -386,6 +393,7 @@ SplitView {
                     tooltipText: qsTr("This controls the threshold for clipping the highlights. Vaguely analogous to adjusting exposure time in the darkroom. You can see its position in the post-film histogram.")
                     minimumValue: 0.1/1000
                     maximumValue: 2.5/1000
+                    value: paramManager.whitepoint
                     defaultValue: root.defaultWhitepoint
                     valueText: value*500// 1000/2
                     onValueChanged: {
@@ -410,6 +418,7 @@ SplitView {
                     tooltipText: qsTr("This controls the brightness of the generally darker regions of the image.")
                     minimumValue: 0
                     maximumValue: 1
+                    value: paramManager.shadowsY
                     defaultValue: root.defaultShadowsY
                     valueText: value*1000
                     onValueChanged: {
@@ -434,6 +443,7 @@ SplitView {
                     tooltipText: qsTr("This controls the brightness of the generally lighter regions of the image.")
                     minimumValue: 0
                     maximumValue: 1
+                    value: paramManager.highlightsY
                     defaultValue: root.defaultHighlightsY
                     valueText: value*1000
                     onValueChanged: {
@@ -458,6 +468,7 @@ SplitView {
                     tooltipText: qsTr("This adjusts the vividness of the less-saturated colors in the image.")
                     minimumValue: -0.5
                     maximumValue: 0.5
+                    value: paramManager.vibrance
                     defaultValue: root.defaultVibrance
                     valueText: value*200
                     onValueChanged: {
@@ -482,6 +493,7 @@ SplitView {
                     tooltipText: qsTr("This adjusts the vividness of the entire image.")
                     minimumValue: -0.5
                     maximumValue: 0.5
+                    value: paramManager.saturation
                     defaultValue: root.defaultSaturation
                     valueText: value*200
                     onValueChanged: {

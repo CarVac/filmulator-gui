@@ -28,6 +28,7 @@ Rectangle {
             minimumValue: 0.5
             maximumValue: 4.0
             stepSize: 0.1
+            value: settings.getUiScale()
             defaultValue: settings.getUiScale()
             changed: false
             onValueChanged: {

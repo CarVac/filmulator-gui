@@ -47,6 +47,7 @@ SplitView {
                     minimumValue: -14
                     maximumValue: 14
                     stepSize: 1
+                    value: settings.getOrganizeTZ()
                     defaultValue: settings.getOrganizeTZ()
                     onValueChanged: {
                         organizeModel.timeZone = value
@@ -135,6 +136,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 5
                     stepSize: 1
+                    value: settings.getOrganizeRating()
                     defaultValue: settings.getOrganizeRating()
                     onValueChanged: {
                         settings.organizeRating = value
