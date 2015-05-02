@@ -119,9 +119,10 @@ Rectangle {
         action: Action {
             onTriggered: {
                 slider.value = defaultValue
-                //We have to pretend that the slider was dragged
+
+                //We have to pretend that the slider was changed
                 // so that it writes back to the database.
-                root.released()
+                root.editComplete()
             }
         }
         style: ToolButtonStyle {
