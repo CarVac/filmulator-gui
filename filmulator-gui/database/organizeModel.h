@@ -7,7 +7,6 @@
 #include <QTimeZone>
 #include <QByteArray>
 #include <exiv2/exiv2.hpp>
-using namespace std;
 
 class OrganizeModel : public SqlModel
 {
@@ -32,6 +31,8 @@ public:
     Q_INVOKABLE QString thumbDir();
     Q_INVOKABLE void setRating(QString searchID, int rating);
     Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
+
+    SqlModel dateHistogram;
 
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);
@@ -84,6 +85,7 @@ public slots:
 
 protected:
     QSqlQuery modelQuery();
+    QSqlQuery dateHistoQuery();
     void emitChange() {emit organizeFilterChanged();}
 
     QDate minCaptureTime;

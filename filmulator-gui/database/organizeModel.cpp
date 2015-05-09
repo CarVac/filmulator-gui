@@ -4,7 +4,8 @@
 #include <QDateTime>
 #include <QString>
 
-using namespace std;
+using std::cout;
+using std::endl;
 
 OrganizeModel::OrganizeModel(QObject *parent) :
     SqlModel(parent)
@@ -103,7 +104,19 @@ QSqlQuery OrganizeModel::modelQuery()
     }
 
     return QSqlQuery(QString::fromStdString(queryString));
- }
+}
+
+QSqlQuery OrganizeModel::dateHistoQuery()
+{
+    std::string dateHistoString = "SELECT date(STcaptureTime, 'unixepoch', '";
+    dateHistoString.append(std::toString(round(m_timeZone/3600.0)));
+    dateHistoString.append(" hours' AS DHcaptureDate, STcaptureTime, COUNT(*) FROM SearchTable GROUP BY date(STcaptureTime, 'unixepoch', '");
+    dateHistoString.append(std::toString(round(m_timeZone/3600.0)));
+    dateHistoString.append(" hours') SORT BY date ;");
+
+    //List of dates
+    //"SELECT datetime(julianday('NOW', '[m_timezone*3600] hours') - iiiiii AS thedate FROM integer999999 WHERE iiiiii <= julianday('NOW') - min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable;
+}
 
 void OrganizeModel::setOrganizeQuery()
 {
@@ -132,3 +145,5 @@ QString OrganizeModel::getDateTimeString(int unixTimeIn)
     QDateTime tempTime = QDateTime::fromTime_t(unixTimeIn, Qt::OffsetFromUTC, m_timeZone*3600);
     return tempTime.toString("ddd yyyy-MM-dd HH:mm:ss");
 }
+
+//SELECT date(STcaptureTime, 'unixepoch', '-5 hours [the timezone]', COUNT(*) FROM SearchTable GROUP BY date(STcaptureTime, 'unixepoch', '-5 hours');
