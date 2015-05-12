@@ -2,6 +2,7 @@
 #define ORGANIZEMODEL_H
 
 #include "sqlModel.h"
+#include "basicSqlModel.h"
 #include <QString>
 #include <QDateTime>
 #include <QTimeZone>
@@ -28,11 +29,12 @@ class OrganizeModel : public SqlModel
 public:
     explicit OrganizeModel(QObject *parent = 0);
     Q_INVOKABLE void setOrganizeQuery();
+    Q_INVOKABLE void setDateHistoQuery();
     Q_INVOKABLE QString thumbDir();
     Q_INVOKABLE void setRating(QString searchID, int rating);
     Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
 
-    SqlModel dateHistogram;
+    BasicSqlModel *dateHistogram = new BasicSqlModel;
 
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);

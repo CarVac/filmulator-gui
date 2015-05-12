@@ -152,86 +152,119 @@ SplitView {
         }
     }
 
-    Rectangle {
-        id: gridViewBox
-        color: "#202020"
+    SplitView {
+        id: dateHistoSplit
+        orientation: Qt.Vertical
         Layout.fillWidth: true
+        Rectangle {
+            id: dateHistogram
+            color: "#202020"
+            height: 250 * uiScale
+            Layout.maximumHeight: 500 * uiScale
+            Layout.minimumHeight: 50 * uiScale
 
-        GridView {
-            id: gridView
-            anchors.fill: parent
+            ListView {
+                id: dateHistoView
+                anchors.fill: parent
+                layoutDirection: Qt.Horizontal
+                boundsBehavior: Flickable.StopAtBounds
 
-            cellWidth: 320 * uiScale
-            cellHeight: 320 * uiScale
-
-            boundsBehavior: Flickable.StopAtBounds
-            maximumFlickVelocity: 50000 * uiScale
-
-            delegate: OrganizeDelegate {
-                id: organizeDelegate
-                rootDir: organizeModel.thumbDir()
-
-                searchID: STsearchID
-                captureTime: STcaptureTime
-                importTime: STimportTime
-                lastProcessedTime: STlastProcessedTime
-                rating: STrating
-                filename: STfilename
-
-                isCurrentItem: index === gridView.currentIndex
-
-                //Toggles selection
-                onSelectImage: gridView.currentIndex = (isCurrentItem ? -1 : index)
-
-                //Enqueues the image when double clicked
-                onEnqueueImage: queueModel.enQueue(STsearchID)
-
-                //Writes the rating back to the database.
-                onRate: organizeModel.setRating(STsearchID, ratingIn)
-
-                uiScale: root.uiScale
-                Component.onCompleted: organizeDelegate.tooltipWanted.connect(root.tooltipWanted)
-            }
-
-            Connections {
-                target: importModel
-                onSearchTableChanged: {
-                    var yPos = gridView.contentY
-                    organizeModel.setOrganizeQuery()
-                    gridView.contentY = yPos
+                delegate: Rectangle {
+                    id: dateHistoDelegate
+                    width: 10 * uiScale
+                    property real contentAmount: Math.min(1, (thecount > 0) ? Math.log(thecount)/16 : 0)
+                    height: dateHistogram.height * contentAmount
+                    color: Colors.brightGray
                 }
-            }
 
-            Component.onCompleted: {
-/*                organizeModel.minCaptureTime = 0
-                organizeModel.maxCaptureTime = 1400000000
-                organizeModel.minImportTime = 0
-                organizeModel.maxImportTime = 1400000000
-                organizeModel.minProcessedTime = 0
-                organizeModel.maxProcessedTime = 1400000000*/
-                organizeModel.minRating = 0
-                organizeModel.maxRating = 5
-                organizeModel.setOrganizeQuery()
-                gridView.model = organizeModel
+                Component.onCompleted: {
+                    dateHistoView.model = dateHistoModel
+                    positionViewAtEnd()
+                }
             }
         }
-        MouseArea {
-            id: wheelstealer
-            //Custom scrolling implementation because the default flickable one sucks.
-            anchors.fill: gridView
-            acceptedButtons: Qt.NoButton
-            onWheel: {
-                var velocity = gridView.verticalVelocity
-                if (wheel.angleDelta.y > 0 && !gridView.atYBeginning) {
-                    //up
-                    //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                    gridView.flick(0, velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? 500 : 0))
-                    //It's not 1,000,000 (1000 squared) because it feels slightly sluggish at that level.
-                    //And 1000 isn't higher because otherwise a single scroll click is too far.
+
+        Rectangle {
+            id: gridViewBox
+            color: "#202020"
+            Layout.fillHeight: true
+
+            GridView {
+                id: gridView
+                anchors.fill: parent
+
+                cellWidth: 320 * uiScale
+                cellHeight: 320 * uiScale
+
+                boundsBehavior: Flickable.StopAtBounds
+                maximumFlickVelocity: 50000 * uiScale
+
+                delegate: OrganizeDelegate {
+                    id: organizeDelegate
+                    rootDir: organizeModel.thumbDir()
+
+                    searchID: STsearchID
+                    captureTime: STcaptureTime
+                    importTime: STimportTime
+                    lastProcessedTime: STlastProcessedTime
+                    rating: STrating
+                    filename: STfilename
+
+                    isCurrentItem: index === gridView.currentIndex
+
+                    //Toggles selection
+                    onSelectImage: gridView.currentIndex = (isCurrentItem ? -1 : index)
+
+                    //Enqueues the image when double clicked
+                    onEnqueueImage: queueModel.enQueue(STsearchID)
+
+                    //Writes the rating back to the database.
+                    onRate: organizeModel.setRating(STsearchID, ratingIn)
+
+                    uiScale: root.uiScale
+                    Component.onCompleted: organizeDelegate.tooltipWanted.connect(root.tooltipWanted)
                 }
-                else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
-                    //down
-                    gridView.flick(0, velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? -500 : 0))
+
+                Connections {
+                    target: importModel
+                    onSearchTableChanged: {
+                        var yPos = gridView.contentY
+                        organizeModel.setOrganizeQuery()
+                        gridView.contentY = yPos
+                    }
+                }
+
+                Component.onCompleted: {
+/*                    organizeModel.minCaptureTime = 0
+                    organizeModel.maxCaptureTime = 1400000000
+                    organizeModel.minImportTime = 0
+                    organizeModel.maxImportTime = 1400000000
+                    organizeModel.minProcessedTime = 0
+                    organizeModel.maxProcessedTime = 1400000000*/
+                    organizeModel.minRating = 0
+                    organizeModel.maxRating = 5
+                    organizeModel.setOrganizeQuery()
+                    gridView.model = organizeModel
+                }
+            }
+            MouseArea {
+                id: wheelstealer
+                //Custom scrolling implementation because the default flickable one sucks.
+                anchors.fill: gridView
+                acceptedButtons: Qt.NoButton
+                onWheel: {
+                    var velocity = gridView.verticalVelocity
+                    if (wheel.angleDelta.y > 0 && !gridView.atYBeginning) {
+                        //up
+                        //This formula makes each click of the wheel advance the 'target' a fixed distance.
+                        gridView.flick(0, velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? 500 : 0))
+                        //It's not 1,000,000 (1000 squared) because it feels slightly sluggish at that level.
+                        //And 1000 isn't higher because otherwise a single scroll click is too far.
+                    }
+                    else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
+                        //down
+                        gridView.flick(0, velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? -500 : 0))
+                    }
                 }
             }
         }

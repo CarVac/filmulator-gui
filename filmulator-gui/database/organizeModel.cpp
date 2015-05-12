@@ -6,6 +6,8 @@
 
 using std::cout;
 using std::endl;
+using std::max;
+using std::min;
 
 OrganizeModel::OrganizeModel(QObject *parent) :
     SqlModel(parent)
@@ -108,6 +110,71 @@ QSqlQuery OrganizeModel::modelQuery()
 
 QSqlQuery OrganizeModel::dateHistoQuery()
 {
+    /*
+    Here's the query:
+
+    SELECT
+        intlist.thedate
+        SearchTable.STcaptureDate
+        COUNT(SearchTable.STcaptureTime) AS thecount
+    FROM
+            (SELECT
+                date(julianday('NOW','[timezone] hours') - ints) AS thedate
+            FROM
+                integers9
+            WHERE
+                ints <= julianday('NOW') - min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable
+            ) AS intlist
+        LEFT JOIN
+            (SELECT
+                date(searchTable.STcaptureTime, 'unixepoch', '[timezone] hours') AS STcaptureDate,
+            FROM
+                SearchTable
+            WHERE
+                    SearchTable.STrating <= [maxRating]
+                AND
+                    SearchTable.STrating >= [minRating])
+        ON
+            intlist.thedate = SearchTable.STcaptureDate
+    GROUP BY
+        intlist.thedate
+    SORT BY
+        intlist.thedate ASC;
+    */
+
+    std::string dateHistoString =
+                           "SELECT";
+    dateHistoString.append("    intlist.thedate");
+    dateHistoString.append("    SearchTable.STcaptureDate");
+    dateHistoString.append("    COUNT(SearchTable.STcaptureTime) AS thecount ");
+    dateHistoString.append("FROM");
+    dateHistoString.append("        (SELECT");
+    dateHistoString.append("            date(julianday('NOW','");
+    dateHistoString.append(std::to_string(                    round(m_timeZone/3600)));
+    dateHistoString.append("                                                         hours') - ints) AS thedate");
+    dateHistoString.append("        FROM");
+    dateHistoString.append("            integers9");
+    dateHistoString.append("        WHERE");
+    dateHistoString.append("            ints <= julianday('NOW') - min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable");
+    dateHistoString.append("        ) AS intlist");
+    dateHistoString.append("    LEFT JOIN");
+    dateHistoString.append("        (SELECT");
+    dateHistoString.append("            date(searchTable.STcaptureTime, 'unixepoch', '");
+    dateHistoString.append(std::to_string(                                            round(m_timeZone/3600)));
+    dateHistoString.append("                                                                                 hours') AS STcaptureDate,");
+    dateHistoString.append("        FROM");
+    dateHistoString.append("            SearchTable");
+    dateHistoString.append("        WHERE");
+    dateHistoString.append("                SearchTable.STrating <= [maxRating]");
+    dateHistoString.append("            AND");
+    dateHistoString.append("                SearchTable.STrating >= [minRating])");
+    dateHistoString.append("    ON");
+    dateHistoString.append("        intlist.thedate = SearchTable.STcaptureDate ");
+    dateHistoString.append("GROUP BY");
+    dateHistoString.append("    intlist.thedate ");
+    dateHistoString.append("SORT BY");
+    dateHistoString.append("    intlist.thedate ASC;");
+    /*
     std::string dateHistoString = "SELECT date(STcaptureTime, 'unixepoch', '";
     dateHistoString.append(std::toString(round(m_timeZone/3600.0)));
     dateHistoString.append(" hours' AS DHcaptureDate, STcaptureTime, COUNT(*) FROM SearchTable GROUP BY date(STcaptureTime, 'unixepoch', '");
@@ -115,12 +182,22 @@ QSqlQuery OrganizeModel::dateHistoQuery()
     dateHistoString.append(" hours') SORT BY date ;");
 
     //List of dates
-    //"SELECT datetime(julianday('NOW', '[m_timezone*3600] hours') - iiiiii AS thedate FROM integer999999 WHERE iiiiii <= julianday('NOW') - min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable;
+    //"SELECT datetime(julianday('NOW', '[m_timezone*3600] hours') - iiiiii) AS thedate FROM integer999999 WHERE iiiiii <= julianday('NOW') - min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable;
+    */
+    return QSqlQuery(QString::fromStdString(dateHistoString));
 }
 
 void OrganizeModel::setOrganizeQuery()
 {
     setQuery(modelQuery());
+
+    //We also want the date histogram to update
+    setDateHistoQuery();
+}
+
+void OrganizeModel::setDateHistoQuery()
+{
+    dateHistogram->setQuery(dateHistoQuery());
 }
 
 QString OrganizeModel::thumbDir()

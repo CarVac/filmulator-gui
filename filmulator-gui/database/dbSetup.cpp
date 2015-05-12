@@ -231,7 +231,7 @@ void setupDB(QSqlDatabase *db)
     query.exec("INSERT INTO integers (i) VALUES (7);");
     query.exec("INSERT INTO integers (i) VALUES (8);");
     query.exec("INSERT INTO integers (i) VALUES (9);");
-    query.exec("CREATE VIEW integers999999 iiiiii AS"
+    query.exec("CREATE VIEW integers9 ints AS"
                "SELECT 100000*a.i+10000*b.i+1000*c.i+100*d.i+10*e.i+f.i "
                  "FROM integers a "
                "CROSS "
