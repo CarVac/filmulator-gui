@@ -56,6 +56,7 @@ SplitView {
                     }
                     Component.onCompleted: {
                         timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
+                        organizeModel.timeZone = value
                     }
                     uiScale: root.uiScale
                 }
@@ -141,6 +142,7 @@ SplitView {
                     uiScale: root.uiScale
                     Component.onCompleted: {
                         ratingSlider.tooltipWanted.connect(root.tooltipWanted)
+                        organizeModel.minRating = value
                     }
                 }
             }
