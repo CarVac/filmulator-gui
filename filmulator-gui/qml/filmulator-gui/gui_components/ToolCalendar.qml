@@ -79,7 +79,7 @@ Calendar {
                 uiScale: root.uiScale
             }
             Text {
-                text: (control.visibleMonth + 1) + "/" + control.visibleYear
+                text: control.visibleYear + "/" + (control.visibleMonth < 9 ? "0" : "" ) + (control.visibleMonth + 1)
                 anchors.centerIn: parent
                 color: "white"
                 font.pixelSize: 12.0 * uiScale

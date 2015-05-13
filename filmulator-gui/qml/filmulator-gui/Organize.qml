@@ -189,7 +189,7 @@ SplitView {
                         color: "white"
                         width: parent.width
                         height: 12 * uiScale
-                        x: 8 * uiScale - parent.width * parent.day
+                        x: 5 * uiScale - parent.width * (parent.day - 1)
                         y: 3 * uiScale
                         font.pixelSize: 12 * uiScale
                         text: parent.monthstring

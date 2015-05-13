@@ -187,7 +187,7 @@ QSqlQuery OrganizeModel::dateHistoQuery()
     dateHistoString.append("            date(julianday('NOW','");// hours') - ints) AS thedate,");
     dateHistoString.append(std::to_string(int(m_timeZone)));
     dateHistoString.append(" hours') - ints) AS thedate,");//it's space sensitive here!
-    dateHistoString.append("            strftime('%Y-%m',julianday('NOW','");
+    dateHistoString.append("            strftime('%Y/%m',julianday('NOW','");
     dateHistoString.append(std::to_string(int(m_timeZone)));
     dateHistoString.append(" hours') - ints) AS yearmonth,");
     dateHistoString.append("            strftime('%m',julianday('NOW','");
