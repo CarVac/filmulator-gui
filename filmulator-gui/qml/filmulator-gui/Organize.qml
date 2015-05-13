@@ -123,6 +123,7 @@ SplitView {
                     uiScale: root.uiScale
                     Component.onCompleted: {
                         captureCalendar.tooltipWanted.connect(root.tooltipWanted)
+                        organizeModel.setMinMaxCaptureTime(selectedDate)
                     }
                 }
 
