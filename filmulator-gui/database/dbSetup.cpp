@@ -1,6 +1,7 @@
 #include "filmulatorDB.h"
 #include <QString>
 #include <QVariant>
+#include <iostream>
 
 void setupDB(QSqlDatabase *db)
 {
@@ -219,30 +220,41 @@ void setupDB(QSqlDatabase *db)
     query.exec();
 
 
-    //Generate a list of 100000 integers for useful purposes
-    query.exec("CREATE TABLE integers (i integer);");
-    query.exec("INSERT INTO integers (i) VALUES (0);");
-    query.exec("INSERT INTO integers (i) VALUES (1);");
-    query.exec("INSERT INTO integers (i) VALUES (2);");
-    query.exec("INSERT INTO integers (i) VALUES (3);");
-    query.exec("INSERT INTO integers (i) VALUES (4);");
-    query.exec("INSERT INTO integers (i) VALUES (5);");
-    query.exec("INSERT INTO integers (i) VALUES (6);");
-    query.exec("INSERT INTO integers (i) VALUES (7);");
-    query.exec("INSERT INTO integers (i) VALUES (8);");
-    query.exec("INSERT INTO integers (i) VALUES (9);");
-    query.exec("CREATE VIEW integers9 ints AS"
-               "SELECT 100000*a.i+10000*b.i+1000*c.i+100*d.i+10*e.i+f.i "
-                 "FROM integers a "
-               "CROSS "
-                 "JOIN integers b "
-               "CROSS "
-                 "JOIN integers c "
-               "CROSS "
-                 "JOIN integers d "
-               "CROSS "
-                 "JOIN integers e "
-               "CROSS "
-                 "JOIN integers f;");
+    //Check the database version.
+    query.exec("PRAGMA user_version;");
+    query.next();
+    const int oldVersion = query.value(0).toInt();
+    std::cout << "dbSetup old version: " << oldVersion << std::endl;
+    QString versionString = "";
 
+    switch (oldVersion) {
+        case 0:
+            //Generate a list of 100000 integers for useful purposes
+            query.exec("CREATE TABLE integers (i integer);");
+            query.exec("INSERT INTO integers (i) VALUES (0);");
+            query.exec("INSERT INTO integers (i) VALUES (1);");
+            query.exec("INSERT INTO integers (i) VALUES (2);");
+            query.exec("INSERT INTO integers (i) VALUES (3);");
+            query.exec("INSERT INTO integers (i) VALUES (4);");
+            query.exec("INSERT INTO integers (i) VALUES (5);");
+            query.exec("INSERT INTO integers (i) VALUES (6);");
+            query.exec("INSERT INTO integers (i) VALUES (7);");
+            query.exec("INSERT INTO integers (i) VALUES (8);");
+            query.exec("INSERT INTO integers (i) VALUES (9);");
+            query.exec("CREATE VIEW integers9 as "
+                       "SELECT 100000*a.i+10000*b.i+1000*c.i+100*d.i+10*e.i+f.i as ints "
+                         "FROM integers a "
+                       "CROSS "
+                         "JOIN integers b "
+                       "CROSS "
+                         "JOIN integers c "
+                       "CROSS "
+                         "JOIN integers d "
+                       "CROSS "
+                         "JOIN integers e "
+                       "CROSS "
+                         "JOIN integers f;");
+            versionString = "PRAGMA user_version = 1";
+    }
+    query.exec(versionString);
 }

@@ -94,12 +94,14 @@ void OrganizeModel::setMaxProcessedTime(QDate processedDateIn)
 void OrganizeModel::setMinRating(int ratingIn)
 {
     minRating = ratingIn;
+    dateHistogram->signalChange();
     emit minRatingChanged();
 }
 
 void OrganizeModel::setMaxRating(int ratingIn)
 {
     maxRating = ratingIn;
+    dateHistogram->signalChange();
     emit maxRatingChanged();
 }
 

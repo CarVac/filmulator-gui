@@ -20,6 +20,10 @@ void SqlModel::setQuery(const QSqlQuery &query)
     beginResetModel();
     //QSqlQueryModel::setQuery( query );
     queryModel.setQuery(query);
+    while (queryModel.canFetchMore())
+    {
+        queryModel.fetchMore();
+    }
     generateRoleNames();
     endResetModel();
 }

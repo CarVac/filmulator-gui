@@ -90,6 +90,9 @@ protected:
     QSqlQuery dateHistoQuery();
     void emitChange() {emit organizeFilterChanged();}
 
+    //Was the histogram query initialized yet?
+    bool dateHistogramSet;
+
     QDate minCaptureTime;
     QDate maxCaptureTime;
     QDate minImportTime;

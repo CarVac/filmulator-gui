@@ -10,6 +10,7 @@ class BasicSqlModel : public SqlModel
 public:
     explicit BasicSqlModel(QObject *parent = 0);
     void setQuery(const QSqlQuery &query);
+    void signalChange() { emit basicSqlModelChanged();}
 private:
     QSqlQuery m_modelQuery;
 signals:

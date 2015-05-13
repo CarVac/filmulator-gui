@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     //Prepare a model for the organize view.
     OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty("organizeModel", organizeModel);
-    //engine.rootContext()->setContextProperty("dateHistoModel", organizeModel->dateHistogram);
+    engine.rootContext()->setContextProperty("dateHistoModel", organizeModel->dateHistogram);
 //    std::cout << "Organize row count: " << organizeModel->rowCount() << std::endl;
 
     //Prepare a model for the queue view.

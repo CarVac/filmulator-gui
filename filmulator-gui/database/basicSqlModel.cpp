@@ -1,4 +1,5 @@
 #include "basicSqlModel.h"
+#include <iostream>
 
 BasicSqlModel::BasicSqlModel(QObject *parent) :
     SqlModel(parent)

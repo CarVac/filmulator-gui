@@ -159,22 +159,76 @@ SplitView {
         Rectangle {
             id: dateHistogram
             color: "#202020"
-            height: 250 * uiScale
-            Layout.maximumHeight: 500 * uiScale
-            Layout.minimumHeight: 50 * uiScale
+            height: 100 * uiScale
+            Layout.maximumHeight: 300 * uiScale
+            Layout.minimumHeight: 30 * uiScale
 
-            ListView {
+            GridView {
                 id: dateHistoView
                 anchors.fill: parent
-                layoutDirection: Qt.Horizontal
+                flow: GridView.FlowTopToBottom
+                layoutDirection: Qt.LeftToRight
+                cellWidth: 5 * uiScale
+                cellHeight: dateHistogram.height
                 boundsBehavior: Flickable.StopAtBounds
 
                 delegate: Rectangle {
                     id: dateHistoDelegate
-                    width: 10 * uiScale
-                    property real contentAmount: Math.min(1, (thecount > 0) ? Math.log(thecount)/16 : 0)
-                    height: dateHistogram.height * contentAmount
-                    color: Colors.brightGray
+                    width: 5 * uiScale
+                    property string date: thedate
+                    property int count: DHtheCount
+                    property int month: themonth
+                    property string monthstring: yearmonth
+                    property int day: theday
+                    property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
+                    height: dateHistogram.height
+                    color: (1===themonth%2) ? Colors.darkGrayH : Colors.darkGrayL
+                    clip: true
+                    Text {
+                        id: monthYearLabel
+                        color: "white"
+                        width: parent.width
+                        height: 12 * uiScale
+                        x: 8 * uiScale - parent.width * parent.day
+                        y: 3 * uiScale
+                        font.pixelSize: 12 * uiScale
+                        text: parent.monthstring
+                    }
+
+                    Rectangle {
+                        id: dateHistoRectangle
+                        width: parent.width
+                        y: parent.height*(1-contentAmount)
+                        height: parent.height*contentAmount
+                        color: Colors.lightOrange
+                    }
+
+                    ToolTip {
+                        id: dateHistoTooltip
+                        anchors.fill: parent
+                        tooltipText:  ' Date: ' + parent.date + '\nCount: ' + DHtheCount
+                        Component.onCompleted: {
+                            dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                    }
+                }
+
+                Connections {
+                    target: dateHistoModel
+                    onBasicSqlModelChanged: {
+                        var xPos = dateHistoView.contentX
+                        organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
+                        dateHistoView.contentX = xPos
+                    }
+                }
+                Connections {
+                    target: importModel
+                    onSearchTableChanged: {
+                        var xPos = dateHistoView.contentX
+                        organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
+                        dateHistoView.contentX = xPos
+
+                    }
                 }
 
                 Component.onCompleted: {
@@ -198,6 +252,7 @@ SplitView {
 
                 boundsBehavior: Flickable.StopAtBounds
                 maximumFlickVelocity: 50000 * uiScale
+                clip: true
 
                 delegate: OrganizeDelegate {
                     id: organizeDelegate
