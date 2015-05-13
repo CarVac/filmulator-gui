@@ -36,6 +36,7 @@ public:
 
     BasicSqlModel *dateHistogram = new BasicSqlModel;
 
+    Q_INVOKABLE void setMinMaxCaptureTime(QDate captureTimeIn);
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);
     void setMinImportTime(QDate importTimeIn);

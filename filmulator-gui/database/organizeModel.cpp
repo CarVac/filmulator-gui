@@ -180,8 +180,8 @@ QSqlQuery OrganizeModel::dateHistoQuery()
     dateHistoString.append("    yearmonth,");
     dateHistoString.append("    themonth,");
     dateHistoString.append("    theday,");
-    dateHistoString.append("    STcaptureDate,");
-    dateHistoString.append("    COUNT(STcaptureTime) AS DHtheCount ");
+//    dateHistoString.append("    capturedate,");
+    dateHistoString.append("    thecount ");
     dateHistoString.append("FROM");
     dateHistoString.append("        (SELECT");
     dateHistoString.append("            date(julianday('NOW','");// hours') - ints) AS thedate,");
@@ -205,21 +205,23 @@ QSqlQuery OrganizeModel::dateHistoQuery()
     dateHistoString.append("        (SELECT");
     dateHistoString.append("            date(searchTable.STcaptureTime, 'unixepoch', '");
     dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') AS STcaptureDate,");
-    dateHistoString.append("            STcaptureTime");
+    dateHistoString.append(" hours') AS capturedate,");
+    dateHistoString.append("            COUNT(STcaptureTime) as thecount");
     dateHistoString.append("        FROM");
     dateHistoString.append("            SearchTable");
+    if (minRating > 0 || maxRating < 5)
+    {
     dateHistoString.append("        WHERE");
     dateHistoString.append("                SearchTable.STrating <= ");
     dateHistoString.append(std::to_string(maxRating));
     dateHistoString.append("            AND");
     dateHistoString.append("                SearchTable.STrating >= ");
     dateHistoString.append(std::to_string(minRating));
-    dateHistoString.append("                                         )");
+    }
+    dateHistoString.append("        GROUP BY");
+    dateHistoString.append("            capturedate)");
     dateHistoString.append("    ON");
-    dateHistoString.append("        thedate = STcaptureDate ");
-    dateHistoString.append("GROUP BY");
-    dateHistoString.append("    thedate ");
+    dateHistoString.append("        thedate = capturedate ");
     dateHistoString.append("ORDER BY");
     dateHistoString.append("    thedate ASC;");
 
@@ -230,18 +232,12 @@ QSqlQuery OrganizeModel::dateHistoQuery()
 void OrganizeModel::setOrganizeQuery()
 {
     setQuery(modelQuery());
-
-    //We also want the date histogram to update, but only if it's not the capture time we've changed
-    if (!dateHistogramSet)
-    {
-        setDateHistoQuery();
-        dateHistogramSet = true;
-    }
 }
 
 void OrganizeModel::setDateHistoQuery()
 {
     dateHistogram->setQuery(dateHistoQuery());
+    dateHistogramSet = true;
 }
 
 QString OrganizeModel::thumbDir()

@@ -50,9 +50,9 @@ SplitView {
                     value: settings.getOrganizeTZ()
                     defaultValue: settings.getOrganizeTZ()
                     onValueChanged: {
-                        organizeModel.timeZone = value
+                        console.log("timezone slider changed")
                         settings.organizeTZ = value
-                        organizeModel.setOrganizeQuery()
+                        organizeModel.timeZone = value
                     }
                     Component.onCompleted: {
                         timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
@@ -94,9 +94,7 @@ SplitView {
                             }
                         }
                         if (isChanged === 1) {
-                            organizeModel.minCaptureTime = tempDate
-                            organizeModel.maxCaptureTime = tempDate
-                            organizeModel.setOrganizeQuery()
+                            organizeModel.setMinMaxCaptureTime(tempDate)
                         }
                     }
 
@@ -115,9 +113,7 @@ SplitView {
                         monthChanged = 0
                         settings.organizeCaptureDate = tempDate
                         if (isChanged === 1) {
-                            organizeModel.minCaptureTime = tempDate
-                            organizeModel.maxCaptureTime = tempDate
-                            organizeModel.setOrganizeQuery()
+                            organizeModel.setMinMaxCaptureTime(tempDate)
                         }
                         selectedDate = tempDate
                         filterListFlick.interactive = true
@@ -141,7 +137,6 @@ SplitView {
                     onValueChanged: {
                         settings.organizeRating = value
                         organizeModel.minRating = value
-                        organizeModel.setOrganizeQuery()
                     }
                     uiScale: root.uiScale
                     Component.onCompleted: {
@@ -176,9 +171,9 @@ SplitView {
                     id: dateHistoDelegate
                     width: 5 * uiScale
                     property string date: thedate
-                    property int count: DHtheCount
+                    property int count: thecount
                     property int month: themonth
-                    property string monthstring: yearmonth
+                    property string yearMonthString: yearmonth
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
                     height: dateHistogram.height
@@ -192,7 +187,7 @@ SplitView {
                         x: 5 * uiScale - parent.width * (parent.day - 1)
                         y: 3 * uiScale
                         font.pixelSize: 12 * uiScale
-                        text: parent.monthstring
+                        text: parent.yearMonthString
                     }
 
                     Rectangle {
@@ -206,7 +201,7 @@ SplitView {
                     ToolTip {
                         id: dateHistoTooltip
                         anchors.fill: parent
-                        tooltipText:  ' Date: ' + parent.date + '\nCount: ' + DHtheCount
+                        tooltipText:  qsTr('Date: ') + parent.date + '\n' + qsTr('Count: ') + parent.count
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
                         }
@@ -232,6 +227,7 @@ SplitView {
                 }
 
                 Component.onCompleted: {
+                    organizeModel.setDateHistoQuery()
                     dateHistoView.model = dateHistoModel
                     positionViewAtEnd()
                 }
@@ -289,13 +285,16 @@ SplitView {
                     }
                 }
 
+                Connections {
+                    target: organizeModel
+                    onOrganizeFilterChanged: {
+                        var yPos = gridView.contentY
+                        organizeModel.setOrganizeQuery()
+                        gridView.contentY = yPos
+                    }
+                }
+
                 Component.onCompleted: {
-/*                    organizeModel.minCaptureTime = 0
-                    organizeModel.maxCaptureTime = 1400000000
-                    organizeModel.minImportTime = 0
-                    organizeModel.maxImportTime = 1400000000
-                    organizeModel.minProcessedTime = 0
-                    organizeModel.maxProcessedTime = 1400000000*/
                     organizeModel.minRating = 0
                     organizeModel.maxRating = 5
                     organizeModel.setOrganizeQuery()
