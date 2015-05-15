@@ -172,7 +172,7 @@ SplitView {
 
                 delegate: Rectangle {
                     id: dateHistoDelegate
-                    width: 5 * uiScale
+                    width: 5.01 * uiScale //This has to be sliiightly bigger to ensure overlap
                     property string date: thedate
                     property int count: thecount
                     property int month: themonth
