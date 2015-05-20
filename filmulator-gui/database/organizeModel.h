@@ -33,10 +33,12 @@ public:
     Q_INVOKABLE QString thumbDir();
     Q_INVOKABLE void setRating(QString searchID, int rating);
     Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
+    Q_INVOKABLE QDate getSelectedDate();
 
     BasicSqlModel *dateHistogram = new BasicSqlModel;
 
     Q_INVOKABLE void setMinMaxCaptureTime(QDate captureTimeIn);
+    Q_INVOKABLE void setMinMaxCaptureTimeString(QString captureTimeIn);
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);
     void setMinImportTime(QDate importTimeIn);
@@ -71,6 +73,7 @@ signals:
     void maxCaptureTimeChanged();
     void minImportTimeChanged();
     void maxImportTimeChanged();
+    void captureDateChanged();
     void minProcessedTimeChanged();
     void maxProcessedTimeChanged();
     void minRatingChanged();

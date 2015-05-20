@@ -177,29 +177,19 @@ QSqlQuery OrganizeModel::dateHistoQuery()
     std::string dateHistoString =
                            "SELECT";
     dateHistoString.append("    thedate,");
-    dateHistoString.append("    yearmonth,");
-    dateHistoString.append("    themonth,");
-    dateHistoString.append("    theday,");
-//    dateHistoString.append("    capturedate,");
+    dateHistoString.append("    strftime('%Y/%m', thedate) AS yearmonth,");
+    dateHistoString.append("    strftime('%m', thedate) AS themonth,");
+    dateHistoString.append("    strftime('%d', thedate) AS theday,");
     dateHistoString.append("    thecount ");
     dateHistoString.append("FROM");
     dateHistoString.append("        (SELECT");
     dateHistoString.append("            date(julianday('NOW','");// hours') - ints) AS thedate,");
     dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') - ints) AS thedate,");//it's space sensitive here!
-    dateHistoString.append("            strftime('%Y/%m',julianday('NOW','");
-    dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') - ints) AS yearmonth,");
-    dateHistoString.append("            strftime('%m',julianday('NOW','");
-    dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') - ints) AS themonth,");
-    dateHistoString.append("            strftime('%d',julianday('NOW','");
-    dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') - ints) AS theday");
+    dateHistoString.append(" hours') - ints) AS thedate");//it's space sensitive here!
     dateHistoString.append("        FROM");
-    dateHistoString.append("            integers9");
+    dateHistoString.append("            integers4");
     dateHistoString.append("        WHERE");
-    dateHistoString.append("            ints <= julianday('NOW') - (SELECT min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable)");
+    dateHistoString.append("            ints <= julianday('NOW') - (SELECT julianday(min(SearchTable.STcaptureTime), 'unixepoch') FROM SearchTable)");
     dateHistoString.append("        ) AS intlist");
     dateHistoString.append("    LEFT JOIN");
     dateHistoString.append("        (SELECT");

@@ -50,7 +50,6 @@ SplitView {
                     value: settings.getOrganizeTZ()
                     defaultValue: settings.getOrganizeTZ()
                     onValueChanged: {
-                        console.log("timezone slider changed")
                         settings.organizeTZ = value
                         organizeModel.timeZone = value
                     }
@@ -125,6 +124,14 @@ SplitView {
                         captureCalendar.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.setMinMaxCaptureTime(selectedDate)
                     }
+                    Connections {
+                        target: organizeModel
+                        onCaptureDateChanged: {
+                            var newDate = organizeModel.getSelectedDate()
+                            captureCalendar.selectedDate = newDate
+                            settings.organizeCaptureDate = newDate
+                        }
+                    }
                 }
 
                 ToolSlider {
@@ -175,8 +182,8 @@ SplitView {
                     width: 5.01 * uiScale //This has to be sliiightly bigger to ensure overlap
                     property string date: thedate
                     property int count: thecount
-                    property int month: themonth
                     property string yearMonthString: yearmonth
+                    property int month: themonth
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
                     height: dateHistogram.height
@@ -207,6 +214,13 @@ SplitView {
                         tooltipText:  qsTr('Date: ') + parent.date + '\n' + qsTr('Count: ') + parent.count
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                    }
+                    MouseArea {//Change the date when double-clicked.
+                        id: dateChanger
+                        anchors.fill: parent
+                        onDoubleClicked: {
+                            organizeModel.setMinMaxCaptureTimeString(parent.date)
                         }
                     }
                 }
