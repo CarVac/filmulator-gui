@@ -212,6 +212,7 @@ SplitView {
                         id: dateHistoTooltip
                         anchors.fill: parent
                         tooltipText:  qsTr('Date: ') + parent.date + '\n' + qsTr('Count: ') + parent.count
+                        milliSecondDelay: 0
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
                         }
