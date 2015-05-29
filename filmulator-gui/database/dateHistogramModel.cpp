@@ -56,9 +56,8 @@ void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
     } else {
         m_firstDay = m_today;
     }
-    cout << "First day: " << long(m_firstDay) << endl;
     //The row count of all the data we will eventually serve to the view.
-    m_rowCount = ceil(m_today - m_firstDay);
+    m_rowCount = m_today - m_firstDay + 1;
 
     //Now, we tell the internal model to grab stuff.
     queryModel.setQuery(query);
@@ -99,7 +98,7 @@ void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
     {
         //The first column is supposed to be the Julian day.
         QModelIndex julianDayModelIndex = this->index(i,0);
-        //The fifth column is supposed to be the count of images on that day.
+        //The sixth column is supposed to be the count of images on that day.
         QModelIndex countModelIndex = this->index(i,5);
         double julianDay = queryModel.data(julianDayModelIndex).toDouble();
         int dayIndex = ROUND_JULDAY(julianDay)-m_firstDay;
