@@ -44,7 +44,7 @@ public:
 
     Q_INVOKABLE void writeTiff();
     Q_INVOKABLE void writeJpeg();
-    Q_INVOKABLE void writeThumbnail(QString thumbPath);
+    Q_INVOKABLE void writeThumbnail(QString searchID);
 
 protected:
     ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, HighQuality );

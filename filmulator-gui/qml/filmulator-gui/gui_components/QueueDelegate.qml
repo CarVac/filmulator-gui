@@ -98,7 +98,8 @@ Item {
                     if (__current) {
                         //console.log('thumb source changed and current')
                         var thumbSource = __thumbPath
-                        filmProvider.writeThumbnail(thumbSource.slice(0, -4))
+                        //filmProvider.writeThumbnail(thumbSource.slice(0, -4))
+                        filmProvider.writeThumbnail(searchID)
                         __waitingForThumb = true
                     }
                 }
