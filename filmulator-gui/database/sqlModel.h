@@ -28,12 +28,12 @@ public slots:
 
 private:
     QHash<int,QByteArray> m_roleNames;
-    QSqlQueryModel queryModel;
 
 protected:
     QString tableName;
     virtual QSqlQuery modelQuery()=0;
     virtual void emitChange()=0;
+    QSqlQueryModel queryModel;
 
 };
 

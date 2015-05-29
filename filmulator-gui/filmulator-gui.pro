@@ -48,7 +48,8 @@ SOURCES += main.cpp \
     ./database/signalSwitchboard.cpp \
     ./ui/thumbWriteWorker.cpp \
     ./core/colorSpaces.cpp \
-    ./database/basicSqlModel.cpp
+    ./database/basicSqlModel.cpp \
+    database/dateHistogramModel.cpp
 
 # Installation path
 # target.path =
@@ -84,7 +85,8 @@ HEADERS += \
     ./ui/parameterManager.h \
     ./database/signalSwitchboard.h \
     ./ui/thumbWriteWorker.h \
-    ./database/basicSqlModel.h
+    ./database/basicSqlModel.h \
+    database/dateHistogramModel.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp

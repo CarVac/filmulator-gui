@@ -220,6 +220,8 @@ SplitView {
                         id: dateChanger
                         anchors.fill: parent
                         onDoubleClicked: {
+                            console.log("Date set: ")
+                            console.log(parent.date)
                             organizeModel.setMinMaxCaptureTimeString(parent.date)
                         }
                     }
@@ -227,7 +229,7 @@ SplitView {
 
                 Connections {
                     target: dateHistoModel
-                    onBasicSqlModelChanged: {
+                    onDateHistoModelChanged: {
                         var xPos = dateHistoView.contentX
                         organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
                         dateHistoView.contentX = xPos

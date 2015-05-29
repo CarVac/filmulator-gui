@@ -2,7 +2,7 @@
 #define ORGANIZEMODEL_H
 
 #include "sqlModel.h"
-#include "basicSqlModel.h"
+#include "dateHistogramModel.h"
 #include <QString>
 #include <QDateTime>
 #include <QTimeZone>
@@ -35,7 +35,7 @@ public:
     Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
     Q_INVOKABLE QDate getSelectedDate();
 
-    BasicSqlModel *dateHistogram = new BasicSqlModel;
+    DateHistogramModel *dateHistogram = new DateHistogramModel;
 
     Q_INVOKABLE void setMinMaxCaptureTime(QDate captureTimeIn);
     Q_INVOKABLE void setMinMaxCaptureTimeString(QString captureTimeIn);

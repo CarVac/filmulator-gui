@@ -63,8 +63,8 @@ void OrganizeModel::setMinMaxCaptureTime(QDate captureTimeIn)
 }
 void OrganizeModel::setMinMaxCaptureTimeString(QString captureTimeIn)
 {
-    minCaptureTime = QDate::fromString(captureTimeIn,"yyyy-MM-dd");
-    maxCaptureTime = QDate::fromString(captureTimeIn,"yyyy-MM-dd");
+    minCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    maxCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
     QDateTime morning = QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     QDateTime evening = QDateTime(maxCaptureTime, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
     minCaptureTime_i = morning.toTime_t();

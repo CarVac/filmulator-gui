@@ -114,104 +114,60 @@ QSqlQuery OrganizeModel::dateHistoQuery()
     /*
     Here's the query:
 
-    SELECT
-        intlist.thedate
-        SearchTable.STcaptureDate
-        COUNT(SearchTable.STcaptureTime) AS thecount
+SELECT
+    julianday(unixtime, 'unixepoch', '[timezone] hours') AS julday
+   ,thedate
+   ,strftime('%Y/%m', thedate) AS yearmonth
+   ,strftime('%m', thedate) AS themonth
+   ,strftime('%d', thedate) AS theday
+   ,thecount
+FROM
+    (SELECT
+        date(STcaptureTime, 'unixepoch', '[timezone] hours') AS thedate
+       ,COUNT(STcaptureTime) as thecount
+       ,STcaptureTime AS unixtime
     FROM
-            (SELECT
-                date(julianday('NOW','[timezone] hours') - ints) AS thedate
-            FROM
-                integers9
-            WHERE
-                ints <= julianday('NOW') - min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable
-            ) AS intlist
-        LEFT JOIN
-            (SELECT
-                date(searchTable.STcaptureTime, 'unixepoch', '[timezone] hours') AS STcaptureDate,
-            FROM
-                SearchTable
-            WHERE
-                    SearchTable.STrating <= [maxRating]
-                AND
-                    SearchTable.STrating >= [minRating])
-        ON
-            intlist.thedate = SearchTable.STcaptureDate
+        SearchTable
+    WHERE
+        SearchTable.STrating <= [maxrating]
+        AND
+        SearchTable.STrating >= [minrating]
     GROUP BY
-        intlist.thedate
-    SORT BY
-        intlist.thedate ASC;
-
-
-        //Here's the updated query:
-    SELECT
-        thedate,
-        STcaptureDate,
-        COUNT(STcaptureTime) AS thecount
-    FROM
-            (SELECT
-                date(julianday('NOW','-4 hours') - ints) AS thedate
-            FROM
-                integers9
-            WHERE
-                ints <= julianday('NOW') - (SELECT min(julianday(SearchTable.STcaptureTime, 'unixepoch')) FROM SearchTable)
-            ) AS intlist
-        LEFT JOIN
-            (SELECT
-                date(searchTable.STcaptureTime, 'unixepoch', '-4 hours') AS STcaptureDate,
-                STcaptureTime
-            FROM
-                SearchTable
-            WHERE
-                    SearchTable.STrating <= [maxRating]
-                AND
-                    SearchTable.STrating >= [minRating])
-        ON
-            thedate = STcaptureDate
-    GROUP BY
-        thedate
-    ORDER BY
-        thedate ASC;
+        thedate)
+ORDER BY
+    thedate ASC;
     */
 
     std::string dateHistoString =
                            "SELECT";
-    dateHistoString.append("    thedate,");
-    dateHistoString.append("    strftime('%Y/%m', thedate) AS yearmonth,");
-    dateHistoString.append("    strftime('%m', thedate) AS themonth,");
-    dateHistoString.append("    strftime('%d', thedate) AS theday,");
-    dateHistoString.append("    thecount ");
+    dateHistoString.append("    julianday(unixtime, 'unixepoch', '");
+    dateHistoString.append(std::to_string(int(m_timeZone)));
+    dateHistoString.append(" hours') AS julday");
+    dateHistoString.append("   ,thedate");
+    dateHistoString.append("   ,strftime('%Y/%m', thedate) AS yearmonth");
+    dateHistoString.append("   ,strftime('%m', thedate) AS themonth");
+    dateHistoString.append("   ,strftime('%d', thedate) AS theday");
+    dateHistoString.append("   ,thecount ");
     dateHistoString.append("FROM");
-    dateHistoString.append("        (SELECT");
-    dateHistoString.append("            date(julianday('NOW','");// hours') - ints) AS thedate,");
+    dateHistoString.append("    (SELECT");
+    dateHistoString.append("        date(SearchTable.STcaptureTime, 'unixepoch', '");
     dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') - ints) AS thedate");//it's space sensitive here!
-    dateHistoString.append("        FROM");
-    dateHistoString.append("            integers4");
-    dateHistoString.append("        WHERE");
-    dateHistoString.append("            ints <= julianday('NOW') - (SELECT julianday(min(SearchTable.STcaptureTime), 'unixepoch') FROM SearchTable)");
-    dateHistoString.append("        ) AS intlist");
-    dateHistoString.append("    LEFT JOIN");
-    dateHistoString.append("        (SELECT");
-    dateHistoString.append("            date(searchTable.STcaptureTime, 'unixepoch', '");
-    dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') AS capturedate,");
-    dateHistoString.append("            COUNT(STcaptureTime) as thecount");
-    dateHistoString.append("        FROM");
-    dateHistoString.append("            SearchTable");
+    dateHistoString.append(" hours') AS thedate");//This SQL is apparently whitespace sensitive.
+    dateHistoString.append("       ,COUNT(STcaptureTime) AS thecount");
+    dateHistoString.append("       ,STcaptureTime AS unixtime");
+    dateHistoString.append("    FROM");
+    dateHistoString.append("        SearchTable");
     if (minRating > 0 || maxRating < 5)
     {
-    dateHistoString.append("        WHERE");
-    dateHistoString.append("                SearchTable.STrating <= ");
+    dateHistoString.append("    WHERE");
+    dateHistoString.append("            SearchTable.STrating <= ");
     dateHistoString.append(std::to_string(maxRating));
-    dateHistoString.append("            AND");
-    dateHistoString.append("                SearchTable.STrating >= ");
+    dateHistoString.append("        AND");
+    dateHistoString.append("            SearchTable.STrating >= ");
     dateHistoString.append(std::to_string(minRating));
     }
-    dateHistoString.append("        GROUP BY");
-    dateHistoString.append("            capturedate)");
-    dateHistoString.append("    ON");
-    dateHistoString.append("        thedate = capturedate ");
+    dateHistoString.append("    GROUP BY");
+    dateHistoString.append("        thedate)");
     dateHistoString.append("ORDER BY");
     dateHistoString.append("    thedate ASC;");
 
@@ -226,7 +182,7 @@ void OrganizeModel::setOrganizeQuery()
 
 void OrganizeModel::setDateHistoQuery()
 {
-    dateHistogram->setQuery(dateHistoQuery());
+    dateHistogram->setQuery(dateHistoQuery(), m_timeZone);
     dateHistogramSet = true;
 }
 

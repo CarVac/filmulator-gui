@@ -49,7 +49,7 @@ QVariant SqlModel::data(const QModelIndex &index, int role) const
     else
     {
         int columnIndex = role - Qt::UserRole - 1;
-        QModelIndex modelIndex = this->index( index.row(), columnIndex );
+        QModelIndex modelIndex = this->index(index.row(), columnIndex);
         value = queryModel.data( modelIndex, Qt::DisplayRole );
         //cout << "SqlModel::data row: " << index.row() << " column: " << columnIndex << endl;
         //cout << "SqlModel::data row count: " << this->rowCount() << endl;
