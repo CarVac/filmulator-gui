@@ -148,6 +148,7 @@ ORDER BY
     dateHistoString.append("   ,strftime('%m', thedate) AS themonth");
     dateHistoString.append("   ,strftime('%d', thedate) AS theday");
     dateHistoString.append("   ,thecount ");
+    dateHistoString.append("   ,unixtime ");
     dateHistoString.append("FROM");
     dateHistoString.append("    (SELECT");
     dateHistoString.append("        date(SearchTable.STcaptureTime, 'unixepoch', '");

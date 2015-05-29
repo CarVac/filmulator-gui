@@ -2,6 +2,7 @@
 #include "../core/filmSim.hpp"
 #include "exifFunctions.h"
 #include "../ui/parameterManager.h"
+#include "../ui/thumbWriteWorker.h"
 
 /*This function inserts info on a raw file into the database.*/
 void fileInsert(const QString hash,
@@ -164,6 +165,7 @@ QString createNewProfile(const QString fileHash,
     bool doNotAbort = false;
     matrix<unsigned short> image = pipeline.processImage(params, &interface, doNotAbort, exif);
 
+/* //Moved this directory handling stuff to thumbWriteWorker
     //Set up the thumbnail directory.
     QDir dir = QDir::home();
     dir.cd(".local/share/filmulator");
@@ -180,9 +182,12 @@ QString createNewProfile(const QString fileHash,
         dir.cd(thumbDir);
     }
     QString outputFilename = dir.absoluteFilePath(searchID);
-
+*/
     //Write the thumbnail.
-    imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
+    ThumbWriteWorker worker;
+    worker.setImage(image, exif);
+    worker.writeThumb(searchID);
+    //imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
 
     //Return STsearchID.
     return searchID;
