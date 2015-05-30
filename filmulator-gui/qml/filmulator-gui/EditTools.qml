@@ -117,6 +117,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 9
                     stepSize: 1
+                    tickmarksEnabled: true
                     value: paramManager.highlights
                     defaultValue: root.defaultHighlightRecovery
                     onValueChanged: {
@@ -191,6 +192,8 @@ SplitView {
                     minimumValue: -5
                     maximumValue: 5
                     stepSize: 1/6
+                    tickmarksEnabled: true
+                    tickmarkFactor: 6
                     value: paramManager.exposureComp
                     defaultValue: root.defaultExposureComp
                     onValueChanged: {

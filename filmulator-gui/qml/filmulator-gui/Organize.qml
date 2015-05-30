@@ -47,6 +47,10 @@ SplitView {
                     minimumValue: -14
                     maximumValue: 14
                     stepSize: 1
+                    tickmarksEnabled: true
+                    tickmarkFactor: 6
+                    tickmarkOffset: 2
+                    minorTicksEnabled: true
                     value: settings.getOrganizeTZ()
                     defaultValue: settings.getOrganizeTZ()
                     onValueChanged: {
@@ -141,6 +145,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 5
                     stepSize: 1
+                    tickmarksEnabled: true
                     value: settings.getOrganizeRating()
                     defaultValue: settings.getOrganizeRating()
                     onValueChanged: {

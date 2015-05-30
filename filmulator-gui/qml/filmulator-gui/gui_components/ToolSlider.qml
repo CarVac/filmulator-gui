@@ -13,6 +13,10 @@ Rectangle {
     property alias minimumValue: slider.minimumValue
     property alias maximumValue: slider.maximumValue
     property alias stepSize: slider.stepSize
+    property alias tickmarksEnabled: slider.tickmarksEnabled
+    property alias tickmarkFactor: slider.tickmarkFactor
+    property alias tickmarkOffset: slider.tickmarkOffset
+    property alias minorTicksEnabled: slider.minorTicksEnabled
     property alias value: slider.value
     property real defaultValue
     property alias valueText: valueText.text
@@ -39,7 +43,7 @@ Rectangle {
         }
     }
 
-    color: "#303030"
+    color: Colors.darkGray
 
     Text {
         id: label
@@ -74,41 +78,8 @@ Rectangle {
         x: __padding
         y: 19 * uiScale + __padding
         width: parent.width - reset.width - 3*__padding
-//        value: defaultValue
         uiScale: root.uiScale
     }
-
-//    Slider {
-//        id: slider
-//        x: __padding
-//        y: 21 * uiScale + __padding
-//        width: parent.width - reset.width - 3*__padding
-//        updateValueWhileDragging: true
-//        value: defaultValue
-//        style: SliderStyle {
-//            groove: Rectangle {
-//                height: 4 * uiScale
-//                color: "#FF8800"
-//                gradient: Gradient {
-//                    GradientStop {color: Colors.brightOrange; position: 0.0}
-//                    GradientStop {color: Colors.medOrange;   position: 0.3}
-//                    GradientStop {color: Colors.medOrange;   position: 1.0}
-//                }
-//            }
-//            handle: Rectangle {
-//                height: 8 * uiScale
-//                width: 20 * uiScale
-//                radius: 3 * uiScale
-//                gradient: Gradient {
-//                    GradientStop {color: control.pressed ? Colors.brightOrange : Colors.brightGray; position: 0.0}
-//                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 0.1}
-//                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 1.0}
-//                }
-//
-//                color: control.pressed ? "#A0A0A0" : "#808080"
-//            }
-//        }
-//    }
     Button {
         id: reset
         width: 28 * uiScale

@@ -29,6 +29,10 @@ Rectangle {
             minimumValue: -14
             maximumValue: 14
             stepSize: 1
+            tickmarksEnabled: true
+            tickmarkFactor: 6
+            tickmarkOffset: 2
+            minorTicksEnabled: true
             value: settings.getCameraTZ()
             defaultValue: settings.getCameraTZ()
             onValueChanged: {
@@ -70,6 +74,10 @@ Rectangle {
             minimumValue: -14
             maximumValue: 14
             stepSize: 1
+            tickmarksEnabled: true
+            tickmarkFactor: 6
+            tickmarkOffset: 2
+            minorTicksEnabled: true
             value: settings.getImportTZ()
             defaultValue: settings.getImportTZ()
             onValueChanged: {

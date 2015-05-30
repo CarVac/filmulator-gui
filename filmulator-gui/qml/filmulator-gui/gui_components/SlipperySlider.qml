@@ -21,7 +21,7 @@ Item {
     height: 12 * uiScale
 
     /*!
-        \qmlproperty enumeration Slider::orientation
+        \qmlproperty enumeration SlipperySlider::orientation
 
         This property holds the layout orientation of the slider.
         The default value is \c Qt.Horizontal.
@@ -29,7 +29,7 @@ Item {
     //property int orientation: Qt.Horizontal
 
     /*!
-        \qmlproperty real Slider::minimumValue
+        \qmlproperty real SlipperySlider::minimumValue
 
         This property holds the minimum value of the slider.
         The default value is \c{0.0}.
@@ -37,7 +37,7 @@ Item {
     property real minimumValue: 0.0
 
     /*!
-        \qmlproperty real Slider::maximumValue
+        \qmlproperty real SlipperySlider::maximumValue
 
         This property holds the maximum value of the slider.
         The default value is \c{1.0}.
@@ -48,7 +48,7 @@ Item {
     property real valRange: maximumValue-minimumValue
 
     /*!
-        \qmlproperty bool Slider::updateValueWhileDragging
+        \qmlproperty bool SlipperySlider::updateValueWhileDragging
 
         This property indicates whether the current \l value should be updated while
         the user is moving the slider handle, or only when the button has been released.
@@ -60,21 +60,21 @@ Item {
     //property bool updateValueWhileDragging: true
 
     /*!
-        \qmlproperty bool Slider::pressed
+        \qmlproperty bool SlipperySlider::pressed
 
         This property indicates whether the slider handle is being pressed.
     */
     readonly property alias pressed: mouseArea.pressed
 
     /*!
-        \qmlproperty bool Slider::hovered
+        \qmlproperty bool SlipperySlider::hovered
 
         This property indicates whether the slider handle is being hovered.
     */
     readonly property alias hovered: mouseArea.handleHovered
 
     /*!
-        \qmlproperty real Slider::stepSize
+        \qmlproperty real SlipperySlider::stepSize
 
         This property indicates the slider step size.
 
@@ -96,7 +96,38 @@ Item {
     property real stepSize: 0
 
     /*!
-        \qmlproperty real Slider::value
+        \qmlproperty int SlipperySlider::tickmarkFactor
+
+        This property indicates how often a step gets a tickmark.
+
+        A value of 1 indicates that every step gets a tick.
+
+        The default value is \c{1}.
+    */
+    property int tickmarkFactor: 1
+
+    /*!
+        \qmlproperty int SlipperySlider::tickmarkOffset
+
+        This property indicates which is the first step that gets a tickmark.
+
+        A value of 0 indicates that the tickmarks start from the very first.
+
+        The default value is \c{0}.
+    */
+    property int tickmarkOffset: 0
+
+    /*!
+        \qmlproperty bool SlipperySlider::minorTicksEnabled
+
+        This property indicates whether minor tickmarks are enabled.
+
+        The default value is \c false.
+    */
+    property bool minorTicksEnabled: false
+
+    /*!
+        \qmlproperty real SlipperySlider::value
 
         This property holds the current value of the slider.
         The default value is \c{0.0}.
@@ -104,7 +135,7 @@ Item {
     property real value: 0
 
     /*!
-        \qmlproperty bool Slider::activeFocusOnPress
+        \qmlproperty bool SlipperySlider::activeFocusOnPress
 
         This property indicates whether the slider should receive active focus when
         pressed.
@@ -112,7 +143,7 @@ Item {
     property bool activeFocusOnPress: false
 
     /*!
-        \qmlproperty bool Slider::tickmarksEnabled
+        \qmlproperty bool SlipperySlider::tickmarksEnabled
 
         This property indicates whether the slider should display tickmarks
         at step intervals. Tick mark spacing is calculated based on the
@@ -122,7 +153,7 @@ Item {
 
         \note This property may be ignored on some platforms when using the native style (e.g. Android).
     */
-    //property bool tickmarksEnabled: false
+    property bool tickmarksEnabled: false
 
     /*! \internal */
     //property bool __horizontal: true//orientation === Qt.Horizontal
@@ -194,6 +225,27 @@ Item {
             GradientStop {color: Colors.brightOrange; position: 0.0}
             GradientStop {color: Colors.medOrange;    position: 0.3}
             GradientStop {color: Colors.medOrange;    position: 1.0}
+        }
+        Row {
+            id: tickmarkLayout
+            x: posAtMinimum + fakeHandle.width/2 - 1 * uiScale
+            width: posRange
+            y: 1 * uiScale
+            height: 2 * uiScale
+            visible: (stepSize > 0) && tickmarksEnabled
+            spacing: posRange * (1/(valRange/stepSize)) - 2 * uiScale
+            Repeater {
+                id: tickmarkRepeater
+                model: Math.floor(valRange/stepSize) + 1
+                Rectangle {
+                    id: tickRect
+                    width: 2 * uiScale
+                    height: 2 * uiScale
+                    radius: 1 * uiScale
+                    //You have to add the tickmarkFactor to it because the % operator doesn't work with negative numbers...
+                    color: (0>((index+tickmarkFactor-tickmarkOffset+.5)%tickmarkFactor-.5) - posRange/1000) ? Colors.darkGray : (minorTicksEnabled ? Colors.thinDarkGray :  "#01000000")
+                }
+            }
         }
     }
 
