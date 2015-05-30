@@ -72,7 +72,7 @@ Rectangle {
     SlipperySlider {
         id: slider
         x: __padding
-        y: 21 * uiScale + __padding
+        y: 19 * uiScale + __padding
         width: parent.width - reset.width - 3*__padding
 //        value: defaultValue
         uiScale: root.uiScale

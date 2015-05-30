@@ -18,7 +18,7 @@ Item {
     id: slider
     property real uiScale: 1
     width: 200
-    height: 8 * uiScale
+    height: 12 * uiScale
 
     /*!
         \qmlproperty enumeration Slider::orientation
@@ -187,7 +187,7 @@ Item {
     Rectangle {
         id: groove
         x: 0
-        y: 2 * uiScale
+        y: 4 * uiScale
         width: parent.width
         height: 4 * uiScale
         gradient: Gradient {
@@ -197,17 +197,24 @@ Item {
         }
     }
 
-    Rectangle {
+    Item {
         id: handle
         x: (value-minimumValue)*(posRange)/(valRange)
         y: 0
-        height: 8 * uiScale
+        height: 12 * uiScale
         width: 20 * uiScale
-        radius: 3 * uiScale
-        gradient: Gradient {
-            GradientStop {color: slider.pressed ? Colors.brightOrange : slider.hovered ? Colors.weakOrange : Colors.brightGray; position: 0.0}
-            GradientStop {color: slider.pressed ? Colors.medOrange    : slider.hovered ? Colors.weakOrange : Colors.middleGray; position: 0.1}
-            GradientStop {color: slider.pressed ? Colors.medOrange    : slider.hovered ? Colors.weakOrange : Colors.middleGray; position: 1.0}
+        Rectangle {
+            id: handleRect
+            x: 0
+            y: 2 * uiScale
+            height: 8 * uiScale
+            width: 20 * uiScale
+            radius: 3 * uiScale
+            gradient: Gradient {
+                GradientStop {color: slider.pressed ? Colors.brightOrange : slider.hovered ? Colors.weakOrange : Colors.brightGray; position: 0.0}
+                GradientStop {color: slider.pressed ? Colors.medOrange    : slider.hovered ? Colors.weakOrange : Colors.middleGray; position: 0.1}
+                GradientStop {color: slider.pressed ? Colors.medOrange    : slider.hovered ? Colors.weakOrange : Colors.middleGray; position: 1.0}
+            }
         }
     }
 
