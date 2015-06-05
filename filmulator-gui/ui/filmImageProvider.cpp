@@ -76,10 +76,22 @@ void FilmImageProvider::writeTiff()
 
 void FilmImageProvider::writeJpeg()
 {
+    processMutex.lock();
+    imwrite_jpeg(last_image, outputFilename, exifData, 95);
+    processMutex.unlock();
+}
+
+void FilmImageProvider::writeThumbnail(QString thumbPath)
+{
+    //std::cout << "FilmImageProvider::writeThumbnail 1" << std::endl;
     writeDataMutex.lock();
-    matrix<unsigned short> outputData = pipeline.getLastImage();
-    imwrite_jpeg(outputData, outputFilename, exifData, 95);
+    //std::cout << "FilmImageProvider::writeThumbnail 2" << std::endl;
+    worker->setImage(last_image, exifData);
+    //std::cout << "FilmImageProvider::writeThumbnail 3" << std::endl;
+    emit requestThumbnail(thumbPath);
+    //std::cout << "FilmImageProvider::writeThumbnail 4" << std::endl;
     writeDataMutex.unlock();
+    //std::cout << "FilmImageProvider::writeThumbnail 5" << std::endl;
 }
 
 void FilmImageProvider::setProgress(float percentDone_in)

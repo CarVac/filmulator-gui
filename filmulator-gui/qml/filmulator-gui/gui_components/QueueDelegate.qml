@@ -38,12 +38,49 @@ Item {
         Image {
             id: thumb
             width: root.width
-            height: root.height
-            anchors.centerIn: parent
-            fillMode: Image.PreserveAspectFit
-            source: root.__thumbPath
-            sourceSize.width: 600
-            sourceSize.height: 600
+            height: root.height * 0.9375
+            Image {
+                id: thumb
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectFit
+                source: root.__thumbPath
+                sourceSize.width: 600
+                sourceSize.height: 600
+                cache: false
+                Connections {
+                    target: filmProvider
+                    onThumbnailDone: {
+                        if (__waitingForThumb) {
+                            //console.log('thumb received')
+                            //thumb.cache = false
+                            thumb.source = ""
+                            //thumb.cache = true
+                            thumb.source = __thumbPath
+                            __waitingForThumb = false
+                            if (!__current) {
+                                validFreshURL = ""
+                            }
+                        }
+                    }
+                }
+            }
+            Image {
+                id: freshThumb
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectFit
+                visible: (__current || __waitingForThumb)
+                source: validFreshURL
+                onSourceChanged: {
+                    if (__current) {
+                        //console.log('thumb source changed and current')
+                        var thumbSource = __thumbPath
+                        //console.log("did it reach here?")
+                        filmProvider.writeThumbnail(thumbSource.slice(0, -4))
+                        //console.log("or here?")
+                        __waitingForThumb = true
+                    }
+                }
+            }
         }
     }
 
