@@ -20,10 +20,10 @@ Halide::Func bayerize(Func in)
     Func out;
     Var x,y,c;
     out(x,y,c) = 0.0f;
-    out(x,y,0) = in(2*x,   2*y,   2);//green in red rows
-    out(x,y,1) = in(2*x+1, 2*y,   1); //red
-    out(x,y,2) = in(2*x,   2*y+1, 3); //blue
-    out(x,y,3) = in(2*x+1, 2*y+1, 2); //green in blue rows
+    out(x,y,0) = in(2*x,   2*y,   1);//green in red rows
+    out(x,y,1) = in(2*x+1, 2*y,   0); //red
+    out(x,y,2) = in(2*x,   2*y+1, 2); //blue
+    out(x,y,3) = in(2*x+1, 2*y+1, 1); //green in blue rows
 
     // G R G R
     // B G B G
@@ -87,6 +87,7 @@ Halide::Func blurRatio_h(Func hor)
 
 Halide::Func demosaic(Func deinterleaved)
 {
+    Func output;
     //A large part of the algorithm is spent processing vertical and horizontal separately.
     //This means that we can duplicate the original data into vertical and horizontal
     //And run the horizontal actually vertically in memory
@@ -222,16 +223,16 @@ Halide::Func demosaic(Func deinterleaved)
     //Neighborhood variance of X
     Func SIGMAx_h, SIGMAx_v;
     SIGMAx_h(x,y) = 0.0f;
-    SIGMAx_h(x,y) += ((X_h(r+x,y) - MUx_h(r+x,y))^2) / 9.0f;
+    SIGMAx_h(x,y) += pow(X_h(r+x,y) - MUx_h(r+x,y),2) / 9.0f;
     SIGMAx_v(x,y) = 0.0f;
-    SIGMAx_v(x,y) += ((X_v(x,r+y) - MUx_v(x,r+y))^2) / 9.0f;
+    SIGMAx_v(x,y) += pow(X_v(x,r+y) - MUx_v(x,r+y),2) / 9.0f;
 
     //Neighborhood variance of nu
     Func SIGMAnu_h, SIGMAnu_v;
     SIGMAnu_h(x,y) = 0.0f;
-    SIGMAnu_h(x,y) += ((X_h(r+x,y) - Y_h(r+x,y))^2) / 9.0f;
+    SIGMAnu_h(x,y) += pow(X_h(r+x,y) - Y_h(r+x,y),2) / 9.0f;
     SIGMAnu_v(x,y) = 0.0f;
-    SIGMAnu_v(x,y) += ((X_v(x,r+y) - Y_v(x,r+y))^2) / 9.0f;
+    SIGMAnu_v(x,y) += pow(X_v(x,r+y) - Y_v(x,r+y),2) / 9.0f;
 
     //LMMSE estimation in each direction
     Func Xlmmse_h, Xlmmse_v;
@@ -302,7 +303,6 @@ Halide::Func demosaic(Func deinterleaved)
     grRatioAtGB(x,y) = exp(grLogRatioAtGB(x,y))+ 1e-7f;
 
     //Now output the values we want.
-    Func output;
     output(x,y,c) = select(c == 0,
             //Red channel
             select(y%2 == 0,
