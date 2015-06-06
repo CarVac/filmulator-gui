@@ -1,3 +1,10 @@
+//Compile with:
+//g++ demosaic.cpp -g -I include/ -L bin/ -lHalide `libpng-config --cflags --ldflags` -lpthread -ldl -o demosaic -std=c++11
+//
+//Run with:
+//LD_LIBRARY_PATH=bin ./demosaic
+//For debug
+//LD_LIBRARY_PATH=bin HL_DEBUG_CODEGEN=[#] ./demosaic
 #include <Halide.h>
 #include <stdio.h>
 #include <iostream>
@@ -94,27 +101,36 @@ Halide::Func demosaic(Func deinterleaved)
     b_b(x, y)  = deinterleaved(x,y,2);
     g_gb(x, y) = deinterleaved(x,y,3);
 
+
+    //Initial demosaic:
+    //We need to make this bilinear, and sharpen the estimated colors at the end.
+    //
+    //The paper uses an implementation that sharpens the off colors first, but that
+    //violates their assumption of smooth color transitions and worsens performance.
+
+
     //First calculate the green at the red and blue pixels.
     
     //Red pixels
     Func gAtR_v, gAtR_h;
-    gAtR_h(x,y) = (g_gr(x,y) + g_gr(x+1,y))/2 + (2*r_r(x,y) - r_r(x-1,y) - r_r(x+1,y))/4;
-    gAtR_v(x,y) = (g_gb(x,y-1) + g_gb(x,y))/2 + (2*r_r(x,y) - r_r(x,y-1) - r_r(x,y+1))/4;
+    gAtR_h(x,y) = (g_gr(x,y) + g_gr(x+1,y))/2;// + (2*r_r(x,y) - r_r(x-1,y) - r_r(x+1,y))/4;
+    gAtR_v(x,y) = (g_gb(x,y-1) + g_gb(x,y))/2;// + (2*r_r(x,y) - r_r(x,y-1) - r_r(x,y+1))/4;
     //Blue pixels
     Func gAtB_v, gAtB_h;
-    gAtB_h(x,y) = (g_gb(x-1,y) + g_gb(x,y))/2 + (2*b_b(x,y) - b_b(x-1,y) - b_b(x+1,y))/4;
-    gAtB_v(x,y) = (g_gr(x,y) + g_gr(x,y+1))/2 + (2*b_b(x,y) - b_b(x,y-1) - b_b(x,y+1))/4;
+    gAtB_h(x,y) = (g_gb(x-1,y) + g_gb(x,y))/2;// + (2*b_b(x,y) - b_b(x-1,y) - b_b(x+1,y))/4;
+    gAtB_v(x,y) = (g_gr(x,y) + g_gr(x,y+1))/2;// + (2*b_b(x,y) - b_b(x,y-1) - b_b(x,y+1))/4;
 
     //Next, calculate the red and blue at the green pixels.
 
     //Red rows
     Func rAtGR_h, bAtGR_v;
-    rAtGR_h(x,y) = (r_r(x-1,y) + r_r(x,y))/2 + (2*g_gr(x,y) - g_gr(x-1,y) - g_gr(x+1,y))/4;
-    bAtGR_v(x,y) = (b_b(x,y-1) + b_b(x,y))/2 + (2*g_gr(x,y) - g_gr(x,y-1) - g_gr(x,y+1))/4;
+    rAtGR_h(x,y) = (r_r(x-1,y) + r_r(x,y))/2;// + (2*g_gr(x,y) - g_gr(x-1,y) - g_gr(x+1,y))/4;
+    bAtGR_v(x,y) = (b_b(x,y-1) + b_b(x,y))/2;// + (2*g_gr(x,y) - g_gr(x,y-1) - g_gr(x,y+1))/4;
     //Blue rows
     Func bAtGB_h, rAtGB_v;
-    bAtGB_h(x,y) = (b_b(x,y) + b_b(x+1,y))/2 + (2*g_gb(x,y) - g_gb(x-1,y) - g_gb(x+1,y))/4;
-    rAtGB_v(x,y) = (r_r(x,y) + r_r(x,y+1))/2 + (2*g_gb(x,y) - g_gb(x,y-1) - g_gb(x,y+1))/4;
+    bAtGB_h(x,y) = (b_b(x,y) + b_b(x+1,y))/2;// + (2*g_gb(x,y) - g_gb(x-1,y) - g_gb(x+1,y))/4;
+    rAtGB_v(x,y) = (r_r(x,y) + r_r(x,y+1))/2;// + (2*g_gb(x,y) - g_gb(x,y-1) - g_gb(x,y+1))/4;
+
 
     //Get the logs of the color ratios
     
@@ -157,20 +173,6 @@ Halide::Func demosaic(Func deinterleaved)
             select(x%2 == 1,//Blue row
                 gbRatioAtB_v(x/2, y/2),//Blue
                 grRatioAtGB_v(x/2,y/2)));//Green in blue row
-    //colorRatios_h(x,y) = 0.0f;
-    //colorRatios_v(x,y) = 0.0f;
-    //Green in red row
-    //colorRatios_h(2*x+0, 2*y+0) = grRatioAtGR_h(x,y);
-    //colorRatios_v(2*x+0, 2*y+0) = gbRatioAtGR_v(x,y);
-    ////Red
-    //colorRatios_h(2*x+1, 2*y+0) = grRatioAtR_h(x,y);
-    //colorRatios_v(2*x+1, 2*y+0) = grRatioAtR_v(x,y);
-    ////Blue
-    //colorRatios_h(2*x+0, 2*y+1) = gbRatioAtB_h(x,y);
-    //colorRatios_v(2*x+0, 2*y+1) = gbRatioAtB_v(x,y);
-    ////Green in blue row
-    //colorRatios_h(2*x+1, 2*y+1) = gbRatioAtGB_h(x,y);
-    //colorRatios_v(2*x+1, 2*y+1) = grRatioAtGB_v(x,y);
 
     //Blurred combined matrices
     Func blurredRatios_h, blurredRatios_v;
@@ -339,43 +341,28 @@ Halide::Func demosaic(Func deinterleaved)
                         b_b(x/2,y/2),
                         //Green pixel in blue row
                         g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2)))));
-//    //Green in red row
-//    output(x*2+0,y*2+0,0) = g_gr(x,y) / grRatioAtGR(x,y);
-//    output(x*2+0,y*2+0,1) = g_gr(x,y);
-//    output(x*2+0,y*2+0,2) = g_gr(x,y) / gbRatioAtGR(x,y);
-//    //Red
-//    output(x*2+1,y*2+0,0) = r_r(x,y);
-//    output(x*2+1,y*2+0,1) = r_r(x,y) * grRatioAtR(x,y);
-//    output(x*2+1,y*2+0,2) = r_r(x,y) * grRatioAtR(x,y) / gbRatioAtR(x,y);
-//    //Green in blue row
-//    output(x*2+0,y*2+1,0) = g_gb(x,y) / grRatioAtGB(x,y);
-//    output(x*2+0,y*2+1,1) = g_gb(x,y);
-//    output(x*2+0,y*2+1,2) = g_gb(x,y) / gbRatioAtGB(x,y);
-//    //Blue
-//    output(x*2+1,y*2+1,0) = b_b(x,y) * gbRatioAtB(x,y) / grRatioAtB(x,y);
-//    output(x*2+1,y*2+1,1) = b_b(x,y) * gbRatioAtB(x,y);
-//    output(x*2+1,y*2+1,2) = b_b(x,y);
 
     return output;
 }
 
-//int main(int argc, char **argv)
-//{
-//    Var x, y, c;
-//    Halide::Image<uint8_t> input = load<uint8_t>("P1040567.png");
-//    timeval t1, t2;
-//    gettimeofday(&t1, NULL);
-//    Func toFloat, toBayer, toDemosaic, toInt;
-//    toFloat(x,y,c) = cast<float>(input(x,y,c))/255.0f;
-//    toBayer = bayerize(toFloat);
-//    toDemosaic = demosaic(toBayer);
-//    toInt(x,y,c) = cast<uint8_t>(toDemosaic(x,y,c)*255.0f);
-//    Halide::Image<uint8_t> output  = toInt.realize(input.width(),input.height(),input.channels());
-//    gettimeofday(&t2, NULL);
-//    save(output,"demosaiced.png");
-//    std::cout<<float(t2.tv_sec - t1.tv_sec) + float(t2.tv_usec - t1.tv_usec)/1000000.0f << std::endl;
-//    return 0;
-//}
+int main(int argc, char **argv)
+{
+    Var x, y, c;
+    Halide::Image<uint8_t> input = load<uint8_t>("P1040567.png");
+    timeval t1, t2;
+    gettimeofday(&t1, NULL);
+    Func toFloat, toBayer, toDemosaic, toInt;
+    toFloat(x,y,c) = cast<float>(input(x,y,c))/255.0f;
+    toBayer = bayerize(toFloat);
+    toDemosaic = demosaic(toBayer);
+    toInt(x,y,c) = cast<uint8_t>(toDemosaic(x,y,c)*255.0f);
+    Halide::Image<uint8_t> output  = toInt.realize(input.width(),input.height(),input.channels());
+    gettimeofday(&t2, NULL);
+    save(output,"demosaiced.png");
+    std::cout<<float(t2.tv_sec - t1.tv_sec) + float(t2.tv_usec - t1.tv_usec)/1000000.0f << std::endl;
+    return 0;
+}
+/*
 int main(int argc, char **argv)
 {
     Var x, y, c;
@@ -391,4 +378,4 @@ int main(int argc, char **argv)
     args[0] = input;
     toInt.compile_to_file("demosaic-lmmse", args);
     return 0;
-}
+}*/
