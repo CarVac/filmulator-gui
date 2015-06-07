@@ -98,16 +98,18 @@ Halide::Func demosaic(Func deinterleaved)
 
     //Group the pixels into fours.
     Func r_r, g_gr, g_gb, b_b;
+///*
+    g_gr(x, y) = deinterleaved(x,y,0) + 0.01f;
+    r_r(x, y)  = deinterleaved(x,y,1) + 0.01f;
+    b_b(x, y)  = deinterleaved(x,y,2) + 0.01f;
+    g_gb(x, y) = deinterleaved(x,y,3) + 0.01f;
+//*/
 /*
-    g_gr(x, y) = deinterleaved(x,y,0);
-    r_r(x, y)  = deinterleaved(x,y,1);
-    b_b(x, y)  = deinterleaved(x,y,2);
-    g_gb(x, y) = deinterleaved(x,y,3);
-*/
     g_gr(x, y) = 0.8f;
     r_r(x, y)  = 0.8f;
     b_b(x, y)  = 0.01f;
     g_gb(x, y) = 0.8f;
+*/
 
     //Initial demosaic:
     //We need to make this bilinear, and sharpen the estimated colors at the end.
@@ -187,14 +189,14 @@ Halide::Func demosaic(Func deinterleaved)
             select(x%2 == 0,//Red row
                 grRatioAtGR_h(x/2, y/2),//Green in red row
                 grRatioAtR_h(x/2, y/2)),//Red
-            select(x%2 == 1,//Blue row
+            select(x%2 == 0,//Blue row
                 gbRatioAtB_h(x/2, y/2),//Blue
                 gbRatioAtGB_h(x/2,y/2)));//Green in blue row
     colorRatios_v(x,y) = select(y%2 == 0,//Rows
             select(x%2 == 0,//Red row
                 gbRatioAtGR_v(x/2, y/2),//Green in red row
                 grRatioAtR_v(x/2, y/2)),//Red
-            select(x%2 == 1,//Blue row
+            select(x%2 == 0,//Blue row
                 gbRatioAtB_v(x/2, y/2),//Blue
                 grRatioAtGB_v(x/2,y/2)));//Green in blue row
 
@@ -222,8 +224,6 @@ Halide::Func demosaic(Func deinterleaved)
     Y_h(x,y) = log(colorRatios_h(x,y));
     Y_v(x,y) = log(colorRatios_v(x,y));
 
-    Y_h.trace_stores();
-    Y_v.trace_stores();
     Y_h.compute_root();
     Y_v.compute_root();
 
@@ -233,8 +233,6 @@ Halide::Func demosaic(Func deinterleaved)
     Ys_h(x,y) = log(blurredRatios_h(x,y));
     Ys_v(x,y) = log(blurredRatios_v(x,y));
 
-    Ys_h.trace_stores();
-    Ys_v.trace_stores();
     Ys_h.compute_root();
     Ys_v.compute_root();
 
@@ -410,14 +408,14 @@ Halide::Func demosaic(Func deinterleaved)
                 select(y%2 == 0,
                     select(x%2 == 0,
                         //Green pixel in red row
-                        g_gr(x/2,y/2) / grRatioAtGR(x/2,y/2),
+                        g_gr(x/2,y/2) / gbRatioAtGR(x/2,y/2),
                         //Red pixel
                         r_r(x/2,y/2) * grRatioAtR(x/2,y/2) / gbRatioAtR(x/2,y/2)),
                     select(x%2 == 0,
                         //Blue pixel
                         b_b(x/2,y/2),
                         //Green pixel in blue row
-                        g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2)))));
+                        g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2))))) - 0.01f;
 //*/
     //Monochrome output
 /*
@@ -492,15 +490,15 @@ Halide::Func demosaic(Func deinterleaved)
     //Blue
     output(x,y,c) = select(y%2 == 0,
             select(x%2 == 0,
-                0.0f,
-                //g_gr(x/2,y/2) / grRatioAtGR(x/2,y/2),
-                0.0f),
-                //r_r(x/2,y/2) * grRatioAtR(x/2,y/2) / gbRatioAtR(x/2,y/2)),
+                //0.0f,
+                g_gr(x/2,y/2) / gbRatioAtGR(x/2,y/2),
+                //0.0f),
+                r_r(x/2,y/2) * grRatioAtR(x/2,y/2) / gbRatioAtR(x/2,y/2)),
             select(x%2 == 0,
-                0.0f,
-                //b_b(x/2,y/2),
-                0.0f));
-                //g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2)));
+                //0.0f,
+                b_b(x/2,y/2),
+                //0.0f));
+                g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2)));
 */
 /*
     Func ratio;
@@ -513,9 +511,9 @@ Halide::Func demosaic(Func deinterleaved)
             select(x%2 == 0,
                 g_gr(x/2,y/2),
                 //gAtR_v(x/2,y/2)),
-                r_r(x/2,y/2) * exp(Y_h(x,y))),
+                r_r(x/2,y/2) * exp(X(x,y))),
             select(x%2 == 0,
-                b_b(x/2,y/2) * exp(Y_h(x,y)),
+                b_b(x/2,y/2) * exp(X(x,y)),
                 //gAtB_v(x/2,y/2),
                 g_gb(x/2,y/2)));
 */
@@ -526,7 +524,7 @@ Halide::Func demosaic(Func deinterleaved)
 int main(int argc, char **argv)
 {
     Var x, y, c;
-    Halide::Image<uint8_t> input = load<uint8_t>("P1040567-med.png");
+    Halide::Image<uint8_t> input = load<uint8_t>("P1040567.png");
     timeval t1, t2;
     gettimeofday(&t1, NULL);
     Func toFloat, toBayer, toDemosaic, toInt;
@@ -534,9 +532,9 @@ int main(int argc, char **argv)
     toBayer = bayerize(BoundaryConditions::mirror_image(toFloat,0,input.width(),0,input.height(),0,3));
     toDemosaic = demosaic(toBayer);
     toInt(x,y,c) = cast<uint8_t>(toDemosaic(x,y,c)*255.0f);
-    Halide::Image<uint8_t> output  = toInt.realize(4,4,4);//input.width(),input.height(),input.channels());
+    Halide::Image<uint8_t> output  = toInt.realize(input.width(),input.height(),input.channels());
     gettimeofday(&t2, NULL);
-    save(output,"demosaiced.png");
+    save(output,"zdemosaiced.png");
     std::cout<<float(t2.tv_sec - t1.tv_sec) + float(t2.tv_usec - t1.tv_usec)/1000000.0f << std::endl;
     return 0;
 }
