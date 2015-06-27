@@ -5,6 +5,8 @@
 //LD_LIBRARY_PATH=bin ./demosaic
 //For debug
 //LD_LIBRARY_PATH=bin HL_DEBUG_CODEGEN=[#] ./demosaic
+//
+//g++ demosaic.cpp -g -I include/ -L bin/ -lHalide `libpng-config --cflags --ldflags` -lpthread -ldl -o demosaic -std=c++11 && LD_LIBRARY_PATH=bin HL_DEBUG_CODEGEN=0 ./demosaic
 #include <Halide.h>
 #include <stdio.h>
 #include <iostream>
@@ -19,12 +21,27 @@ Halide::Func bayerize(Func in)
 {
     Func out;
     Var x,y,c;
-    out(x,y,c) = 0.0f;
-    out(x,y,0) = in(2*x,   2*y,   1);//green in red rows
-    out(x,y,1) = in(2*x+1, 2*y,   0); //red
-    out(x,y,2) = in(2*x,   2*y+1, 2); //blue
-    out(x,y,3) = in(2*x+1, 2*y+1, 1); //green in blue rows
-
+    
+    out(x,y,c) = select(
+            c < 2, select(
+                c == 0,
+                in(2*x+1,2*y+0,1),
+                in(2*x+2,2*y+0,0)),
+            select(
+                c == 2,
+                in(2*x+1,2*y+1,2),
+                in(2*x+2,2*y+1,1)));
+    /*
+    out(x,y,c) = select(
+            c < 2, select(
+                c == 0,
+                in(2*x+0,2*y+0,1),
+                in(2*x+1,2*y+0,0)),
+            select(
+                c == 2,
+                in(2*x+0,2*y+1,2),
+                in(2*x+1,2*y+1,1)));
+    */
     // G R G R
     // B G B G
     // G R G R
@@ -38,6 +55,7 @@ Halide::Func blurRatio_v(Func vert)
     Var x,y;
     //Low pass filter (sigma=2 L=4)
     Expr h0, h1, h2, h3, h4, hsum;
+    /*
     h0 = 1.0f;
     h1 = exp( -1.0f/8.0f);
     h2 = exp( -4.0f/8.0f);
@@ -49,6 +67,13 @@ Halide::Func blurRatio_v(Func vert)
     h2 /= hsum;
     h3 /= hsum;
     h4 /= hsum;
+    */
+    h0 = .203125f;
+    h1 = .1796875f;
+    h2 = .1171875f;
+    h3 = .0703125f;
+    h4 = .03125f;
+
 
     Func out;
     out(x,y) = h0 * vert(x,y) +
@@ -64,6 +89,7 @@ Halide::Func blurRatio_h(Func hor)
     Var x,y;
     //Low pass filter (sigma=2 L=4)
     Expr h0, h1, h2, h3, h4, hsum;
+    /*    
     h0 = 1.0f;
     h1 = exp( -1.0f/8.0f);
     h2 = exp( -4.0f/8.0f);
@@ -75,6 +101,12 @@ Halide::Func blurRatio_h(Func hor)
     h2 /= hsum;
     h3 /= hsum;
     h4 /= hsum;
+    */
+    h0 = .203125f;
+    h1 = .1796875f;
+    h2 = .1171875f;
+    h3 = .0703125f;
+    h4 = .03125f;
 
     Func out;
     out(x,y) = h0 * hor(x,y) +
@@ -83,6 +115,17 @@ Halide::Func blurRatio_h(Func hor)
         h3 * (hor(x-3,y) + hor(x+3,y)) +
         h4 * (hor(x-4,y) + hor(x+4,y));
     return out;
+}
+
+Tuple swap2(Expr a, Expr b) {
+    return Tuple(min(a,b), max(a,b));
+}
+
+Tuple sort3(Expr a, Expr b, Expr c) {
+    Tuple x = swap2(a,b);
+    Tuple y = swap2(x[1],c);
+    Tuple z = swap2(x[0],y[1]);
+    return Tuple(z[0], z[1], y[1]);
 }
 
 Halide::Func demosaic(Func deinterleaved)
@@ -98,12 +141,18 @@ Halide::Func demosaic(Func deinterleaved)
 
     //Group the pixels into fours.
     Func r_r, g_gr, g_gb, b_b;
-///*
+
     g_gr(x, y) = deinterleaved(x,y,0) + 0.01f;
-    r_r(x, y)  = deinterleaved(x,y,1) + 0.01f;
-    b_b(x, y)  = deinterleaved(x,y,2) + 0.01f;
+    r_r(x, y)  = deinterleaved(x,y,1)*1.2 + 0.01f;
+    b_b(x, y)  = deinterleaved(x,y,2)*1.3 + 0.01f;
     g_gb(x, y) = deinterleaved(x,y,3) + 0.01f;
-//*/
+
+/*
+    g_gr(x, y) = log(deinterleaved(x,y,0) + 0.01f);
+    r_r(x, y)  = log(deinterleaved(x,y,1) + 0.01f);
+    b_b(x, y)  = log(deinterleaved(x,y,2) + 0.01f);
+    g_gb(x, y) = log(deinterleaved(x,y,3) + 0.01f);
+*/
 /*
     g_gr(x, y) = 0.8f;
     r_r(x, y)  = 0.8f;
@@ -122,12 +171,12 @@ Halide::Func demosaic(Func deinterleaved)
     
     //Red pixels
     Func gAtR_v, gAtR_h;
-    gAtR_h(x,y) = (g_gr(x,y) + g_gr(x+1,y))/2.0f;// + (2*r_r(x,y) - r_r(x-1,y) - r_r(x+1,y))/4;
-    gAtR_v(x,y) = (g_gb(x,y-1) + g_gb(x,y))/2.0f;// + (2*r_r(x,y) - r_r(x,y-1) - r_r(x,y+1))/4;
+    gAtR_h(x,y) = (g_gr(x,y) + g_gr(x+1,y))/2.0f;// + (2*r_r(x,y) - r_r(x-1,y) - r_r(x+1,y))/4.0f;
+    gAtR_v(x,y) = (g_gb(x,y-1) + g_gb(x,y))/2.0f;// + (2*r_r(x,y) - r_r(x,y-1) - r_r(x,y+1))/4.0f;
     //Blue pixels
     Func gAtB_v, gAtB_h;
-    gAtB_h(x,y) = (g_gb(x-1,y) + g_gb(x,y))/2.0f;// + (2*b_b(x,y) - b_b(x-1,y) - b_b(x+1,y))/4;
-    gAtB_v(x,y) = (g_gr(x,y) + g_gr(x,y+1))/2.0f;// + (2*b_b(x,y) - b_b(x,y-1) - b_b(x,y+1))/4;
+    gAtB_h(x,y) = (g_gb(x-1,y) + g_gb(x,y))/2.0f;// + (2*b_b(x,y) - b_b(x-1,y) - b_b(x+1,y))/4.0f;
+    gAtB_v(x,y) = (g_gr(x,y) + g_gr(x,y+1))/2.0f;// + (2*b_b(x,y) - b_b(x,y-1) - b_b(x,y+1))/4.0f;
 
     //Next, calculate the red and blue at the green pixels.
 
@@ -151,7 +200,7 @@ Halide::Func demosaic(Func deinterleaved)
 
 
     //Get the logs of the color ratios
-    
+
     //On red pixels
     Func grRatioAtR_h, grRatioAtR_v;
     grRatioAtR_h(x,y) = gAtR_h(x,y)/r_r(x,y);
@@ -168,7 +217,24 @@ Halide::Func demosaic(Func deinterleaved)
     Func gbRatioAtGB_h, grRatioAtGB_v;
     gbRatioAtGB_h(x,y) = g_gb(x,y)/bAtGB_h(x,y);
     grRatioAtGB_v(x,y) = g_gb(x,y)/rAtGB_v(x,y);
-
+/*
+    //On red pixels
+    Func grRatioAtR_h, grRatioAtR_v;
+    grRatioAtR_h(x,y) = gAtR_h(x,y)-r_r(x,y);
+    grRatioAtR_v(x,y) = gAtR_v(x,y)-r_r(x,y);
+    //On blue pixels
+    Func gbRatioAtB_h, gbRatioAtB_v;
+    gbRatioAtB_h(x,y) = gAtB_h(x,y)-b_b(x,y);
+    gbRatioAtB_v(x,y) = gAtB_v(x,y)-b_b(x,y);
+    //On green pixels in red rows
+    Func grRatioAtGR_h, gbRatioAtGR_v;
+    grRatioAtGR_h(x,y) = g_gr(x,y)-rAtGR_h(x,y);
+    gbRatioAtGR_v(x,y) = g_gr(x,y)-bAtGR_v(x,y);
+    //On green pixels in blue rows
+    Func gbRatioAtGB_h, grRatioAtGB_v;
+    gbRatioAtGB_h(x,y) = g_gb(x,y)-bAtGB_h(x,y);
+    grRatioAtGB_v(x,y) = g_gb(x,y)-rAtGB_v(x,y);
+*/
     grRatioAtR_h.compute_root();
     grRatioAtR_v.compute_root();
     gbRatioAtB_h.compute_root();
@@ -200,17 +266,10 @@ Halide::Func demosaic(Func deinterleaved)
                 gbRatioAtB_v(x/2, y/2),//Blue
                 grRatioAtGB_v(x/2,y/2)));//Green in blue row
 
-    Func clampedRatios_h, clampedRatios_v;
-    clampedRatios_h(x,y) = clamp(colorRatios_h(x,y),1e-12f,1e12f);
-    clampedRatios_v(x,y) = clamp(colorRatios_v(x,y),1e-12f,1e12f);
-    clampedRatios_h.compute_root();
-    clampedRatios_v.compute_root();
     //Blurred combined matrices
     Func blurredRatios_h, blurredRatios_v;
     blurredRatios_h = blurRatio_h(colorRatios_h);
     blurredRatios_v = blurRatio_v(colorRatios_v);
-    //blurredRatios_h = blurRatio_h(clampedRatios_h);
-    //blurredRatios_v = blurRatio_v(clampedRatios_v);
 
 
     blurredRatios_h.compute_root();
@@ -223,15 +282,18 @@ Halide::Func demosaic(Func deinterleaved)
     Func Y_h, Y_v;
     Y_h(x,y) = log(colorRatios_h(x,y));
     Y_v(x,y) = log(colorRatios_v(x,y));
+//    Y_h(x,y) = colorRatios_h(x,y);
+//    Y_v(x,y) = colorRatios_v(x,y);
+
 
     Y_h.compute_root();
     Y_v.compute_root();
 
-    //Next is the log of the blurred color ratios.
+    //Next is the blurred log of the color ratios.
     //This is the Estimated True Color Difference Ys ~~= X
     Func Ys_h, Ys_v;
-    Ys_h(x,y) = log(blurredRatios_h(x,y));
-    Ys_v(x,y) = log(blurredRatios_v(x,y));
+    Ys_h = blurRatio_h(Y_h);
+    Ys_v = blurRatio_v(Y_v);
 
     Ys_h.compute_root();
     Ys_v.compute_root();
@@ -259,31 +321,58 @@ Halide::Func demosaic(Func deinterleaved)
 
     //Neighborhood mean of X
     Func MUx_h, MUx_v;
-    RDom r(-4, 9);
-    MUx_h(x,y) = 0.0f;
-    MUx_h(x,y) += X_h(r+x,y) / 9.0f;
-    MUx_v(x,y) = 0.0f;
-    MUx_v(x,y) += X_v(x,r+y) / 9.0f;
+    Func momh, momv;
+    RDom r1(-4, 9);
+#define DOMDIV 9.0f
+//    RDom r(-3, 7);
+//#define DOMDIV 7.0f
+    momh(x,y) = 0.0f;
+    momh(x,y) += X_h(r1+x,y);
+    momv(x,y) = 0.0f;
+    momv(x,y) += X_v(x,r1+y);
+ 
+    //MUx_h(x,y) = 0.0f;
+    //MUx_h(x,y) += X_h(r1+x,y) / DOMDIV;
+    MUx_h(x,y) = momh(x,y)/DOMDIV;
+    //MUx_v(x,y) = 0.0f;
+    //MUx_v(x,y) += X_v(x,r1+y) / DOMDIV;
+    MUx_v(x,y) = momv(x,y)/DOMDIV;
 
     MUx_h.compute_root();
     MUx_v.compute_root();
-
+    //Confirmed to be exactly the same =========================================
+    
     //Neighborhood variance of X
     Func SIGMAx_h, SIGMAx_v;
-    SIGMAx_h(x,y) = 0.0f;
-    SIGMAx_h(x,y) += pow(X_h(r+x,y) - MUx_h(r+x,y),2) / 9.0f;
-    SIGMAx_v(x,y) = 0.0f;
-    SIGMAx_v(x,y) += pow(X_v(x,r+y) - MUx_v(x,r+y),2) / 9.0f;
+    Func ph,pv;//sums of squares
+    RDom r2(-4,9);
+    ph(x,y) = 0.0f;
+    ph(x,y) += X_h(r2+x,y)*X_h(r2+x,y);
+    pv(x,y) = 0.0f;
+    pv(x,y) += X_v(x,r2+y)*X_v(x,r2+y);
+    //SIGMAx_h(x,y) = 0.0f;
+    //SIGMAx_h(x,y) += (X_h(r2+x,y) - MUx_h(r2+x,y))*(X_h(r2+x,y) - MUx_h(r2+x,y)) / DOMDIV;
+    SIGMAx_h(x,y) = ph(x,y) / 8.0f - momh(x,y)*momh(x,y)/(8.0f*9.0f);
+    //SIGMAx_v(x,y) = 0.0f;
+    //SIGMAx_v(x,y) += (X_v(x,r2+y) - MUx_v(x,r2+y))*(X_v(x,r2+y) - MUx_v(x,r2+y)) / DOMDIV;
+    SIGMAx_v(x,y) = pv(x,y) / 8.0f - momv(x,y)*momv(x,y)/(8.0f*9.0f);
 
     SIGMAx_h.compute_root();
     SIGMAx_v.compute_root();
+    //Confirmed error < 2e-9; absolute values peak at around 1e-3
+
+    Func temp;
+    temp(x,y) = SIGMAx_h(x,y)*1000.0f;
+    temp.compute_root().trace_stores();
+
 
     //Neighborhood variance of nu
     Func SIGMAnu_h, SIGMAnu_v;
+    RDom r3(-4,9);
     SIGMAnu_h(x,y) = 0.0f;
-    SIGMAnu_h(x,y) += pow(X_h(r+x,y) - Y_h(r+x,y),2) / 9.0f;
+    SIGMAnu_h(x,y) += (X_h(r3+x,y) - Y_h(r3+x,y))*(X_h(r3+x,y) - Y_h(r3+x,y)) / DOMDIV;
     SIGMAnu_v(x,y) = 0.0f;
-    SIGMAnu_v(x,y) += pow(X_v(x,r+y) - Y_v(x,r+y),2) / 9.0f;
+    SIGMAnu_v(x,y) += (X_v(x,r3+y) - Y_v(x,r3+y))*(X_v(x,r3+y) - Y_v(x,r3+y)) / DOMDIV;
 
     SIGMAnu_h.compute_root();
     SIGMAnu_v.compute_root();
@@ -293,20 +382,22 @@ Halide::Func demosaic(Func deinterleaved)
     Xlmmse_h(x,y) = MUx_h(x,y) +
         (Y_h(x,y) - MUx_h(x,y)) * SIGMAx_h(x,y) /
         (SIGMAx_h(x,y) + SIGMAnu_h(x,y) + 1e-7f);
+        //(temp(x,y)/1000.0f + SIGMAnu_h(x,y) + 1e-7f);
     Xlmmse_v(x,y) = MUx_v(x,y) +
         (Y_v(x,y) - MUx_v(x,y)) * SIGMAx_v(x,y) /
         (SIGMAx_v(x,y) + SIGMAnu_v(x,y) + 1e-7f);
 
-    Xlmmse_h.compute_root();
+    Xlmmse_h.compute_root().trace_stores();
     Xlmmse_v.compute_root();
+    //Confirmed to be correct? ======================================================
 
     //The expected estimation error is Xerror = X - Xlmmse
     //We don't use it.
 
     //The variance of the estimation error, we do use for the weighting.
     Func SIGMAer_h, SIGMAer_v;
-    SIGMAer_h(x,y) = SIGMAx_h(x,y) - SIGMAx_h(x,y)/(SIGMAx_h(x,y) + SIGMAnu_h(x,y) + 1e-7f);
-    SIGMAer_v(x,y) = SIGMAx_v(x,y) - SIGMAx_v(x,y)/(SIGMAx_v(x,y) + SIGMAnu_v(x,y) + 1e-7f);
+    SIGMAer_h(x,y) = SIGMAx_h(x,y) - SIGMAx_h(x,y)*SIGMAx_h(x,y)/(SIGMAx_h(x,y) + SIGMAnu_h(x,y) + 1e-7f);
+    SIGMAer_v(x,y) = SIGMAx_v(x,y) - SIGMAx_v(x,y)*SIGMAx_v(x,y)/(SIGMAx_v(x,y) + SIGMAnu_v(x,y) + 1e-7f);
 
     SIGMAer_h.compute_root();
     SIGMAer_v.compute_root();
@@ -316,7 +407,7 @@ Halide::Func demosaic(Func deinterleaved)
     W_h(x,y) = SIGMAer_v(x,y) / (SIGMAer_h(x,y) + SIGMAer_v(x,y) + 1e-7f);
     W_v(x,y) = 1.0f - W_h(x,y);//SIGMAer_h(x,y) / (SIGMAer_v(x,y) + SIGMAer_h(x,y));
 
-    W_h.compute_root();
+    W_h.compute_root();//slightly different =============================================
     W_v.compute_root();
 
     //Combine to get the final log of the color ratio we'll use
@@ -354,43 +445,117 @@ Halide::Func demosaic(Func deinterleaved)
             gbLogRatioAtB(x,y) + gbLogRatioAtB(x+1,y)) / 4.0f;
 
     //The libraw lmmse does a median filter...why?
+    //It seems like it may be necessary.
+    //Let's try it.
 
-    //Turn the logs back into ratios.
-    Func grRatioAtR,  gbRatioAtR,  gbRatioAtB,  grRatioAtB;
-    Func grRatioAtGR, gbRatioAtGR, gbRatioAtGB, grRatioAtGB;
-    grRatioAtR(x,y)  = exp(grLogRatioAtR(x,y)) + 1e-7f;
-    gbRatioAtR(x,y)  = exp(gbLogRatioAtR(x,y)) + 1e-7f;
-    gbRatioAtB(x,y)  = exp(gbLogRatioAtB(x,y)) + 1e-7f;
-    grRatioAtB(x,y)  = exp(grLogRatioAtB(x,y)) + 1e-7f;
-    grRatioAtGR(x,y) = exp(grLogRatioAtGR(x,y))+ 1e-7f;
-    gbRatioAtGR(x,y) = exp(gbLogRatioAtGR(x,y))+ 1e-7f;
-    gbRatioAtGB(x,y) = exp(gbLogRatioAtGB(x,y))+ 1e-7f;
-    grRatioAtGB(x,y) = exp(grLogRatioAtGB(x,y))+ 1e-7f;
+    //First we must combine these ratios into one.
+    Func grLogRatio, gbLogRatio;
+    grLogRatio(x,y) = select(y%2 == 0,
+            select(x%2 == 0,
+                //Green pixel in red row
+                grLogRatioAtGR(x/2,y/2),
+                //Red pixel
+                grLogRatioAtR(x/2,y/2)),
+            select(x%2 == 0,
+                //Blue pixel
+                grLogRatioAtB(x/2,y/2),
+                //Green pixel in blue row
+                grLogRatioAtGB(x/2,y/2)));
+    gbLogRatio(x,y) = select(y%2 == 0,
+            select(x%2 == 0,
+                //Green pixel in red row
+                gbLogRatioAtGR(x/2,y/2),
+                //Red pixel
+                gbLogRatioAtR(x/2,y/2)),
+            select(x%2 == 0,
+                //Blue pixel
+                gbLogRatioAtB(x/2,y/2),
+                //Green pixel in blue row
+                gbLogRatioAtGB(x/2,y/2)));
 
-    grRatioAtR.compute_root();
-    gbRatioAtR.compute_root();
-    gbRatioAtB.compute_root();
-    grRatioAtB.compute_root();
-    grRatioAtGR.compute_root();
-    gbRatioAtGR.compute_root();
-    gbRatioAtGB.compute_root();
-    grRatioAtGB.compute_root();
+    //First we sort the vertical neighbors.
+    Func grSorted_v, gbSorted_v;
+    grSorted_v(x,y) = sort3(grLogRatio(x,y-1),
+                            grLogRatio(x,y),
+                            grLogRatio(x,y+1));
+    gbSorted_v(x,y) = sort3(gbLogRatio(x,y-1),
+                            gbLogRatio(x,y),
+                            gbLogRatio(x,y+1));
 
-    //Now output the values we want.
-///*
+    //Then it finds the maximin, the medmed, and the minimax.
+    
+    //The sorted medians
+    Func grSortMed, gbSortMed;
+    grSortMed(x,y) = sort3(grSorted_v(x-1,y)[1],
+                           grSorted_v(x  ,y)[1],
+                           grSorted_v(x+1,y)[1])[1];
+    gbSortMed(x,y) = sort3(gbSorted_v(x-1,y)[1],
+                           gbSorted_v(x  ,y)[1],
+                           gbSorted_v(x+1,y)[1])[1];
+
+    //The minimum of the maxima is another candidate for median.
+    Func grMiniMax, gbMiniMax;
+    grMiniMax(x,y) = min(min(grSorted_v(x-1,y)[2],
+                             grSorted_v(x  ,y)[2]),
+                             grSorted_v(x+1,y)[2]);
+    gbMiniMax(x,y) = min(min(gbSorted_v(x-1,y)[2],
+                             gbSorted_v(x  ,y)[2]),
+                             gbSorted_v(x+1,y)[2]);
+
+    //The largest minimum is another candidate.
+    Func grMaxiMin, gbMaxiMin;
+    grMaxiMin(x,y) = max(max(grSorted_v(x-1,y)[0],
+                             grSorted_v(x  ,y)[0]),
+                             grSorted_v(x+1,y)[0]);
+    gbMaxiMin(x,y) = max(max(gbSorted_v(x-1,y)[0],
+                             gbSorted_v(x  ,y)[0]),
+                             gbSorted_v(x+1,y)[0]);
+
+    //The median of those is the median of all 9.
+    Func grMedian, gbMedian;
+    grMedian(x,y) = sort3(grSortMed(x,y),
+                          grMiniMax(x,y),
+                          grMaxiMin(x,y))[1];
+    gbMedian(x,y) = sort3(gbSortMed(x,y),
+                          gbMiniMax(x,y),
+                          gbMaxiMin(x,y))[1];
+
+    //Turn the logs back into ratios, after the median filter
+    Func grRatio, gbRatio;
+//    grRatio(x,y) = exp(grMedian(x,y));
+//    gbRatio(x,y) = exp(gbMedian(x,y));
+//    grRatio(x,y) = grMedian(x,y);
+//    gbRatio(x,y) = gbMedian(x,y);
+
+    //No median, but do turn the logs back into ratios.
+    grRatio(x,y) = exp(grLogRatio(x,y));
+    gbRatio(x,y) = exp(gbLogRatio(x,y));
+//    grRatio(x,y) = grLogRatio(x,y);
+//    gbRatio(x,y) = gbLogRatio(x,y);
+
+
+    Var xi, yi;
+    grSorted_v.compute_at(grRatio,xi).store_at(grRatio,yi);
+    gbSorted_v.compute_at(gbRatio,xi).store_at(gbRatio,yi);
+    grRatio.tile(x,y,xi,yi,128,128).parallel(x).vectorize(xi,8);
+    gbRatio.tile(x,y,xi,yi,128,128).parallel(x).vectorize(xi,8);
+    grRatio.compute_root();
+    gbRatio.compute_root();
+
+    //Output the values we want.
     output(x,y,c) = select(c == 0,
             //Red channel
             select(y%2 == 0,
                 select(x%2 == 0,
                     //Green pixel in red row
-                    g_gr(x/2,y/2) / grRatioAtGR(x/2,y/2),
+                    g_gr(x/2,y/2) / grRatio(x,y),
                     //Red pixel
                     r_r(x/2,y/2)),
                 select(x%2 == 0,
                     //Blue pixel
-                    b_b(x/2,y/2) * gbRatioAtB(x/2,y/2) / grRatioAtB(x/2,y/2),
+                    b_b(x/2,y/2) * gbRatio(x,y) / grRatio(x,y),
                     //Green pixel in blue row
-                    g_gb(x/2,y/2) / grRatioAtGB(x/2,y/2))),
+                    g_gb(x/2,y/2) / grRatio(x,y))),
             select(c == 1,
                 //Green channel
                 select(y%2 == 0,
@@ -398,40 +563,83 @@ Halide::Func demosaic(Func deinterleaved)
                         //Green pixel in red row
                         g_gr(x/2,y/2),
                         //Red pixel
-                        r_r(x/2,y/2) * grRatioAtR(x/2,y/2)),
+                        r_r(x/2,y/2) * grRatio(x,y)),
                     select(x%2 == 0,
                         //Blue pixel
-                        b_b(x/2,y/2) * gbRatioAtB(x/2,y/2),
+                        b_b(x/2,y/2) * gbRatio(x,y),
                         //Green pixel in blue row
                         g_gb(x/2,y/2))),
                 //Blue channel
                 select(y%2 == 0,
                     select(x%2 == 0,
                         //Green pixel in red row
-                        g_gr(x/2,y/2) / gbRatioAtGR(x/2,y/2),
+                        g_gr(x/2,y/2) / gbRatio(x,y),
                         //Red pixel
-                        r_r(x/2,y/2) * grRatioAtR(x/2,y/2) / gbRatioAtR(x/2,y/2)),
+                        r_r(x/2,y/2) * grRatio(x,y) / gbRatio(x,y)),
                     select(x%2 == 0,
                         //Blue pixel
                         b_b(x/2,y/2),
                         //Green pixel in blue row
-                        g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2))))) - 0.01f;
-//*/
-    //Monochrome output
+                        g_gb(x/2,y/2) / gbRatio(x,y))))) - 0.01f;
+
 /*
+//exponential, differences
+    //Output the values we want.
     output(x,y,c) = select(c == 0,
             //Red channel
             select(y%2 == 0,
                 select(x%2 == 0,
                     //Green pixel in red row
-                    0.0f,//g_gr(x/2,y/2) / grRatioAtGR(x/2,y/2),
+                    exp(g_gr(x/2,y/2) - grRatio(x,y)),
+                    //Red pixel
+                    exp(r_r(x/2,y/2))),
+                select(x%2 == 0,
+                    //Blue pixel
+                    exp(b_b(x/2,y/2) + gbRatio(x,y) - grRatio(x,y)),
+                    //Green pixel in blue row
+                    exp(g_gb(x/2,y/2) - grRatio(x,y)))),
+            select(c == 1,
+                //Green channel
+                select(y%2 == 0,
+                    select(x%2 == 0,
+                        //Green pixel in red row
+                        exp(g_gr(x/2,y/2)),
+                        //Red pixel
+                        exp(r_r(x/2,y/2) + grRatio(x,y))),
+                    select(x%2 == 0,
+                        //Blue pixel
+                        exp(b_b(x/2,y/2) + gbRatio(x,y)),
+                        //Green pixel in blue row
+                        exp(g_gb(x/2,y/2)))),
+                //Blue channel
+                select(y%2 == 0,
+                    select(x%2 == 0,
+                        //Green pixel in red row
+                        exp(g_gr(x/2,y/2) - gbRatio(x,y)),
+                        //Red pixel
+                        exp(r_r(x/2,y/2) + grRatio(x,y) - gbRatio(x,y))),
+                    select(x%2 == 0,
+                        //Blue pixel
+                        exp(b_b(x/2,y/2)),
+                        //Green pixel in blue row
+                        exp(g_gb(x/2,y/2) - gbRatio(x,y)))))) - 0.01f;
+*/
+/*
+//Differences, no exponential
+    //Output the values we want.
+    output(x,y,c) = select(c == 0,
+            //Red channel
+            select(y%2 == 0,
+                select(x%2 == 0,
+                    //Green pixel in red row
+                    g_gr(x/2,y/2) - grRatio(x,y),
                     //Red pixel
                     r_r(x/2,y/2)),
                 select(x%2 == 0,
                     //Blue pixel
-                    0.0f,//b_b(x/2,y/2) * gbRatioAtB(x/2,y/2) / grRatioAtB(x/2,y/2),
+                    b_b(x/2,y/2) + gbRatio(x,y) - grRatio(x,y),
                     //Green pixel in blue row
-                    0.0f)),//g_gb(x/2,y/2) / grRatioAtGB(x/2,y/2))),
+                    g_gb(x/2,y/2) - grRatio(x,y))),
             select(c == 1,
                 //Green channel
                 select(y%2 == 0,
@@ -439,83 +647,24 @@ Halide::Func demosaic(Func deinterleaved)
                         //Green pixel in red row
                         g_gr(x/2,y/2),
                         //Red pixel
-                        0.0f),//r_r(x/2,y/2) * grRatioAtR(x/2,y/2)),
+                        r_r(x/2,y/2) + grRatio(x,y)),
                     select(x%2 == 0,
                         //Blue pixel
-                        0.0f,//b_b(x/2,y/2) * gbRatioAtB(x/2,y/2),
+                        b_b(x/2,y/2) + gbRatio(x,y),
                         //Green pixel in blue row
                         g_gb(x/2,y/2))),
                 //Blue channel
                 select(y%2 == 0,
                     select(x%2 == 0,
                         //Green pixel in red row
-                        0.0f,//g_gr(x/2,y/2) / grRatioAtGR(x/2,y/2),
+                        g_gr(x/2,y/2) - gbRatio(x,y),
                         //Red pixel
-                        0.0f),//r_r(x/2,y/2) * grRatioAtR(x/2,y/2) / gbRatioAtR(x/2,y/2)),
+                        r_r(x/2,y/2) + grRatio(x,y) - gbRatio(x,y)),
                     select(x%2 == 0,
                         //Blue pixel
                         b_b(x/2,y/2),
                         //Green pixel in blue row
-                        0.0f)))) - 1.0f;//g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2))))) - 1.0f;
-*/
-    //Red
-/*
-    output(x,y,c) = select(y%2 == 0,
-            select(x%2 == 0,
-                //0.0f,
-                g_gr(x/2,y/2) / grRatioAtGR(x/2,y/2),
-                0.0f),
-                //r_r(x/2,y/2)),
-            select(x%2 == 0,
-                0.0f,
-                //b_b(x/2,y/2) * gbRatioAtB(x/2,y/2) / grRatioAtB(x/2,y/2),
-                0.0f));
-                //g_gb(x/2,y/2) / grRatioAtGB(x/2,y/2)));
-*/
-/*
-    //Green
-    output(x,y,c) = select(y%2 == 0,
-            select(x%2 == 0,
-                0.0f,
-                //g_gr(x/2,y/2),
-                0.0f),
-                //r_r(x/2,y/2) * grRatioAtR(x/2,y/2)),
-            select(x%2 == 0,
-                0.0f,
-                //b_b(x/2,y/2) * gbRatioAtB(x/2,y/2),
-                0.0f));
-                //g_gb(x/2,y/2)));
-*/
-/*
-    //Blue
-    output(x,y,c) = select(y%2 == 0,
-            select(x%2 == 0,
-                //0.0f,
-                g_gr(x/2,y/2) / gbRatioAtGR(x/2,y/2),
-                //0.0f),
-                r_r(x/2,y/2) * grRatioAtR(x/2,y/2) / gbRatioAtR(x/2,y/2)),
-            select(x%2 == 0,
-                //0.0f,
-                b_b(x/2,y/2),
-                //0.0f));
-                g_gb(x/2,y/2) / gbRatioAtGB(x/2,y/2)));
-*/
-/*
-    Func ratio;
-    ratio(x,y) = grRatioAtR(x/2,y/2)/2;
-    output(x,y,c) = ratio(x,y);
-*/
-//    output(x,y,c) = exp(log(g_gr(x/2,y/2)/r_r(x/2,y/2)));
-/*
-    output(x,y,c) = select(y%2 == 0,
-            select(x%2 == 0,
-                g_gr(x/2,y/2),
-                //gAtR_v(x/2,y/2)),
-                r_r(x/2,y/2) * exp(X(x,y))),
-            select(x%2 == 0,
-                b_b(x/2,y/2) * exp(X(x,y)),
-                //gAtB_v(x/2,y/2),
-                g_gb(x/2,y/2)));
+                        g_gb(x/2,y/2) - gbRatio(x,y))))) - 0.01f;
 */
     return output;
 
@@ -524,17 +673,24 @@ Halide::Func demosaic(Func deinterleaved)
 int main(int argc, char **argv)
 {
     Var x, y, c;
-    Halide::Image<uint8_t> input = load<uint8_t>("P1040567.png");
+    Halide::Image<uint8_t> input = load<uint8_t>("000734_levels.png");
+    //Halide::Image<uint8_t> input = load<uint8_t>("porcupine2.png");
+    //Halide::Image<uint8_t> input = load<uint8_t>("P1040567-med.png");
+    //Halide::Image<uint8_t> input = load<uint8_t>("teensy.png");
     timeval t1, t2;
     gettimeofday(&t1, NULL);
     Func toFloat, toBayer, toDemosaic, toInt;
     toFloat(x,y,c) = cast<float>(input(x,y,c))/255.0f;
     toBayer = bayerize(BoundaryConditions::mirror_image(toFloat,0,input.width(),0,input.height(),0,3));
+    //toBayer = bayerize(BoundaryConditions::constant_exterior(toFloat,0.0f,0,input.width(),0,input.height(),0,3));
     toDemosaic = demosaic(toBayer);
-    toInt(x,y,c) = cast<uint8_t>(toDemosaic(x,y,c)*255.0f);
-    Halide::Image<uint8_t> output  = toInt.realize(input.width(),input.height(),input.channels());
+    toInt(x,y,c) = cast<uint8_t>(Halide::clamp(Halide::round(toDemosaic(x,y,c)*255.0f),0.0f,255.0f));
+    Halide::Image<uint8_t> output  = toInt.realize(input.width(),input.height(),3);
     gettimeofday(&t2, NULL);
-    save(output,"zdemosaiced.png");
+    save(output,"000734_demosaiced7.png");
+    //save(output,"porcupine_demosaiced2.png");
+    //save(output,"P1040567-med-out.png");
+    //save(output,"teensy_out.png");
     std::cout<<float(t2.tv_sec - t1.tv_sec) + float(t2.tv_usec - t1.tv_usec)/1000000.0f << std::endl;
     return 0;
 }
