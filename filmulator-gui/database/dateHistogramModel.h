@@ -36,8 +36,6 @@ signals:
 
 protected:
     void emitChange() {emit dateHistoModelChanged();}
-    double m_today;
-    double m_firstDay;
     std::vector<double> m_dataVector;
 };
 

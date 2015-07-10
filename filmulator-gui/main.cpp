@@ -28,6 +28,11 @@ int main(int argc, char *argv[])
     translator.load("filmulatortr_la");
     app.installTranslator(&translator);
 
+    //Prepare database connection.
+    //This should create a new db file if there was none.
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    setupDB(&db);
+
     //Create the object for communicating between SQL classes.
     SignalSwitchboard *switchboard = new SignalSwitchboard;
 
@@ -49,11 +54,6 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("filmProvider",filmProvider);
 
     qRegisterMetaType<QFileInfo>();
-
-    //Prepare database connection.
-    //This should create a new db file if there was none.
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    setupDB(&db);
 
     //Prepare a model for importing.
     ImportModel *importModel = new ImportModel;
