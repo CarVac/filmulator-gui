@@ -5,6 +5,7 @@
 #include <iostream>
 
 #define ROUND_JULDAY(a) round(a)
+//#define ROUND_JULDAY(a) floor(a)
 #define VECTORCOUNT 2
 
 using namespace std;
@@ -32,35 +33,41 @@ DateHistogramModel::DateHistogramModel(QObject *parent) :
 void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
 {
     beginResetModel();
-    m_modelQuery = query;
+    m_modelQuery = QSqlQuery(query);
 
     //first, query for the oldest day in the database and the current day
     QSqlQuery dateQuery;
 
     //Today
     string queryString = "SELECT julianday('NOW', '";
-    queryString.append(std::to_string(timezone));
+    queryString.append(std::to_string(int(timezone)));
     queryString.append(" hours');");
     dateQuery.exec(QString::fromStdString(queryString));
     dateQuery.first();
-    m_today = ROUND_JULDAY(dateQuery.value(0).toFloat());
+    double temp_today = ROUND_JULDAY(dateQuery.value(0).toFloat());
 
     //Oldest day in the database
+    double temp_firstDay;
+    //For some reason, this does not match the earliest date bin of the histogram.
+    //We can only use this relative to the 'today' computed before.
     queryString = "SELECT julianday(min(SearchTable.STcaptureTime), 'unixepoch', '";
-    queryString.append(std::to_string(timezone));
+    queryString.append(std::to_string(int(timezone)));
     queryString.append(" hours') FROM SearchTable;");
     dateQuery.exec(QString::fromStdString(queryString));
     if (dateQuery.first())
     {
-        m_firstDay = ROUND_JULDAY(dateQuery.value(0).toFloat());
+        temp_firstDay = ROUND_JULDAY(dateQuery.value(0).toFloat());
     } else {
-        m_firstDay = m_today;
+        temp_firstDay = temp_today;
     }
     //The row count of all the data we will eventually serve to the view.
-    m_rowCount = m_today - m_firstDay + 1;
+    m_rowCount = temp_today - temp_firstDay + 1;
+
+    cout << "m_rowcount1: " << m_rowCount << endl;
 
     //Now, we tell the internal model to grab stuff.
-    queryModel.setQuery(query);
+    cout << m_modelQuery.lastQuery().toStdString() << endl;
+    queryModel.setQuery(m_modelQuery);
     while (queryModel.canFetchMore())
     {
         queryModel.fetchMore();
@@ -68,7 +75,7 @@ void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
     generateRoleNames();
 
     //The row count of just the retrieved data
-    int rowCount = queryModel.rowCount();
+    int queryRowCount = queryModel.rowCount();
 
     //Now, make the vector the proper size.
     //It'll be 2x the number of days.
@@ -76,34 +83,48 @@ void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
     //DateHistogramModel::data() will fill in the rest of the info.
 
     //Preallocate the vector.
-    if (m_dataVector.capacity() < m_rowCount*VECTORCOUNT)
+    if (m_dataVector.capacity() < (m_rowCount + 1)*VECTORCOUNT)
     {
-        m_dataVector.reserve(m_rowCount*VECTORCOUNT);
+        cout << "m_rowcount: " << m_rowCount << endl;
+        m_dataVector.reserve((m_rowCount + 1)*VECTORCOUNT);
     }
     else
     {
         //do nothing. We don't really need to shrink it.
     }
 
-    //Loop over the days in the vector, filling in the julian day and the 0 count
+    //Loop over the days in the vector, initializing to zero
     for (int i = 0; i < m_rowCount; i++)
     {
-        m_dataVector[i*VECTORCOUNT] = m_firstDay + i;
+        m_dataVector[i*VECTORCOUNT] = 0;
         m_dataVector[i*VECTORCOUNT+1] = 0;
     }
 
+
     //Loop over the days in the QSqlQueryModel.
     //Write the count in for the appropriate day.
-    for (int i = 0; i < rowCount; i++)
+    double firstDay;
+    for (int i = 0; i < queryRowCount; i++)
     {
         //The first column is supposed to be the Julian day.
         QModelIndex julianDayModelIndex = this->index(i,0);
         //The sixth column is supposed to be the count of images on that day.
         QModelIndex countModelIndex = this->index(i,5);
         double julianDay = queryModel.data(julianDayModelIndex).toDouble();
-        int dayIndex = ROUND_JULDAY(julianDay)-m_firstDay;
+        if (i==0)
+        {
+            firstDay = ROUND_JULDAY(julianDay);
+        }
+        int dayIndex = ROUND_JULDAY(julianDay)-firstDay;
         int imageCount = queryModel.data(countModelIndex).toInt();
         m_dataVector[dayIndex*VECTORCOUNT+1] = imageCount;
+    }
+
+    //Fill in the empty days with the appropriate value, now that we know firstDay.
+    //temp_firstDay isn't to be trusted, except relative to today.
+    for (int i = 0; i < m_rowCount; i++)
+    {
+        m_dataVector[i*VECTORCOUNT] = firstDay + i;
     }
     endResetModel();
 }
