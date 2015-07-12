@@ -21,8 +21,8 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     QObject::connect(paramManager, SIGNAL(paramChanged(QString)), this, SLOT(abortPipeline(QString)));
 
     worker->moveToThread(&workerThread);
-    connect(this, &FilmImageProvider::requestThumbnail, worker, &ThumbWriteWorker::writeThumb);
-    connect(worker, &ThumbWriteWorker::doneWritingThumb, this, &FilmImageProvider::thumbDoneWriting);
+    connect(this, SIGNAL(requestThumbnail(QString)), worker, SLOT(writeThumb(QString)));
+    connect(worker, SIGNAL(doneWritingThumb()), this, SLOT(thumbDoneWriting()));
     workerThread.start(QThread::LowPriority);
 }
 

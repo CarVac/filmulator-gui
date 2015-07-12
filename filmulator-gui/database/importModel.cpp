@@ -11,9 +11,22 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
     tableName = "SearchTable";
     ImportWorker *worker = new ImportWorker;
     worker->moveToThread(&workerThread);
-    connect(this, &ImportModel::workForWorker, worker, &ImportWorker::importFile);
-    connect(worker, &ImportWorker::doneProcessing, this, &ImportModel::workerFinished);
-    connect(worker, &ImportWorker::enqueueThis, this, &ImportModel::enqueueRequested);
+    connect(this, SIGNAL(workForWorker(const QFileInfo,
+                                       const int,
+                                       const int,
+                                       const QString,
+                                       const QString,
+                                       const QString,
+                                       const QDateTime)),
+            worker, SLOT(importFile(const QFileInfo,
+                                    const int,
+                                    const int,
+                                    const QString,
+                                    const QString,
+                                    const QString,
+                                    const QDateTime)));
+    connect(worker, SIGNAL(doneProcessing()), this, SLOT(workerFinished()));
+    connect(worker, SIGNAL(enqueueThis()), this, SLOT(enqueueRequested()));
     workerThread.start(QThread::LowPriority);
 }
 
