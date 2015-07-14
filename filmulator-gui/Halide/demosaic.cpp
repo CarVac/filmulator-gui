@@ -189,15 +189,6 @@ Halide::Func demosaic(Func deinterleaved)
     bAtGB_h(x,y) = (b_b(x,y) + b_b(x+1,y))/2.0f;// + (2*g_gb(x,y) - g_gb(x-1,y) - g_gb(x+1,y))/4;
     rAtGB_v(x,y) = (r_r(x,y) + r_r(x,y+1))/2.0f;// + (2*g_gb(x,y) - g_gb(x,y-1) - g_gb(x,y+1))/4;
 
-    gAtR_h.compute_root();
-    gAtR_v.compute_root();
-    gAtB_h.compute_root();
-    gAtB_v.compute_root();
-    rAtGR_h.compute_root();
-    bAtGR_v.compute_root();
-    bAtGB_h.compute_root();
-    rAtGB_v.compute_root();
-
 
     //Get the logs of the color ratios
 
@@ -235,14 +226,6 @@ Halide::Func demosaic(Func deinterleaved)
     gbRatioAtGB_h(x,y) = g_gb(x,y)-bAtGB_h(x,y);
     grRatioAtGB_v(x,y) = g_gb(x,y)-rAtGB_v(x,y);
 */
-    grRatioAtR_h.compute_root();
-    grRatioAtR_v.compute_root();
-    gbRatioAtB_h.compute_root();
-    gbRatioAtB_v.compute_root();
-    grRatioAtGR_h.compute_root();
-    gbRatioAtGR_v.compute_root();
-    gbRatioAtGB_h.compute_root();
-    grRatioAtGB_v.compute_root();
     //Blur the color ratios, to estimate the actual color ratio.
     //These are 1d blurs.
     //Vertical is blurred vertically.
@@ -312,12 +295,14 @@ Halide::Func demosaic(Func deinterleaved)
     X_h(x,y) = Ys_h(x,y);
     X_v(x,y) = Ys_v(x,y);
 
+    /*
     Func NU_h, NU_v;
     NU_h(x,y) = Ys_h(x,y) - Y_h(x,y);
     NU_v(x,y) = Ys_v(x,y) - Y_v(x,y);
 
     NU_h.compute_root();
     NU_v.compute_root();
+    */
 
     //Neighborhood mean of X
     Func MUx_h, MUx_v;
@@ -356,14 +341,7 @@ Halide::Func demosaic(Func deinterleaved)
     //SIGMAx_v(x,y) = 0.0f;
     //SIGMAx_v(x,y) += (X_v(x,r2+y) - MUx_v(x,r2+y))*(X_v(x,r2+y) - MUx_v(x,r2+y)) / DOMDIV;
     SIGMAx_v(x,y) = pv(x,y) / 8.0f - momv(x,y)*momv(x,y)/(8.0f*9.0f);
-
-    SIGMAx_h.compute_root();
-    SIGMAx_v.compute_root();
     //Confirmed error < 2e-9; absolute values peak at around 1e-3
-
-    Func temp;
-    temp(x,y) = SIGMAx_h(x,y)*1000.0f;
-    temp.compute_root().trace_stores();
 
 
     //Neighborhood variance of nu
@@ -374,21 +352,15 @@ Halide::Func demosaic(Func deinterleaved)
     SIGMAnu_v(x,y) = 0.0f;
     SIGMAnu_v(x,y) += (X_v(x,r3+y) - Y_v(x,r3+y))*(X_v(x,r3+y) - Y_v(x,r3+y)) / DOMDIV;
 
-    SIGMAnu_h.compute_root();
-    SIGMAnu_v.compute_root();
-
     //LMMSE estimation in each direction
     Func Xlmmse_h, Xlmmse_v;
     Xlmmse_h(x,y) = MUx_h(x,y) +
         (Y_h(x,y) - MUx_h(x,y)) * SIGMAx_h(x,y) /
         (SIGMAx_h(x,y) + SIGMAnu_h(x,y) + 1e-7f);
-        //(temp(x,y)/1000.0f + SIGMAnu_h(x,y) + 1e-7f);
     Xlmmse_v(x,y) = MUx_v(x,y) +
         (Y_v(x,y) - MUx_v(x,y)) * SIGMAx_v(x,y) /
         (SIGMAx_v(x,y) + SIGMAnu_v(x,y) + 1e-7f);
 
-    Xlmmse_h.compute_root().trace_stores();
-    Xlmmse_v.compute_root();
     //Confirmed to be correct? ======================================================
 
     //The expected estimation error is Xerror = X - Xlmmse
@@ -399,21 +371,18 @@ Halide::Func demosaic(Func deinterleaved)
     SIGMAer_h(x,y) = SIGMAx_h(x,y) - SIGMAx_h(x,y)*SIGMAx_h(x,y)/(SIGMAx_h(x,y) + SIGMAnu_h(x,y) + 1e-7f);
     SIGMAer_v(x,y) = SIGMAx_v(x,y) - SIGMAx_v(x,y)*SIGMAx_v(x,y)/(SIGMAx_v(x,y) + SIGMAnu_v(x,y) + 1e-7f);
 
-    SIGMAer_h.compute_root();
-    SIGMAer_v.compute_root();
-
     //Weight of estimate
     Func W_h, W_v;
     W_h(x,y) = SIGMAer_v(x,y) / (SIGMAer_h(x,y) + SIGMAer_v(x,y) + 1e-7f);
     W_v(x,y) = 1.0f - W_h(x,y);//SIGMAer_h(x,y) / (SIGMAer_v(x,y) + SIGMAer_h(x,y));
 
-    W_h.compute_root();//slightly different =============================================
-    W_v.compute_root();
+    //slightly different =============================================
 
     //Combine to get the final log of the color ratio we'll use
     Func X;
     X(x,y) = W_h(x,y)*Xlmmse_h(x,y) + W_v(x,y)*Xlmmse_v(x,y);
 
+    //Not Yet Scheduled
     X.compute_root();
 
     //Separate the green/color ratios back out.
@@ -537,10 +506,6 @@ Halide::Func demosaic(Func deinterleaved)
     Var xi, yi;
     grSorted_v.compute_at(grRatio,xi).store_at(grRatio,yi);
     gbSorted_v.compute_at(gbRatio,xi).store_at(gbRatio,yi);
-    grRatio.tile(x,y,xi,yi,128,128).parallel(x).vectorize(xi,8);
-    gbRatio.tile(x,y,xi,yi,128,128).parallel(x).vectorize(xi,8);
-    grRatio.compute_root();
-    gbRatio.compute_root();
 
     //Output the values we want.
     output(x,y,c) = select(c == 0,
@@ -582,6 +547,7 @@ Halide::Func demosaic(Func deinterleaved)
                         //Green pixel in blue row
                         g_gb(x/2,y/2) / gbRatio(x,y))))) - 0.01f;
 
+    output.tile(x,y,xi,yi,128,128).parallel(x).vectorize(xi,8).compute_root();
 /*
 //exponential, differences
     //Output the values we want.
