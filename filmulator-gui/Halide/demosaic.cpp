@@ -438,18 +438,18 @@ Halide::Func demosaic(Func deinterleaved)
     //SIGMAer_v.split(x,xo,xi,16).parallel(xo).vectorize(xi,4);
     //W_v.split(x,xo,xi,16).parallel(xo).vectorize(xi,4);
 
-    X.compute_root().parallel(y);
-    //grLogRatioAtR.store_at(output,tile_index).compute_at(output,xi);
-    //gbLogRatioAtB.store_at(output,tile_index).compute_at(output,xi);
-    //gbLogRatioAtR.store_at(output,tile_index).compute_at(output,xi);
-    //grLogRatioAtB.store_at(output,tile_index).compute_at(output,xi);
-    //grLogRatio.compute_at(output,tile_index);
-    //gbLogRatio.compute_at(output,tile_index);
+    //X.compute_root().parallel(y);
+    grLogRatioAtR.store_at(output,tile_index).compute_at(grLogRatio,x);
+    gbLogRatioAtB.store_at(output,tile_index).compute_at(gbLogRatio,x);
+    gbLogRatioAtR.store_at(output,tile_index).compute_at(gbLogRatio,x);
+    grLogRatioAtB.store_at(output,tile_index).compute_at(grLogRatio,x);
+    grLogRatio.compute_at(output,tile_index);
+    gbLogRatio.compute_at(output,tile_index);
 
     output.tile(x,y,xo,yo,xi,yi,64,64)
       .fuse(xo,yo,tile_index)
-      //.parallel(tile_index)
-      //.vectorize(xi,8)
+      .parallel(tile_index)
+      .vectorize(xi,8)
       .bound(c,0,3).reorder(c,xi,yi,tile_index).unroll(c)
       .compute_root();//.compile_to_lowered_stmt("output_unrolledC.html",HTML);
 
@@ -464,20 +464,25 @@ int main(int argc, char **argv)
     //Halide::Image<uint8_t> input = load<uint8_t>("porcupine2.png");
     Halide::Image<uint8_t> input = load<uint8_t>("P1040567.png");
     //Halide::Image<uint8_t> input = load<uint8_t>("teensy.png");
-    timeval t1, t2;
-    gettimeofday(&t1, NULL);
     Func toFloat, toBayer, toDemosaic, toInt;
     toFloat(x,y,c) = cast<float>(input(x,y,c))/255.0f;
     toBayer = bayerize(BoundaryConditions::mirror_image(toFloat,0,input.width(),0,input.height(),0,3));
+    //Halide::Image<float> bayer = toBayer.realize(input.width(),input.height(),3);
     //toBayer = bayerize(BoundaryConditions::constant_exterior(toFloat,0.0f,0,input.width(),0,input.height(),0,3));
     toDemosaic = demosaic(toBayer);
     toInt(x,y,c) = cast<uint8_t>(Halide::clamp(Halide::round(toDemosaic(x,y,c)*255.0f),0.0f,255.0f));
+    toInt.compile_jit();
+    timeval t1, t2;
+    std::cout << "Finished compilation, starting processing" << std::endl;
+    gettimeofday(&t1, NULL);
     Halide::Image<uint8_t> output  = toInt.realize(input.width(),input.height(),3);
     gettimeofday(&t2, NULL);
+    std::cout<< "Finished processing in " <<
+      float(t2.tv_sec - t1.tv_sec) + float(t2.tv_usec - t1.tv_usec)/1000000.0f <<
+      " seconds" << std::endl;
     save(output,"000734_demosaiced7.png");
     //save(output,"porcupine_demosaiced2.png");
     //save(output,"P1040567-med-out.png");
     //save(output,"teensy_out.png");
-    std::cout<<float(t2.tv_sec - t1.tv_sec) + float(t2.tv_usec - t1.tv_usec)/1000000.0f << std::endl;
     return 0;
 }
