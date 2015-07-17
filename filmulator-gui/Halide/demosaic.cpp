@@ -21,27 +21,19 @@ Halide::Func bayerize(Func in)
 {
     Func out;
     Var x,y,c;
-    
-    out(x,y,c) = select(
-            c < 2, select(
-                c == 0,
-                in(2*x+1,2*y+0,1),
-                in(2*x+2,2*y+0,0)),
-            select(
-                c == 2,
-                in(2*x+1,2*y+1,2),
-                in(2*x+2,2*y+1,1)));
-    /*
-    out(x,y,c) = select(
-            c < 2, select(
-                c == 0,
-                in(2*x+0,2*y+0,1),
-                in(2*x+1,2*y+0,0)),
-            select(
-                c == 2,
-                in(2*x+0,2*y+1,2),
-                in(2*x+1,2*y+1,1)));
-    */
+    Expr evenRow = (y%2 == 0);
+    Expr oddRow  = (y%2 == 1);
+    Expr evenCol = (x%2 == 0);
+    Expr oddCol  = (x%2 == 1);
+    out(x,y) = select(
+            evenRow, select(
+                evenCol,
+                in(x,y,1),
+                in(x,y,0)),
+            select( // odd row
+                evenCol,
+                in(x,y,2),
+                in(x,y,1)));
     // G R G R
     // B G B G
     // G R G R
@@ -55,19 +47,6 @@ Halide::Func blurRatio_v(Func vert)
     Var x,y;
     //Low pass filter (sigma=2 L=4)
     Expr h0, h1, h2, h3, h4, hsum;
-    /*
-    h0 = 1.0f;
-    h1 = exp( -1.0f/8.0f);
-    h2 = exp( -4.0f/8.0f);
-    h3 = exp( -9.0f/8.0f);
-    h4 = exp(-16.0f/8.0f);
-    hsum = h0 + 2.0f*(h1 + h2 + h3 + h4);
-    h0 /= hsum;
-    h1 /= hsum;
-    h2 /= hsum;
-    h3 /= hsum;
-    h4 /= hsum;
-    */
     h0 = .203125f;
     h1 = .1796875f;
     h2 = .1171875f;
@@ -89,19 +68,6 @@ Halide::Func blurRatio_h(Func hor)
     Var x,y;
     //Low pass filter (sigma=2 L=4)
     Expr h0, h1, h2, h3, h4, hsum;
-    /*    
-    h0 = 1.0f;
-    h1 = exp( -1.0f/8.0f);
-    h2 = exp( -4.0f/8.0f);
-    h3 = exp( -9.0f/8.0f);
-    h4 = exp(-16.0f/8.0f);
-    hsum = h0 + 2.0f*(h1 + h2 + h3 + h4);
-    h0 /= hsum;
-    h1 /= hsum;
-    h2 /= hsum;
-    h3 /= hsum;
-    h4 /= hsum;
-    */
     h0 = .203125f;
     h1 = .1796875f;
     h2 = .1171875f;
@@ -143,10 +109,16 @@ Halide::Func demosaic(Func deinterleaved)
     //Group the pixels into fours.
     Func r_r, g_gr, g_gb, b_b;
 
-    g_gr(x, y) = deinterleaved(x,y,0) + 0.01f;
-    r_r(x, y)  = deinterleaved(x,y,1)*1.2 + 0.01f;
-    b_b(x, y)  = deinterleaved(x,y,2)*1.3 + 0.01f;
-    g_gb(x, y) = deinterleaved(x,y,3) + 0.01f;
+    Func wb; wb(x) = 1;
+    g_gr(x, y) = deinterleaved(2*x  ,2*y  )*wb(0) + 0.01f;
+    r_r(x, y)  = deinterleaved(2*x+1,2*y  )*wb(1) + 0.01f;
+    b_b(x, y)  = deinterleaved(2*x  ,2*y+1)*wb(2) + 0.01f;
+    g_gb(x, y) = deinterleaved(2*x+1,2*y+1)*wb(3) + 0.01f;
+
+    // G R G R
+    // B G B G
+    // G R G R
+    // B G B G
 
     //Initial demosaic:
     //We need to make this bilinear, and sharpen the estimated colors at the end.
@@ -313,9 +285,6 @@ Halide::Func demosaic(Func deinterleaved)
     Func X;
     X(x,y) = W_h(x,y)*Xlmmse_h(x,y) + W_v(x,y)*Xlmmse_v(x,y);
 
-    //Not Yet Scheduled
-    //X.compute_root();
-
     //Separate the green/color ratios back out.
     //They're only valid on red and blue pixels.
     //Reminder: these are logs, not actually the ratios yet.
@@ -332,21 +301,29 @@ Halide::Func demosaic(Func deinterleaved)
     grLogRatioAtB(x,y) = (grLogRatioAtR(x,y) + grLogRatioAtR(x,y+1) +
             grLogRatioAtR(x-1,y+1) + grLogRatioAtR(x-1,y)) / 4.0f;
 
+    Func logRatiosRB;
+    logRatiosRB(x,y) = Tuple(grLogRatioAtR(x,y),gbLogRatioAtB(x,y),
+                            gbLogRatioAtR(x,y),grLogRatioAtB(x,y));
+    Func grLogRatioAtRtup,grLogRatioAtBtup,gbLogRatioAtRtup,gbLogRatioAtBtup;
+    grLogRatioAtRtup(x,y) = logRatiosRB(x,y)[0];
+    gbLogRatioAtBtup(x,y) = logRatiosRB(x,y)[1];
+    gbLogRatioAtRtup(x,y) = logRatiosRB(x,y)[2];
+    grLogRatioAtBtup(x,y) = logRatiosRB(x,y)[3];
+
     //Compute the color ratios at green
     //Again, still logs.
     Func grLogRatioAtGR, gbLogRatioAtGR, grLogRatioAtGB, gbLogRatioAtGB;
-    grLogRatioAtGR(x,y) = (grLogRatioAtR(x-1,y) + grLogRatioAtR(x,y) +
-            grLogRatioAtB(x,y-1) + grLogRatioAtB(x,y)) / 4.0f;
-    grLogRatioAtGB(x,y) = (grLogRatioAtR(x,y) + grLogRatioAtR(x,y+1) +
-            grLogRatioAtB(x,y) + grLogRatioAtB(x+1,y)) / 4.0f;
-    gbLogRatioAtGR(x,y) = (gbLogRatioAtR(x-1,y) + gbLogRatioAtR(x,y) +
-            gbLogRatioAtB(x,y-1) + gbLogRatioAtB(x,y)) / 4.0f;
-    gbLogRatioAtGB(x,y) = (gbLogRatioAtR(x,y) + gbLogRatioAtR(x,y+1) +
-            gbLogRatioAtB(x,y) + gbLogRatioAtB(x+1,y)) / 4.0f;
+    grLogRatioAtGR(x,y) = (grLogRatioAtRtup(x-1,y) + grLogRatioAtRtup(x,y) +
+            grLogRatioAtBtup(x,y-1) + grLogRatioAtBtup(x,y)) / 4.0f;
+    grLogRatioAtGB(x,y) = (grLogRatioAtRtup(x,y) + grLogRatioAtRtup(x,y+1) +
+            grLogRatioAtBtup(x,y) + grLogRatioAtBtup(x+1,y)) / 4.0f;
+    gbLogRatioAtGR(x,y) = (gbLogRatioAtRtup(x-1,y) + gbLogRatioAtRtup(x,y) +
+            gbLogRatioAtBtup(x,y-1) + gbLogRatioAtBtup(x,y)) / 4.0f;
+    gbLogRatioAtGB(x,y) = (gbLogRatioAtRtup(x,y) + gbLogRatioAtRtup(x,y+1) +
+            gbLogRatioAtBtup(x,y) + gbLogRatioAtBtup(x+1,y)) / 4.0f;
 
     //The libraw lmmse does a median filter...why?
-    //It seems like it may be necessary.
-    //Let's try it.
+    //Doesn't seem to do anything
 
     //First we must combine these ratios into one.
     Func grLogRatio, gbLogRatio;
@@ -373,15 +350,15 @@ Halide::Func demosaic(Func deinterleaved)
                 //Green pixel in blue row
                 gbLogRatioAtGB(x/2,y/2)));
 
+    Func logRatios;
+    logRatios(x,y) = Tuple(grLogRatio(x,y),gbLogRatio(x,y));
 
     //Turn the logs back into ratios, after the median filter
     Func grRatio, gbRatio;
 
     //No median, but do turn the logs back into ratios.
-    grRatio(x,y) = exp(grLogRatio(x,y));
-    gbRatio(x,y) = exp(gbLogRatio(x,y));
-
-
+    grRatio(x,y) = exp(logRatios(x,y)[0]);
+    gbRatio(x,y) = exp(logRatios(x,y)[1]);
 
     //Output the values we want.
     output(x,y,c) = select(c == 0,
@@ -439,22 +416,25 @@ Halide::Func demosaic(Func deinterleaved)
     //W_v.split(x,xo,xi,16).parallel(xo).vectorize(xi,4);
 
     //X.compute_root().parallel(y);
-    grLogRatioAtR.store_at(output,tile_index).compute_at(grLogRatio,x);
-    gbLogRatioAtB.store_at(output,tile_index).compute_at(gbLogRatio,x);
-    gbLogRatioAtR.store_at(output,tile_index).compute_at(gbLogRatio,x);
-    grLogRatioAtB.store_at(output,tile_index).compute_at(grLogRatio,x);
-    grLogRatio.compute_at(output,tile_index);
-    gbLogRatio.compute_at(output,tile_index);
+    //grLogRatioAtR.store_at(output,tile_index).compute_at(grLogRatio,x);
+    //gbLogRatioAtB.store_at(output,tile_index).compute_at(gbLogRatio,x);
+    //gbLogRatioAtR.store_at(output,tile_index).compute_at(gbLogRatio,x);
+    //grLogRatioAtB.store_at(output,tile_index).compute_at(grLogRatio,x);
+    logRatiosRB.store_at(logRatios,xo).compute_at(logRatios,xi);
+    //grLogRatio.compute_at(output,tile_index);
+    //gbLogRatio.compute_at(output,tile_index);
+    logRatios.compute_at(output,tile_index).split(x,xo,xi,2).unroll(xi);
 
     output.tile(x,y,xo,yo,xi,yi,64,64)
       .fuse(xo,yo,tile_index)
       .parallel(tile_index)
       .vectorize(xi,8)
-      .bound(c,0,3).reorder(c,xi,yi,tile_index).unroll(c)
+      .bound(c,0,3).unroll(c).reorder(c,xi,yi,tile_index).reorder_storage(c,x,y)
       .compute_root();//.compile_to_lowered_stmt("output_unrolledC.html",HTML);
 
     return output;
 
+    //Time beat: 2.25 seconds
 }
 
 int main(int argc, char **argv)
@@ -464,12 +444,13 @@ int main(int argc, char **argv)
     //Halide::Image<uint8_t> input = load<uint8_t>("porcupine2.png");
     Halide::Image<uint8_t> input = load<uint8_t>("P1040567.png");
     //Halide::Image<uint8_t> input = load<uint8_t>("teensy.png");
-    Func toFloat, toBayer, toDemosaic, toInt;
+    Func toFloat, toBayer, toDemosaic, toInt, bayerFunc;
     toFloat(x,y,c) = cast<float>(input(x,y,c))/255.0f;
-    toBayer = bayerize(BoundaryConditions::mirror_image(toFloat,0,input.width(),0,input.height(),0,3));
-    //Halide::Image<float> bayer = toBayer.realize(input.width(),input.height(),3);
+    toBayer = bayerize(toFloat);
+    Halide::Image<float> bayer = toBayer.realize(input.width(),input.height());
     //toBayer = bayerize(BoundaryConditions::constant_exterior(toFloat,0.0f,0,input.width(),0,input.height(),0,3));
-    toDemosaic = demosaic(toBayer);
+    bayerFunc(x,y) = bayer(x,y);
+    toDemosaic = demosaic(BoundaryConditions::mirror_image(bayerFunc,0,input.width(),0,input.height()));
     toInt(x,y,c) = cast<uint8_t>(Halide::clamp(Halide::round(toDemosaic(x,y,c)*255.0f),0.0f,255.0f));
     toInt.compile_jit();
     timeval t1, t2;
