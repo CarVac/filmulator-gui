@@ -2,8 +2,7 @@
 #define IMAGEPIPELINE_H
 #include "filmSim.hpp"
 #include "interface.h"
-
-enum Valid {none, load, demosaic, prefilmulation, filmulation, whiteblack, colorcurve, filmlikecurve, count};
+#include "../ui/parameterManager.h"
 
 struct ProcessingParameters {
     //none valid

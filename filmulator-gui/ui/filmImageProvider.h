@@ -32,7 +32,6 @@ public:
     float getProgress(){return progress;}
 
     void updateFilmProgress(float);
-    void setValid( Valid );
 
     Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,LogY::no);}
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
