@@ -79,11 +79,11 @@ int main(int argc, char *argv[])
 
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
-    window->setIcon(QIcon(":/icons/filmulator64icon.svg"));
     if (!window) {
         qWarning("Error: your root item has to be a Window");
         return -1;
     }
+    window->setIcon(QIcon(":/icons/filmulator64icon.svg"));
     window->show();
 
     return app.exec();
