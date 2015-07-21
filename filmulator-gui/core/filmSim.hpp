@@ -48,8 +48,6 @@
 #define tout 0 && cout
 #endif
 
-using namespace std;
-
 struct filmulateParams {//TODO: adjust variable names.
     float initialDeveloperConcentration;
     float reservoirThickness;//once reservoir_size

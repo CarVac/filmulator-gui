@@ -98,6 +98,8 @@ void FilmImageProvider::writeJpeg()
     processMutex.unlock();
 }
 
+//TODO: There needs to be an OutputWriteWorker like the ThumbWriteWorker, but hq and with some
+// flexibility to what stages of the pipeline get run
 void FilmImageProvider::writeThumbnail(QString searchID)
 {
     writeDataMutex.lock();

@@ -5,7 +5,7 @@
 #include <QVariant>
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include "../core/imagePipeline.h"
+//#include "../core/imagePipeline.h"
 #include <QMutex>
 #include <QMutexLocker>
 #include <QDateTime>
@@ -18,10 +18,69 @@ enum Valid {none,
             demosaic,
             prefilmulation,
             filmulation,
-            whiteblack,
+            blackwhite,
             colorcurve,
             filmlikecurve,
             count};
+
+enum AbortStatus {proceed,
+                  restart};
+
+//We want a struct for each stage of the pipeline for validity.
+struct LoadParams {
+    std::string fullFilename;
+    bool tiffIn;
+    bool jpegIn;
+};
+
+struct DemosaicParams {
+    bool caEnabled;
+    int highlights;
+};
+
+struct PrefilmParams {
+    float exposureComp;
+    float temperature;
+    float tint;
+};
+
+struct FilmParams {
+    float initialDeveloperConcentration;
+    float reservoirThickness;
+    float activeLayerThickness;
+    float crystalsPerPixel;
+    float initialCrystalRadius;
+    float initialSilverSaltDensity;
+    float developerConsumptionConst;
+    float crystalGrowthConst;
+    float silverSaltConsumptionConst;
+    float totalDevelTime;
+    int agitateCount;
+    int developmentSteps;
+    float filmArea;
+    float sigmaConst;
+    float layerMixConst;
+    float layerTimeDivisor;
+    int rolloffBoundary;
+};
+
+struct BlackWhiteParams {
+    float blackpoint;
+    float whitepoint;
+};
+
+struct CurvesParams {
+    float shadowsX;
+    float shadowsY;
+    float highlightsX;
+    float highlightsY;
+    float vibrance;
+    float saturation;
+};
+
+struct OrientationParams {
+    int rotation;
+};
 
 class ParameterManager : public QObject
 {
@@ -85,7 +144,6 @@ class ParameterManager : public QObject
 
 public:
     ParameterManager();
-    ProcessingParameters getParams();
 
     Q_INVOKABLE void rotateRight();
     Q_INVOKABLE void rotateLeft();
@@ -97,57 +155,34 @@ public:
     Q_INVOKABLE void copyAll(QString fromImageID);
     Q_INVOKABLE void paste(QString toImageID);
 
+    //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
+    //and then returns the struct and the validity.
     //Input
-    std::tuple<bool,bool> pipeGetTiffIn;
-    std::tuple<bool,bool> pipeGetjpegIn;
+    std::tuple<AbortStatus,LoadParams> claimLoadParams();
 
     //Demosaic
-    std::tuple<bool,bool> pipeGetCaEnabled;
-    std::tuple<bool,int> pipeGetHighlights;
+    std::tuple<AbortStatus,DemosaicParams> claimDemosaicParams();
 
     //Prefilmulation
-    std::tuple<bool,float> pipeGetExposureComp;
-    std::tuple<bool,float> pipeGetTemperature;
-    std::tuple<bool,float> pipeGetTint;
+    std::tuple<AbortStatus,PrefilmParams> claimPrefilmParams();
 
     //Filmulation
-    std::tuple<bool,float> pipeGetInitialDeveloperConcentration;
-    std::tuple<bool,float> pipeGetReservoirThickness;
-    std::tuple<bool,float> pipeGetActiveLayerThickness;
-    std::tuple<bool,float> pipeGetCrystalsPerPixel;
-    std::tuple<bool,float> pipeGetInitialCrystalRadius;
-    std::tuple<bool,float> pipeGetInitialSilverSaltDensity;
-    std::tuple<bool,float> pipeGetDeveloperConsumptionConst;
-    std::tuple<bool,float> pipeGetCrystalGrowthConst;
-    std::tuple<bool,float> pipeGetSilverSaltConsumptionConst;
-    std::tuple<bool,float> pipeGetTotalDevelopmentTime;
-    std::tuple<bool,int> pipeGetAgitateCount;
-    std::tuple<bool,int> pipeGetDevelopmentSteps;
-    std::tuple<bool,float> pipeGetFilmArea;
-    std::tuple<bool,float> pipeGetSigmaConst;
-    std::tuple<bool,float> pipeGetLayerMixConst;
-    std::tuple<bool,float> pipeGetLayerTimeDivisor;
-    std::tuple<bool,int> pipeGetRolloffBoundary;
+    std::tuple<AbortStatus,FilmParams> claimFilmParams();
 
-    //Whitepoint & Blackpoint
-    std::tuple<bool,float> pipeGetBlackpoint;
-    std::tuple<bool,float> pipeGetWhitepoint;
+    //Whitepoint & Blackpoint (and cropping and rotation and distortion)
+    std::tuple<AbortStatus,BlackWhiteParams> claimBlackWhiteParams();
 
     //Global, all-color curves.
-    std::tuple<bool,float> pipeGetShadowsX;
-    std::tuple<bool,float> pipeGetShadowsY;
-    std::tuple<bool,float> pipeGetHighlightsX;
-    std::tuple<bool,float> pipeGetHighlightsY;
-    std::tuple<bool,float> pipeGetVibrance;
-    std::tuple<bool,float> pipeGetSaturation;
+    std::tuple<AbortStatus,CurvesParams> claimCurvesParams();
 
-    //Rotation
-    std::tuple<bool,int> pipeGetRotation;
+    //90 degree rotation
+    std::tuple<AbortStatus,OrientationParams> claimOrientationParams();
 
-
+    Valid getValid();
 
 protected:
-    ProcessingParameters param;
+    //The paramMutex exists to prevent race conditions between
+    //changes in the parameters and changes in validity.
     QMutex paramMutex;
     QMutex signalMutex;
 
@@ -156,7 +191,7 @@ protected:
     bool pasteable;
     bool pasteSome;
 
-    ProcessingParameters loadParams(QString imageID);
+    void loadParams(QString imageID);
     //void writeToDB(ProcessingParameters params, QString imageID);
     void writeToDB(QString imageID);
     void paramChangeWrapper(QString);
@@ -173,7 +208,10 @@ protected:
     float aperture;
     float focalLength;
 
+    Valid validity;
+
     //Input
+    std::string m_fullFilename;
     bool m_tiffIn;
     bool m_jpegIn;
 
