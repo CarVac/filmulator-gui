@@ -36,6 +36,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     FilmlikeCurvesParams curvesParam;
     OrientationParams orientationParam;
 
+    updateProgress(valid, 0.0f);
     switch (valid)
     {
     case none://Load image into buffer
@@ -53,13 +54,18 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     case load://Do demosaic
     {
         AbortStatus abort;
+        //Because the load params are used here
+        std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
         std::tie(valid, abort, demosaicParam) = paramManager->claimDemosaicParams();
         if (abort == AbortStatus::restart)
         {
+            cout << "imagePipeline.cpp: aborted at demosaic" << endl;
             return emptyMatrix();
         }
 
         cout << "imagePipeline.cpp: Opening " << loadParam.fullFilename << endl;
+        cout << "imagePipeline.cpp: tiffIn? " << loadParam.tiffIn << endl;
+        cout << "imagePipeline.cpp: jpegIn? " << loadParam.jpegIn << endl;
 
         matrix<float> input_image;
         //Reads in the photo.
@@ -153,6 +159,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
 
+        //Now, since we didn't check abort status out here, we do have to at least
+        // increment the validity.
+        AbortStatus abort;
+        std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
         updateProgress(valid, 0.0f);
     }
     case filmulation://Do whitepoint_blackpoint

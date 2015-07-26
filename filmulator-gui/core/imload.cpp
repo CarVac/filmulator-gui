@@ -23,8 +23,12 @@
 
 bool imload(std::string filename,
             matrix<float> &input_image,
-            bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights,
-            bool caEnabled, bool lowQuality )
+            bool tiff,
+            bool jpeg_in,
+            Exiv2::ExifData &exifData,
+            int highlights,
+            bool caEnabled,
+            bool lowQuality )
 {
     if(tiff)
     {

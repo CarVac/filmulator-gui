@@ -33,11 +33,12 @@ FilmImageProvider::~FilmImageProvider()
 }
 
 QImage FilmImageProvider::requestImage(const QString &id,
-                                       QSize *size, const QSize &requestedSize)
+                                       QSize *size,
+                                       const QSize &requestedSize)
 {
     gettimeofday(&request_start_time,NULL);
     QImage output = emptyImage();
-    cout << "Here?" << endl;
+    cout << "FilmImageProvider::requestImage Here?" << endl;
 
     //Ensure that the tiff and jpeg outputs don't write the previous image.
     processMutex.lock();

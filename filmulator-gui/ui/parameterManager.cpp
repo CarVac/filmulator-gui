@@ -800,6 +800,8 @@ void ParameterManager::selectImage(QString imageID)
     //Copy all of the processing parameters from the db into this param manager.
     loadParams(imageID);
 
+    paramLocker.unlock();
+
     //Emit that the things have changed.
     emit caEnabledChanged();
     emit highlightsChanged();
@@ -834,7 +836,6 @@ void ParameterManager::selectImage(QString imageID)
     emit rotationChanged();
 
     //Mark that it's safe for sliders to move again.
-    paramLocker.unlock();
     QMutexLocker signalLocker(&signalMutex);
     enableParamChange();//Re-enable updating of the image.
     paramChangeWrapper(QString("selectImage"));

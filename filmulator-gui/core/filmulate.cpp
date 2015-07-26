@@ -123,7 +123,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
         }
 
         //Updating for starting the development simulation. Valid is one too high here.
-        pipeline->updateProgress(valid, float(i)/float(development_steps) - 1);
+        pipeline->updateProgress(Valid::prefilmulation, float(i)/float(development_steps));
 
         gettimeofday(&develop_start,NULL);
 
@@ -151,7 +151,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
         }
 
         //Updating for starting the diffusion simulation. Valid is one too high here.
-        pipeline->updateProgress(valid, (float(i)+0.5)/float(development_steps) - 1);
+        pipeline->updateProgress(Valid::prefilmulation, (float(i)+0.5)/float(development_steps));
 
         //Now, we are going to perform the diffusion part.
         //Here we mix the layer among itself, which grants us the
