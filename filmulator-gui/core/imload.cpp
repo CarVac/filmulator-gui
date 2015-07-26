@@ -18,111 +18,39 @@
  */
 
 // This file contains the function imload, which calls an image retrieval
-// function and loads the data into a matrix. If the length of the filename
-// list is greater than one, it uses that and the input exposure compensation
-// to merge the files into one HDR image.
+// function and loads the data into a matrix.
 #include "filmSim.hpp"
 
-bool imload(std::vector<string> input_filename_list,
-            std::vector<float> input_exposure_compensation,
+bool imload(std::string filename,
             matrix<float> &input_image,
             bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights,
             bool caEnabled, bool lowQuality )
 {
-    // If there is only one filename, then simply read it in and apply exposure
-    // compensation. If there are more than one, read the first one (the brightest
-    // one) in before moving on.
     if(tiff)
     {
-        if(imread_tiff(input_filename_list[0], input_image, exifData))
+        if(imread_tiff(filename, input_image, exifData))
         {
-            cerr << "Could not open image " << input_filename_list[0] <<
+            cerr << "Could not open image " << filename <<
                     "; Exiting..." << endl;
             return true;
         }
     }
     else if(jpeg_in)
     {
-        if(imread_jpeg(input_filename_list[0], input_image, exifData))
+        if(imread_jpeg(filename, input_image, exifData))
         {
-            cerr << "Could not open image " << input_filename_list[0] <<
+            cerr << "Could not open image " << filename <<
                     "; Exiting..." << endl;
             return true;
         }
     }
     else//raw
     {
-        if( imread( input_filename_list[0], input_image, exifData, highlights,
-                    caEnabled, lowQuality ) )
+        if( imread(filename, input_image, exifData, highlights,
+                   caEnabled, lowQuality))
         {
-            cerr << "Could not open image " << input_filename_list[0] <<
+            cerr << "Could not open image " << filename <<
                     "; Exiting..." << endl;
-            return true;
-        }
-    }
-    //The next line is commented out because this was moved outside of imload.
-    //input_image *= pow(2,-input_exposure_compensation[0]);
-
-    // This line filters for HDR stacks. If it's an HDR, then it continues.
-    if(input_filename_list.size()==1)
-    {
-        return false;
-    }
-
-    //This line sanitizes the input; if the input exposure compensations are
-    //not in increasing order (or at least identical) it rejects them.
-    for ( unsigned int i=1; i < input_exposure_compensation.size(); i++)
-    {
-        if (input_exposure_compensation[i-1] > input_exposure_compensation[i])
-        {
-            tout << "HDR exposures must be in ascending order of brightness. Exiting" << endl;
-            return true;
-        }
-    }
-    //Here we make some temporary variables for reading in a second image.
-    matrix<float> temp_image;
-    //This next variable is for making weighted averaging when merging
-    //exposures.
-    float exposure_weight = 1;
-    //This next variable is for making sure that the images actually are in
-    //increasing order of brightness.
-    //float last_exposure_factor = pow(2,-input_exposure_compensation[0]);
-    float last_exposure_factor = 1;
-    for ( unsigned int i=1; i < input_filename_list.size(); i++)
-    {
-        if(tiff)
-        {
-            if(imread_tiff(input_filename_list[i], temp_image, exifData))
-            {
-                cerr << "Could not open image " << input_filename_list[i] <<
-                        "; Exiting..." << endl;
-                return true;
-            }
-        }
-        else//raw
-        {
-            if( imread( input_filename_list[i], temp_image, exifData, 0,
-                        caEnabled, lowQuality ) )
-            {
-                cerr << "Could not open image " << input_filename_list[i] <<
-                        "; Exiting..." << endl;
-                return true;
-            }
-        }
-
-        if(input_image.nr()!=temp_image.nr() ||
-                input_image.nc()!=temp_image.nc())
-        {
-            cerr << "Image " << input_filename_list[i] <<
-                    " has mismatching image size;" << endl << "Exiting..." <<
-                    endl;
-            return true;
-        }
-        if (merge_exps(input_image, temp_image,
-                       exposure_weight, input_exposure_compensation[0],
-                       last_exposure_factor, input_filename_list[i],
-                       input_exposure_compensation[i]))
-        {
             return true;
         }
     }

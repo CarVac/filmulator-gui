@@ -52,8 +52,6 @@ protected:
     QThread workerThread;
 
     ParameterManager * paramManager;
-    bool abort;
-    QMutex paramMutex;//locks the params
     QMutex processMutex;//Ensures that output files are only of the currently selected image.
     QMutex writeDataMutex;//binds together the update of outputFilename and the outputImage.
     float progress;
@@ -63,7 +61,7 @@ protected:
     matrix<float> input_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
-    string outputFilename;
+    std::string outputFilename;
     matrix<float> filmulated_image;
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
@@ -77,8 +75,8 @@ protected:
     float getHistogramPoint(Histogram &hist, int index, int i, LogY isLog);
     QImage emptyImage();
 
-    void updateShortHistogram(Histogram &hist, const matrix<unsigned short> image );//, int &roll);
-    void updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum );//, int &roll);
+    void updateShortHistogram(Histogram &hist, const matrix<unsigned short> image );
+    void updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum );
     int histIndex(float value, float max);
     void zeroHistogram(Histogram &hist);
 
@@ -94,7 +92,6 @@ signals:
     void thumbnailDone();
 
 public slots:
-    void abortPipeline(QString source);
     void thumbDoneWriting();
 
 };

@@ -149,8 +149,7 @@ QString createNewProfile(const QString fileHash,
 
     //First, we load into a struct what parameters we just stored to the db.
     ParameterManager paramManager;
-    paramManager.selectImage(searchID);
-    ProcessingParameters params = paramManager.getParams();
+    paramManager.loadParams(searchID);
 
     //Next, we prepare an exif object.
     Exiv2::ExifData exif;
@@ -162,8 +161,7 @@ QString createNewProfile(const QString fileHash,
 //    ImagePipeline pipeline = ImagePipeline(BothCacheAndHisto, HighQuality);
     ImagePipeline pipeline = ImagePipeline(NoCacheNoHisto, LowQuality);
     //Process an image.
-    bool doNotAbort = false;
-    matrix<unsigned short> image = pipeline.processImage(params, &interface, doNotAbort, exif);
+    matrix<unsigned short> image = pipeline.processImage(&paramManager, &interface, exif);
 
 /* //Moved this directory handling stuff to thumbWriteWorker
     //Set up the thumbnail directory.

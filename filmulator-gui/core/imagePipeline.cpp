@@ -12,61 +12,74 @@ ImagePipeline::ImagePipeline(CacheAndHisto cacheAndHistoIn, QuickQuality quality
     completionTimes[Valid::demosaic] = 50;
     completionTimes[Valid::prefilmulation] = 5;
     completionTimes[Valid::filmulation] = 50;
-    completionTimes[Valid::whiteblack] = 10;
+    completionTimes[Valid::blackwhite] = 10;
     completionTimes[Valid::colorcurve] = 10;
     completionTimes[Valid::filmlikecurve] = 10;
 
 }
 
-matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
-                                                    Interface* interface_in,
-                                                    bool &aborted,
-                                                    Exiv2::ExifData &exifOutput)
+matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManager,
+                                                   Interface * interface_in,
+                                                   Exiv2::ExifData &exifOutput)
 {
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
     gettimeofday(&timeRequested, NULL);
     interface = interface_in;
 
-    setLastValid(params);
-    oldParams = params;
+    valid = paramManager->getValid();
+    LoadParams loadParam;
+    DemosaicParams demosaicParam;
+    PrefilmParams prefilmParam;
+    FilmParams filmParam;
+    BlackWhiteParams blackWhiteParam;
+    FilmlikeCurvesParams curvesParam;
+    OrientationParams orientationParam;
 
     switch (valid)
     {
     case none://Load image into buffer
     {
-        setValid(load);
-
+        AbortStatus abort;
+        //See whether to abort or not, while grabbing the latest parameters.
+        std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
+        if (abort == AbortStatus::restart)
+        {
+            return emptyMatrix();
+        }
+        //In the future we'll actually perform loading here.
+        updateProgress(valid, 0.0f);
     }
     case load://Do demosaic
     {
-        //If we're about to do work on a new image, we give up.
-        if(checkAbort(aborted))
+        AbortStatus abort;
+        std::tie(valid, abort, demosaicParam) = paramManager->claimDemosaicParams();
+        if (abort == AbortStatus::restart)
         {
             return emptyMatrix();
         }
 
-        cout << "imagePipeline.cpp: Opening " << params.filenameList[0] << endl;
+        cout << "imagePipeline.cpp: Opening " << loadParam.fullFilename << endl;
 
         matrix<float> input_image;
         //Reads in the photo.
-        if(imload(params.filenameList,
-                  params.exposureComp,
+        if (imload(loadParam.fullFilename,
                   input_image,
-                  params.tiffIn,
-                  params.jpegIn,
+                  loadParam.tiffIn,
+                  loadParam.jpegIn,
                   exifData,
-                  params.highlights,
-                  params.caEnabled,
+                  demosaicParam.highlights,
+                  demosaicParam.caEnabled,
                   (LowQuality == quality)))
         {
-            setValid(none);
+            //Tell the param manager to abort back for some reason? maybe?
+            //It was setting valid back to none.
             return emptyMatrix();
         }
 
         cout << "ImagePipeline::processImage: Demosaic complete." << endl;
 
-        if ( LowQuality == quality )
+        if (LowQuality == quality)
         {
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
@@ -79,19 +92,24 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         {
             cropped_image = input_image;
         }
-
-        setValid( demosaic );
+        updateProgress(valid, 0.0f);
     }
     case demosaic://Do pre-filmulation work.
     {
-        if(checkAbort(aborted))
+        AbortStatus abort;
+        std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
+        if (abort == AbortStatus::restart)
         {
             return emptyMatrix();
         }
 
         //Here we apply the exposure compensation and white balance.
-        matrix<float> exposureImage = cropped_image * pow(2, params.exposureComp[0]);
-        whiteBalance(exposureImage, pre_film_image, params.temperature, params.tint, params.filenameList[0]);
+        matrix<float> exposureImage = cropped_image * pow(2, prefilmParam.exposureComp);
+        whiteBalance(exposureImage,
+                     pre_film_image,
+                     prefilmParam.temperature,
+                     prefilmParam.tint,
+                     loadParam.fullFilename);
 
         if (NoCacheNoHisto == cacheHisto)
         {
@@ -104,20 +122,23 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         }
 
         cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
-        setValid(prefilmulation);
 
+        updateProgress(valid, 0.0f);
     }
     case prefilmulation://Do filmulation
     {
-        if(checkAbort(aborted))
-        {
-            return emptyMatrix();
-        }
+        //We don't need to check abort status out here, because
+        //the filmulate function will do so inside its loop multiple times.
+        //We just check for it returning an empty matrix.
 
         //Here we do the film simulation on the image...
-        if(filmulate(pre_film_image, filmulated_image, params.filmParams, this, aborted))
+        //If filmulate detects an abort, it returns true.
+        if (filmulate(pre_film_image,
+                      filmulated_image,
+                      paramManager,
+                      this))
         {
-            return emptyMatrix();//filmulate returns 1 if it detected an abort
+            return emptyMatrix();
         }
 
         if (NoCacheNoHisto == cacheHisto)
@@ -131,53 +152,53 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         }
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
-        setValid(filmulation);
 
+        updateProgress(valid, 0.0f);
     }
     case filmulation://Do whitepoint_blackpoint
     {
-
-        //See if the filmulation has been invalidated yet.
-        if(checkAbort(aborted))
+        AbortStatus abort;
+        std::tie(valid, abort, blackWhiteParam) = paramManager->claimBlackWhiteParams();
+        if (abort == AbortStatus::restart)
         {
             return emptyMatrix();
         }
 
-        whitepoint_blackpoint(filmulated_image, contrast_image, params.whitepoint,
-                              params.blackpoint);
+        whitepoint_blackpoint(filmulated_image,
+                              contrast_image,
+                              blackWhiteParam.whitepoint,
+                              blackWhiteParam.blackpoint);
 
         if (NoCacheNoHisto == cacheHisto)
         {
             filmulated_image.set_size(0, 0);
         }
-
-        setValid(whiteblack);
+        updateProgress(valid, 0.0f);
     }
-    case whiteblack: // Do color_curve
+    case blackwhite: // Do color_curve
     {
-        //See if the clipping has been invalidated.
-        if (checkAbort(aborted))
-        {
-            return emptyMatrix();
-        }
-
+        //It's not gonna abort because we have no color curves yet..
         //Prepare LUT's for individual color processin.g
         lutR.setUnity();
         lutG.setUnity();
         lutB.setUnity();
-        colorCurves(contrast_image, color_curve_image, lutR, lutG, lutB);
+        colorCurves(contrast_image,
+                    color_curve_image,
+                    lutR,
+                    lutG,
+                    lutB);
 
         if (NoCacheNoHisto == cacheHisto)
         {
             contrast_image.set_size(0, 0);
         }
-
-        setValid(colorcurve);
+        updateProgress(valid, 0.0f);
     }
     case colorcurve://Do film-like curve
     {
-        //See if the color curves applied are now invalid.
-        if (checkAbort(aborted))
+        AbortStatus abort;
+        std::tie(valid, abort, curvesParam) = paramManager->claimFilmlikeCurvesParams();
+        if (abort == AbortStatus::restart)
         {
             return emptyMatrix();
         }
@@ -186,16 +207,21 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
             [=](unsigned short in) -> unsigned short
             {
                 float shResult = shadows_highlights(float(in)/65535.0,
-                                                     params.shadowsX,
-                                                     params.shadowsY,
-                                                     params.highlightsX,
-                                                     params.highlightsY);
+                                                     curvesParam.shadowsX,
+                                                     curvesParam.shadowsY,
+                                                     curvesParam.highlightsX,
+                                                     curvesParam.highlightsY);
                 return 65535*default_tonecurve(shResult);
             }
         );
         matrix<unsigned short> film_curve_image;
-        film_like_curve(color_curve_image,film_curve_image,filmLikeLUT);
-        vibrance_saturation(film_curve_image,vibrance_saturation_image,params.vibrance,params.saturation);
+        film_like_curve(color_curve_image,
+                        film_curve_image,
+                        filmLikeLUT);
+        vibrance_saturation(film_curve_image,
+                            vibrance_saturation_image,
+                            curvesParam.vibrance,
+                            curvesParam.saturation);
 
         if (NoCacheNoHisto == cacheHisto)
         {
@@ -203,16 +229,20 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
             //film_curve_image is going out of scope anyway.
         }
 
-        setValid(filmlikecurve);
+        updateProgress(valid, 0.0f);
     }
-    default://case filmlikecurve: //output
+    default://output
     {
-        //See if the tonecurve has changed since it was applied.
-        if (checkAbort(aborted))
+        AbortStatus abort;
+        std::tie(valid, abort, orientationParam) = paramManager->claimOrientationParams();
+        if (abort == AbortStatus::restart);
         {
             return emptyMatrix();
         }
-        rotate_image(vibrance_saturation_image,rotated_image,params.rotation);
+
+        rotate_image(vibrance_saturation_image,
+                     rotated_image,
+                     orientationParam.rotation);
 
         if (NoCacheNoHisto == cacheHisto)
         {
@@ -222,6 +252,7 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
         {
             interface->updateHistFinal(rotated_image);
         }
+        updateProgress(valid, 0.0f);
 
         exifOutput = exifData;
         return rotated_image;
@@ -231,92 +262,22 @@ matrix<unsigned short> ImagePipeline::processImage(ProcessingParameters params,
     return emptyMatrix();
 }
 
-matrix<unsigned short> ImagePipeline::getLastImage()
-{
-    matrix<unsigned short> output_image;
-    output_image.set_size(rotated_image.nr(),rotated_image.nc());
-    output_image = rotated_image;
-    return output_image;
-}
+//Saved for posterity: we may want to re-implement this 0.1 second continuation
+// inside of parameterManager.
+//bool ImagePipeline::checkAbort(bool aborted)
+//{
+//    if (aborted && timeDiff(timeRequested) > 0.1)
+//    {
+//        cout << "ImagePipeline::aborted. valid = " << valid << endl;
+//        return true;
+//    }
+//    else
+//    {
+//        return false;
+//    }
+//}
 
-bool ImagePipeline::checkAbort(bool aborted)
-{
-    if (aborted && timeDiff(timeRequested) > 0.1)
-    {
-        cout << "ImagePipeline::aborted. valid = " << valid << endl;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-void ImagePipeline::setValid(Valid validIn)
-{
-    valid = validIn;
-    updateProgress(0);
-    return;
-}
-
-//This function determines at what stage in the pipeline the function's old parameters were valid to.
-//Then, it sets valid to the minimum of its last valid computation and the just-calculated validity.
-void ImagePipeline::setLastValid(const ProcessingParameters newParams)
-{
-    Valid tempValid;
-
-    //First is things that change what are loaded..
-    if (newParams.filenameList != oldParams.filenameList){ tempValid = none; }
-    else if (newParams.tiffIn != oldParams.tiffIn){ tempValid = none; }
-    else if (newParams.jpegIn != oldParams.jpegIn){ tempValid = none; }
-    //Next is things that affect demosaicing.
-    else if (newParams.caEnabled != oldParams.caEnabled){ tempValid = load; }
-    else if (newParams.highlights != oldParams.highlights){ tempValid = load;}
-    //Next is things that affect prefilmulation.
-    else if (newParams.exposureComp != oldParams.exposureComp){ tempValid = demosaic; }
-    else if (newParams.temperature != oldParams.temperature){ tempValid = demosaic; }
-    else if (newParams.tint != oldParams.tint){ tempValid = demosaic; }
-    //Next is things that affect filmulation.
-    else if (newParams.filmParams.initialDeveloperConcentration != oldParams.filmParams.initialDeveloperConcentration){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.reservoirThickness != oldParams.filmParams.reservoirThickness){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.activeLayerThickness != oldParams.filmParams.activeLayerThickness){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.crystalsPerPixel != oldParams.filmParams.crystalsPerPixel){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.initialCrystalRadius != oldParams.filmParams.initialCrystalRadius){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.initialSilverSaltDensity != oldParams.filmParams.initialSilverSaltDensity){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.developerConsumptionConst != oldParams.filmParams.developerConsumptionConst){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.crystalGrowthConst != oldParams.filmParams.crystalGrowthConst){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.silverSaltConsumptionConst != oldParams.filmParams.silverSaltConsumptionConst){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.totalDevelTime != oldParams.filmParams.totalDevelTime){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.agitateCount != oldParams.filmParams.agitateCount){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.developmentSteps != oldParams.filmParams.developmentSteps){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.filmArea != oldParams.filmParams.filmArea){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.sigmaConst != oldParams.filmParams.sigmaConst){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.layerMixConst != oldParams.filmParams.layerMixConst){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.layerTimeDivisor != oldParams.filmParams.layerTimeDivisor){ tempValid = prefilmulation; }
-    else if (newParams.filmParams.rolloffBoundary != oldParams.filmParams.rolloffBoundary){ tempValid = prefilmulation; }
-    //Next is stuff that does contrast.
-    else if (newParams.blackpoint != oldParams.blackpoint){ tempValid = filmulation; }
-    else if (newParams.whitepoint != oldParams.whitepoint){ tempValid = filmulation; }
-    //next is color curve stuff. Well, there's nothing for now.
-    //else if (newParams.[param] != oldParams.[param]){ tempValid = whiteblack; }
-    //next is other curves.
-    else if (newParams.shadowsX != oldParams.shadowsX){ tempValid = colorcurve; }
-    else if (newParams.shadowsY != oldParams.shadowsY){ tempValid = colorcurve; }
-    else if (newParams.highlightsX != oldParams.highlightsX){ tempValid = colorcurve; }
-    else if (newParams.highlightsY != oldParams.highlightsY){ tempValid = colorcurve; }
-    else if (newParams.vibrance != oldParams.vibrance){ tempValid = colorcurve; }
-    else if (newParams.saturation != oldParams.saturation){ tempValid = colorcurve; }
-    //next is rotation.
-    else /*if (newParams.rotation != oldParams.rotation)*/{ tempValid = filmlikecurve; }
-
-    if (tempValid < valid)
-    {
-        setValid(tempValid);
-    }
-    return;
-}
-
-void ImagePipeline::updateProgress(float CurrFractionCompleted)
+void ImagePipeline::updateProgress(Valid valid, float stepProgress)
 {
     double totalTime = numeric_limits<double>::epsilon();
     double totalCompletedTime = 0;
@@ -327,7 +288,7 @@ void ImagePipeline::updateProgress(float CurrFractionCompleted)
         if (i <= valid)
             fractionCompleted = 1;
         if (i == valid + 1)
-            fractionCompleted = CurrFractionCompleted;
+            fractionCompleted = stepProgress;
         //if greater -> 0
         totalCompletedTime += completionTimes[i]*fractionCompleted;
     }

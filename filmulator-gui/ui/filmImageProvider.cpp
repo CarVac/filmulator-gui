@@ -7,6 +7,9 @@
 #include <QDebug>
 #include <iostream>
 
+using std::cout;
+using std::endl;
+
 #define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
@@ -18,7 +21,6 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     zeroHistogram(finalHist);
     zeroHistogram(postFilmHist);
     zeroHistogram(preFilmHist);
-    QObject::connect(paramManager, SIGNAL(paramChanged(QString)), this, SLOT(abortPipeline(QString)));
 
     worker->moveToThread(&workerThread);
     connect(this, SIGNAL(requestThumbnail(QString)), worker, SLOT(writeThumb(QString)));
@@ -35,26 +37,24 @@ QImage FilmImageProvider::requestImage(const QString &id,
 {
     gettimeofday(&request_start_time,NULL);
     QImage output = emptyImage();
-
-    //Copy out the latest parameters.
-    paramMutex.lock();
-    ProcessingParameters tempParams = paramManager->getParams();
-    abort = false;
-    paramMutex.unlock();
+    cout << "Here?" << endl;
 
     //Ensure that the tiff and jpeg outputs don't write the previous image.
     processMutex.lock();
 
+    //Copy out the filename.
+    std::string filename = paramManager->getFullFilename();
+
     //Run the pipeline.
     Exiv2::ExifData data;
-    matrix<unsigned short> image = pipeline.processImage( tempParams, this, abort, data );
+    matrix<unsigned short> image = pipeline.processImage(paramManager, this, data);
 
     //Ensure that the thumbnail writer writes matching filenames and images
     writeDataMutex.lock();
     //Prepare the exif data for output.
     exifData = data;
     //Prepare the output filename.
-    outputFilename = tempParams.filenameList[0].substr(0,tempParams.filenameList[0].length()-4);
+    outputFilename = filename.substr(0,filename.length()-4);
     outputFilename.append("-output");
     //Copy the image over.
     last_image = image;
@@ -160,10 +160,4 @@ float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, Lo
 QImage FilmImageProvider::emptyImage()
 {
     return QImage(0,0,QImage::Format_ARGB32);
-}
-
-void FilmImageProvider::abortPipeline(QString source)
-{
-    //qDebug() << "FilmImageProvider::abortPipeline Aborted by " << source;
-    abort = true;
 }

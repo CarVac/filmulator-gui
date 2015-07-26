@@ -12,6 +12,7 @@
 #include <QString>
 #include <QDebug>
 #include <tuple>
+#include <iostream>
 
 enum Valid {none,
             load,
@@ -22,6 +23,9 @@ enum Valid {none,
             colorcurve,
             filmlikecurve,
             count};
+
+enum FilmFetch {initial,
+                subsequent};
 
 enum AbortStatus {proceed,
                   restart};
@@ -54,7 +58,7 @@ struct FilmParams {
     float developerConsumptionConst;
     float crystalGrowthConst;
     float silverSaltConsumptionConst;
-    float totalDevelTime;
+    float totalDevelopmentTime;
     int agitateCount;
     int developmentSteps;
     float filmArea;
@@ -69,7 +73,7 @@ struct BlackWhiteParams {
     float whitepoint;
 };
 
-struct CurvesParams {
+struct FilmlikeCurvesParams {
     float shadowsX;
     float shadowsY;
     float highlightsX;
@@ -158,28 +162,31 @@ public:
     //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
     //and then returns the struct and the validity.
     //Input
-    std::tuple<AbortStatus,LoadParams> claimLoadParams();
+    std::tuple<Valid,AbortStatus,LoadParams> claimLoadParams();
 
     //Demosaic
-    std::tuple<AbortStatus,DemosaicParams> claimDemosaicParams();
+    std::tuple<Valid,AbortStatus,DemosaicParams> claimDemosaicParams();
 
     //Prefilmulation
-    std::tuple<AbortStatus,PrefilmParams> claimPrefilmParams();
+    std::tuple<Valid,AbortStatus,PrefilmParams> claimPrefilmParams();
 
     //Filmulation
-    std::tuple<AbortStatus,FilmParams> claimFilmParams();
+    std::tuple<Valid,AbortStatus,FilmParams> claimFilmParams(FilmFetch fetch);
 
     //Whitepoint & Blackpoint (and cropping and rotation and distortion)
-    std::tuple<AbortStatus,BlackWhiteParams> claimBlackWhiteParams();
+    std::tuple<Valid,AbortStatus,BlackWhiteParams> claimBlackWhiteParams();
 
     //Global, all-color curves.
-    std::tuple<AbortStatus,CurvesParams> claimCurvesParams();
+    std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> claimFilmlikeCurvesParams();
 
     //90 degree rotation
-    std::tuple<AbortStatus,OrientationParams> claimOrientationParams();
+    std::tuple<Valid,AbortStatus,OrientationParams> claimOrientationParams();
 
     Valid getValid();
+    std::string getFullFilename(){return m_fullFilename;}
 
+    //This is here for the sql insertion to pull the values from.
+    void loadParams(QString imageID);
 protected:
     //The paramMutex exists to prevent race conditions between
     //changes in the parameters and changes in validity.
@@ -191,8 +198,6 @@ protected:
     bool pasteable;
     bool pasteSome;
 
-    void loadParams(QString imageID);
-    //void writeToDB(ProcessingParameters params, QString imageID);
     void writeToDB(QString imageID);
     void paramChangeWrapper(QString);
     void disableParamChange();

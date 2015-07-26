@@ -1,14 +1,12 @@
 #include "parameterManager.h"
 
+using std::min;
 using std::cout;
 using std::endl;
 
 ParameterManager::ParameterManager() : QObject(0)
 {
     paramChangeEnabled = true;
-    std::vector<std::string> inputFilenameList;
-    inputFilenameList.push_back("");
-    m_filenameList = inputFilenameList;
     m_tiffIn = false;
     m_jpegIn = false;
     m_caEnabled = false;
@@ -47,7 +45,7 @@ ParameterManager::ParameterManager() : QObject(0)
     pasteSome = false;
 }
 
-std::tuple<AbortStatus,LoadParams> ParameterManager::claimLoadParams()
+std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -60,10 +58,11 @@ std::tuple<AbortStatus,LoadParams> ParameterManager::claimLoadParams()
         abort = AbortStatus::proceed;
         validity = Valid::load;//mark it as started
     }
-    LoadParams params = LoadParams(m_fullFilename,
-                                   m_tiffIn,
-                                   m_jpegIn);
-    std::tuple<AbortStatus,LoadParams> tup (abort, params);
+    LoadParams params;
+    params.fullFilename = m_fullFilename;
+    params.tiffIn = m_tiffIn;
+    params.jpegIn = m_jpegIn;
+    std::tuple<Valid,AbortStatus,LoadParams> tup(validity, abort, params);
     return tup;
 }
 
@@ -87,7 +86,7 @@ void ParameterManager::setJpegIn(bool jpegIn)
     paramChangeWrapper(QString("setJpeg"));
 }
 
-std::tuple<AbortStatus,DemosaicParams> ParameterManager::claimDemosaicParams()
+std::tuple<Valid,AbortStatus,DemosaicParams> ParameterManager::claimDemosaicParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -100,9 +99,10 @@ std::tuple<AbortStatus,DemosaicParams> ParameterManager::claimDemosaicParams()
         abort = AbortStatus::proceed;
         validity = Valid::demosaic;//mark it as started
     }
-    DemosaicParams params = DemosaicParams(m_caEnabled,
-                                           m_highlights);
-    std::tuple<AbortStatus,DemosaicParams> tup(abort, params);
+    DemosaicParams params;
+    params.caEnabled = m_caEnabled;
+    params.highlights = m_highlights;
+    std::tuple<Valid,AbortStatus,DemosaicParams> tup(validity, abort, params);
     return tup;
 }
 
@@ -126,7 +126,7 @@ void ParameterManager::setHighlights(int highlights)
     paramChangeWrapper(QString("setHighlights"));
 }
 
-std::tuple<AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
+std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -139,10 +139,11 @@ std::tuple<AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
         abort = AbortStatus::proceed;
         validity = Valid::prefilmulation;//mark it as started
     }
-    PrefilmParams params = PrefilmParams(m_exposurecomp,
-                                         m_temperature,
-                                         m_tint);
-    std::tuple<AbortStatus,PrefilmParams> tup(abort, params);
+    PrefilmParams params;
+    params.exposureComp = m_exposureComp;
+    params.temperature = m_temperature;
+    params.tint = m_tint;
+    std::tuple<Valid,AbortStatus,PrefilmParams> tup(validity, abort, params);
     return tup;
 }
 
@@ -176,11 +177,19 @@ void ParameterManager::setTint(float tint)
     paramChangeWrapper(QString("setTint"));
 }
 
-std::tuple<AbortStatus,FilmParams> ParameterManager::claimFilmParams()
+std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams(FilmFetch fetch)
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
-    if (validity < Valid::prefilmulation)
+
+    //If it's the first time, the source data is from prefilmulation.
+    if (fetch == FilmFetch::initial && validity < Valid::prefilmulation)
+    {
+        abort = AbortStatus::restart;
+    }
+    //If it's not the first time, the source data is from the last filmulation round
+    // and will be invalidated by a filmulation param being modified.
+    else if (fetch == FilmFetch::subsequent && validity < Valid::filmulation)
     {
         abort = AbortStatus::restart;
     }
@@ -189,24 +198,25 @@ std::tuple<AbortStatus,FilmParams> ParameterManager::claimFilmParams()
         abort = AbortStatus::proceed;
         validity = Valid::filmulation;//mark it as started
     }
-    FilmParams params = FilmParams(m_initialDeveloperConcentration,
-                                   m_reservoirThickness,
-                                   m_activeLayerThickness,
-                                   m_crystalsPerPixel,
-                                   m_initialCrystalRadius,
-                                   m_initialSilverSaltDensity,
-                                   m_developerConsumptionConst,
-                                   m_crystalGrowthConst,
-                                   m_silverSaltConsumptionConst,
-                                   m_totalDevelopmentTime,
-                                   m_agitateCount,
-                                   m_developmentSteps,
-                                   m_filmArea,
-                                   m_sigmaConst,
-                                   m_layerMixConst,
-                                   m_layerTimeDivisor,
-                                   m_rolloffBoundary);
-    std::tuple<AbortStatus,FilmParams> tup(abort, params);
+    FilmParams params;
+    params.initialDeveloperConcentration = m_initialDeveloperConcentration,
+    params.reservoirThickness = m_reservoirThickness,
+    params.activeLayerThickness = m_activeLayerThickness,
+    params.crystalsPerPixel = m_crystalsPerPixel,
+    params.initialCrystalRadius = m_initialCrystalRadius,
+    params.initialSilverSaltDensity = m_initialSilverSaltDensity,
+    params.developerConsumptionConst = m_developerConsumptionConst,
+    params.crystalGrowthConst = m_crystalGrowthConst,
+    params.silverSaltConsumptionConst = m_silverSaltConsumptionConst,
+    params.totalDevelopmentTime = m_totalDevelopmentTime,
+    params.agitateCount = m_agitateCount,
+    params.developmentSteps = m_developmentSteps,
+    params.filmArea = m_filmArea,
+    params.sigmaConst = m_sigmaConst,
+    params.layerMixConst = m_layerMixConst,
+    params.layerTimeDivisor = m_layerTimeDivisor,
+    params.rolloffBoundary = m_rolloffBoundary;
+    std::tuple<Valid,AbortStatus,FilmParams> tup(validity,abort, params);
     return tup;
 }
 
@@ -370,7 +380,7 @@ void ParameterManager::setLayerTimeDivisor(float layerTimeDivisor)
     paramChangeWrapper(QString("setLayerTimeDivisor"));
 }
 
-void ParameterManager::setRolloffBoundary(float rolloffBoundary)
+void ParameterManager::setRolloffBoundary(int rolloffBoundary)
 {
     QMutexLocker paramLocker(&paramMutex);
     m_rolloffBoundary = rolloffBoundary;
@@ -380,7 +390,7 @@ void ParameterManager::setRolloffBoundary(float rolloffBoundary)
     paramChangeWrapper(QString("setRolloffBoundary"));
 }
 
-std::tuple<AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhiteParams()
+std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhiteParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -393,9 +403,10 @@ std::tuple<AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhiteParams
         abort = AbortStatus::proceed;
         validity = Valid::blackwhite;//mark it as started
     }
-    BlackWhiteParams params = BlackWhiteParams(m_blackpoint,
-                                               m_whitepoint);
-    std::tuple<AbortStatus,BlackWhiteParams> tup(abort, params);
+    BlackWhiteParams params;
+    params.blackpoint = m_blackpoint;
+    params.whitepoint = m_whitepoint;
+    std::tuple<Valid,AbortStatus,BlackWhiteParams> tup(validity, abort, params);
     return tup;
 }
 
@@ -419,7 +430,11 @@ void ParameterManager::setWhitepoint(float whitepoint)
     paramChangeWrapper(QString("setWhitepoint"));
 }
 
-std::tuple<AbortStatus,CurvesParams> ParameterManager::claimCurvesParams()
+//We don't have any color curves, so this one short-circuits those
+// and checks back to blackwhite validity.
+//If we add color curves in that place, we do need to replace the following
+// uses of 'Valid::blackwhite' with 'Valid::colorcurve'
+std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmlikeCurvesParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -432,13 +447,14 @@ std::tuple<AbortStatus,CurvesParams> ParameterManager::claimCurvesParams()
         abort = AbortStatus::proceed;
         validity = Valid::filmlikecurve;//mark it as started
     }
-    CurvesParams params = CurvesParams(m_shadowsX,
-                                       m_shadowsY,
-                                       m_highlightsX,
-                                       m_highlightsY,
-                                       m_vibrance,
-                                       m_saturation);
-    std::tuple<AbortStatus,CurvesParams> tup(abort, params);
+    FilmlikeCurvesParams params;
+    params.shadowsX = m_shadowsX;
+    params.shadowsY = m_shadowsY;
+    params.highlightsX = m_highlightsX;
+    params.highlightsY = m_highlightsY;
+    params.vibrance = m_vibrance;
+    params.saturation = m_saturation;
+    std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> tup(validity, abort, params);
     return tup;
 }
 
@@ -502,7 +518,7 @@ void ParameterManager::setSaturation(float saturation)
     paramChangeWrapper(QString("setSaturation"));
 }
 
-std::tuple<AbortStatus,OrientationParams> ParameterManager::claimOrientationParams()
+std::tuple<Valid,AbortStatus,OrientationParams> ParameterManager::claimOrientationParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -515,8 +531,9 @@ std::tuple<AbortStatus,OrientationParams> ParameterManager::claimOrientationPara
         abort = AbortStatus::proceed;
         validity = Valid::count;
     }
-    OrientationParams params = OrientationsParams(m_rotation);
-    std::tuple<AbortStatus,CurvesParams> tup(abort, params);
+    OrientationParams params;
+    params.rotation = m_rotation;
+    std::tuple<Valid,AbortStatus,OrientationParams> tup(validity, abort, params);
     return tup;
 }
 
@@ -635,7 +652,7 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(14, m_layerMixConst);
     query.bindValue(15, m_layerTimeDivisor);
     query.bindValue(16, m_rolloffBoundary);
-    query.bindValue(17, m_exposureComp[0]);
+    query.bindValue(17, m_exposureComp);
     query.bindValue(18, m_whitepoint);
     query.bindValue(19, m_blackpoint);
     query.bindValue(20, m_shadowsX);
@@ -705,6 +722,8 @@ unsigned int gcd(unsigned int u, unsigned int v)
     return gcd((v - u) >> 1, u);
 }
 
+//selectImage deals with selection from qml.
+//It accepts the searchID (the md5 with the instance number appended).
 void ParameterManager::selectImage(QString imageID)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
@@ -1044,7 +1063,7 @@ void ParameterManager::paste(QString toImageID)
         {
             ParameterManager tempParams;
             tempParams.loadParams(copyFromImageIndex);
-            tempParams.writeToDB(toImageId);
+            tempParams.writeToDB(toImageID);
         }
         else// we only want to copy some of the parameters.
         {
