@@ -731,6 +731,7 @@ void ParameterManager::selectImage(QString imageID)
 
     imageIndex = imageID;
     emit imageIndexChanged();
+    validity = Valid::none;
 
     QString tempString = imageID;
     tempString.truncate(32);//length of md5

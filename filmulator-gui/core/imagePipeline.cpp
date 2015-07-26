@@ -245,8 +245,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     {
         AbortStatus abort;
         std::tie(valid, abort, orientationParam) = paramManager->claimOrientationParams();
-        if (abort == AbortStatus::restart);
+        //We won't abort now,
+        if (abort == AbortStatus::restart)
         {
+            cout << "why are we aborting here?" << endl;
             return emptyMatrix();
         }
 
