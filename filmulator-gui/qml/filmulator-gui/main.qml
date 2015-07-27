@@ -258,7 +258,7 @@ ApplicationWindow {
             Rectangle {
                 x: 4 * uiScale
                 y: 4 * uiScale
-                width: parent.implicitWidth - 6 * uiScale
+                width: parent.implicitWidth - 5 * uiScale
                 height: parent.implicitHeight - 8 * uiScale
                 radius: 8 * uiScale
                 border.width: 1 * uiScale
