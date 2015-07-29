@@ -149,7 +149,7 @@ QString createNewProfile(const QString fileHash,
 
     //First, we load into a struct what parameters we just stored to the db.
     ParameterManager paramManager;
-    paramManager.loadParams(searchID);
+    paramManager.selectImage(searchID);
 
     //Next, we prepare an exif object.
     Exiv2::ExifData exif;
