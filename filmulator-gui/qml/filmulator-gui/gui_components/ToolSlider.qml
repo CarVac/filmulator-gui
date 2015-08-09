@@ -1,6 +1,6 @@
-import QtQuick 2.1
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.3
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import "../colors.js" as Colors
 import "."
 
@@ -12,31 +12,38 @@ Rectangle {
     property alias title: label.text
     property alias minimumValue: slider.minimumValue
     property alias maximumValue: slider.maximumValue
-    property alias updateValueWhileDragging: slider.updateValueWhileDragging
     property alias stepSize: slider.stepSize
+    property alias tickmarksEnabled: slider.tickmarksEnabled
+    property alias tickmarkFactor: slider.tickmarkFactor
+    property alias tickmarkOffset: slider.tickmarkOffset
+    property alias minorTicksEnabled: slider.minorTicksEnabled
     property alias value: slider.value
     property real defaultValue
     property alias valueText: valueText.text
     property alias pressed: slider.pressed
     property alias tooltipText: toolTooltip.tooltipText
 
-    property alias tickmarksEnabled: slider.tickmarksEnabled
     property bool changed: true
+    property bool editMade: false
 
     property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
 
-    //This is so that we don't continually write to the database
-    //as we drag the slider, which was a real performance hit.
-    signal released()
+    signal editComplete()
+
+    //handler for limiting updates.
+    onValueChanged: editMade = true
     onPressedChanged: {
-        if (pressed == false) {
-            released()
+        if (!pressed) {
+            if (editMade) {
+                editMade = false
+                editComplete()
+            }
         }
     }
 
-    color: "#303030"
+    color: Colors.darkGray
 
     Text {
         id: label
@@ -66,37 +73,12 @@ Rectangle {
             font.pixelSize: 12.0 * uiScale
         }
     }
-
-    Slider {
+    SlipperySlider {
         id: slider
         x: __padding
-        y: 21 * uiScale + __padding
+        y: 19 * uiScale + __padding
         width: parent.width - reset.width - 3*__padding
-        updateValueWhileDragging: true
-        value: defaultValue
-        style: SliderStyle {
-            groove: Rectangle {
-                height: 4 * uiScale
-                color: "#FF8800"
-                gradient: Gradient {
-                    GradientStop {color: Colors.brightOrange; position: 0.0}
-                    GradientStop {color: Colors.medOrange;   position: 0.3}
-                    GradientStop {color: Colors.medOrange;   position: 1.0}
-                }
-            }
-            handle: Rectangle {
-                height: 8 * uiScale
-                width: 20 * uiScale
-                radius: 3 * uiScale
-                gradient: Gradient {
-                    GradientStop {color: control.pressed ? Colors.brightOrange : Colors.brightGray; position: 0.0}
-                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 0.1}
-                    GradientStop {color: control.pressed ? Colors.medOrange    : Colors.middleGray; position: 1.0}
-                }
-
-                color: control.pressed ? "#A0A0A0" : "#808080"
-            }
-        }
+        uiScale: root.uiScale
     }
     Button {
         id: reset
@@ -108,9 +90,10 @@ Rectangle {
         action: Action {
             onTriggered: {
                 slider.value = defaultValue
-                //We have to pretend that the slider was dragged
+
+                //We have to pretend that the slider was changed
                 // so that it writes back to the database.
-                root.released()
+                root.editComplete()
             }
         }
         style: ToolButtonStyle {

@@ -1,11 +1,12 @@
-import QtQuick 2.2
+import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
+import "../colors.js" as Colors
 
 Item {
     id: root
     property real dim
-    width: dim * 0.9375
+    width: dim
     height: dim
 
     property string rootDir
@@ -15,6 +16,8 @@ Item {
     property int queueIndex
     property bool processed
     property bool exported
+    property bool rightClicked: false
+    z: rightClicked ? 1 : 0
 
     property string __thumbPath: rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
 
@@ -43,9 +46,9 @@ Item {
 
     Rectangle {
         id: currentImageRect
-        width: root.dim*0.9375
+        width: root.dim
         height: root.dim*0.03125
-        color: __current ? "#FF8800" : "#00000000"
+        color: rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000")
     }
 
     Loader {
@@ -56,17 +59,17 @@ Item {
     Component {
         id: thumbImage
         Item {
-            x: 0
+            x: root.width * 0.03125
             y: root.height * 0.03125
-            width: root.width
+            width: root.width * 0.9375
             height: root.height * 0.9375
             Image {
                 id: thumb
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectFit
                 source: root.__thumbPath
-                sourceSize.width: 600
-                sourceSize.height: 600
+                //sourceSize.width: 600
+                //sourceSize.height: 600
                 cache: false
                 Connections {
                     target: filmProvider
@@ -95,7 +98,8 @@ Item {
                     if (__current) {
                         //console.log('thumb source changed and current')
                         var thumbSource = __thumbPath
-                        filmProvider.writeThumbnail(thumbSource.slice(0, -4))
+                        //filmProvider.writeThumbnail(thumbSource.slice(0, -4))
+                        filmProvider.writeThumbnail(searchID)
                         __waitingForThumb = true
                     }
                 }
@@ -105,10 +109,10 @@ Item {
 
     Rectangle {
         id: processedSavedRect
-        width: root.dim*0.9375
+        width: root.dim
         height: root.dim*0.03125
         y: root.dim*0.96875
-        color: exported ? "#00FF00" : (processed ? "#FF8800" : "#00000000")
+        color: exported ? "green" : (processed ? Colors.medOrange : "#00000000")
     }
 
     Component.onCompleted: {

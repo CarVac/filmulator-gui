@@ -2,12 +2,12 @@
 #define ORGANIZEMODEL_H
 
 #include "sqlModel.h"
+#include "dateHistogramModel.h"
 #include <QString>
 #include <QDateTime>
 #include <QTimeZone>
 #include <QByteArray>
 #include <exiv2/exiv2.hpp>
-using namespace std;
 
 class OrganizeModel : public SqlModel
 {
@@ -29,8 +29,16 @@ class OrganizeModel : public SqlModel
 public:
     explicit OrganizeModel(QObject *parent = 0);
     Q_INVOKABLE void setOrganizeQuery();
+    Q_INVOKABLE void setDateHistoQuery();
     Q_INVOKABLE QString thumbDir();
+    Q_INVOKABLE void setRating(QString searchID, int rating);
+    Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
+    Q_INVOKABLE QDate getSelectedDate();
 
+    DateHistogramModel *dateHistogram = new DateHistogramModel;
+
+    Q_INVOKABLE void setMinMaxCaptureTime(QDate captureTimeIn);
+    Q_INVOKABLE void setMinMaxCaptureTimeString(QString captureTimeIn);
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);
     void setMinImportTime(QDate importTimeIn);
@@ -46,25 +54,26 @@ public:
     void setRatingSort(int sortMode);
     void setTimeZone(int timeZoneIn);
 
-    QDate getMinCaptureTime() { return minCaptureTime; }
-    QDate getMaxCaptureTime() { return maxCaptureTime; }
-    QDate getMinImportTime() { return minImportTime; }
-    QDate getMaxImportTime() { return maxImportTime; }
-    QDate getMinProcessedTime() { return minProcessedTime; }
-    QDate getMaxProcessedTime() { return maxProcessedTime; }
-    int getMinRating() { return minRating; }
-    int getMaxRating() { return maxRating; }
+    QDate getMinCaptureTime() {return minCaptureTime;}
+    QDate getMaxCaptureTime() {return maxCaptureTime;}
+    QDate getMinImportTime() {return minImportTime;}
+    QDate getMaxImportTime() {return maxImportTime;}
+    QDate getMinProcessedTime() {return minProcessedTime;}
+    QDate getMaxProcessedTime() {return maxProcessedTime;}
+    int getMinRating() {return minRating;}
+    int getMaxRating() {return maxRating;}
 
-    int getCaptureSort() { return captureSort; }
-    int getImportSort() { return importSort; }
-    int getProcessedSort() { return processedSort; }
-    int getRatingSort() { return ratingSort; }
+    int getCaptureSort() {return captureSort;}
+    int getImportSort() {return importSort;}
+    int getProcessedSort() {return processedSort;}
+    int getRatingSort() {return ratingSort;}
 
 signals:
     void minCaptureTimeChanged();
     void maxCaptureTimeChanged();
     void minImportTimeChanged();
     void maxImportTimeChanged();
+    void captureDateChanged();
     void minProcessedTimeChanged();
     void maxProcessedTimeChanged();
     void minRatingChanged();
@@ -81,6 +90,13 @@ signals:
 public slots:
 
 protected:
+    QSqlQuery modelQuery();
+    QSqlQuery dateHistoQuery();
+    void emitChange() {emit organizeFilterChanged();}
+
+    //Was the histogram query initialized yet?
+    bool dateHistogramSet;
+
     QDate minCaptureTime;
     QDate maxCaptureTime;
     QDate minImportTime;

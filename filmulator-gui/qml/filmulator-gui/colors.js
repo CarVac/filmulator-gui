@@ -19,4 +19,5 @@ var medOrange = "#FF8800" //perfect middle orange
 var weakOrange = "#A87848" //Low saturation for orange bleeding around gray
 
 var transDarkGray = "#EE303030" //for tooltip backgrounds
+var thinDarkGray = "#50303030"
 var transMiddleGray = "#EE808080" //for tooltip borders

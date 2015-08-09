@@ -48,8 +48,6 @@
 #define tout 0 && cout
 #endif
 
-using namespace std;
-
 struct filmulateParams {//TODO: adjust variable names.
     float initialDeveloperConcentration;
     float reservoirThickness;//once reservoir_size
@@ -94,6 +92,11 @@ void diffuse(matrix<float> &developer_concentration,
         float pixels_per_millimeter,
         float timestep);
 
+void diffuse_short_convolution(matrix<float> &developer_concentration,
+                               const float sigma_const,
+                               const float pixels_per_millimeter,
+                               const float timestep);
+
 //Reading raws with libraw
 bool imread( string input_image_filename, matrix<float> &returnmatrix,
              Exiv2::ExifData &exifData, int highlights, bool caEnabled, bool lowQuality );
@@ -106,8 +109,7 @@ bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
 bool imread_jpeg(string input_image_filename, matrix<float> &returnmatrix,
 		Exiv2::ExifData &exifData);
 
-bool imload(std::vector<string> input_filename_list,
-        std::vector<float> input_exposure_compensation,
+bool imload(std::string filename,
         matrix<float> &input_image,
         bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights,
         bool caEnabled, bool lowQuality );

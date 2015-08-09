@@ -10,16 +10,20 @@ QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
     resetIndex();
 }
 
-void QueueModel::setQueueQuery()
+QSqlQuery QueueModel::modelQuery()
 {
-    std::string queryString = "SELECT * ";
+    QString queryString = "SELECT * ";
     queryString.append("FROM QueueTable ");
     queryString.append("ORDER BY ");
     queryString.append("QueueTable.QTindex ASC;");
 
-    cout << "queue query: " << queryString << endl;
+    QSqlQuery tempQuery(queryString);
+    return tempQuery;
+}
 
-    setQuery(QSqlQuery(QString::fromStdString(queryString)));
+void QueueModel::setQueueQuery()
+{
+    setQuery(modelQuery());
     resetIndex();
 }
 
@@ -61,4 +65,12 @@ void QueueModel::enQueue(QString searchID)
 
     emit queueChanged();
     //emit updateTableOut("QueueTable", 1);
+}
+
+void QueueModel::clearQueue()
+{
+    QSqlQuery query;
+    query.exec("DELETE FROM QueueTable");
+    resetIndex();
+    emit queueChanged();
 }

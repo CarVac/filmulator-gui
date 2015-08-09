@@ -1,4 +1,7 @@
 #include "thumbWriteWorker.h"
+#include <QDir>
+#include <iostream>
+using namespace std;
 
 ThumbWriteWorker::ThumbWriteWorker(QObject *parent) : QObject(parent)
 {
@@ -12,7 +15,7 @@ void ThumbWriteWorker::setImage(const matrix<unsigned short> imageIn,
     exifData = dataIn;
 }
 
-void ThumbWriteWorker::writeThumb(QString outputFilename)
+void ThumbWriteWorker::writeThumb(QString searchID)
 {
     dataMutex.lock();
     int rows = image.nr();
@@ -29,6 +32,23 @@ void ThumbWriteWorker::writeThumb(QString outputFilename)
     downscale_and_crop(linear, small, 0, 0, (cols/3 -1), rows-1, 600, 600);
     //Then we put it back to the sRGB curve.
     sRGB_gammacurve(small, gammaCurved);
+
+    //Set up the thumbnail directory.
+    QDir dir = QDir::home();
+    dir.cd(".local/share/filmulator");
+    if (!dir.cd("thumbs"))
+    {
+        dir.mkdir("thumbs");
+        dir.cd("thumbs");
+    }
+    QString thumbDir = searchID;
+    thumbDir.truncate(4);
+    if (!dir.cd(thumbDir))
+    {
+        dir.mkdir(thumbDir);
+        dir.cd(thumbDir);
+    }
+    QString outputFilename = dir.absoluteFilePath(searchID);
 
     //Then we write.
     imwrite_jpeg(gammaCurved, outputFilename.toStdString(), exifData, 95);

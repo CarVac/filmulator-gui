@@ -2,6 +2,7 @@
 #include "../core/filmSim.hpp"
 #include "exifFunctions.h"
 #include "../ui/parameterManager.h"
+#include "../ui/thumbWriteWorker.h"
 
 /*This function inserts info on a raw file into the database.*/
 void fileInsert(const QString hash,
@@ -34,12 +35,13 @@ void fileInsert(const QString hash,
 }
 
 /*This function creates a default profile in the profile table, and a search entry in the searchtable.*/
-void createNewProfile(const QString fileHash,
-                      const QString fileName,
-                      const QString absoluteFilePath,
-                      const QDateTime captureTime,
-                      const QDateTime importTime,
-                      Exiv2::ExifData exifData)
+/*It returns a QString containing the STsearchID.*/
+QString createNewProfile(const QString fileHash,
+                         const QString fileName,
+                         const QString absoluteFilePath,
+                         const QDateTime captureTime,
+                         const QDateTime importTime,
+                         Exiv2::ExifData exifData)
 {
     QSqlQuery query;
     //Retrieve the usage count from the file table, and increment it by one.
@@ -148,7 +150,6 @@ void createNewProfile(const QString fileHash,
     //First, we load into a struct what parameters we just stored to the db.
     ParameterManager paramManager;
     paramManager.selectImage(searchID);
-    ProcessingParameters params = paramManager.getParams();
 
     //Next, we prepare an exif object.
     Exiv2::ExifData exif;
@@ -160,9 +161,10 @@ void createNewProfile(const QString fileHash,
 //    ImagePipeline pipeline = ImagePipeline(BothCacheAndHisto, HighQuality);
     ImagePipeline pipeline = ImagePipeline(NoCacheNoHisto, LowQuality);
     //Process an image.
-    bool doNotAbort = false;
-    matrix<unsigned short> image = pipeline.processImage(params, &interface, doNotAbort, exif);
+    matrix<unsigned short> image = pipeline.processImage(&paramManager, &interface, exif);
 
+/* //Moved this directory handling stuff to thumbWriteWorker
+    //Set up the thumbnail directory.
     QDir dir = QDir::home();
     dir.cd(".local/share/filmulator");
     if (!dir.cd("thumbs"))
@@ -178,6 +180,13 @@ void createNewProfile(const QString fileHash,
         dir.cd(thumbDir);
     }
     QString outputFilename = dir.absoluteFilePath(searchID);
+*/
+    //Write the thumbnail.
+    ThumbWriteWorker worker;
+    worker.setImage(image, exif);
+    worker.writeThumb(searchID);
+    //imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
 
-    imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
+    //Return STsearchID.
+    return searchID;
 }

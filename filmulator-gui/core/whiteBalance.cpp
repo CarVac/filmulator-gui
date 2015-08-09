@@ -379,6 +379,8 @@ void optimizeWBMults(std::string file,
 }
 
 //Actually apply a white balance to image data.
+//It takes in the input and output matrices, the desired temperature and tint,
+// and the filename where it looks up the camera matrix and daylight multipliers.
 void whiteBalance(matrix<float> &input, matrix<float> &output,
                    float temperature, float tint,
                    std::string inputFilename)

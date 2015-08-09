@@ -1,6 +1,6 @@
-import QtQuick 2.1
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.3
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import "../colors.js" as Colors
 import "."
 
@@ -12,7 +12,7 @@ Rectangle {
     property alias text: label.text
     property alias tooltipText: tooltip.tooltipText
     property alias isOn: toggleSwitch.checked
-    property bool defaultOn
+    property bool defaultOn: false
     property bool changed: true
 
     property real __padding: 4 * uiScale

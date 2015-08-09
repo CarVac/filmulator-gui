@@ -23,27 +23,38 @@
 
 
 //Function-------------------------------------------------------------------------
-bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_density,
-               filmulateParams filmParams, ImagePipeline* pipeline, bool &aborted )
+bool ImagePipeline::filmulate(matrix<float> &input_image,
+                              matrix<float> &output_density,
+                              ParameterManager * paramManager,
+                              ImagePipeline * pipeline)
 {
+    FilmParams filmParam;
+    AbortStatus abort;
+    Valid valid;
+    std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::initial);
+    if(abort == AbortStatus::restart)
+    {
+        return true;
+    }
+
     //Extract parameters from struct
-    float initial_developer_concentration = filmParams.initialDeveloperConcentration;
-    float reservoir_thickness = filmParams.reservoirThickness;
-    float active_layer_thickness = filmParams.activeLayerThickness;
-    float crystals_per_pixel = filmParams.crystalsPerPixel;
-    float initial_crystal_radius = filmParams.initialCrystalRadius;
-    float initial_silver_salt_density = filmParams.initialSilverSaltDensity;
-    float developer_consumption_const = filmParams.developerConsumptionConst;
-    float crystal_growth_const = filmParams.crystalGrowthConst;
-    float silver_salt_consumption_const = filmParams.silverSaltConsumptionConst;
-    float total_development_time = filmParams.totalDevelTime;
-    int agitate_count = filmParams.agitateCount;
-    int development_steps = filmParams.developmentSteps;
-    float film_area = filmParams.filmArea;
-    float sigma_const = filmParams.sigmaConst;
-    float layer_mix_const = filmParams.layerMixConst;
-    float layer_time_divisor = filmParams.layerTimeDivisor;
-    int rolloff_boundary = filmParams.rolloffBoundary;
+    float initial_developer_concentration = filmParam.initialDeveloperConcentration;
+    float reservoir_thickness = filmParam.reservoirThickness;
+    float active_layer_thickness = filmParam.activeLayerThickness;
+    float crystals_per_pixel = filmParam.crystalsPerPixel;
+    float initial_crystal_radius = filmParam.initialCrystalRadius;
+    float initial_silver_salt_density = filmParam.initialSilverSaltDensity;
+    float developer_consumption_const = filmParam.developerConsumptionConst;
+    float crystal_growth_const = filmParam.crystalGrowthConst;
+    float silver_salt_consumption_const = filmParam.silverSaltConsumptionConst;
+    float total_development_time = filmParam.totalDevelopmentTime;
+    int agitate_count = filmParam.agitateCount;
+    int development_steps = filmParam.developmentSteps;
+    float film_area = filmParam.filmArea;
+    float sigma_const = filmParam.sigmaConst;
+    float layer_mix_const = filmParam.layerMixConst;
+    float layer_time_divisor = filmParam.layerTimeDivisor;
+    int rolloff_boundary = filmParam.rolloffBoundary;
 
     //Set up timers
     struct timeval initialize_start, development_start, develop_start,
@@ -60,9 +71,6 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
     matrix<float> active_crystals_per_pixel;
     active_crystals_per_pixel = exposure(input_image, crystals_per_pixel,
             rolloff_boundary);
-
-    if( checkAbort( aborted ) )
-        return 1;
 
     //We set the crystal radius to a small seed value for each color.
     matrix<float> crystal_radius;
@@ -107,10 +115,15 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
     //differential equation of film development.
     for(int i = 0; i <= development_steps; i++)
     {
-        if( checkAbort( aborted ) )
-            return 1;
+        //Check for cancellation
+        std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+        if(abort == AbortStatus::restart)
+        {
+            return true;
+        }
 
-        pipeline->updateProgress(float(i)/float(development_steps));
+        //Updating for starting the development simulation. Valid is one too high here.
+        pipeline->updateProgress(Valid::prefilmulation, float(i)/float(development_steps));
 
         gettimeofday(&develop_start,NULL);
 
@@ -130,16 +143,27 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
         develop_dif += timeDiff(develop_start);
         gettimeofday(&diffuse_start,NULL);
 
-        if( checkAbort( aborted ) )
-            return 1;
+        //Check for cancellation
+        std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+        if(abort == AbortStatus::restart)
+        {
+            return true;
+        }
+
+        //Updating for starting the diffusion simulation. Valid is one too high here.
+        pipeline->updateProgress(Valid::prefilmulation, (float(i)+0.5)/float(development_steps));
 
         //Now, we are going to perform the diffusion part.
         //Here we mix the layer among itself, which grants us the
         // local contrast increases.
-        diffuse(developer_concentration,
-                sigma_const,
-                pixels_per_millimeter,
-                timestep);
+//        diffuse(developer_concentration,
+//                sigma_const,
+//                pixels_per_millimeter,
+//                timestep);
+        diffuse_short_convolution(developer_concentration,
+                                  sigma_const,
+                                  pixels_per_millimeter,
+                                  timestep);
 
         diffuse_dif += timeDiff(diffuse_start);
 
@@ -170,7 +194,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
        
         agitate_dif += timeDiff(agitate_start);
     }
-    tout<<"Development time: "<<timeDiff(development_start)<<" seconds"<<endl;
+    tout << "Development time: " <<timeDiff(development_start)<< " seconds" << endl;
     tout << "Develop time: " << develop_dif << " seconds" << endl;
     tout << "Diffuse time: " << diffuse_dif << " seconds" << endl;
     tout << "Layer mix time: " << layer_mix_dif << " seconds" << endl;
@@ -188,14 +212,17 @@ bool ImagePipeline::filmulate(matrix<float> &input_image, matrix<float> &output_
     struct timeval mult_start;
     gettimeofday(&mult_start,NULL);
 
-    if( checkAbort( aborted ) )
-        return 1;
+    std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+    if(abort == AbortStatus::restart)
+    {
+        return true;
+    }
 
     output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;
     tout << "Output density time: "<<timeDiff(mult_start) << endl;
 #ifdef DOUT
     debug_out.close();
 #endif
-    return 0;
+    return false;
 }
 

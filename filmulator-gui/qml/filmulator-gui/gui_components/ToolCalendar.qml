@@ -1,6 +1,6 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.3
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import "../colors.js" as Colors
 import "."
 
@@ -11,6 +11,10 @@ Calendar {
     implicitWidth: parent.width
     minimumDate: "1970-01-01"
     maximumDate: "2038-01-01"
+    property date tempDate
+    property int monthChanged: 0
+    property bool initialClick: false
+    property bool secondClick: false
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -75,7 +79,7 @@ Calendar {
                 uiScale: root.uiScale
             }
             Text {
-                text: (control.visibleMonth + 1) + "/" + control.visibleYear
+                text: control.visibleYear + "/" + (control.visibleMonth < 9 ? "0" : "" ) + (control.visibleMonth + 1)
                 anchors.centerIn: parent
                 color: "white"
                 font.pixelSize: 12.0 * uiScale

@@ -1,0 +1,12 @@
+
+#define CRYSTAL_RAD_R 0
+#define CRYSTAL_RAD_G 1
+#define CRYSTAL_RAD_B 2
+#define ACTIVE_CRYSTALS_R 3
+#define ACTIVE_CRYSTALS_G 4
+#define ACTIVE_CRYSTALS_B 5
+#define SILVER_SALT_DEN_R 6
+#define SILVER_SALT_DEN_G 7
+#define SILVER_SALT_DEN_B 8
+#define DEVEL_CONC 9
+

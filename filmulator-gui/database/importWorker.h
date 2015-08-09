@@ -27,9 +27,10 @@ public slots:
                     const QString photoDir,
                     const QString backupDir,
                     const QString dirConfig,
-                    const QDateTime time);
+                    const QDateTime importTime);
 
 signals:
+    void enqueueThis(QString STsearchID);
     void doneProcessing();
 
 };

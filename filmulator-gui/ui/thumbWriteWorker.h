@@ -16,7 +16,7 @@ public:
                   Exiv2::ExifData dataIn);
 
 public slots:
-    void writeThumb(QString outputFilename);
+    void writeThumb(QString searchID);
 
 signals:
     void doneWritingThumb();

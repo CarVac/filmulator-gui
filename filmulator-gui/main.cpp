@@ -28,6 +28,11 @@ int main(int argc, char *argv[])
     translator.load("filmulatortr_la");
     app.installTranslator(&translator);
 
+    //Prepare database connection.
+    //This should create a new db file if there was none.
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    setupDB(&db);
+
     //Create the object for communicating between SQL classes.
     SignalSwitchboard *switchboard = new SignalSwitchboard;
 
@@ -50,11 +55,6 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<QFileInfo>();
 
-    //Prepare database connection.
-    //This should create a new db file if there was none.
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    setupDB(&db);
-
     //Prepare a model for importing.
     ImportModel *importModel = new ImportModel;
     engine.rootContext()->setContextProperty("importModel", importModel);
@@ -62,14 +62,17 @@ int main(int argc, char *argv[])
     //Prepare a model for the organize view.
     OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty("organizeModel", organizeModel);
+    engine.rootContext()->setContextProperty("dateHistoModel", organizeModel->dateHistogram);
 //    std::cout << "Organize row count: " << organizeModel->rowCount() << std::endl;
 
     //Prepare a model for the queue view.
     QueueModel *queueModel = new QueueModel;
     queueModel->setQueueQuery();
 //    std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
-    QObject::connect(switchboard, SIGNAL(updateTableOut(QString,int)),
-                     queueModel, SLOT(updateTable(QString,int)));
+    QObject::connect(switchboard, SIGNAL(updateTableOut(QString, int)),
+                     queueModel, SLOT(updateTable(QString, int)));
+    QObject::connect(importModel, SIGNAL(enqueueThis(QString)),
+                     queueModel, SLOT(enQueue(QString)));
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
     engine.load(QUrl::fromLocalFile("qml/filmulator-gui/main.qml"));

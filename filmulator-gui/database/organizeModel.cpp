@@ -4,15 +4,20 @@
 #include <QDateTime>
 #include <QString>
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::max;
+using std::min;
 
 OrganizeModel::OrganizeModel(QObject *parent) :
     SqlModel(parent)
 {
     tableName = "SearchTable";
+    captureSort = 1;
+    dateHistogramSet = false;
 }
 
-void OrganizeModel::setOrganizeQuery()
+QSqlQuery OrganizeModel::modelQuery()
 {
     //We can't use the inbuilt relational table stuff; we have to
     // make our own writing functionality, and instead of setting the table,
@@ -81,8 +86,8 @@ void OrganizeModel::setOrganizeQuery()
     //First we need to actually write ORDER BY
     queryString.append("ORDER BY ");
 
-    if (ratingSort == 1){ queryString.append("SearchTable.STRating ASC, "); }
-    else if (ratingSort == -1){ queryString.append("SearchTable.STRating DESC, "); }
+    if (ratingSort == 1){ queryString.append("SearchTable.STrating ASC, "); }
+    else if (ratingSort == -1){ queryString.append("SearchTable.STrating DESC, "); }
 
     if (processedSort == 1){ queryString.append("SearchTable.STlastProcessedTime ASC, "); }
     else if (processedSort == -1){ queryString.append("SearchTable.STlastProcessedTime DESC, "); }
@@ -101,8 +106,85 @@ void OrganizeModel::setOrganizeQuery()
         queryString.append("SearchTable.STfilename DESC;");
     }
 
-    setQuery(QSqlQuery(QString::fromStdString(queryString)));
- }
+    return QSqlQuery(QString::fromStdString(queryString));
+}
+
+QSqlQuery OrganizeModel::dateHistoQuery()
+{
+    /*
+    Here's the query:
+
+SELECT
+    julianday(unixtime, 'unixepoch', '[timezone] hours') AS julday
+   ,thedate
+   ,strftime('%Y/%m', thedate) AS yearmonth
+   ,strftime('%m', thedate) AS themonth
+   ,strftime('%d', thedate) AS theday
+   ,thecount
+FROM
+    (SELECT
+        date(STcaptureTime, 'unixepoch', '[timezone] hours') AS thedate
+       ,COUNT(STcaptureTime) as thecount
+       ,STcaptureTime AS unixtime
+    FROM
+        SearchTable
+    WHERE
+        SearchTable.STrating <= [maxrating]
+        AND
+        SearchTable.STrating >= [minrating]
+    GROUP BY
+        thedate)
+ORDER BY
+    thedate ASC;
+    */
+
+    std::string dateHistoString =
+                           "SELECT";
+    dateHistoString.append("    julianday(unixtime, 'unixepoch', '");
+    dateHistoString.append(std::to_string(int(m_timeZone)));
+    dateHistoString.append(" hours') AS julday");
+    dateHistoString.append("   ,thedate");
+    dateHistoString.append("   ,strftime('%Y/%m', thedate) AS yearmonth");
+    dateHistoString.append("   ,strftime('%m', thedate) AS themonth");
+    dateHistoString.append("   ,strftime('%d', thedate) AS theday");
+    dateHistoString.append("   ,thecount ");
+    dateHistoString.append("FROM");
+    dateHistoString.append("    (SELECT");
+    dateHistoString.append("        date(SearchTable.STcaptureTime, 'unixepoch', '");
+    dateHistoString.append(std::to_string(int(m_timeZone)));
+    dateHistoString.append(" hours') AS thedate");//This SQL is apparently whitespace sensitive.
+    dateHistoString.append("       ,COUNT(STcaptureTime) AS thecount");
+    dateHistoString.append("       ,STcaptureTime AS unixtime");
+    dateHistoString.append("    FROM");
+    dateHistoString.append("        SearchTable");
+    if (minRating > 0 || maxRating < 5)
+    {
+    dateHistoString.append("    WHERE");
+    dateHistoString.append("            SearchTable.STrating <= ");
+    dateHistoString.append(std::to_string(maxRating));
+    dateHistoString.append("        AND");
+    dateHistoString.append("            SearchTable.STrating >= ");
+    dateHistoString.append(std::to_string(minRating));
+    }
+    dateHistoString.append("    GROUP BY");
+    dateHistoString.append("        thedate)");
+    dateHistoString.append("ORDER BY");
+    dateHistoString.append("    thedate ASC;");
+
+    //std::cout << dateHistoString << std::endl;
+    return QSqlQuery(QString::fromStdString(dateHistoString));
+}
+
+void OrganizeModel::setOrganizeQuery()
+{
+    setQuery(modelQuery());
+}
+
+void OrganizeModel::setDateHistoQuery()
+{
+    dateHistogram->setQuery(dateHistoQuery(), m_timeZone);
+    dateHistogramSet = true;
+}
 
 QString OrganizeModel::thumbDir()
 {
@@ -110,3 +192,21 @@ QString OrganizeModel::thumbDir()
     homeDir.cd(".local/share/filmulator/thumbs");
     return homeDir.absolutePath();
 }
+
+void OrganizeModel::setRating(QString searchID, int rating)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
+    query.bindValue(0, QVariant(max(min(rating,5),0)));
+    query.bindValue(1, searchID);
+    query.exec();
+    emit updateTable("SearchTable", 0);//An edit made to the search table.
+}
+
+QString OrganizeModel::getDateTimeString(int unixTimeIn)
+{
+    QDateTime tempTime = QDateTime::fromTime_t(unixTimeIn, Qt::OffsetFromUTC, m_timeZone*3600);
+    return tempTime.toString("ddd yyyy-MM-dd HH:mm:ss");
+}
+
+//SELECT date(STcaptureTime, 'unixepoch', '-5 hours [the timezone]', COUNT(*) FROM SearchTable GROUP BY date(STcaptureTime, 'unixepoch', '-5 hours');

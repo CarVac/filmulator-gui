@@ -126,6 +126,22 @@ QDate Settings::getOrganizeCaptureDate()
     return organizeCaptureDate;
 }
 
+void Settings::setOrganizeRating(int ratingIn)
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    organizeRating = ratingIn;
+    settings.setValue("photoDB/organizeRating", ratingIn);
+    emit organizeRatingChanged();
+}
+
+int Settings::getOrganizeRating()
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    organizeRating = settings.value("photoDB/organizeRating", 0).toInt();
+    emit organizeRatingChanged();
+    return organizeRating;
+}
+
 void Settings::setUiScale(float uiScaleIn)
 {
     QSettings settings(QSettings::UserScope, QString("Filmulator"));
@@ -140,4 +156,20 @@ float Settings::getUiScale()
     uiScale = settings.value("ui/uiScale", 1).toFloat();
     //emit uiScaleChanged();
     return uiScale;
+}
+
+void Settings::setEnqueue(bool enqueueIn)
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    enqueue = enqueueIn;
+    settings.setValue("import/enqueueAsImported", enqueueIn);
+    emit enqueueChanged();
+}
+
+bool Settings::getEnqueue()
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    enqueue = settings.value("import/enqueueAsImported", 1).toBool();
+    emit enqueueChanged();
+    return enqueue;
 }

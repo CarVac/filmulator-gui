@@ -11,9 +11,28 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
     tableName = "SearchTable";
     ImportWorker *worker = new ImportWorker;
     worker->moveToThread(&workerThread);
-    connect(this, &ImportModel::workForWorker, worker, &ImportWorker::importFile);
-    connect(worker, &ImportWorker::doneProcessing, this, &ImportModel::workerFinished);
+    connect(this, SIGNAL(workForWorker(const QFileInfo,
+                                       const int,
+                                       const int,
+                                       const QString,
+                                       const QString,
+                                       const QString,
+                                       const QDateTime)),
+            worker, SLOT(importFile(const QFileInfo,
+                                    const int,
+                                    const int,
+                                    const QString,
+                                    const QString,
+                                    const QString,
+                                    const QDateTime)));
+    connect(worker, SIGNAL(doneProcessing()), this, SLOT(workerFinished()));
+    connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
     workerThread.start(QThread::LowPriority);
+}
+
+QSqlQuery ImportModel::modelQuery()
+{
+    return QSqlQuery(QString(""));
 }
 
 void ImportModel::importDirectory_r(const QString dir)
@@ -73,7 +92,9 @@ void ImportModel::importDirectory_r(const QString dir)
     }
 
     progress = float(maxQueue - queue.size())/float(maxQueue);
+    progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
     emit progressChanged();
+    emit progressFracChanged();
 
     paused = false;
 
@@ -95,8 +116,10 @@ void ImportModel::workerFinished()
     if (maxQueue != 0)
     {
         progress = float(maxQueue - queue.size())/float(maxQueue);
+        progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
         cout << "ImportModel::workerFinished; progress = " << progress << endl;
         emit progressChanged();
+        emit progressFracChanged();
     }
 
     if (queue.size() <= 0)
@@ -107,6 +130,14 @@ void ImportModel::workerFinished()
     else if (!paused)
     {
         startWorker(queue.front());
+    }
+}
+
+void ImportModel::enqueueRequested(QString STsearchID)
+{
+    if (enqueue)
+    {
+        emit enqueueThis(STsearchID);
     }
 }
 

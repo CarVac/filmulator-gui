@@ -62,7 +62,7 @@ class matrix
 		void free();
 		int nr() const;
 		int nc() const;
-		T& operator()(const int col, const int row) const;
+        T& operator()(const int row, const int col) const;
 		//template <class U> //Never gets called if use matrix<U>
 		matrix<T>& operator=(const matrix<T> &toCopy);
 		template <class U>		

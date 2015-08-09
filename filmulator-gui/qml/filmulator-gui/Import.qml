@@ -29,6 +29,11 @@ Rectangle {
             minimumValue: -14
             maximumValue: 14
             stepSize: 1
+            tickmarksEnabled: true
+            tickmarkFactor: 6
+            tickmarkOffset: 2
+            minorTicksEnabled: true
+            value: settings.getCameraTZ()
             defaultValue: settings.getCameraTZ()
             onValueChanged: {
                 importModel.cameraTZ = value
@@ -69,6 +74,11 @@ Rectangle {
             minimumValue: -14
             maximumValue: 14
             stepSize: 1
+            tickmarksEnabled: true
+            tickmarkFactor: 6
+            tickmarkOffset: 2
+            minorTicksEnabled: true
+            value: settings.getImportTZ()
             defaultValue: settings.getImportTZ()
             onValueChanged: {
                 importModel.importTZ = value
@@ -129,6 +139,27 @@ Rectangle {
             uiScale: root.uiScale
         }
 
+        ToolSwitch {
+            id: enqueueSwitch
+            text: qsTr("Enqueue imported photos")
+            tooltipText: qsTr("As photos get imported, append them to the work queue.")
+            isOn: false
+            onIsOnChanged: {
+                importModel.enqueue = isOn
+                settings.enqueue = isOn
+            }
+            defaultOn: false
+            onResetToDefault: {
+                importModel.enqueue = isOn
+                settings.enqueue = isOn
+            }
+            Component.onCompleted: {
+                importModel.enqueue = isOn
+                enqueueSwitch.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
         ToolButton {
             id: importButton
             x: 0 * uiScale
@@ -152,10 +183,15 @@ Rectangle {
             id: importProgress
             width: parent.width
             value: importModel.progress
+            tooltipText: importModel.progressFrac
             Connections {
                 target: importModel
                 onProgressChanged: importProgress.value = importModel.progress
             }
+            Component.onCompleted: {
+                importProgress.tooltipWanted.connect(root.tooltipWanted)
+            }
+
             uiScale: root.uiScale
         }
     }

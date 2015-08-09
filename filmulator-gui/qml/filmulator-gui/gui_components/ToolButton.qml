@@ -1,6 +1,6 @@
-import QtQuick 2.1
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.3
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import "../colors.js" as Colors
 import "."
 
@@ -11,6 +11,8 @@ Item {
     property alias action: button.action
     property alias tooltipText: tooltip.tooltipText
     property real __padding: 2 * uiScale
+    property bool notDisabled: true
+    property alias pressed: button.pressed
 
     signal tooltipWanted(string text, int x, int y)
     width: 30 * uiScale
@@ -21,7 +23,10 @@ Item {
         height: parent.height - __padding * 2
         x: __padding
         y: __padding
-        style: ToolButtonStyle {uiScale: root.uiScale}
+        style: ToolButtonStyle {
+            uiScale: root.uiScale
+            notDisabled: root.notDisabled
+        }
     }
     ToolTip {
         id: tooltip

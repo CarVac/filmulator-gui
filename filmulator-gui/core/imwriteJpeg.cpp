@@ -138,11 +138,11 @@ bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
 	/* This is an important step since it will release a good deal of memory. */
 	jpeg_destroy_compress(&cinfo);
 	
-    exifData["Exif.Image.Orientation"] = 1;//set all images to unrotated
+    exifData["Exif.Image.Orientation"] = uint16_t(1);//set all images to unrotated
     exifData["Exif.Image.ImageWidth"] = output.nr();
     exifData["Exif.Image.ImageLength"] = output.nc()/3;
 
-	Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(outputfilename.c_str());
+    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(outputfilename.c_str());
     assert(image.get() != 0);
 
     image->setExifData(exifData);
