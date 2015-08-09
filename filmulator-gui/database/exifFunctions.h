@@ -40,4 +40,12 @@ float exifAv(Exiv2::ExifData exifData);
 /*Returns the focal length field of the exif.*/
 float exifFl(Exiv2::ExifData exifData);
 
+/*Returns the rating of the image from in-camera flagging.
+ * If there's no rating, it just gives it 0.
+ * For Canons, it does it based on the stars.
+ * TODO: for Nikon, give one start for 'protected' images (I think)
+ * TODO: others.
+ * */
+int exifRating(Exiv2::ExifData exifData, Exiv2::XmpData xmpData);
+
 #endif // EXIFFUNCTIONS_H

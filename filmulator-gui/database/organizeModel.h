@@ -91,7 +91,6 @@ public slots:
 
 protected:
     QSqlQuery modelQuery();
-    QSqlQuery dateHistoQuery();
     void emitChange() {emit organizeFilterChanged();}
 
     //Was the histogram query initialized yet?

@@ -18,6 +18,7 @@ QString createNewProfile(const QString fileHash,
                          const QString absoluteFilePath,
                          const QDateTime captureTime,
                          const QDateTime importTime,
-                         Exiv2::ExifData exifData);
+                         Exiv2::ExifData exifData,
+                         Exiv2::XmpData xmpData);
 
 #endif // SQLINSERTION_H

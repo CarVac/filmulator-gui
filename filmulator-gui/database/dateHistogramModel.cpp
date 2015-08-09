@@ -3,6 +3,7 @@
 #include <QDate>
 #include <QString>
 #include <iostream>
+#include <QSqlRecord>
 
 #define ROUND_JULDAY(a) round(a)
 //#define ROUND_JULDAY(a) floor(a)
@@ -17,8 +18,10 @@ DateHistogramModel::DateHistogramModel(QObject *parent) :
 }
 
 /*
- * This function takes in a query (because the selection criteria might be complicated)
- * and the timezone (because it needs that for the time binning
+ * This function takes in the binning values:
+ *  the timezone
+ *  the minRating
+ *  the maxRating
  * and sets up a dense dataset from the sparse one returned by the query.
  *
  * The query must have columns for:
@@ -30,43 +33,100 @@ DateHistogramModel::DateHistogramModel(QObject *parent) :
  *  The count (thecount)
  * in the above order.
  */
-void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
+void DateHistogramModel::setQuery(const int timezone,
+                                  const int minRating,
+                                  const int maxRating)
 {
     beginResetModel();
-    m_modelQuery = QSqlQuery(query);
 
-    //first, query for the oldest day in the database and the current day
-    QSqlQuery dateQuery;
+    //Set up the query.
+    std::string dateHistoString =
+                           "SELECT";
+    dateHistoString.append("    julianday(unixtime, 'unixepoch', '");
+    dateHistoString.append(std::to_string(int(timezone)));
+    dateHistoString.append(" hours') AS julday");
+    dateHistoString.append("   ,thedate");
+    dateHistoString.append("   ,strftime('%Y/%m', thedate) AS yearmonth");
+    dateHistoString.append("   ,strftime('%m', thedate) AS themonth");
+    dateHistoString.append("   ,strftime('%d', thedate) AS theday");
+    dateHistoString.append("   ,thecount ");
+    dateHistoString.append("FROM");
+    dateHistoString.append("    (SELECT");
+    dateHistoString.append("        date(SearchTable.STcaptureTime, 'unixepoch', '");
+    dateHistoString.append(std::to_string(int(timezone)));
+    dateHistoString.append(" hours') AS thedate");//This SQL is apparently whitespace sensitive.
+    dateHistoString.append("       ,COUNT(STcaptureTime) AS thecount");
+    dateHistoString.append("       ,STcaptureTime AS unixtime");
+    dateHistoString.append("    FROM");
+    dateHistoString.append("        SearchTable");
+    if (minRating > 0 || maxRating < 5)
+    {
+    dateHistoString.append("    WHERE");
+    dateHistoString.append("            SearchTable.STrating <= ");
+    dateHistoString.append(std::to_string(maxRating));
+    dateHistoString.append("        AND");
+    dateHistoString.append("            SearchTable.STrating >= ");
+    dateHistoString.append(std::to_string(minRating));
+    }
+    dateHistoString.append("    GROUP BY");
+    dateHistoString.append("        thedate)");
+    dateHistoString.append("ORDER BY");
+    dateHistoString.append("    thedate ASC;");
+    m_modelQuery = QSqlQuery(QString::fromStdString(dateHistoString));
 
+    QSqlQuery todayQuery;
     //Today
     string queryString = "SELECT julianday('NOW', '";
     queryString.append(std::to_string(int(timezone)));
     queryString.append(" hours');");
-    dateQuery.exec(QString::fromStdString(queryString));
-    dateQuery.first();
-    double temp_today = ROUND_JULDAY(dateQuery.value(0).toFloat());
+    todayQuery.exec(QString::fromStdString(queryString));
+    todayQuery.first();
+    double today = ROUND_JULDAY(todayQuery.value(0).toFloat());
+
+    //Now we set up the query to get the earliest day
+    //We don't do any filtering on this.
+    std::string dateHistoString2 =
+                            "SELECT";
+    dateHistoString2.append("    julianday(unixtime, 'unixepoch', '");
+    dateHistoString2.append(std::to_string(int(timezone)));
+    dateHistoString2.append(" hours') AS julday");
+    dateHistoString2.append("   ,thedate");
+    dateHistoString2.append("   ,strftime('%Y/%m', thedate) AS yearmonth");
+    dateHistoString2.append("   ,strftime('%m', thedate) AS themonth");
+    dateHistoString2.append("   ,strftime('%d', thedate) AS theday");
+    dateHistoString2.append("   ,thecount ");
+    dateHistoString2.append("FROM");
+    dateHistoString2.append("    (SELECT");
+    dateHistoString2.append("        date(SearchTable.STcaptureTime, 'unixepoch', '");
+    dateHistoString2.append(std::to_string(int(timezone)));
+    dateHistoString2.append(" hours') AS thedate");//This SQL is apparently whitespace sensitive.
+    dateHistoString2.append("       ,COUNT(STcaptureTime) AS thecount");
+    dateHistoString2.append("       ,STcaptureTime AS unixtime");
+    dateHistoString2.append("    FROM");
+    dateHistoString2.append("        SearchTable");
+    dateHistoString2.append("    GROUP BY");
+    dateHistoString2.append("        thedate)");
+    dateHistoString2.append("ORDER BY");
+    dateHistoString2.append("    thedate ASC;");
+    QSqlQuery dateQuery = QSqlQuery(QString::fromStdString(dateHistoString2));
 
     //Oldest day in the database
-    double temp_firstDay;
-    //For some reason, this does not match the earliest date bin of the histogram.
-    //We can only use this relative to the 'today' computed before.
-    queryString = "SELECT julianday(min(SearchTable.STcaptureTime), 'unixepoch', '";
-    queryString.append(std::to_string(int(timezone)));
-    queryString.append(" hours') FROM SearchTable;");
-    dateQuery.exec(QString::fromStdString(queryString));
+    double firstDay;
+    dateQuery.exec();
     if (dateQuery.first())
     {
-        temp_firstDay = ROUND_JULDAY(dateQuery.value(0).toFloat());
+        QSqlRecord rec = dateQuery.record();
+        int nameCol = rec.indexOf("julday");
+        firstDay = ROUND_JULDAY(dateQuery.value(nameCol).toDouble());
     } else {
-        temp_firstDay = temp_today;
+        firstDay = temp_today;
     }
     //The row count of all the data we will eventually serve to the view.
-    m_rowCount = temp_today - temp_firstDay + 1;
+    m_rowCount = temp_today - firstDay + 1;
 
     cout << "m_rowcount1: " << m_rowCount << endl;
 
     //Now, we tell the internal model to grab stuff.
-    cout << m_modelQuery.lastQuery().toStdString() << endl;
     queryModel.setQuery(m_modelQuery);
     while (queryModel.canFetchMore())
     {
@@ -103,7 +163,6 @@ void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
 
     //Loop over the days in the QSqlQueryModel.
     //Write the count in for the appropriate day.
-    double firstDay = temp_today;//as a fallback
     for (int i = 0; i < queryRowCount; i++)
     {
         //The first column is supposed to be the Julian day.
@@ -111,10 +170,6 @@ void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
         //The sixth column is supposed to be the count of images on that day.
         QModelIndex countModelIndex = this->index(i,5);
         double julianDay = queryModel.data(julianDayModelIndex).toDouble();
-        if (i==0)
-        {
-            firstDay = ROUND_JULDAY(julianDay);
-        }
         int dayIndex = ROUND_JULDAY(julianDay)-firstDay;
         int imageCount = queryModel.data(countModelIndex).toInt();
         m_dataVector[dayIndex*VECTORCOUNT+1] = imageCount;

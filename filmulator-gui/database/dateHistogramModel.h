@@ -17,7 +17,9 @@ public:
     explicit DateHistogramModel(QObject *parent = 0);
 
     //This'll have to copy everything into matrices of things
-    void setQuery(const QSqlQuery &query, const int timezone);
+    void setQuery(const int timezone,
+                  const int minRating,
+                  const int maxRating);
 
     //This'll access just the matrix of data
     QVariant data(const QModelIndex &index, int role) const;

@@ -1,8 +1,12 @@
 #include "exifFunctions.h"
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 QDateTime exifUtcTime(Exiv2::ExifData exifData, const int cameraTZ)
 {
-    QString exifDateTime = QString::fromStdString(exifData[ "Exif.Image.DateTime" ].toString());
+    QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
 
     QDateTime cameraDateTime = QDateTime::fromString(exifDateTime, "yyyy:MM:dd hh:mm:ss");
 
@@ -29,7 +33,7 @@ int exifDefaultRotation(Exiv2::ExifData exifData)
     int exifOrientation;
     try
     {
-        exifOrientation = (int) exifData[ "Exif.Image.Orientation" ].value().toLong();
+        exifOrientation = (int) exifData["Exif.Image.Orientation"].value().toLong();
     }
     catch (...)
     {
@@ -58,30 +62,40 @@ int exifDefaultRotation(Exiv2::ExifData exifData)
 
 QString exifMake(Exiv2::ExifData exifData)
 {
-    return QString::fromStdString(exifData[ "Exif.Image.Make" ].toString());
+    return QString::fromStdString(exifData["Exif.Image.Make"].toString());
 }
 
 QString exifModel(Exiv2::ExifData exifData)
 {
-    return QString::fromStdString(exifData[ "Exif.Image.Model" ].toString());
+    return QString::fromStdString(exifData["Exif.Image.Model"].toString());
 }
 
 float exifIso(Exiv2::ExifData exifData)
 {
-    return exifData [ "Exif.Photo.ISOSpeedRatings" ].toFloat();
+    return exifData ["Exif.Photo.ISOSpeedRatings"].toFloat();
 }
 
 QString exifTv(Exiv2::ExifData exifData)
 {
-    return QString::fromStdString(exifData[ "Exif.Photo.ExposureTime" ].toString());
+    return QString::fromStdString(exifData["Exif.Photo.ExposureTime"].toString());
 }
 
 float exifAv(Exiv2::ExifData exifData)
 {
-    return exifData[ "Exif.Photo.FNumber" ].toFloat();
+    return exifData["Exif.Photo.FNumber"].toFloat();
 }
 
 float exifFl(Exiv2::ExifData exifData)
 {
-    return exifData[ "Exif.Photo.FocalLength" ].toFloat();
+    return exifData["Exif.Photo.FocalLength"].toFloat();
+}
+
+int exifRating(Exiv2::ExifData exifData, Exiv2::XmpData xmpData)
+{
+    std::string maker = exifData["Exif.Image.Make"].toString();
+    if (maker.compare("Canon") == 0)
+    {
+        return (int) xmpData["Xmp.xmp.Rating"].toLong();
+    }
+    return 0;
 }

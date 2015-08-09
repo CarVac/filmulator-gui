@@ -41,7 +41,8 @@ QString createNewProfile(const QString fileHash,
                          const QString absoluteFilePath,
                          const QDateTime captureTime,
                          const QDateTime importTime,
-                         Exiv2::ExifData exifData)
+                         Exiv2::ExifData exifData,
+                         Exiv2::XmpData xmpData)
 {
     QSqlQuery query;
     //Retrieve the usage count from the file table, and increment it by one.
@@ -74,7 +75,7 @@ QString createNewProfile(const QString fileHash,
     query.bindValue(4, fileHash);
     //rating
     //TODO: write function to get rating
-    query.bindValue(5, 0);
+    query.bindValue(5, exifRating(exifData, xmpData));
     //latitude
     //TODO: figure something out here to either grab from the exif or get user input.
     query.bindValue(6, 0);

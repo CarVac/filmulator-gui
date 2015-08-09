@@ -38,6 +38,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(cstr);
     image->readMetadata();
     Exiv2::ExifData exifData = image->exifData();
+    Exiv2::XmpData xmpData = image->xmpData();
 
     cout << "importing3" << endl;
     //Set up the main directory to insert the file, and the full file path.
@@ -93,7 +94,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                                       infoIn.absoluteFilePath(),
                                       exifUtcTime(exifData, cameraTZ),
                                       importTime,
-                                      exifData);
+                                      exifData,
+                                      xmpData);
 
         //Request that we enqueue the image.
         cout << "importing7" << endl;

@@ -109,72 +109,6 @@ QSqlQuery OrganizeModel::modelQuery()
     return QSqlQuery(QString::fromStdString(queryString));
 }
 
-QSqlQuery OrganizeModel::dateHistoQuery()
-{
-    /*
-    Here's the query:
-
-SELECT
-    julianday(unixtime, 'unixepoch', '[timezone] hours') AS julday
-   ,thedate
-   ,strftime('%Y/%m', thedate) AS yearmonth
-   ,strftime('%m', thedate) AS themonth
-   ,strftime('%d', thedate) AS theday
-   ,thecount
-FROM
-    (SELECT
-        date(STcaptureTime, 'unixepoch', '[timezone] hours') AS thedate
-       ,COUNT(STcaptureTime) as thecount
-       ,STcaptureTime AS unixtime
-    FROM
-        SearchTable
-    WHERE
-        SearchTable.STrating <= [maxrating]
-        AND
-        SearchTable.STrating >= [minrating]
-    GROUP BY
-        thedate)
-ORDER BY
-    thedate ASC;
-    */
-
-    std::string dateHistoString =
-                           "SELECT";
-    dateHistoString.append("    julianday(unixtime, 'unixepoch', '");
-    dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') AS julday");
-    dateHistoString.append("   ,thedate");
-    dateHistoString.append("   ,strftime('%Y/%m', thedate) AS yearmonth");
-    dateHistoString.append("   ,strftime('%m', thedate) AS themonth");
-    dateHistoString.append("   ,strftime('%d', thedate) AS theday");
-    dateHistoString.append("   ,thecount ");
-    dateHistoString.append("FROM");
-    dateHistoString.append("    (SELECT");
-    dateHistoString.append("        date(SearchTable.STcaptureTime, 'unixepoch', '");
-    dateHistoString.append(std::to_string(int(m_timeZone)));
-    dateHistoString.append(" hours') AS thedate");//This SQL is apparently whitespace sensitive.
-    dateHistoString.append("       ,COUNT(STcaptureTime) AS thecount");
-    dateHistoString.append("       ,STcaptureTime AS unixtime");
-    dateHistoString.append("    FROM");
-    dateHistoString.append("        SearchTable");
-    if (minRating > 0 || maxRating < 5)
-    {
-    dateHistoString.append("    WHERE");
-    dateHistoString.append("            SearchTable.STrating <= ");
-    dateHistoString.append(std::to_string(maxRating));
-    dateHistoString.append("        AND");
-    dateHistoString.append("            SearchTable.STrating >= ");
-    dateHistoString.append(std::to_string(minRating));
-    }
-    dateHistoString.append("    GROUP BY");
-    dateHistoString.append("        thedate)");
-    dateHistoString.append("ORDER BY");
-    dateHistoString.append("    thedate ASC;");
-
-    //std::cout << dateHistoString << std::endl;
-    return QSqlQuery(QString::fromStdString(dateHistoString));
-}
-
 void OrganizeModel::setOrganizeQuery()
 {
     setQuery(modelQuery());
@@ -182,7 +116,7 @@ void OrganizeModel::setOrganizeQuery()
 
 void OrganizeModel::setDateHistoQuery()
 {
-    dateHistogram->setQuery(dateHistoQuery(), m_timeZone);
+    dateHistogram->setQuery(m_timeZone, minRating, maxRating);
     dateHistogramSet = true;
 }
 
