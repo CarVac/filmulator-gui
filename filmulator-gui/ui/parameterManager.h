@@ -5,12 +5,86 @@
 #include <QVariant>
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include "../core/imagePipeline.h"
+//#include "../core/imagePipeline.h"
 #include <QMutex>
 #include <QMutexLocker>
 #include <QDateTime>
 #include <QString>
 #include <QDebug>
+#include <tuple>
+#include <iostream>
+
+enum Valid {none,
+            load,
+            demosaic,
+            prefilmulation,
+            filmulation,
+            blackwhite,
+            colorcurve,
+            filmlikecurve,
+            count};
+
+enum FilmFetch {initial,
+                subsequent};
+
+enum AbortStatus {proceed,
+                  restart};
+
+//We want a struct for each stage of the pipeline for validity.
+struct LoadParams {
+    std::string fullFilename;
+    bool tiffIn;
+    bool jpegIn;
+};
+
+struct DemosaicParams {
+    bool caEnabled;
+    int highlights;
+};
+
+struct PrefilmParams {
+    float exposureComp;
+    float temperature;
+    float tint;
+};
+
+struct FilmParams {
+    float initialDeveloperConcentration;
+    float reservoirThickness;
+    float activeLayerThickness;
+    float crystalsPerPixel;
+    float initialCrystalRadius;
+    float initialSilverSaltDensity;
+    float developerConsumptionConst;
+    float crystalGrowthConst;
+    float silverSaltConsumptionConst;
+    float totalDevelopmentTime;
+    int agitateCount;
+    int developmentSteps;
+    float filmArea;
+    float sigmaConst;
+    float layerMixConst;
+    float layerTimeDivisor;
+    int rolloffBoundary;
+};
+
+struct BlackWhiteParams {
+    float blackpoint;
+    float whitepoint;
+};
+
+struct FilmlikeCurvesParams {
+    float shadowsX;
+    float shadowsY;
+    float highlightsX;
+    float highlightsY;
+    float vibrance;
+    float saturation;
+};
+
+struct OrientationParams {
+    int rotation;
+};
 
 class ParameterManager : public QObject
 {
@@ -24,57 +98,56 @@ class ParameterManager : public QObject
     Q_PROPERTY(float aperture       READ getAperture     NOTIFY apertureChanged)
     Q_PROPERTY(float focalLength    READ getFocalLength  NOTIFY focalLengthChanged)
 
-    Q_PROPERTY(bool tiffIn MEMBER (param.tiffIn) WRITE setTiffIn NOTIFY tiffInChanged)
-    Q_PROPERTY(bool jpegIn MEMBER (param.jpegIn) WRITE setJpegIn NOTIFY jpegInChanged)
+    Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
+    Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
 
     //Demosaic
-    Q_PROPERTY(bool caEnabled MEMBER (param.caEnabled)  WRITE setCaEnabled  NOTIFY caEnabledChanged)
-    Q_PROPERTY(int highlights MEMBER (param.highlights) WRITE setHighlights NOTIFY highlightsChanged)
+    Q_PROPERTY(bool caEnabled MEMBER m_caEnabled  WRITE setCaEnabled  NOTIFY caEnabledChanged)
+    Q_PROPERTY(int highlights MEMBER m_highlights WRITE setHighlights NOTIFY highlightsChanged)
 
     //Prefilmulation
-    Q_PROPERTY(float exposureComp MEMBER m_exposureComp      WRITE setExposureComp NOTIFY exposureCompChanged)
-    Q_PROPERTY(float temperature  MEMBER (param.temperature) WRITE setTemperature NOTIFY temperatureChanged)
-    Q_PROPERTY(float tint         MEMBER (param.tint)        WRITE setTint NOTIFY tintChanged)
+    Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
+    Q_PROPERTY(float temperature  MEMBER m_temperature  WRITE setTemperature NOTIFY temperatureChanged)
+    Q_PROPERTY(float tint         MEMBER m_tint         WRITE setTint NOTIFY tintChanged)
 
     //Filmulation
-    Q_PROPERTY(float initialDeveloperConcentration MEMBER (param.filmParams.initialDeveloperConcentration) WRITE setInitialDeveloperConcentration NOTIFY initialDeveloperConcentrationChanged)
-    Q_PROPERTY(float reservoirThickness            MEMBER (param.filmParams.reservoirThickness           ) WRITE setReservoirThickness            NOTIFY reservoirThicknessChanged)
-    Q_PROPERTY(float activeLayerThickness          MEMBER (param.filmParams.activeLayerThickness         ) WRITE setActiveLayerThickness          NOTIFY activeLayerThicknessChanged)
-    Q_PROPERTY(float crystalsPerPixel              MEMBER (param.filmParams.crystalsPerPixel             ) WRITE setCrystalsPerPixel              NOTIFY crystalsPerPixelChanged)
-    Q_PROPERTY(float initialCrystalRadius          MEMBER (param.filmParams.initialCrystalRadius         ) WRITE setInitialCrystalRadius          NOTIFY initialCrystalRadiusChanged)
-    Q_PROPERTY(float initialSilverSaltDensity      MEMBER (param.filmParams.initialSilverSaltDensity     ) WRITE setInitialSilverSaltDensity      NOTIFY initialSilverSaltDensityChanged)
-    Q_PROPERTY(float developerConsumptionConst     MEMBER (param.filmParams.developerConsumptionConst    ) WRITE setDeveloperConsumptionConst     NOTIFY developerConsumptionConstChanged)
-    Q_PROPERTY(float crystalGrowthConst            MEMBER (param.filmParams.crystalGrowthConst           ) WRITE setCrystalGrowthConst            NOTIFY crystalGrowthConstChanged)
-    Q_PROPERTY(float silverSaltConsumptionConst    MEMBER (param.filmParams.silverSaltConsumptionConst   ) WRITE setSilverSaltConsumptionConst    NOTIFY silverSaltConsumptionConstChanged)
-    Q_PROPERTY(float totalDevelopmentTime          MEMBER (param.filmParams.totalDevelTime               ) WRITE setTotalDevelopmentTime          NOTIFY totalDevelopmentTimeChanged)
-    Q_PROPERTY(int agitateCount                    MEMBER (param.filmParams.agitateCount                 ) WRITE setAgitateCount                  NOTIFY agitateCountChanged)
-    Q_PROPERTY(int developmentSteps                MEMBER (param.filmParams.developmentSteps             ) WRITE setDevelopmentSteps              NOTIFY developmentStepsChanged)
-    Q_PROPERTY(float filmArea                      MEMBER (param.filmParams.filmArea                     ) WRITE setFilmArea                      NOTIFY filmAreaChanged)
-    Q_PROPERTY(float sigmaConst                    MEMBER (param.filmParams.sigmaConst                   ) WRITE setSigmaConst                    NOTIFY sigmaConstChanged)
-    Q_PROPERTY(float layerMixConst                 MEMBER (param.filmParams.layerMixConst                ) WRITE setLayerMixConst                 NOTIFY layerMixConstChanged)
-    Q_PROPERTY(float layerTimeDivisor              MEMBER (param.filmParams.layerTimeDivisor             ) WRITE setLayerTimeDivisor              NOTIFY layerTimeDivisorChanged)
-    Q_PROPERTY(int rolloffBoundary                 MEMBER (param.filmParams.rolloffBoundary              ) WRITE setRolloffBoundary               NOTIFY rolloffBoundaryChanged)
+    Q_PROPERTY(float initialDeveloperConcentration MEMBER m_initialDeveloperConcentration WRITE setInitialDeveloperConcentration NOTIFY initialDeveloperConcentrationChanged)
+    Q_PROPERTY(float reservoirThickness            MEMBER m_reservoirThickness            WRITE setReservoirThickness            NOTIFY reservoirThicknessChanged)
+    Q_PROPERTY(float activeLayerThickness          MEMBER m_activeLayerThickness          WRITE setActiveLayerThickness          NOTIFY activeLayerThicknessChanged)
+    Q_PROPERTY(float crystalsPerPixel              MEMBER m_crystalsPerPixel              WRITE setCrystalsPerPixel              NOTIFY crystalsPerPixelChanged)
+    Q_PROPERTY(float initialCrystalRadius          MEMBER m_initialCrystalRadius          WRITE setInitialCrystalRadius          NOTIFY initialCrystalRadiusChanged)
+    Q_PROPERTY(float initialSilverSaltDensity      MEMBER m_initialSilverSaltDensity      WRITE setInitialSilverSaltDensity      NOTIFY initialSilverSaltDensityChanged)
+    Q_PROPERTY(float developerConsumptionConst     MEMBER m_developerConsumptionConst     WRITE setDeveloperConsumptionConst     NOTIFY developerConsumptionConstChanged)
+    Q_PROPERTY(float crystalGrowthConst            MEMBER m_crystalGrowthConst            WRITE setCrystalGrowthConst            NOTIFY crystalGrowthConstChanged)
+    Q_PROPERTY(float silverSaltConsumptionConst    MEMBER m_silverSaltConsumptionConst    WRITE setSilverSaltConsumptionConst    NOTIFY silverSaltConsumptionConstChanged)
+    Q_PROPERTY(float totalDevelopmentTime          MEMBER m_totalDevelopmentTime          WRITE setTotalDevelopmentTime          NOTIFY totalDevelopmentTimeChanged)
+    Q_PROPERTY(int agitateCount                    MEMBER m_agitateCount                  WRITE setAgitateCount                  NOTIFY agitateCountChanged)
+    Q_PROPERTY(int developmentSteps                MEMBER m_developmentSteps              WRITE setDevelopmentSteps              NOTIFY developmentStepsChanged)
+    Q_PROPERTY(float filmArea                      MEMBER m_filmArea                      WRITE setFilmArea                      NOTIFY filmAreaChanged)
+    Q_PROPERTY(float sigmaConst                    MEMBER m_sigmaConst                    WRITE setSigmaConst                    NOTIFY sigmaConstChanged)
+    Q_PROPERTY(float layerMixConst                 MEMBER m_layerMixConst                 WRITE setLayerMixConst                 NOTIFY layerMixConstChanged)
+    Q_PROPERTY(float layerTimeDivisor              MEMBER m_layerTimeDivisor              WRITE setLayerTimeDivisor              NOTIFY layerTimeDivisorChanged)
+    Q_PROPERTY(int rolloffBoundary                 MEMBER m_rolloffBoundary               WRITE setRolloffBoundary               NOTIFY rolloffBoundaryChanged)
 
     //Whitepoint & Blackpoint
-    Q_PROPERTY(float blackpoint MEMBER (param.blackpoint) WRITE setBlackpoint NOTIFY blackpointChanged)
-    Q_PROPERTY(float whitepoint MEMBER (param.whitepoint) WRITE setWhitepoint NOTIFY whitepointChanged)
+    Q_PROPERTY(float blackpoint MEMBER m_blackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
+    Q_PROPERTY(float whitepoint MEMBER m_whitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
 
     //Global, all-color curves.
-    Q_PROPERTY(float shadowsX    MEMBER (param.shadowsX    ) WRITE setShadowsX NOTIFY shadowsXChanged)
-    Q_PROPERTY(float shadowsY    MEMBER (param.shadowsY    ) WRITE setShadowsY NOTIFY shadowsYChanged)
-    Q_PROPERTY(float highlightsX MEMBER (param.highlightsX ) WRITE setHighlightsX NOTIFY highlightsXChanged)
-    Q_PROPERTY(float highlightsY MEMBER (param.highlightsY ) WRITE setHighlightsY NOTIFY highlightsYChanged)
-    Q_PROPERTY(float vibrance    MEMBER (param.vibrance    ) WRITE setVibrance NOTIFY vibranceChanged)
-    Q_PROPERTY(float saturation  MEMBER (param.saturation  ) WRITE setSaturation NOTIFY saturationChanged)
+    Q_PROPERTY(float shadowsX    MEMBER m_shadowsX     WRITE setShadowsX NOTIFY shadowsXChanged)
+    Q_PROPERTY(float shadowsY    MEMBER m_shadowsY     WRITE setShadowsY NOTIFY shadowsYChanged)
+    Q_PROPERTY(float highlightsX MEMBER m_highlightsX  WRITE setHighlightsX NOTIFY highlightsXChanged)
+    Q_PROPERTY(float highlightsY MEMBER m_highlightsY  WRITE setHighlightsY NOTIFY highlightsYChanged)
+    Q_PROPERTY(float vibrance    MEMBER m_vibrance     WRITE setVibrance NOTIFY vibranceChanged)
+    Q_PROPERTY(float saturation  MEMBER m_saturation   WRITE setSaturation NOTIFY saturationChanged)
 
     //Rotation
-    Q_PROPERTY(int rotation      MEMBER (param.rotation    ) WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(int rotation      MEMBER m_rotation     WRITE setRotation NOTIFY rotationChanged)
 
     Q_PROPERTY(bool pasteable READ getPasteable NOTIFY pasteableChanged)
 
 public:
     ParameterManager();
-    ProcessingParameters getParams();
 
     Q_INVOKABLE void rotateRight();
     Q_INVOKABLE void rotateLeft();
@@ -86,8 +159,37 @@ public:
     Q_INVOKABLE void copyAll(QString fromImageID);
     Q_INVOKABLE void paste(QString toImageID);
 
+    //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
+    //and then returns the struct and the validity.
+    //Input
+    std::tuple<Valid,AbortStatus,LoadParams> claimLoadParams();
+
+    //Demosaic
+    std::tuple<Valid,AbortStatus,DemosaicParams> claimDemosaicParams();
+
+    //Prefilmulation
+    std::tuple<Valid,AbortStatus,PrefilmParams> claimPrefilmParams();
+
+    //Filmulation
+    std::tuple<Valid,AbortStatus,FilmParams> claimFilmParams(FilmFetch fetch);
+
+    //Whitepoint & Blackpoint (and cropping and rotation and distortion)
+    std::tuple<Valid,AbortStatus,BlackWhiteParams> claimBlackWhiteParams();
+
+    //Global, all-color curves.
+    std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> claimFilmlikeCurvesParams();
+
+    //90 degree rotation
+    std::tuple<Valid,AbortStatus,OrientationParams> claimOrientationParams();
+
+    Valid getValid();
+    std::string getFullFilename(){return m_fullFilename;}
+
+    //This is here for the sql insertion to pull the values from.
+    void loadParams(QString imageID);
 protected:
-    ProcessingParameters param;
+    //The paramMutex exists to prevent race conditions between
+    //changes in the parameters and changes in validity.
     QMutex paramMutex;
     QMutex signalMutex;
 
@@ -96,8 +198,7 @@ protected:
     bool pasteable;
     bool pasteSome;
 
-    ProcessingParameters loadParams(QString imageID);
-    void writeToDB(ProcessingParameters params, QString imageID);
+    void writeToDB(QString imageID);
     void paramChangeWrapper(QString);
     void disableParamChange();
     void enableParamChange();
@@ -112,10 +213,55 @@ protected:
     float aperture;
     float focalLength;
 
-    //Values that may change but don't fit neatly in the struct.
+    Valid validity;
+
+    //Input
+    std::string m_fullFilename;
+    bool m_tiffIn;
+    bool m_jpegIn;
+
+    //Demosaic
+    bool m_caEnabled;
+    int m_highlights;
+
     //Prefilmulation
     float m_exposureComp;
+    float m_temperature;
+    float m_tint;
 
+    //Filmulation
+    float m_initialDeveloperConcentration;
+    float m_reservoirThickness;
+    float m_activeLayerThickness;
+    float m_crystalsPerPixel;
+    float m_initialCrystalRadius;
+    float m_initialSilverSaltDensity;
+    float m_developerConsumptionConst;
+    float m_crystalGrowthConst;
+    float m_silverSaltConsumptionConst;
+    float m_totalDevelopmentTime;
+    int m_agitateCount;
+    int m_developmentSteps;
+    float m_filmArea;
+    float m_sigmaConst;
+    float m_layerMixConst;
+    float m_layerTimeDivisor;
+    int m_rolloffBoundary;
+
+    //Whitepoint & Blackpoint
+    float m_blackpoint;
+    float m_whitepoint;
+
+    //Global, all-color curves.
+    float m_shadowsX;
+    float m_shadowsY;
+    float m_highlightsX;
+    float m_highlightsY;
+    float m_vibrance;
+    float m_saturation;
+
+    //Rotation
+    int m_rotation;
 
     //Getters for read-only properties.
     QString getImageIndex(){return imageIndex;}

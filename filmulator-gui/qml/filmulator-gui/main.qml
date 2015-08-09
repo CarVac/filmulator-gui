@@ -244,8 +244,8 @@ ApplicationWindow {
 
     //styles
     property Component headerTabViewStyle: TabViewStyle {
-        tabOverlap: -5 * uiScale
-        frameOverlap: -5 * uiScale
+        tabOverlap: 0 * uiScale
+        frameOverlap: 0 * uiScale
 
         frame: Rectangle { //The contents of the tab.
             color: Colors.lowGrayL
@@ -253,13 +253,13 @@ ApplicationWindow {
 
         tab: Item {
             property int totalOverlap: tabOverlap * (control.count - 1)
-            implicitWidth: Math.min (((styleData.availableWidth + totalOverlap) / control.count) - control.count, 100 * uiScale)
-            implicitHeight: 32 * uiScale
+            implicitWidth: Math.min (((styleData.availableWidth + totalOverlap) / control.count) - control.count, 105 * uiScale)
+            implicitHeight: 37 * uiScale
             Rectangle {
                 x: 4 * uiScale
                 y: 4 * uiScale
-                width: parent.implicitWidth - 1 * uiScale
-                height: parent.implicitHeight - 2 * uiScale
+                width: parent.implicitWidth - 5 * uiScale
+                height: parent.implicitHeight - 8 * uiScale
                 radius: 8 * uiScale
                 border.width: 1 * uiScale
                 border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray

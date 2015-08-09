@@ -352,8 +352,8 @@ SplitView {
                         id: whitepointLine
                         height: parent.height
                         width: 1
-                        color: whitepointSlider.pressed ? "#FF8800" : "white"
-                        x: parent.padding + paramManager.whitepoint/.0025*(parent.width-2*parent.padding)
+                        color: whitepointSlider.pressed ? "#FF8800" : (blackpointSlider.pressed ? "#FFCCAA" : "white")
+                        x: parent.padding + (paramManager.blackpoint+paramManager.whitepoint)/.0025*(parent.width-2*parent.padding)
                         //The .0025 is the highest bin in the post filmulator histogram.
                     }
                     ToolTip {

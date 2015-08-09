@@ -26,7 +26,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                     const QString,
                                     const QDateTime)));
     connect(worker, SIGNAL(doneProcessing()), this, SLOT(workerFinished()));
-    connect(worker, SIGNAL(enqueueThis()), this, SLOT(enqueueRequested()));
+    connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
     workerThread.start(QThread::LowPriority);
 }
 

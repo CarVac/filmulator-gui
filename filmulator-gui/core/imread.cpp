@@ -30,7 +30,7 @@ bool imread( string input_image_filename, matrix<float> &returnmatrix,
     const char *cstr = input_image_filename.c_str();
     if ( 0 != image_processor.open_file( cstr ) )
     {
-        cerr << "Could not read input file!" << endl;
+        cerr << "imread: Could not read input file!" << endl;
         return true;
     }
      //Make abbreviations for brevity in accessing data.

@@ -103,7 +103,7 @@ void DateHistogramModel::setQuery(const QSqlQuery &query, const int timezone)
 
     //Loop over the days in the QSqlQueryModel.
     //Write the count in for the appropriate day.
-    double firstDay;
+    double firstDay = temp_today;//as a fallback
     for (int i = 0; i < queryRowCount; i++)
     {
         //The first column is supposed to be the Julian day.
