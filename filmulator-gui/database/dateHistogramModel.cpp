@@ -119,10 +119,10 @@ void DateHistogramModel::setQuery(const int timezone,
         int nameCol = rec.indexOf("julday");
         firstDay = ROUND_JULDAY(dateQuery.value(nameCol).toDouble());
     } else {
-        firstDay = temp_today;
+        firstDay = today;
     }
     //The row count of all the data we will eventually serve to the view.
-    m_rowCount = temp_today - firstDay + 1;
+    m_rowCount = today - firstDay + 1;
 
     cout << "m_rowcount1: " << m_rowCount << endl;
 
