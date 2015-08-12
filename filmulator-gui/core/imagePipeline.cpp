@@ -64,8 +64,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
 
         cout << "imagePipeline.cpp: Opening " << loadParam.fullFilename << endl;
-        cout << "imagePipeline.cpp: tiffIn? " << loadParam.tiffIn << endl;
-        cout << "imagePipeline.cpp: jpegIn? " << loadParam.jpegIn << endl;
 
         matrix<float> input_image;
         //Reads in the photo.
@@ -115,7 +113,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      pre_film_image,
                      prefilmParam.temperature,
                      prefilmParam.tint,
-                     loadParam.fullFilename);
+                     prefilmParam.fullFilename);
 
         if (NoCacheNoHisto == cacheHisto)
         {

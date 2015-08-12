@@ -147,15 +147,14 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     params.exposureComp = m_exposureComp;
     params.temperature = m_temperature;
     params.tint = m_tint;
+    params.fullFilename = m_fullFilename;//it's okay to include previous things in later params if necessary
     std::tuple<Valid,AbortStatus,PrefilmParams> tup(validity, abort, params);
     return tup;
 }
 
 void ParameterManager::setExposureComp(float exposureComp)
 {
-    cout << "ParamManager::setExposureComp before mutex" << endl;
     QMutexLocker paramLocker(&paramMutex);
-    cout << "ParamManager::setExposureComp after mutex" << endl;
     m_exposureComp = exposureComp;
     validity = min(validity, Valid::demosaic);
     paramLocker.unlock();

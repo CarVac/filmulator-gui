@@ -46,6 +46,7 @@ struct PrefilmParams {
     float exposureComp;
     float temperature;
     float tint;
+    std::string fullFilename;
 };
 
 struct FilmParams {
