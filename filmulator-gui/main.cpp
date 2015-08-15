@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     //Prepare an object for managing the processing parameters.
     ParameterManager *paramManager = new ParameterManager;
     engine.rootContext()->setContextProperty("paramManager",paramManager);
-    QObject::connect(paramManager, SIGNAL(updateTable(QString, int)),
+    QObject::connect(paramManager, SIGNAL(updateTableOut(QString, int)),
                      switchboard, SLOT(updateTableIn(QString, int)));
 
     //Prepare an image provider object.
@@ -63,12 +63,14 @@ int main(int argc, char *argv[])
     OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty("organizeModel", organizeModel);
     engine.rootContext()->setContextProperty("dateHistoModel", organizeModel->dateHistogram);
-//    std::cout << "Organize row count: " << organizeModel->rowCount() << std::endl;
+    QObject::connect(switchboard, SIGNAL(updateTableOut(QString,int)),
+                     organizeModel, SLOT(updateTable(QString,int)));
+    QObject::connect(organizeModel, SIGNAL(updateTableOut(QString,int)),
+                     switchboard, SLOT(updateTableIn(QString,int)));
 
     //Prepare a model for the queue view.
     QueueModel *queueModel = new QueueModel;
     queueModel->setQueueQuery();
-//    std::cout << "Queue row count: " << queueModel->rowCount() << std::endl;
     QObject::connect(switchboard, SIGNAL(updateTableOut(QString, int)),
                      queueModel, SLOT(updateTable(QString, int)));
     QObject::connect(importModel, SIGNAL(enqueueThis(QString)),

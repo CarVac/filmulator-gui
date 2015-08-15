@@ -52,12 +52,10 @@ Rectangle {
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            action: Action {
-                onTriggered: {
-                    settings.uiScale = uiScaleSlider.value
-                    uiScaleSlider.defaultValue = uiScaleSlider.value
-                    uiScaleSlider.changed = false
-                }
+            onTriggered: {
+                settings.uiScale = uiScaleSlider.value
+                uiScaleSlider.defaultValue = uiScaleSlider.value
+                uiScaleSlider.changed = false
             }
             uiScale: root.uiScale
         }

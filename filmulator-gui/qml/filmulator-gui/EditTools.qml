@@ -554,12 +554,8 @@ SplitView {
             x: 0
             y: 0
             text: qsTr("Save TIFF")
-            action: Action {
-                onTriggered: {
-                    //filmProvider.saveTiff = true
-                    //root.updateImage()
-                    filmProvider.writeTiff()
-                }
+            onTriggered: {
+                filmProvider.writeTiff()
             }
         }
         ToolButton {
@@ -570,12 +566,8 @@ SplitView {
             x: width
             y: 0
             text: qsTr("Save JPEG")
-            action: Action {
-                onTriggered: {
-                    //filmProvider.saveJpeg = true
-                    //root.updateImage()
-                    filmProvider.writeJpeg()
-                }
+            onTriggered: {
+                filmProvider.writeJpeg()
             }
         }
     }

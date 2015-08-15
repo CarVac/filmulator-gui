@@ -50,10 +50,8 @@ Calendar {
                 height: 30 * uiScale
                 x: 0 * uiScale
                 y: 0 * uiScale
-                action: Action {
-                    onTriggered: {
-                        control.showPreviousYear()
-                    }
+                onTriggered: {
+                    control.showPreviousYear()
                 }
                 Component.onCompleted: {
                     backYear.tooltipWanted.connect(root.tooltipWanted)
@@ -68,10 +66,8 @@ Calendar {
                 height: 30 * uiScale
                 x: 30 * uiScale
                 y: 0 * uiScale
-                action: Action {
-                    onTriggered: {
-                        control.showPreviousMonth()
-                    }
+                onTriggered: {
+                    control.showPreviousMonth()
                 }
                 Component.onCompleted: {
                     backMonth.tooltipWanted.connect(root.tooltipWanted)
@@ -92,10 +88,8 @@ Calendar {
                 height: 30 * uiScale
                 x: parent.width - 60 * uiScale
                 y: 0 * uiScale
-                action: Action {
-                    onTriggered: {
-                        control.showNextMonth()
-                    }
+                onTriggered: {
+                    control.showNextMonth()
                 }
                 Component.onCompleted: {
                     forwardMonth.tooltipWanted.connect(root.tooltipWanted)
@@ -110,10 +104,8 @@ Calendar {
                 height: 30 * uiScale
                 x: parent.width - 30 * uiScale
                 y: 0 * uiScale
-                action: Action {
-                    onTriggered: {
-                        control.showNextYear()
-                    }
+                onTriggered: {
+                    control.showNextYear()
                 }
                 Component.onCompleted: {
                     forwardYear.tooltipWanted.connect(root.tooltipWanted)

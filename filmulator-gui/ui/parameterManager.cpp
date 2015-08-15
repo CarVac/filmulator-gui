@@ -716,9 +716,9 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(1, imageID);
     query.exec();
     query.exec("COMMIT;");//Apply all the changes together.
-    emit updateTable("ProcessingTable", 0);//0 means edit
-    emit updateTable("SearchTable", 0);//0 means edit
-    emit updateTable("QueueTable", 0);//0 means edit
+    emit updateTableOut("ProcessingTable", 0);//0 means edit
+    emit updateTableOut("SearchTable", 0);//0 means edit
+    emit updateTableOut("QueueTable", 0);//0 means edit
 }
 
 //Returns greatest common denominator. From wikipedia.
