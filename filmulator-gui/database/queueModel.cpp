@@ -12,8 +12,14 @@ QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
 
 QSqlQuery QueueModel::modelQuery()
 {
-    QString queryString = "SELECT * ";
+    QString queryString = "SELECT QueueTable.QTindex AS QTindex ";
+    queryString.append("         ,QueueTable.QTprocessed AS QTprocessed ");
+    queryString.append("         ,QueueTable.QTexported AS QTexported ");
+    queryString.append("         ,QueueTable.QTsearchID AS QTsearchID ");
+    queryString.append("         ,SearchTable.STrating AS STrating ");
     queryString.append("FROM QueueTable ");
+    queryString.append("INNER JOIN SearchTable "
+                       "WHERE SearchTable.STsearchID=QueueTable.QTsearchID ");
     queryString.append("ORDER BY ");
     queryString.append("QueueTable.QTindex ASC;");
 

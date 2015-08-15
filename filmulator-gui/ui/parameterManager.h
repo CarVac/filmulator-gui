@@ -386,7 +386,7 @@ signals:
     //General: if any param changes, emit this one as well after the param-specific signal.
     void paramChanged(QString source);
     void updateImage();
-    void updateTable(QString table, int operation);
+    void updateTableOut(QString table, int operation);
 };
 
 #endif // PARAMETERMANAGER_H

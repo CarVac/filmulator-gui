@@ -134,7 +134,8 @@ void OrganizeModel::setRating(QString searchID, int rating)
     query.bindValue(0, QVariant(max(min(rating,5),0)));
     query.bindValue(1, searchID);
     query.exec();
-    emit updateTable("SearchTable", 0);//An edit made to the search table.
+    emit updateTableOut("SearchTable", 0);//An edit made to the search table.
+    emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
 }
 
 QString OrganizeModel::getDateTimeString(int unixTimeIn)

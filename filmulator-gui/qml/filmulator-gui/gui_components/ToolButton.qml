@@ -8,11 +8,12 @@ Item {
     id: root
     property real uiScale: 1
     property alias text: button.text
-    property alias action: button.action
+    property bool notDisabled: true
     property alias tooltipText: tooltip.tooltipText
     property real __padding: 2 * uiScale
-    property bool notDisabled: true
-    property alias pressed: button.pressed
+    property bool pressed: notDisabled ? button.pressed : false
+
+    signal triggered()
 
     signal tooltipWanted(string text, int x, int y)
     width: 30 * uiScale
@@ -26,6 +27,13 @@ Item {
         style: ToolButtonStyle {
             uiScale: root.uiScale
             notDisabled: root.notDisabled
+        }
+        action: Action {
+            onTriggered: {
+                if (root.notDisabled){
+                    root.triggered()
+                }
+            }
         }
     }
     ToolTip {

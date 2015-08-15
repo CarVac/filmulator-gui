@@ -11,7 +11,7 @@ ButtonStyle {
         implicitWidth: 26 * uiScale
         implicitHeight: 26 * uiScale
         border.width: 1 * uiScale
-        border.color: control.pressed ?  Colors.lightOrange : Colors.brightGray
+        border.color: notDisabled ? control.pressed ?  Colors.lightOrange : Colors.brightGray : Colors.brightGray
         radius: 5 * uiScale
         gradient: Gradient {
             GradientStop {color: control.pressed ? "#000000" : "#222222"; position: 0.0}

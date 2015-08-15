@@ -168,10 +168,8 @@ Rectangle {
             tooltipText: qsTr("Copy photos from the source directory into the destination (and optional backup), as well as adding them to the database.")
             width: parent.width
             height: 40 * uiScale
-            action: Action{
-                onTriggered: {
-                    importModel.importDirectory_r(root.folderPath)
-                }
+            onTriggered: {
+                importModel.importDirectory_r(root.folderPath)
             }
             Component.onCompleted: {
                 importButton.tooltipWanted.connect(root.tooltipWanted)

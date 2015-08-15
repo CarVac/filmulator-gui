@@ -142,6 +142,9 @@ ApplicationWindow {
                         queueItem.url = newURL;
                     }
                 }
+                Component.onCompleted: {
+                    queueItem.tooltipWanted.connect(root.tooltipWanted)
+                }
             }
         }
     }

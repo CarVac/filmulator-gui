@@ -11,7 +11,8 @@ Item {
     property real uiScale: 1
     property string url: ""
 
-//    ListView {
+    signal tooltipWanted(string text, int x, int y)
+
     GridView { //There is a bug in ListView that makes scrolling not smooth.
         id: listView
         anchors.fill: parent
@@ -95,7 +96,7 @@ Item {
                         id: menuLayout
                         spacing: 0 * root.uiScale
                         x: Math.min(Math.max(0,-queueDelegate.mapToItem(null,0,0).x), sizer.mapToItem(queueDelegate,sizer.width,0).x - width)
-                        y: -124 * root.uiScale//#buttons*30+4
+                        y: -154 * root.uiScale//#buttons*30+4
                         z: 2
                         width: 200 * root.uiScale
 
@@ -106,18 +107,16 @@ Item {
                             width: parent.width
                             z: 2
                             uiScale: root.uiScale
-                            action: Action {
-                                onTriggered: {
-                                    if (clearQueue.active) {
-                                        queueModel.clearQueue()
-                                        queueDelegate.rightClicked = false
-                                        loadMenu.sourceComponent = undefined
-                                    }
-                                    else {
-                                        clearQueueCover.visible = true
-                                        clearQueue.active = false
-                                        clearQueueDelay.stop()
-                                    }
+                            onTriggered: {
+                                if (clearQueue.active) {
+                                    queueModel.clearQueue()
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                                else {
+                                    clearQueueCover.visible = true
+                                    clearQueue.active = false
+                                    clearQueueDelay.stop()
                                 }
                             }
                             onPressedChanged: {
@@ -150,12 +149,10 @@ Item {
                                 text: qsTr("Clear entire queue")
                                 anchors.fill: parent
                                 uiScale: root.uiScale
-                                action: Action {
-                                    onTriggered: {
-                                        clearQueue.active = false//just in case
-                                        clearQueueCover.visible = false
-                                        clearQueueDelay.start()
-                                    }
+                                onTriggered: {
+                                    clearQueue.active = false//just in case
+                                    clearQueueCover.visible = false
+                                    clearQueueDelay.start()
                                 }
                             }
                         }
@@ -165,12 +162,10 @@ Item {
                             text: qsTr("Remove from queue")
                             width: parent.width
                             z: 2
-                            action: Action {
-                                onTriggered: {
-                                    queueModel.deQueue(QTsearchID)
-                                    queueDelegate.rightClicked = false
-                                    loadMenu.sourceComponent = undefined
-                                }
+                            onTriggered: {
+                                queueModel.deQueue(QTsearchID)
+                                queueDelegate.rightClicked = false
+                                loadMenu.sourceComponent = undefined
                             }
                             uiScale: root.uiScale
                         }
@@ -179,12 +174,10 @@ Item {
                             text: qsTr("Copy all settings")
                             width: parent.width
                             z: 2
-                            action: Action {
-                                onTriggered: {
-                                    paramManager.copyAll(QTsearchID)
-                                    queueDelegate.rightClicked = false
-                                    loadMenu.sourceComponent = undefined
-                                }
+                            onTriggered: {
+                                paramManager.copyAll(QTsearchID)
+                                queueDelegate.rightClicked = false
+                                loadMenu.sourceComponent = undefined
                             }
                             uiScale: root.uiScale
                         }
@@ -194,14 +187,117 @@ Item {
                             width: parent.width
                             z: 2
                             notDisabled: paramManager.pasteable
-                            action: Action {
+                            onTriggered: {
+                                paramManager.paste(QTsearchID)
+                                queueDelegate.rightClicked = false
+                                loadMenu.sourceComponent = undefined
+                            }
+                            uiScale: root.uiScale
+                        }
+                        RowLayout {
+                            id: rate
+                            spacing: 0 * root.uiScale
+                            height: 30 * root.uiScale
+                            z: 2
+
+                            property real buttonWidth: (parent.width - root.uiScale/2)/6
+
+                            ToolButton {
+                                id: rate0
+                                width: parent.buttonWidth
+                                text: qsTr("0")
+                                tooltipText: qsTr("Rate this 0 stars")
+                                notDisabled: 0 != STrating
+                                uiScale: root.uiScale
                                 onTriggered: {
-                                    paramManager.paste(QTsearchID)
+                                    organizeModel.setRating(QTsearchID, 0)
                                     queueDelegate.rightClicked = false
                                     loadMenu.sourceComponent = undefined
                                 }
+                                Component.onCompleted: {
+                                    rate0.tooltipWanted.connect(root.tooltipWanted)
+                                }
                             }
-                            uiScale: root.uiScale
+                            ToolButton {
+                                id: rate1
+                                width: parent.buttonWidth
+                                text: qsTr("1")
+                                tooltipText: qsTr("Rate this 1 star")
+                                notDisabled: 1 != STrating
+                                uiScale: root.uiScale
+                                onTriggered: {
+                                    organizeModel.setRating(QTsearchID, 1)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                                Component.onCompleted: {
+                                    rate1.tooltipWanted.connect(root.tooltipWanted)
+                                }
+                            }
+                            ToolButton {
+                                id: rate2
+                                width: parent.buttonWidth
+                                text: qsTr("2")
+                                tooltipText: qsTr("Rate this 2 stars")
+                                notDisabled: 2 != STrating
+                                uiScale: root.uiScale
+                                onTriggered: {
+                                    organizeModel.setRating(QTsearchID, 2)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                                Component.onCompleted: {
+                                    rate2.tooltipWanted.connect(root.tooltipWanted)
+                                }
+                            }
+                            ToolButton {
+                                id: rate3
+                                width: parent.buttonWidth
+                                text: qsTr("3")
+                                tooltipText: qsTr("Rate this 3 stars")
+                                notDisabled: 3 != STrating
+                                uiScale: root.uiScale
+                                onTriggered: {
+                                    organizeModel.setRating(QTsearchID, 3)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                                Component.onCompleted: {
+                                    rate3.tooltipWanted.connect(root.tooltipWanted)
+                                }
+                            }
+                            ToolButton {
+                                id: rate4
+                                width: parent.buttonWidth
+                                text: qsTr("4")
+                                tooltipText: qsTr("Rate this 4 stars")
+                                notDisabled: 4 != STrating
+                                uiScale: root.uiScale
+                                onTriggered: {
+                                    organizeModel.setRating(QTsearchID, 4)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                                Component.onCompleted: {
+                                    rate4.tooltipWanted.connect(root.tooltipWanted)
+                                }
+                            }
+                            ToolButton {
+                                id: rate5
+                                width: parent.buttonWidth
+                                text: qsTr("5")
+                                tooltipText: qsTr("Rate this 5 stars")
+                                notDisabled: 5 != STrating
+                                uiScale: root.uiScale
+                                onTriggered: {
+                                    organizeModel.setRating(QTsearchID, 5)
+                                    queueDelegate.rightClicked = false
+                                    loadMenu.sourceComponent = undefined
+                                }
+                                Component.onCompleted: {
+                                    rate5.tooltipWanted.connect(root.tooltipWanted)
+                                }
+                            }
                         }
                     }
                 }

@@ -87,6 +87,8 @@ signals:
 
     void organizeFilterChanged();
 
+    void updateTableOut(QString table, int operation);
+
 public slots:
 
 protected:
