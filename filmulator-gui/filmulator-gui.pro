@@ -87,7 +87,7 @@ HEADERS += \
     ./ui/thumbWriteWorker.h \
     ./database/basicSqlModel.h \
     database/dateHistogramModel.h \
-    database/backgroundPipeline.h
+    database/backgroundQueue.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp

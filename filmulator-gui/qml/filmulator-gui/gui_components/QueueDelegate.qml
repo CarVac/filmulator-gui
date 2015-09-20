@@ -3,7 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import "../colors.js" as Colors
 
-Item {
+MouseArea {
     id: root
     property real dim
     width: dim
@@ -16,6 +16,7 @@ Item {
     property int queueIndex
     property bool processed
     property bool exported
+    property bool markedForOutput
     property bool rightClicked: false
     z: rightClicked ? 1 : 0
 
