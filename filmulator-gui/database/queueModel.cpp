@@ -56,7 +56,6 @@ void QueueModel::deQueue(const QString searchID)
     query.bindValue(0, searchID);
     query.exec();
     resetIndex();
-    //emit queueChanged();we shouldn't need full updates anymore
 
     //Everything after the index in question needs to be decremented.
     query.prepare("UPDATE QueueTable SET QTindex = QTindex - 1 WHERE QTindex > ?;");
@@ -108,18 +107,15 @@ void QueueModel::enQueue(const QString searchID)
 
     //Increment the index.
     maxIndex++;
-
-    //emit queueChanged();it shouldn't be full updates anymore
-    //emit updateTableOut("QueueTable", 1);
 }
 
 void QueueModel::clearQueue()
 {
     QSqlQuery query;
+    beginRemoveRows(QModelIndex(),0,maxIndex-1);
     query.exec("DELETE FROM QueueTable");
     resetIndex();
-    emit queueChanged();
-    //We probably do need to alert the interface for this.
+    endRemoveRows();
 }
 
 //Move moves the item with searchID to destIndex,

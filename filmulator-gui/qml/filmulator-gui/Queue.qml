@@ -35,6 +35,24 @@ Item {
                 duration: 100
             }
         }
+        add: Transition {
+            NumberAnimation {
+                property: "widthScale"
+                from: 0
+                to: 1
+                easing.type: Easing.OutQuad
+                duration: 100
+            }
+        }
+        remove: Transition {
+            NumberAnimation {
+                property: "widthScale"
+                from: 1
+                to: 0
+                easing.type: Easing.OutQuad
+                duration: 100
+            }
+        }
 
         model: DelegateModel {
             id: visualModel
@@ -54,17 +72,6 @@ Item {
 
                 freshURL: root.url
                 property int visualIndex: DelegateModel.itemsIndex
-                Text {
-                    id: indexText
-                    color: "white"
-                    text: queueDelegate.queueIndex
-                }
-                Text {
-                    id: locationText
-                    color: "white"
-                    y: 10
-                    text: queueDelegate.visualIndex
-                }
 
                 MouseArea {
                     anchors.fill: parent
