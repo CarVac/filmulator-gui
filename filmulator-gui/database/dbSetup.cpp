@@ -141,9 +141,10 @@ void setupDB(QSqlDatabase *db)
     //It will hold a number for the order, and a field identical to
     // STsearchID.
     query.exec("create table if not exists QueueTable ("
-               "QTindex integer primary key,"
+               "QTindex integer,"
                "QTprocessed bool,"
                "QTexported bool,"
+               "QToutput bool,"
                "QTsearchID varchar unique"
                ");"
                );
@@ -227,6 +228,7 @@ void setupDB(QSqlDatabase *db)
     std::cout << "dbSetup old version: " << oldVersion << std::endl;
     QString versionString = ";";
 
+    query.exec("BEGIN TRANSACTION;");//begin a transaction
     switch (oldVersion) {
     case 0:
         //Generate a list of 100000 integers for useful purposes
@@ -265,6 +267,16 @@ void setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers c "
                    "CROSS JOIN integers d;");
         versionString = "PRAGMA user_version = 2;";
+    case 2:
+        query.exec("DROP TABLE QueueTable;");
+        query.exec("CREATE TABLE QueueTable ("
+                   "QTindex integer,"
+                   "QTprocessed bool,"
+                   "QTexported bool,"
+                   "QToutput bool,"
+                   "QTsearchID varchar unique);");
+        versionString = "PRAGMA user_version = 3;";
     }
     query.exec(versionString);
+    query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.
 }

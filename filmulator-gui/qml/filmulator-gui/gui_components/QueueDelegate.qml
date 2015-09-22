@@ -3,11 +3,13 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import "../colors.js" as Colors
 
-Item {
+MouseArea {
     id: root
     property real dim
-    width: dim
+    property real widthScale: 1
+    width: dim * widthScale
     height: dim
+
 
     property string rootDir
 
@@ -16,6 +18,7 @@ Item {
     property int queueIndex
     property bool processed
     property bool exported
+    property bool markedForOutput
     property bool rightClicked: false
     z: rightClicked ? 1 : 0
 
@@ -46,8 +49,8 @@ Item {
 
     Rectangle {
         id: currentImageRect
-        width: root.dim
-        height: root.dim*0.03125
+        width: root.width
+        height: root.height*0.03125
         color: rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000")
     }
 
@@ -109,9 +112,9 @@ Item {
 
     Rectangle {
         id: processedSavedRect
-        width: root.dim
-        height: root.dim*0.03125
-        y: root.dim*0.96875
+        width: root.width
+        height: root.height*0.03125
+        y: root.height*0.96875
         color: exported ? "green" : (processed ? Colors.medOrange : "#00000000")
     }
 
