@@ -61,7 +61,7 @@ void ImportModel::importDirectory_r(const QString dir)
     //Next, we filter for files.
     directory.setFilter(QDir::Files | QDir::NoSymLinks);
     QStringList nameFilters;
-    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF";
+    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF" << "*.RAF";
     directory.setNameFilters(nameFilters);
     QFileInfoList fileList = directory.entryInfoList();
 
