@@ -94,7 +94,7 @@ QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
 QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp
 
-LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw -lgomp
+LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp
 
 QT += sql core quick qml widgets
 
