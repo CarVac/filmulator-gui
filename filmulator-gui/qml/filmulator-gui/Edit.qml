@@ -42,6 +42,7 @@ SplitView {
             contentHeight: Math.max(bottomImage.height*bottomImage.scale, this.height);
             flickableDirection: Flickable.HorizontalAndVerticalFlick
             clip: true
+            pixelAligned: true
             property real fitScaleX: flicky.width/bottomImage.width
             property real fitScaleY: flicky.height/bottomImage.height
             property real fitScale: Math.min(fitScaleX, fitScaleY)
@@ -65,6 +66,11 @@ SplitView {
                 height: Math.max(bottomImage.height*bottomImage.scale,parent.height);
                 transformOrigin: Item.TopLeft
                 color: "#000000"
+                /*
+                  If the image is too small, we need to make sure that it's pixel aligned at fit scale.
+                  The flickable is currently set to pixel aligned, but the rectangle might not be an
+                  even width (or odd width; not sure).
+                  */
                 Image {
                     anchors.centerIn: parent
                     id: topImage
