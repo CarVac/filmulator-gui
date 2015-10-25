@@ -246,21 +246,21 @@ SplitView {
                     id: filmSizeSlider
                     title: qsTr("Film Area")
                     tooltipText: qsTr("Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.")
-                    minimumValue: 10
-                    maximumValue: 300
-                    value: Math.sqrt(paramManager.filmArea)
-                    defaultValue: Math.sqrt(root.defaultFilmSize)
+                    minimumValue: 1.2//less than log of 10
+                    maximumValue: 6//greater than log of 300
+                    value: Math.log(Math.sqrt(paramManager.filmArea))
+                    defaultValue: Math.log(Math.sqrt(root.defaultFilmSize))
                     //The following thresholds are 24mmx65mm and twice 6x9cm film's
                     // areas, respectively.
-                    valueText: (value*value < 1560) ? "SF" : (value*value < 9408) ? "MF" : "LF"
+                    valueText: (Math.exp(value*2) < 1560) ? "SF" : (Math.exp(value*2) < 9408) ? "MF" : "LF"
                     onValueChanged: {
-                        paramManager.filmArea = value*value
+                        paramManager.filmArea = Math.exp(value*2)//exp(value)*exp(value)
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onFilmAreaChanged: {
-                            filmSizeSlider.value = Math.sqrt(paramManager.filmArea)
+                            filmSizeSlider.value = Math.log(Math.sqrt(paramManager.filmArea))
                         }
                     }
                     Component.onCompleted: {
