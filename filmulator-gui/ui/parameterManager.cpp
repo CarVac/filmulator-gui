@@ -922,7 +922,7 @@ void ParameterManager::loadParams(QString imageID)
     //Next is highlights (highlight recovery)
     nameCol = rec.indexOf("ProcThighlightRecovery");
     if (-1 == nameCol) { std::cout << "paramManager ProcThighlightRecovery" << endl; }
-    const bool temp_highlights = query.value(nameCol).toInt();
+    const int temp_highlights = query.value(nameCol).toInt();
     if (temp_highlights != m_highlights)
     {
         //cout << "ParameterManager::loadParams highlights" << endl;
