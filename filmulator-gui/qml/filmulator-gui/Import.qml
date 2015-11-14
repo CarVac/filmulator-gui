@@ -126,7 +126,7 @@ Rectangle {
         ImportTextEntry {
             id: dirStructureEntry
             title: qsTr("Directory Structure")
-            tooltipText: qsTr("Enter with y's, M's, and d's, slashes, and dashes the desired structure. You can use single quotes to include words in the structure. For example:\n\"/yyyy/MM/yyyy-MM-dd/\"\n\"/yyyy/'Alaska'/yyyy-MM-dd/\"")
+            tooltipText: qsTr("Enter using y's, M's, and d's, slashes, and other punctuation the desired structure. You can use single quotes to include words in the structure. For example:\n\"/yyyy/MM/yyyy-MM-dd/\"\n\"/yyyy/'Alaska'/yyyy-MM-dd/\"")
             enteredText: settings.getDirConfig()//"/yyyy/MM/yyyy-MM-dd/"
             onEnteredTextChanged: {
                 importModel.dirConfig = enteredText
@@ -143,7 +143,7 @@ Rectangle {
             id: enqueueSwitch
             text: qsTr("Enqueue imported photos")
             tooltipText: qsTr("As photos get imported, append them to the work queue.")
-            isOn: false
+            isOn: settings.getEnqueue()
             onIsOnChanged: {
                 importModel.enqueue = isOn
                 settings.enqueue = isOn
