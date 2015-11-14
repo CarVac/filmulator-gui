@@ -62,15 +62,13 @@ SplitView {
             property real centerY: (contentY + bottomImage.height*Math.min(bottomImage.scale, fitScaleY)/2) / bottomImage.scale
             Rectangle {
                 id: imageRect
-                width: Math.max(bottomImage.width*bottomImage.scale,parent.width);
-                height: Math.max(bottomImage.height*bottomImage.scale,parent.height);
+                //The dimensions here need to be floor because it was yielding non-pixel widths.
+                //That caused the child images to be offset by fractional pixels at 1:1 scale when the
+                // image is smaller than the flickable in one or more directions.
+                width: Math.floor(Math.max(bottomImage.width*bottomImage.scale,parent.width));
+                height: Math.floor(Math.max(bottomImage.height*bottomImage.scale,parent.height));
                 transformOrigin: Item.TopLeft
                 color: "#000000"
-                /*
-                  If the image is too small, we need to make sure that it's pixel aligned at fit scale.
-                  The flickable is currently set to pixel aligned, but the rectangle might not be an
-                  even width (or odd width; not sure).
-                  */
                 Image {
                     anchors.centerIn: parent
                     id: topImage
