@@ -211,15 +211,14 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        //Apply the default tonecurve first, then apply the slider-controlled curve.
         filmLikeLUT.fill( [=](unsigned short in) -> unsigned short
             {
-                float shResult = shadows_highlights(default_tonecurve(float(in)/65535.0),
+                float shResult = shadows_highlights(float(in)/65535.0,
                                                      curvesParam.shadowsX,
                                                      curvesParam.shadowsY,
                                                      curvesParam.highlightsX,
                                                      curvesParam.highlightsY);
-                return 65535*shResult;
+                return 65535*default_tonecurve(shResult);
             }
         );
         matrix<unsigned short> film_curve_image;
