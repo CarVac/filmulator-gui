@@ -59,6 +59,7 @@ void OrganizeModel::setMinMaxCaptureTime(QDate captureTimeIn)
     maxCaptureTime_i = evening.toTime_t();
     emit minCaptureTimeChanged();
     emit maxCaptureTimeChanged();
+    emit captureDateChanged();
     emit organizeFilterChanged();
 }
 void OrganizeModel::setMinMaxCaptureTimeString(QString captureTimeIn)
@@ -79,6 +80,13 @@ QDate OrganizeModel::getSelectedDate()
 {
     return QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600).date();
 }
+
+QString OrganizeModel::getSelectedYMDString()
+{
+    QDate selectedDate = getSelectedDate();
+    return selectedDate.toString("yyyy/MM/dd");
+}
+
 
 void OrganizeModel::setMinImportTime(QDate importTimeIn)
 {
@@ -263,6 +271,7 @@ void OrganizeModel::setTimeZone(int timeZoneIn)
     setMinProcessedTime(minProcessedTime);
     setMaxProcessedTime(maxProcessedTime);
     emit organizeFilterChanged();
+    emit captureDateChanged();
 
     //The date histogram must only be updated after it was initialized.
     if (dateHistogramSet)

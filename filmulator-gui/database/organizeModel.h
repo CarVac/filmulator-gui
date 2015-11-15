@@ -34,6 +34,7 @@ public:
     Q_INVOKABLE void setRating(QString searchID, int rating);
     Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
     Q_INVOKABLE QDate getSelectedDate();
+    Q_INVOKABLE QString getSelectedYMDString();
 
     DateHistogramModel *dateHistogram = new DateHistogramModel;
 
