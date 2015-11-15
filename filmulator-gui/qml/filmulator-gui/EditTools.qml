@@ -3,6 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import "gui_components"
 import "generateHistogram.js" as Script
+import "colors.js" as Colors
 
 SplitView {
     id: root
@@ -32,6 +33,7 @@ SplitView {
     property real defaultVibrance
     property real defaultSaturation
     property bool defaultOverdriveEnabled
+    property real defaultHighlightRolloff
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -232,6 +234,13 @@ SplitView {
                     }
 
                     onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
+                    Rectangle {
+                        id: rolloffLine
+                        height: parent.height
+                        width: 1
+                        color: rolloffSlider.pressed ? Colors.medOrange : "white"
+                        x: parent.padding + paramManager.rolloffBoundary/65535*(parent.width-2*parent.padding)
+                    }
 
                     ToolTip {
                         id: preFilmTooltip
@@ -240,6 +249,31 @@ SplitView {
                             preFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
                         }
                     }
+                }
+
+                ToolSlider {
+                    id: rolloffSlider
+                    title: qsTr("Highlight Rolloff Point")
+                    tooltipText: qsTr("Controls the inflection point for the highlight rolloff. Below this point the exposure of the film is linear, and above it the brightness increase gradually slows.\nIt's mostly useful for dealing with clipped color channels that are oversaturated. Reduce this slider to about 0.5 and watch the highlight colors gently fade out.")
+                    minimumValue: 1
+                    maximumValue: 65535
+                    value: paramManager.rolloffBoundary
+                    defaultValue: root.defaultHighlightRolloff
+                    valueText: value/65535
+                    onValueChanged: {
+                        paramManager.rolloffBoundary = value
+                    }
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        onRolloffBoundaryChanged: {
+                            rolloffSlider.value = paramManager.rolloffBoundary
+                        }
+                    }
+                    Component.onCompleted: {
+                        rolloffSlider.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
@@ -343,7 +377,7 @@ SplitView {
                         id: blackpointLine
                         height: parent.height
                         width: 1
-                        color: blackpointSlider.pressed ? "#FF8800" : "white"
+                        color: blackpointSlider.pressed ? Colors.medOrange : "white"
                         x: parent.padding + paramManager.blackpoint/.0025*(parent.width-2*parent.padding)
                         //The .0025 is the highest bin in the post filmulator histogram.
                     }
@@ -352,7 +386,7 @@ SplitView {
                         id: whitepointLine
                         height: parent.height
                         width: 1
-                        color: whitepointSlider.pressed ? "#FF8800" : (blackpointSlider.pressed ? "#FFCCAA" : "white")
+                        color: whitepointSlider.pressed ? Colors.medOrange : (blackpointSlider.pressed ? Colors.brighterOrange : "white")
                         x: parent.padding + (paramManager.blackpoint+paramManager.whitepoint)/.0025*(parent.width-2*parent.padding)
                         //The .0025 is the highest bin in the post filmulator histogram.
                     }

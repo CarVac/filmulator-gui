@@ -54,7 +54,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     float sigma_const = filmParam.sigmaConst;
     float layer_mix_const = filmParam.layerMixConst;
     float layer_time_divisor = filmParam.layerTimeDivisor;
-    int rolloff_boundary = filmParam.rolloffBoundary;
+    float rolloff_boundary = filmParam.rolloffBoundary;
 
     //Set up timers
     struct timeval initialize_start, development_start, develop_start,

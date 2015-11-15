@@ -66,7 +66,7 @@ struct FilmParams {
     float sigmaConst;
     float layerMixConst;
     float layerTimeDivisor;
-    int rolloffBoundary;
+    float rolloffBoundary;
 };
 
 struct BlackWhiteParams {
@@ -128,7 +128,7 @@ class ParameterManager : public QObject
     Q_PROPERTY(float sigmaConst                    MEMBER m_sigmaConst                    WRITE setSigmaConst                    NOTIFY sigmaConstChanged)
     Q_PROPERTY(float layerMixConst                 MEMBER m_layerMixConst                 WRITE setLayerMixConst                 NOTIFY layerMixConstChanged)
     Q_PROPERTY(float layerTimeDivisor              MEMBER m_layerTimeDivisor              WRITE setLayerTimeDivisor              NOTIFY layerTimeDivisorChanged)
-    Q_PROPERTY(int rolloffBoundary                 MEMBER m_rolloffBoundary               WRITE setRolloffBoundary               NOTIFY rolloffBoundaryChanged)
+    Q_PROPERTY(float rolloffBoundary                 MEMBER m_rolloffBoundary               WRITE setRolloffBoundary               NOTIFY rolloffBoundaryChanged)
 
     //Whitepoint & Blackpoint
     Q_PROPERTY(float blackpoint MEMBER m_blackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
@@ -247,7 +247,7 @@ protected:
     float m_sigmaConst;
     float m_layerMixConst;
     float m_layerTimeDivisor;
-    int m_rolloffBoundary;
+    float m_rolloffBoundary;
 
     //Whitepoint & Blackpoint
     float m_blackpoint;
@@ -306,7 +306,7 @@ protected:
     void setSigmaConst(float);
     void setLayerMixConst(float);
     void setLayerTimeDivisor(float);
-    void setRolloffBoundary(int);
+    void setRolloffBoundary(float);
 
     //Whitepoint & Blackpoint
     void setBlackpoint(float);

@@ -24,6 +24,7 @@ SplitView {
     property alias defaultVibrance: editTools.defaultVibrance
     property alias defaultSaturation: editTools.defaultSaturation
     property alias defaultOverdriveEnabled: editTools.defaultOverdriveEnabled
+    property alias defaultHighlightRolloff: editTools.defaultHighlightRolloff
 
     signal tooltipWanted(string text, int x, int y)
     signal imageURL(string newURL)

@@ -65,11 +65,11 @@ struct filmulateParams {//TODO: adjust variable names.
     float sigmaConst;
     float layerMixConst;
     float layerTimeDivisor;
-    int rolloffBoundary;
+    float rolloffBoundary;
 };
 
 matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
-        int rolloff_boundary);
+        float rolloff_boundary);
 
 //Equalizes the concentration of developer across the reservoir and all pixels.
 void agitate( matrix<float> &developerConcentration, float activeLayerThickness,
