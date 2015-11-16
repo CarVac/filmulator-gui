@@ -254,7 +254,7 @@ SplitView {
                 ToolSlider {
                     id: rolloffSlider
                     title: qsTr("Highlight Rolloff Point")
-                    tooltipText: qsTr("Controls the inflection point for the highlight rolloff. Below this point the exposure of the film is linear, and above it the brightness increase gradually slows.\nIt's mostly useful for dealing with clipped color channels that are oversaturated. Reduce this slider to about 0.5 and watch the highlight colors gently fade out.")
+                    tooltipText: qsTr("Sets the point above which the highlights gently stop getting brighter. This controls the saturation of the highlights, and only has a significant effect at high drama settings when the highlights get strongly darkened.\nIf you have a photo with no highlight clipping and none of it extends beyond the right of the prefilm histogram, feel free to raise this all the way to 1.\nIf you have highlight clipping and there are unpleasant color shifts, lower this to taste.")
                     minimumValue: 1
                     maximumValue: 65535
                     value: paramManager.rolloffBoundary
