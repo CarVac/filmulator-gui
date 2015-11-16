@@ -45,7 +45,7 @@ SplitView {
         Canvas {
             id: mainHistoCanvas
             anchors.fill: parent
-            property int lineWidth: 1 * uiScale
+            property int lineWidth: 2 * uiScale
             property real alpha: 1.0
             property int padding: 5 * uiScale
             canvasSize.width: root.maxWidth
@@ -220,7 +220,7 @@ SplitView {
                     //It seems that since this is in a layout, you can't bind dimensions or locations.
                     // Makes sense, given that the layout is supposed to abstract that away.
                     height: 30 * uiScale
-                    property int lineWidth: 1 * uiScale
+                    property int lineWidth: 2 * uiScale
                     property real alpha: 1.0
                     property int padding: 3 * uiScale
 
@@ -359,7 +359,7 @@ SplitView {
                     //It seems that since this is in a layout, you can't bind dimensions or locations.
                     // Makes sense, given that the layout is supposed to abstract that away.
                     height: 30 * uiScale
-                    property int lineWidth: 1 * uiScale
+                    property int lineWidth: 2 * uiScale
                     property real alpha: 1.0
                     property int padding: 3 * uiScale
 
