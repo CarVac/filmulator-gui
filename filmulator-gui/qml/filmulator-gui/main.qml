@@ -77,6 +77,7 @@ ApplicationWindow {
                 property real defaultVibrance: 0
                 property real defaultSaturation: 0
                 property bool defaultOverdriveEnabled: false
+                property real defaultHighlightRolloff: 51275
 
                 title: qsTr("Filmulate")
                 Edit {
@@ -95,6 +96,7 @@ ApplicationWindow {
                     defaultVibrance: editorTab.defaultVibrance
                     defaultSaturation: editorTab.defaultSaturation
                     defaultOverdriveEnabled: editorTab.defaultOverdriveEnabled
+                    defaultHighlightRolloff: editorTab.defaultHighlightRolloff
 
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)

@@ -143,5 +143,3 @@ QString OrganizeModel::getDateTimeString(int unixTimeIn)
     QDateTime tempTime = QDateTime::fromTime_t(unixTimeIn, Qt::OffsetFromUTC, m_timeZone*3600);
     return tempTime.toString("ddd yyyy-MM-dd HH:mm:ss");
 }
-
-//SELECT date(STcaptureTime, 'unixepoch', '-5 hours [the timezone]', COUNT(*) FROM SearchTable GROUP BY date(STcaptureTime, 'unixepoch', '-5 hours');

@@ -404,7 +404,7 @@ void ParameterManager::setLayerTimeDivisor(float layerTimeDivisor)
     paramChangeWrapper(QString("setLayerTimeDivisor"));
 }
 
-void ParameterManager::setRolloffBoundary(int rolloffBoundary)
+void ParameterManager::setRolloffBoundary(float rolloffBoundary)
 {
     QMutexLocker paramLocker(&paramMutex);
     m_rolloffBoundary = rolloffBoundary;
@@ -1142,7 +1142,7 @@ void ParameterManager::loadParams(QString imageID)
     //Rolloff boundary. This is where highlights start to roll off.
     nameCol = rec.indexOf("ProcTrolloffBoundary");
     if (-1 == nameCol) { std::cout << "paramManager ProcTrolloffBoundary" << endl; }
-    const int temp_rolloffBoundary = query.value(nameCol).toInt();
+    const float temp_rolloffBoundary = query.value(nameCol).toFloat();
     if (temp_rolloffBoundary != m_rolloffBoundary)
     {
         //cout << "ParameterManager::loadParams rolloffBoundary" << endl;

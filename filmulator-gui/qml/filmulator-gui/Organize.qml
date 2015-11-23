@@ -182,17 +182,21 @@ SplitView {
                 cellHeight: dateHistogram.height
                 boundsBehavior: Flickable.StopAtBounds
 
+                property string selectedDate
+
                 delegate: Rectangle {
                     id: dateHistoDelegate
                     width: 5.01 * uiScale //This has to be sliiightly bigger to ensure overlap
-                    property string date: thedate
+                    property string selectedDate: dateHistoView.selectedDate
+                    property string theDate: thedate
                     property int count: thecount
                     property string yearMonthString: yearmonth
                     property int month: themonth
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
+                    property bool sel: selectedDate == theDate
                     height: dateHistogram.height
-                    color: (1===themonth%2) ? Colors.darkGrayH : Colors.darkGrayL
+                    color: (1===themonth%2) ? (sel ? Colors.darkOrangeH : Colors.darkGrayH) : (sel ? Colors.darkOrangeL : Colors.darkGrayL)
                     clip: true
                     Text {
                         id: monthYearLabel
@@ -210,13 +214,13 @@ SplitView {
                         width: parent.width
                         y: parent.height*(1-contentAmount)
                         height: parent.height*contentAmount
-                        color: Colors.lightOrange
+                        color: parent.sel ? Colors.brightOrange : Colors.lightOrange
                     }
 
                     ToolTip {
                         id: dateHistoTooltip
                         anchors.fill: parent
-                        tooltipText:  qsTr('Date: ') + parent.date + '\n' + qsTr('Count: ') + parent.count
+                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Count: ') + parent.count
                         milliSecondDelay: 0
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
@@ -226,10 +230,15 @@ SplitView {
                         id: dateChanger
                         anchors.fill: parent
                         onDoubleClicked: {
-                            console.log("Date set: ")
-                            console.log(parent.date)
-                            organizeModel.setMinMaxCaptureTimeString(parent.date)
+                            organizeModel.setMinMaxCaptureTimeString(parent.theDate)
                         }
+                    }
+                }
+
+                Connections {
+                    target: organizeModel
+                    onCaptureDateChanged: {
+                        dateHistoView.selectedDate = organizeModel.getSelectedYMDString()
                     }
                 }
 

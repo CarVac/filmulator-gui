@@ -80,7 +80,7 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
     }
     ctx.lineTo(endx,starty);
     ctx.closePath();
-    ctx.strokeStyle = "#0000FF"
+    ctx.strokeStyle = "#3030FF"
     ctx.stroke();
 
     ctx.strokeStyle = "#000000";

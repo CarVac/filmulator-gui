@@ -211,8 +211,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        filmLikeLUT.fill(
-            [=](unsigned short in) -> unsigned short
+        filmLikeLUT.fill( [=](unsigned short in) -> unsigned short
             {
                 float shResult = shadows_highlights(float(in)/65535.0,
                                                      curvesParam.shadowsX,

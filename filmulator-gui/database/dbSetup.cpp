@@ -232,6 +232,7 @@ void setupDB(QSqlDatabase *db)
     switch (oldVersion) {
     case 0:
         //Generate a list of 100000 integers for useful purposes
+        /*
         query.exec("CREATE TABLE integers (i integer);");
         query.exec("INSERT INTO integers (i) VALUES (0);");
         query.exec("INSERT INTO integers (i) VALUES (1);");
@@ -251,8 +252,10 @@ void setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers d "
                    "CROSS JOIN integers e "
                    "CROSS JOIN integers f;");
+                   */
         versionString = "PRAGMA user_version = 1;";
     case 1:
+        /*
         query.exec("CREATE VIEW integers5 as "
                    "SELECT 10000*a.i+1000*b.i+100*c.i+10*d.i+e.i as ints "
                    "FROM integers a "
@@ -266,6 +269,7 @@ void setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers b "
                    "CROSS JOIN integers c "
                    "CROSS JOIN integers d;");
+                   */
         versionString = "PRAGMA user_version = 2;";
     case 2:
         query.exec("DROP TABLE QueueTable;");
@@ -276,6 +280,11 @@ void setupDB(QSqlDatabase *db)
                    "QToutput bool,"
                    "QTsearchID varchar unique);");
         versionString = "PRAGMA user_version = 3;";
+    case 3:
+        query.exec("DROP VIEW integers9;");
+        query.exec("DROP VIEW integers4;");
+        query.exec("DROP VIEW integers3;");
+        versionString = "PRAGMA user_version = 4;";
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

@@ -20,7 +20,7 @@ Rectangle {
     Item {
         id: labelBox
         width: parent.width - 2*__padding
-        height: 25 * uiScale - __padding
+        height: 25 * uiScale
         x: __padding
         y: __padding
         Text {
