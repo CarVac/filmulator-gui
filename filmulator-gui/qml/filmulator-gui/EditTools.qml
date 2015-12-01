@@ -279,7 +279,7 @@ SplitView {
                 ToolSlider {
                     id: filmSizeSlider
                     title: qsTr("Film Area")
-                    tooltipText: qsTr("Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.")
+                    tooltipText: qsTr("Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.\nTypically, when adjusting this, change it until the point where small adjustments make noticeable changes in the appearance of the image. That's usually in the vicinity of the best setting.")
                     minimumValue: 1.2//less than log of 10
                     maximumValue: 6//greater than log of 300
                     value: Math.log(Math.sqrt(paramManager.filmArea))
