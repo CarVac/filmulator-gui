@@ -92,6 +92,14 @@ QString createNewProfile(const QString fileHash,
 
 
     //Now we make a new profile.
+
+    //Create a parameter manager. It loads the default defaults automatically.
+    //Tell it what the image ID is. It grabs the exif rotation and WB and revises the defaults.
+    //Tell it to set everything to default.
+    //Tell it to write the data. It'll be the standard writeToDB, but it's replace not update.
+
+
+    //Now we make a new profile.
     query.prepare("INSERT INTO ProcessingTable values "
                    "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
                    //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1

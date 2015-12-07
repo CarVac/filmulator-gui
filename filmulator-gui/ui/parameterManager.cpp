@@ -760,6 +760,7 @@ unsigned int gcd(unsigned int u, unsigned int v)
 
 //selectImage deals with selection from qml.
 //It accepts the searchID (the md5 with the instance number appended).
+//It loads the default parameters, and commands the parameters to be loaded.
 void ParameterManager::selectImage(QString imageID)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
@@ -885,7 +886,7 @@ void ParameterManager::selectImage(QString imageID)
 
 //This loads all of the processing params from the imageID into the param manager.
 //TODO: for partial copying, make a loadParams that lets you select which ones
-// you want.
+// you want. It'll have to load some sort of null for other things so that it doesn't write.
 void ParameterManager::loadParams(QString imageID)
 {
     QSqlRecord rec;

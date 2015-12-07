@@ -106,10 +106,17 @@ class ParameterManager : public QObject
     Q_PROPERTY(bool caEnabled MEMBER m_caEnabled  WRITE setCaEnabled  NOTIFY caEnabledChanged)
     Q_PROPERTY(int highlights MEMBER m_highlights WRITE setHighlights NOTIFY highlightsChanged)
 
+    Q_PROPERTY(bool defCaEnabled READ getDefCaEnabled NOTIFY defCaEnabledChanged)
+    Q_PROPERTY(int defHighlights READ getDefHighlights   NOTIFY defHighlightsChanged)
+
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
     Q_PROPERTY(float temperature  MEMBER m_temperature  WRITE setTemperature NOTIFY temperatureChanged)
     Q_PROPERTY(float tint         MEMBER m_tint         WRITE setTint NOTIFY tintChanged)
+
+    Q_PROPERTY(float defExposureComp READ getDefExposureComp NOTIFY defExposureCompChanged)
+    Q_PROPERTY(float defTemperature  READ getDefTemperature  NOTIFY defTemperatureChanged)
+    Q_PROPERTY(float defTint         READ getDefTint         NOTIFY defTintChanged)
 
     //Filmulation
     Q_PROPERTY(float initialDeveloperConcentration MEMBER m_initialDeveloperConcentration WRITE setInitialDeveloperConcentration NOTIFY initialDeveloperConcentrationChanged)
@@ -122,28 +129,58 @@ class ParameterManager : public QObject
     Q_PROPERTY(float crystalGrowthConst            MEMBER m_crystalGrowthConst            WRITE setCrystalGrowthConst            NOTIFY crystalGrowthConstChanged)
     Q_PROPERTY(float silverSaltConsumptionConst    MEMBER m_silverSaltConsumptionConst    WRITE setSilverSaltConsumptionConst    NOTIFY silverSaltConsumptionConstChanged)
     Q_PROPERTY(float totalDevelopmentTime          MEMBER m_totalDevelopmentTime          WRITE setTotalDevelopmentTime          NOTIFY totalDevelopmentTimeChanged)
-    Q_PROPERTY(int agitateCount                    MEMBER m_agitateCount                  WRITE setAgitateCount                  NOTIFY agitateCountChanged)
-    Q_PROPERTY(int developmentSteps                MEMBER m_developmentSteps              WRITE setDevelopmentSteps              NOTIFY developmentStepsChanged)
+    Q_PROPERTY(int   agitateCount                  MEMBER m_agitateCount                  WRITE setAgitateCount                  NOTIFY agitateCountChanged)
+    Q_PROPERTY(int   developmentSteps              MEMBER m_developmentSteps              WRITE setDevelopmentSteps              NOTIFY developmentStepsChanged)
     Q_PROPERTY(float filmArea                      MEMBER m_filmArea                      WRITE setFilmArea                      NOTIFY filmAreaChanged)
     Q_PROPERTY(float sigmaConst                    MEMBER m_sigmaConst                    WRITE setSigmaConst                    NOTIFY sigmaConstChanged)
     Q_PROPERTY(float layerMixConst                 MEMBER m_layerMixConst                 WRITE setLayerMixConst                 NOTIFY layerMixConstChanged)
     Q_PROPERTY(float layerTimeDivisor              MEMBER m_layerTimeDivisor              WRITE setLayerTimeDivisor              NOTIFY layerTimeDivisorChanged)
-    Q_PROPERTY(float rolloffBoundary                 MEMBER m_rolloffBoundary               WRITE setRolloffBoundary               NOTIFY rolloffBoundaryChanged)
+    Q_PROPERTY(float rolloffBoundary               MEMBER m_rolloffBoundary               WRITE setRolloffBoundary               NOTIFY rolloffBoundaryChanged)
+
+    Q_PROPERTY(float defInitialDeveloperConcentration READ getDefInitialDeveloperConcentration NOTIFY defInitialDeveloperConcentrationChanged)
+    Q_PROPERTY(float defReservoirThickness            READ getDefReservoirThickness            NOTIFY defReservoirThicknessChanged)
+    Q_PROPERTY(float defActiveLayerThickness          READ getDefActiveLayerThickness          NOTIFY defActiveLayerThicknessChanged)
+    Q_PROPERTY(float defCrystalsPerPixel              READ getDefCrystalsPerPixel              NOTIFY defCrystalsPerPixelChanged)
+    Q_PROPERTY(float defInitialCrystalRadius          READ getDefInitialCrystalRadius          NOTIFY defInitialCrystalRadiusChanged)
+    Q_PROPERTY(float defInitialSilverSaltDensity      READ getDefInitialSilverSaltDensity      NOTIFY defInitialSilverSaltDensityChanged)
+    Q_PROPERTY(float defDeveloperConsumptionConst     READ getDefDeveloperConsumptionConst     NOTIFY defDeveloperConsumptionConstChanged)
+    Q_PROPERTY(float defCrystalGrowthConst            READ getDefCrystalGrowthConst            NOTIFY defCrystalGrowthConstChanged)
+    Q_PROPERTY(float defSilverSaltConsumptionConst    READ getDefSilverSaltConsumptionConst    NOTIFY defSilverSaltConsumptionConstChanged)
+    Q_PROPERTY(float defTotalDevelopmentTime          READ getDefTotalDevelopmentTime          NOTIFY defTotalDevelopmentTimeChanged)
+    Q_PROPERTY(int   defAgitateCount                  READ getDefAgitateCount                  NOTIFY defAgitateCountChanged)
+    Q_PROPERTY(int   defDevelopmentSteps              READ getDefDevelopmentSteps              NOTIFY defDevelopmentStepsChanged)
+    Q_PROPERTY(float defFilmArea                      READ getDefFilmArea                      NOTIFY defFilmAreaChanged)
+    Q_PROPERTY(float defSigmaConst                    READ getDefSigmaConst                    NOTIFY defSigmaConstChanged)
+    Q_PROPERTY(float defLayerMixConst                 READ getDefLayerMixConst                 NOTIFY defLayerMixConstChanged)
+    Q_PROPERTY(float defLayerTimeDivisor              READ getDefLayerTimeDivisor              NOTIFY defLayerTimeDivisorChanged)
+    Q_PROPERTY(float defRolloffBoundary               READ getDefRolloffBoundary               NOTIFY defRolloffBoundaryChanged)
 
     //Whitepoint & Blackpoint
     Q_PROPERTY(float blackpoint MEMBER m_blackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
     Q_PROPERTY(float whitepoint MEMBER m_whitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
 
+    Q_PROPERTY(float defBlackpoint READ getDefBlackpoint NOTIFY defBlackpointChanged)
+    Q_PROPERTY(float defWhitepoint READ getDefWhitepoint NOTIFY defWhitepointChanged)
+
     //Global, all-color curves.
-    Q_PROPERTY(float shadowsX    MEMBER m_shadowsX     WRITE setShadowsX NOTIFY shadowsXChanged)
-    Q_PROPERTY(float shadowsY    MEMBER m_shadowsY     WRITE setShadowsY NOTIFY shadowsYChanged)
+    Q_PROPERTY(float shadowsX    MEMBER m_shadowsX     WRITE setShadowsX    NOTIFY shadowsXChanged)
+    Q_PROPERTY(float shadowsY    MEMBER m_shadowsY     WRITE setShadowsY    NOTIFY shadowsYChanged)
     Q_PROPERTY(float highlightsX MEMBER m_highlightsX  WRITE setHighlightsX NOTIFY highlightsXChanged)
     Q_PROPERTY(float highlightsY MEMBER m_highlightsY  WRITE setHighlightsY NOTIFY highlightsYChanged)
-    Q_PROPERTY(float vibrance    MEMBER m_vibrance     WRITE setVibrance NOTIFY vibranceChanged)
-    Q_PROPERTY(float saturation  MEMBER m_saturation   WRITE setSaturation NOTIFY saturationChanged)
+    Q_PROPERTY(float vibrance    MEMBER m_vibrance     WRITE setVibrance    NOTIFY vibranceChanged)
+    Q_PROPERTY(float saturation  MEMBER m_saturation   WRITE setSaturation  NOTIFY saturationChanged)
+
+    Q_PROPERTY(float defShadowsX    READ getDefShadowsX    NOTIFY defShadowsXChanged)
+    Q_PROPERTY(float defShadowsY    READ getDefShadowsY    NOTIFY defShadowsYChanged)
+    Q_PROPERTY(float defHighlightsX READ getDefHighlightsX NOTIFY defHighlightsXChanged)
+    Q_PROPERTY(float defHighlightsY READ getDefHighlightsY NOTIFY defHighlightsYChanged)
+    Q_PROPERTY(float defVibrance    READ getDefVibrance    NOTIFY defVibranceChanged)
+    Q_PROPERTY(float defSaturation  READ getDefSaturation  NOTIFY defSaturationChanged)
 
     //Rotation
-    Q_PROPERTY(int rotation      MEMBER m_rotation     WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(int rotation MEMBER m_rotation     WRITE setRotation NOTIFY rotationChanged)
+
+    Q_PROPERTY(int defRotation READ getDefRotation NOTIFY defRotationChanged)
 
     Q_PROPERTY(bool pasteable READ getPasteable NOTIFY pasteableChanged)
 
@@ -188,6 +225,7 @@ public:
 
     //This is here for the sql insertion to pull the values from.
     void loadParams(QString imageID);
+    //void loadDefaults(QString imageID);
 protected:
     //The paramMutex exists to prevent race conditions between
     //changes in the parameters and changes in validity.
@@ -223,12 +261,19 @@ protected:
 
     //Demosaic
     bool m_caEnabled;
-    int m_highlights;
+    int  m_highlights;
+
+    bool d_caEnabled; //d_'s are for default values
+    int  d_highlights;
 
     //Prefilmulation
     float m_exposureComp;
     float m_temperature;
     float m_tint;
+
+    float d_exposureComp;
+    float d_temperature;
+    float d_tint;
 
     //Filmulation
     float m_initialDeveloperConcentration;
@@ -241,17 +286,38 @@ protected:
     float m_crystalGrowthConst;
     float m_silverSaltConsumptionConst;
     float m_totalDevelopmentTime;
-    int m_agitateCount;
-    int m_developmentSteps;
+    int   m_agitateCount;
+    int   m_developmentSteps;
     float m_filmArea;
     float m_sigmaConst;
     float m_layerMixConst;
     float m_layerTimeDivisor;
     float m_rolloffBoundary;
 
+    float d_initialDeveloperConcentration;
+    float d_reservoirThickness;
+    float d_activeLayerThickness;
+    float d_crystalsPerPixel;
+    float d_initialCrystalRadius;
+    float d_initialSilverSaltDensity;
+    float d_developerConsumptionConst;
+    float d_crystalGrowthConst;
+    float d_silverSaltConsumptionConst;
+    float d_totalDevelopmentTime;
+    int   d_agitateCount;
+    int   d_developmentSteps;
+    float d_filmArea;
+    float d_sigmaConst;
+    float d_layerMixConst;
+    float d_layerTimeDivisor;
+    float d_rolloffBoundary;
+
     //Whitepoint & Blackpoint
     float m_blackpoint;
     float m_whitepoint;
+
+    float d_blackpoint;
+    float d_whitepoint;
 
     //Global, all-color curves.
     float m_shadowsX;
@@ -261,8 +327,17 @@ protected:
     float m_vibrance;
     float m_saturation;
 
+    float d_shadowsX;
+    float d_shadowsY;
+    float d_highlightsX;
+    float d_highlightsY;
+    float d_vibrance;
+    float d_saturation;
+
     //Rotation
     int m_rotation;
+
+    int d_rotation;
 
     //Getters for read-only properties.
     QString getImageIndex(){return imageIndex;}
@@ -274,6 +349,50 @@ protected:
     float getFocalLength(){return focalLength;}
 
     bool getPasteable(){return pasteable;}
+
+    //Getters for the defaults
+    //Demosaic
+    bool getDefCaEnabled(){return d_caEnabled;}
+    int  getDefHighlights(){return d_highlights;}
+
+    //Prefilmulation
+    float getDefExposureComp(){return d_exposureComp;}
+    float getDefTemperature(){return d_temperature;}
+    float getDefTint(){return d_tint;}
+
+    //Filmulation
+    float getDefInitialDeveloperConcentration(){return d_initialDeveloperConcentration;}
+    float getDefReservoirThickness(){return d_reservoirThickness;}
+    float getDefActiveLayerThickness(){return d_activeLayerThickness;}
+    float getDefCrystalsPerPixel(){return d_crystalsPerPixel;}
+    float getDefInitialCrystalRadius(){return d_initialCrystalRadius;}
+    float getDefInitialSilverSaltDensity(){return d_initialSilverSaltDensity;}
+    float getDefDeveloperConsumptionConst(){return d_developerConsumptionConst;}
+    float getDefCrystalGrowthConst(){return d_crystalGrowthConst;}
+    float getDefSilverSaltConsumptionConst(){return d_silverSaltConsumptionConst;}
+    float getDefTotalDevelopmentTime(){return d_totalDevelopmentTime;}
+    int   getDefAgitateCount(){return d_agitateCount;}
+    int   getDefDevelopmentSteps(){return d_developmentSteps;}
+    float getDefFilmArea(){return d_filmArea;}
+    float getDefSigmaConst(){return d_sigmaConst;}
+    float getDefLayerMixConst(){return d_layerMixConst;}
+    float getDefLayerTimeDivisor(){return d_layerTimeDivisor;}
+    float getDefRolloffBoundary(){return d_rolloffBoundary;}
+
+    //Whitepoint & blackpoint
+    float getDefBlackpoint(){return d_blackpoint;}
+    float getDefWhitepoint(){return d_whitepoint;}
+
+    //Global all-color curves.
+    float getDefShadowsX(){return d_shadowsX;}
+    float getDefShadowsY(){return d_shadowsY;}
+    float getDefHighlightsX(){return d_highlightsX;}
+    float getDefHighlightsY(){return d_highlightsY;}
+    float getDefVibrance(){return d_vibrance;}
+    float getDefSaturation(){return d_saturation;}
+
+    //Rotation
+    int getDefRotation(){return d_rotation;}
 
     //Setters for the properties.
     //Loading
@@ -344,10 +463,17 @@ signals:
     void caEnabledChanged();
     void highlightsChanged();
 
+    void defCaEnabledChanged();
+    void defHighlightsChanged();
+
     //Prefilmulation
     void exposureCompChanged();
     void temperatureChanged();
     void tintChanged();
+
+    void defExposureCompChanged();
+    void defTemperatureChanged();
+    void defTintChanged();
 
     //Filmulation
     void initialDeveloperConcentrationChanged();
@@ -368,9 +494,30 @@ signals:
     void layerTimeDivisorChanged();
     void rolloffBoundaryChanged();
 
+    void defInitialDeveloperConcentrationChanged();
+    void defReservoirThicknessChanged();
+    void defActiveLayerThicknessChanged();
+    void defCrystalsPerPixelChanged();
+    void defInitialCrystalRadiusChanged();
+    void defInitialSilverSaltDensityChanged();
+    void defDeveloperConsumptionConstChanged();
+    void defCrystalGrowthConstChanged();
+    void defSilverSaltConsumptionConstChanged();
+    void defTotalDevelopmentTimeChanged();
+    void defAgitateCountChanged();
+    void defDevelopmentStepsChanged();
+    void defFilmAreaChanged();
+    void defSigmaConstChanged();
+    void defLayerMixConstChanged();
+    void defLayerTimeDivisorChanged();
+    void defRolloffBoundaryChanged();
+
     //Whitepoint & Blackpoint
     void blackpointChanged();
     void whitepointChanged();
+
+    void defBlackpointChanged();
+    void defWhitepointChanged();
 
     //Global, all-color curves.
     void shadowsXChanged();
@@ -380,8 +527,17 @@ signals:
     void vibranceChanged();
     void saturationChanged();
 
+    void defShadowsXChanged();
+    void defShadowsYChanged();
+    void defHighlightsXChanged();
+    void defHighlightsYChanged();
+    void defVibranceChanged();
+    void defSaturationChanged();
+
     //Rotation
     void rotationChanged();
+
+    void defRotationChanged();
 
     //General: if any param changes, emit this one as well after the param-specific signal.
     void paramChanged(QString source);

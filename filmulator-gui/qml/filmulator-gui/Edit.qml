@@ -47,13 +47,8 @@ SplitView {
             property real fitScaleX: flicky.width/bottomImage.width
             property real fitScaleY: flicky.height/bottomImage.height
             property real fitScale: Math.min(fitScaleX, fitScaleY)
+            property real oldWindowScale: 1//size of the window relative to fit scale; we want this to remain after the image changes size
             property bool fit: true
-            Connections {
-                target: root
-                onReset: {//This should be commented if you want to switch between images and leave the zoom in the same position.
-                    flicky.fit = true
-                }
-            }
             //Here, if the window size changed, we set it to fitScale. Except that it didn't update in time, so we make it compute it from scratch.
             onWidthChanged:  if (flicky.fit) {bottomImage.scale = Math.min(flicky.width/bottomImage.width, flicky.height/bottomImage.height)}
             onHeightChanged: if (flicky.fit) {bottomImage.scale = Math.min(flicky.width/bottomImage.width, flicky.height/bottomImage.height)}
@@ -94,10 +89,14 @@ SplitView {
                             console.log("Edit.qml; updateImage index: " + s)
                         }
                     }
-                    onStatusChanged: if (topImage.status == Image.Ready) {
-                                         bottomImage.source = topImage.source
-                                         root.imageURL(topImage.source)
-                                     }
+                    onStatusChanged: {
+                        if (topImage.status == Image.Ready) {
+                            //Record the old scale relative to the window so that we stay in the same place if the image size changes
+                            flicky.oldWindowScale = topImage.scale/flicky.fitScale
+                            bottomImage.source = topImage.source
+                            root.imageURL(topImage.source)
+                        }
+                    }
                 }
                 Image {
                     anchors.centerIn: parent
@@ -107,7 +106,13 @@ SplitView {
                     mipmap: true
                     onStatusChanged: {
                         if (flicky.fit) {
+                            //This is probably not necessary given the else below, but I don't want rounding errors to crop up.
                             bottomImage.scale = flicky.fitScale
+                        }
+                        else
+                        {
+                            //We want the image to stay in the same place. But what about different aspect ratios?
+                            bottomImage.scale = flicky.fitScale * flicky.oldWindowScale
                         }
                     }
                 }
