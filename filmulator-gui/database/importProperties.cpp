@@ -41,3 +41,9 @@ void ImportModel::setEnqueue(const bool enqueueIn)
     enqueue = enqueueIn;
     emit enqueueChanged();
 }
+
+void ImportModel::setAppendHash(const bool appendHashIn)
+{
+    appendHash = appendHashIn;
+    emit appendHashChanged();
+}

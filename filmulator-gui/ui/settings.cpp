@@ -154,7 +154,8 @@ float Settings::getUiScale()
 {
     QSettings settings(QSettings::UserScope, QString("Filmulator"));
     uiScale = settings.value("ui/uiScale", 1).toFloat();
-    //emit uiScaleChanged();
+    //emit uiScaleChanged();//This does weird things when it fails to propagate upstream.
+    //Commenting it here makes it apply after a restart.
     return uiScale;
 }
 
@@ -172,4 +173,20 @@ bool Settings::getEnqueue()
     enqueue = settings.value("import/enqueueAsImported", 1).toBool();
     emit enqueueChanged();
     return enqueue;
+}
+
+void Settings::setAppendHash(bool appendHashIn)
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    appendHash = appendHashIn;
+    settings.setValue("import/appendHash", appendHashIn);
+    emit enqueueChanged();
+}
+
+bool Settings::getAppendHash()
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    appendHash = settings.value("import/appendHash", 1).toBool();
+    emit appendHashChanged();
+    return appendHash;
 }

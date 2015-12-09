@@ -14,7 +14,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                               const QString photoDir,
                               const QString backupDir,
                               const QString dirConfig,
-                              const QDateTime importTime)
+                              const QDateTime importStartTime,
+                              const bool appendHash)
 {
     cout << "importing1" << endl;
     //Generate a hash of the raw file.
@@ -33,6 +34,34 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     }
     QString hashString = QString(hash.result().toHex());
 
+    //Optionally append 7 alphanumeric characters derived from the hash to the filename
+    QString filename = infoIn.fileName();
+    if (appendHash)
+    {
+        QString subFilename = filename.left(filename.length()-4);
+        QString extension = filename.right(4);
+        subFilename.append("_");
+        int carry = 0;
+        const char a[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        QByteArray hashArray = hash.result();
+
+        for (int i = 0; i < 7; i++)
+        {
+            cout << "Iteration " << i << endl;
+            //Convert the byte to an integer.
+            int value = carry + ((uint8_t) hashArray.at(i));
+            carry = value / 62;
+            int val = value % 62;
+            subFilename.append(a[val]);
+            cout << "value: " << value << endl;
+            cout << "carry: " << carry << endl;
+            cout << "val: " << val << endl;
+            cout << "output: " << a[val] << endl;
+        }
+        subFilename.append(extension);
+        filename = subFilename;
+    }
+
     //Grab EXIF data from the file.
     const char *cstr = infoIn.absoluteFilePath().toStdString().c_str();
     Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(cstr);
@@ -46,7 +75,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     QString outputPath = photoDir;
     outputPath.append(exifLocalDateString(exifData, cameraTZ, importTZ, dirConfig));
     QString outputPathName = outputPath;
-    outputPathName.append(infoIn.fileName());
+    outputPathName.append(filename);
     //Create the directory.
     QDir dir(outputPath);
     dir.mkpath(outputPath);
@@ -55,7 +84,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     QString backupPath = backupDir;
     backupPath.append(exifLocalDateString(exifData, cameraTZ, importTZ, dirConfig));
     QString backupPathName = backupPath;
-    backupPathName.append(infoIn.fileName());
+    backupPathName.append(filename);
 
     //Create the directory, if the root exists.
     QDir backupRoot(backupDir);
@@ -90,15 +119,19 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         //Now create a profile and a search table entry, and a thumbnail.
         QString STsearchID;
         STsearchID = createNewProfile(hashString,
-                                      infoIn.fileName(),
+                                      filename,
                                       infoIn.absoluteFilePath(),
                                       exifUtcTime(exifData, cameraTZ),
-                                      importTime,
+                                      importStartTime,
                                       exifData,
                                       xmpData);
+        //We left the absolute file path FOR NOW because it looks up WB from the
+        //original file. FOR NOW.
+        //Eventually we'll have the parameter manager read the wb from the destination.
 
         //Request that we enqueue the image.
         cout << "importing7" << endl;
+        cout << "SearchID: " << STsearchID.toStdString() << endl;
         emit enqueueThis(STsearchID);
         //It might be ignored downstream, but that's not our problem here.
     }

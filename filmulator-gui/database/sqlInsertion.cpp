@@ -40,7 +40,7 @@ QString createNewProfile(const QString fileHash,
                          const QString fileName,
                          const QString absoluteFilePath,
                          const QDateTime captureTime,
-                         const QDateTime importTime,
+                         const QDateTime importStartTime,
                          Exiv2::ExifData exifData,
                          Exiv2::XmpData xmpData)
 {
@@ -58,8 +58,20 @@ QString createNewProfile(const QString fileHash,
     query.exec();
 
     //Create a new search table entry
-    query.prepare("INSERT INTO SearchTable values (?,?,?,?,?,?,?,?,?,?);");
-                                                  //0 1 2 3 4 5 6 7 8 9
+    query.prepare("INSERT INTO SearchTable ("
+                  "STsearchID, "
+                  "STcaptureTime, "
+                  "STname, "
+                  "STfilename, "
+                  "STsourceHash, "
+                  "STrating, "
+                  "STlatitude, "
+                  "STlongitude, "
+                  "STimportTime, "
+                  "STlastProcessedTime, "
+                  "STimportStartTime) "
+                  "values (?,?,?,?,?,?,?,?,?,?,?);");
+                         //0 1 2 3 4 5 6 7 8 9 10
 
     //searchID (filehash with the increment appended)
     QString searchID = fileHash;
@@ -76,17 +88,20 @@ QString createNewProfile(const QString fileHash,
     //rating
     //TODO: write function to get rating
     query.bindValue(5, exifRating(exifData, xmpData));
+
     //latitude
     //TODO: figure something out here to either grab from the exif or get user input.
     query.bindValue(6, 0);
     //longitude
     query.bindValue(7, 0);
-
+    QDateTime now = QDateTime::currentDateTime();
     //importTime (unix time)
-    query.bindValue(8, importTime.toTime_t());
+    query.bindValue(8, now.toTime_t());
     //lastProcessedTime (unix time)
     //It's the same as above, since we're making a new one.
-    query.bindValue(9, importTime.toTime_t());
+    query.bindValue(9, now.toTime_t());
+    //importStartTime (unix time): lets us group together import batches.
+    query.bindValue(10, importStartTime.toTime_t());
 
     query.exec();
 

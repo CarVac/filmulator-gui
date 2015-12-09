@@ -17,14 +17,16 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                        const QString,
                                        const QString,
                                        const QString,
-                                       const QDateTime)),
+                                       const QDateTime,
+                                       const bool)),
             worker, SLOT(importFile(const QFileInfo,
                                     const int,
                                     const int,
                                     const QString,
                                     const QString,
                                     const QString,
-                                    const QDateTime)));
+                                    const QDateTime,
+                                    const bool)));
     connect(worker, SIGNAL(doneProcessing()), this, SLOT(workerFinished()));
     connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
     workerThread.start(QThread::LowPriority);
@@ -86,7 +88,8 @@ void ImportModel::importDirectory_r(const QString dir)
         params.photoDirParam = photoDir;
         params.backupDirParam = backupDir;
         params.dirConfigParam = dirConfig;
-        params.importTimeParam = now;
+        params.importStartTimeParam = now;
+        params.appendHashParam = appendHash;
         queue.push_back(params);
         maxQueue++;
     }
@@ -149,6 +152,7 @@ void ImportModel::startWorker(importParams params)
     const QString pDir = params.photoDirParam;
     const QString bDir = params.backupDirParam;
     const QString dConf = params.dirConfigParam;
-    const QDateTime time = params.importTimeParam;
-    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time);
+    const QDateTime time = params.importStartTimeParam;
+    const bool append = params.appendHashParam;
+    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time, append);
 }

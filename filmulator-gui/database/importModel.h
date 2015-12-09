@@ -19,7 +19,8 @@ struct importParams {
     QString photoDirParam;
     QString backupDirParam;
     QString dirConfigParam;
-    QDateTime importTimeParam;
+    QDateTime importStartTimeParam;
+    bool appendHashParam;
 };
 
 class ImportModel : public SqlModel
@@ -34,7 +35,9 @@ class ImportModel : public SqlModel
     Q_PROPERTY(QString dirConfig READ getDirConfig WRITE setDirConfig NOTIFY dirConfigChanged)
 
     //Whether or not to enqueue the image in the editor queue upon loading.
-    Q_PROPERTY(bool enqueue      READ getEnqueue   WRITE setEnqueue   NOTIFY enqueueChanged)
+    Q_PROPERTY(bool enqueue    READ getEnqueue    WRITE setEnqueue    NOTIFY enqueueChanged)
+    //Whether or not to append a part of the image hash to the filename when copying
+    Q_PROPERTY(bool appendHash READ getAppendHash WRITE setAppendHash NOTIFY appendHashChanged)
 
     Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
     Q_PROPERTY(QString progressFrac READ getProgressFrac NOTIFY progressFracChanged)
@@ -52,6 +55,7 @@ public:
     void setDirConfig(const QString configIn);
 
     void setEnqueue(const bool enqueueIn);
+    void setAppendHash(const bool appendHashIn);
 
     int getImportTZ() {return importTZ/3600;}
     int getCameraTZ() {return cameraTZ/3600;}
@@ -61,6 +65,7 @@ public:
     QString getDirConfig() {return dirConfig;}
 
     bool getEnqueue() {return enqueue;}
+    bool getAppendHash() {return appendHash;}
 
     float getProgress() {return progress;}
     QString getProgressFrac() {return progressFrac;}
@@ -79,6 +84,7 @@ signals:
     void dirConfigChanged();
 
     void enqueueChanged();
+    void appendHashChanged();
 
     void progressChanged();
     void progressFracChanged();
@@ -93,7 +99,8 @@ signals:
                        const QString photoDir,
                        const QString backupDir,
                        const QString dirConfig,
-                       const QDateTime importTime);
+                       const QDateTime importStartTime,
+                       const bool appendHash);
 
     void importChanged();
 
@@ -109,6 +116,7 @@ protected:
     QString dirConfig;
 
     bool enqueue;
+    bool appendHash;
 
     std::deque<importParams> queue;
     int maxQueue;
