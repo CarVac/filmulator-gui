@@ -47,7 +47,7 @@ SplitView {
             property real fitScaleX: flicky.width/bottomImage.width
             property real fitScaleY: flicky.height/bottomImage.height
             property real fitScale: Math.min(fitScaleX, fitScaleY)
-            property real oldWindowScale: 1//size of the window relative to fit scale; we want this to remain after the image changes size
+            property real sizeRatio: 1
             property bool fit: true
             //Here, if the window size changed, we set it to fitScale. Except that it didn't update in time, so we make it compute it from scratch.
             onWidthChanged:  if (flicky.fit) {bottomImage.scale = Math.min(flicky.width/bottomImage.width, flicky.height/bottomImage.height)}
@@ -72,8 +72,6 @@ SplitView {
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     mipmap: true
-                    property real realWidth: width * scale
-                    property real realHeight: height * scale
                     property int index: 0
                     property string indexString: "000000"
                     scale: bottomImage.scale
@@ -91,9 +89,23 @@ SplitView {
                     }
                     onStatusChanged: {
                         if (topImage.status == Image.Ready) {
-                            //Record the old scale relative to the window so that we stay in the same place if the image size changes
-                            flicky.oldWindowScale = topImage.scale/flicky.fitScale
-                            bottomImage.source = topImage.source
+                            var topFitScaleX = flicky.width/topImage.width
+                            var topFitScaleY = flicky.height/topImage.height
+                            var topFitScale = Math.min(topFitScaleX, topFitScaleY)
+                            flicky.sizeRatio = topFitScale / flicky.fitScale
+                            console.log(flicky.sizeRatio)
+                            console.log(bottomImage.scale)
+                            //This isn't the right size ratio it seems.
+                            if (flicky.sizeRatio > 1) {
+                                //If the new image is smaller, we need to scale the bottom image up before selecting the image.
+                                bottomImage.scale = bottomImage.scale * flicky.sizeRatio
+                                bottomImage.source = topImage.source
+                            }
+                            else {
+                                //If the new image is bigger, we want to select the image and then scale it down.
+                                bottomImage.source = topImage.source
+                                //bottomImage.scale = bottomImage.scale * sizeRatio
+                            }
                             root.imageURL(topImage.source)
                         }
                     }
@@ -105,14 +117,15 @@ SplitView {
                     asynchronous: true
                     mipmap: true
                     onStatusChanged: {
-                        if (flicky.fit) {
-                            //This is probably not necessary given the else below, but I don't want rounding errors to crop up.
-                            bottomImage.scale = flicky.fitScale
-                        }
-                        else
-                        {
-                            //We want the image to stay in the same place. But what about different aspect ratios?
-                            bottomImage.scale = flicky.fitScale * flicky.oldWindowScale
+                        if (bottomImage.status == Image.Ready) {
+                            if (flicky.fit) {
+                                //This is probably not necessary, but I don't want rounding errors to crop up.
+                                bottomImage.scale = flicky.fitScale
+                            }
+                            else if (flicky.sizeRatio <= 1) {
+                                bottomImage.scale = bottomImage.scale * flicky.sizeRatio
+                            }
+                            console.log(bottomImage.scale)
                         }
                     }
                 }
