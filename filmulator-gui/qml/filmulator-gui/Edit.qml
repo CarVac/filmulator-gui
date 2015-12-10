@@ -93,9 +93,6 @@ SplitView {
                             var topFitScaleY = flicky.height/topImage.height
                             var topFitScale = Math.min(topFitScaleX, topFitScaleY)
                             flicky.sizeRatio = topFitScale / flicky.fitScale
-                            console.log(flicky.sizeRatio)
-                            console.log(bottomImage.scale)
-                            //This isn't the right size ratio it seems.
                             if (flicky.sizeRatio > 1) {
                                 //If the new image is smaller, we need to scale the bottom image up before selecting the image.
                                 bottomImage.scale = bottomImage.scale * flicky.sizeRatio
@@ -104,7 +101,7 @@ SplitView {
                             else {
                                 //If the new image is bigger, we want to select the image and then scale it down.
                                 bottomImage.source = topImage.source
-                                //bottomImage.scale = bottomImage.scale * sizeRatio
+                                //This has to happen after the size actually changes. It's put below.
                             }
                             root.imageURL(topImage.source)
                         }
@@ -125,7 +122,6 @@ SplitView {
                             else if (flicky.sizeRatio <= 1) {
                                 bottomImage.scale = bottomImage.scale * flicky.sizeRatio
                             }
-                            console.log(bottomImage.scale)
                         }
                     }
                 }
