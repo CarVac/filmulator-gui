@@ -40,6 +40,7 @@ ApplicationWindow {
             Tab {
                 id: importTab
                 title: qsTr("Import")
+                active: true
                 Import {
                     id: importItem
                     Component.onCompleted: {
@@ -52,6 +53,7 @@ ApplicationWindow {
             Tab {
                 id: organizeTab
                 title: qsTr("Organize")
+                active: true
                 Organize {
                     id: organizeItem
                     Component.onCompleted: {
@@ -80,6 +82,7 @@ ApplicationWindow {
                 property real defaultHighlightRolloff: 51275
 
                 title: qsTr("Filmulate")
+                active: true
                 Edit {
                     id: editItem
                     defaultExposureComp: editorTab.defaultExposureComp
@@ -108,12 +111,14 @@ ApplicationWindow {
 
             Tab {
                 id: outputTab
+                active: true
                 title: qsTr("Output")
             }
 
             Tab {
                 id: settingsTab
                 title: qsTr("Settings")
+                active: true
                 Settings {
                     id: settingsItem
                     Component.onCompleted: {
