@@ -63,8 +63,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     }
 
     //Grab EXIF data from the file.
-    const char *cstr = infoIn.absoluteFilePath().toStdString().c_str();
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(cstr);
+    const std::string abspath = infoIn.absoluteFilePath().toStdString();
+    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(abspath);
     image->readMetadata();
     Exiv2::ExifData exifData = image->exifData();
     Exiv2::XmpData xmpData = image->xmpData();
