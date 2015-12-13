@@ -644,9 +644,9 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTtint,"                            //28
                   "ProcTvibrance,"                        //29
                   "ProcTsaturation,"                      //30
-                  "ProcTrotation)"                        //31
-                  "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //       0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1
+                  "ProcTrotation) "                       //31
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //        0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -822,7 +822,7 @@ void ParameterManager::selectImage(const QString imageID)
     query.bindValue(0, QVariant(imageID));
     query.exec();
     query.first();
-    const bool newImage = query.value(0).toInt() == 1;
+    const bool newImage = (query.value(0).toInt() == 0);
     if (newImage == true)
     {
         //Load the defaults for this image (including rotation and WB)
