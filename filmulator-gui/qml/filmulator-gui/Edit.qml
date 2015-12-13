@@ -71,7 +71,7 @@ SplitView {
                     source: "image://filmy/" + indexString
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
-                    mipmap: true
+                    mipmap: settings.getMipmapView()
                     property int index: 0
                     property string indexString: "000000"
                     scale: bottomImage.scale
@@ -86,6 +86,10 @@ SplitView {
                             topImage.indexString = s
                             console.log("Edit.qml; updateImage index: " + s)
                         }
+                    }
+                    Connections {
+                        target: settings
+                        onMipmapViewChanged: topImage.mipmap = settings.getMipmapView()
                     }
                     onStatusChanged: {
                         if (topImage.status == Image.Ready) {
@@ -112,7 +116,8 @@ SplitView {
                     id: bottomImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
-                    mipmap: true
+                    //mipmap: true
+                    mipmap: settings.getMipmapView()
                     onStatusChanged: {
                         if (bottomImage.status == Image.Ready) {
                             if (flicky.fit) {
@@ -123,6 +128,10 @@ SplitView {
                                 bottomImage.scale = bottomImage.scale * flicky.sizeRatio
                             }
                         }
+                    }
+                    Connections {
+                        target: settings
+                        onMipmapViewChanged: bottomImage.mipmap = settings.getMipmapView()
                     }
                 }
                 MouseArea {
