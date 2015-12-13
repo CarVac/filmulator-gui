@@ -5,7 +5,6 @@
 #include <QVariant>
 #include <QSqlQuery>
 #include <QSqlRecord>
-//#include "../core/imagePipeline.h"
 #include <QMutex>
 #include <QMutexLocker>
 #include <QDateTime>
@@ -13,6 +12,8 @@
 #include <QDebug>
 #include <tuple>
 #include <iostream>
+#include "../core/filmSim.hpp"
+#include "../database/exifFunctions.h"
 
 enum Valid {none,
             load,
@@ -29,6 +30,9 @@ enum FilmFetch {initial,
 
 enum AbortStatus {proceed,
                   restart};
+
+enum CopyDefaults {loadToParams,
+                   loadOnlyDefaults};
 
 //We want a struct for each stage of the pipeline for validity.
 struct LoadParams {
@@ -190,7 +194,7 @@ public:
     Q_INVOKABLE void rotateRight();
     Q_INVOKABLE void rotateLeft();
 
-    Q_INVOKABLE void selectImage(QString imageID);
+    Q_INVOKABLE void selectImage(const QString imageID);
 
     Q_INVOKABLE void writeback();
 
@@ -223,10 +227,11 @@ public:
     Valid getValid();
     std::string getFullFilename(){return m_fullFilename;}
 
+protected:
     //This is here for the sql insertion to pull the values from.
     void loadParams(QString imageID);
-    //void loadDefaults(QString imageID);
-protected:
+    void loadDefaults(const CopyDefaults useDefaults, const std::string absFilePath);
+
     //The paramMutex exists to prevent race conditions between
     //changes in the parameters and changes in validity.
     QMutex paramMutex;

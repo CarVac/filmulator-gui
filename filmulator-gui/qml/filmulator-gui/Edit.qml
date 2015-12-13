@@ -10,22 +10,6 @@ SplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
 
-    property alias defaultExposureComp: editTools.defaultExposureComp
-    property alias defaultWhitepoint: editTools.defaultWhitepoint
-    property alias defaultBlackpoint: editTools.defaultBlackpoint
-    property alias defaultShadowsY: editTools.defaultShadowsY
-    property alias defaultHighlightsY: editTools.defaultHighlightsY
-    property alias defaultFilmSize: editTools.defaultFilmSize
-    property alias defaultHighlightRecovery: editTools.defaultHighlightRecovery
-    property alias defaultLayerMixConst: editTools.defaultLayerMixConst
-    property alias defaultCaEnabled: editTools.defaultCaEnabled
-    property alias defaultTemperature: editTools.defaultTemperature
-    property alias defaultTint: editTools.defaultTint
-    property alias defaultVibrance: editTools.defaultVibrance
-    property alias defaultSaturation: editTools.defaultSaturation
-    property alias defaultOverdriveEnabled: editTools.defaultOverdriveEnabled
-    property alias defaultHighlightRolloff: editTools.defaultHighlightRolloff
-
     signal tooltipWanted(string text, int x, int y)
     signal imageURL(string newURL)
 

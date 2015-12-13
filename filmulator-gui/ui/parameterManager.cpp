@@ -7,39 +7,11 @@ using std::endl;
 ParameterManager::ParameterManager() : QObject(0)
 {
     paramChangeEnabled = true;
-    m_tiffIn = false;
-    m_jpegIn = false;
-    m_caEnabled = false;
-    m_highlights = 0;
-    m_exposureComp = 0.0f;
-    m_temperature = 5200.0f;
-    m_tint = 1.0f;
-    m_initialDeveloperConcentration = 1.0f;
-    m_reservoirThickness = 1000.0f;
-    m_activeLayerThickness = 0.1f;
-    m_crystalsPerPixel = 500.0f;
-    m_initialCrystalRadius = 0.00001f;
-    m_initialSilverSaltDensity = 1.0f;
-    m_initialSilverSaltDensity = 2000000.0f;
-    m_crystalGrowthConst =  0.00001f;
-    m_silverSaltConsumptionConst = 2000000.0f;
-    m_totalDevelopmentTime = 100.0f;
-    m_agitateCount = 1;
-    m_developmentSteps = 12;
-    m_filmArea = 864.0f;
-    m_sigmaConst = 0.2f;
-    m_layerMixConst = 0.2f;
-    m_layerTimeDivisor = 20.0f;
-    m_rolloffBoundary = 51275;
-    m_blackpoint = 0.0f;
-    m_whitepoint = 0.002f;
-    m_shadowsX = 0.25f;
-    m_shadowsY = 0.25f;
-    m_highlightsX = 0.75f;
-    m_highlightsY = 0.75f;
-    m_vibrance = 0.0f;
-    m_saturation = 0.0f;
-    m_rotation = 0;
+
+    //Load the defaults, copy to the parameters, there's no filename yet.
+    loadDefaults(CopyDefaults::loadToParams, "");
+
+    validity = Valid::none;
 
     pasteable = false;
     pasteSome = false;
@@ -633,76 +605,80 @@ void ParameterManager::writeback()
 }
 
 //This syncs the passed-in parameters to the database.
+//Now that it's a SQL REPLACE, you MUST INCLUDE ALL PARAMETERS
+//or else it won't populate the field; it deletes and then re-inserts.
 void ParameterManager::writeToDB(QString imageID)
 {
     //Write back the slider to the database.
     QSqlQuery query;
     query.exec("BEGIN;");//Stick these all into one db action for speed.
-    query.prepare("UPDATE ProcessingTable SET "
-                  "ProcTinitialDeveloperConcentration=?,"   //00
-                  "ProcTreservoirThickness=?,"              //01
-                  "ProcTactiveLayerThickness=?,"            //02
-                  "ProcTcrystalsPerPixel=?,"                //03
-                  "ProcTinitialCrystalRadius=?,"            //04
-                  "ProcTinitialSilverSaltDensity=?,"        //05
-                  "ProcTdeveloperConsumptionConst=?,"       //06
-                  "ProcTcrystalGrowthConst=?,"              //07
-                  "ProcTsilverSaltConsumptionConst=?,"      //08
-                  "ProcTtotalDevelopmentTime=?,"            //09
-                  "ProcTagitateCount=?,"                    //10
-                  "ProcTdevelopmentSteps=?,"                //11
-                  "ProcTfilmArea=?,"                        //12
-                  "ProcTsigmaConst=?,"                      //13
-                  "ProcTlayerMixConst=?,"                   //14
-                  "ProcTlayerTimeDivisor=?,"                //15
-                  "ProcTrolloffBoundary=?,"                 //16
-                  "ProcTexposureComp=?,"                    //17
-                  "ProcTwhitepoint=?,"                      //18
-                  "ProcTblackpoint=?,"                      //19
-                  "ProcTshadowsX=?,"                        //20
-                  "ProcTshadowsY=?,"                        //21
-                  "ProcThighlightsX=?,"                     //22
-                  "ProcThighlightsY=?,"                     //23
-                  "ProcThighlightRecovery=?,"               //24
-                  "ProcTcaEnabled=?,"                       //25
-                  "ProcTtemperature=?,"                     //26
-                  "ProcTtint=?,"                            //27
-                  "ProcTvibrance=?,"                        //28
-                  "ProcTsaturation=?,"                      //29
-                  "ProcTrotation=? "                        //30
-                  "WHERE ProcTprocID = ?;");                //31
-    query.bindValue( 0, m_initialDeveloperConcentration);
-    query.bindValue( 1, m_reservoirThickness);
-    query.bindValue( 2, m_activeLayerThickness);
-    query.bindValue( 3, m_crystalsPerPixel);
-    query.bindValue( 4, m_initialCrystalRadius);
-    query.bindValue( 5, m_initialSilverSaltDensity);
-    query.bindValue( 6, m_developerConsumptionConst);
-    query.bindValue( 7, m_crystalGrowthConst);
-    query.bindValue( 8, m_silverSaltConsumptionConst);
-    query.bindValue( 9, m_totalDevelopmentTime);
-    query.bindValue(10, m_agitateCount);
-    query.bindValue(11, m_developmentSteps);
-    query.bindValue(12, m_filmArea);
-    query.bindValue(13, m_sigmaConst);
-    query.bindValue(14, m_layerMixConst);
-    query.bindValue(15, m_layerTimeDivisor);
-    query.bindValue(16, m_rolloffBoundary);
-    query.bindValue(17, m_exposureComp);
-    query.bindValue(18, m_whitepoint);
-    query.bindValue(19, m_blackpoint);
-    query.bindValue(20, m_shadowsX);
-    query.bindValue(21, m_shadowsY);
-    query.bindValue(22, m_highlightsX);
-    query.bindValue(23, m_highlightsY);
-    query.bindValue(24, m_highlights);
-    query.bindValue(25, m_caEnabled);
-    query.bindValue(26, m_temperature);
-    query.bindValue(27, m_tint);
-    query.bindValue(28, m_vibrance);
-    query.bindValue(29, m_saturation);
-    query.bindValue(30, m_rotation);
-    query.bindValue(31, imageID);
+    query.prepare("REPLACE INTO ProcessingTable ("
+                  "ProcTprocID,"                          // 0
+                  "ProcTinitialDeveloperConcentration,"   // 1
+                  "ProcTreservoirThickness,"              // 2
+                  "ProcTactiveLayerThickness,"            // 3
+                  "ProcTcrystalsPerPixel,"                // 4
+                  "ProcTinitialCrystalRadius,"            // 5
+                  "ProcTinitialSilverSaltDensity,"        // 6
+                  "ProcTdeveloperConsumptionConst,"       // 7
+                  "ProcTcrystalGrowthConst,"              // 8
+                  "ProcTsilverSaltConsumptionConst,"      // 9
+                  "ProcTtotalDevelopmentTime,"            //10
+                  "ProcTagitateCount,"                    //11
+                  "ProcTdevelopmentSteps,"                //12
+                  "ProcTfilmArea,"                        //13
+                  "ProcTsigmaConst,"                      //14
+                  "ProcTlayerMixConst,"                   //15
+                  "ProcTlayerTimeDivisor,"                //16
+                  "ProcTrolloffBoundary,"                 //17
+                  "ProcTexposureComp,"                    //18
+                  "ProcTwhitepoint,"                      //19
+                  "ProcTblackpoint,"                      //20
+                  "ProcTshadowsX,"                        //21
+                  "ProcTshadowsY,"                        //22
+                  "ProcThighlightsX,"                     //23
+                  "ProcThighlightsY,"                     //24
+                  "ProcThighlightRecovery,"               //25
+                  "ProcTcaEnabled,"                       //26
+                  "ProcTtemperature,"                     //27
+                  "ProcTtint,"                            //28
+                  "ProcTvibrance,"                        //29
+                  "ProcTsaturation,"                      //30
+                  "ProcTrotation)"                        //31
+                  "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //       0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1
+    query.bindValue( 0, imageID);
+    query.bindValue( 1, m_initialDeveloperConcentration);
+    query.bindValue( 2, m_reservoirThickness);
+    query.bindValue( 3, m_activeLayerThickness);
+    query.bindValue( 4, m_crystalsPerPixel);
+    query.bindValue( 5, m_initialCrystalRadius);
+    query.bindValue( 6, m_initialSilverSaltDensity);
+    query.bindValue( 7, m_developerConsumptionConst);
+    query.bindValue( 8, m_crystalGrowthConst);
+    query.bindValue( 9, m_silverSaltConsumptionConst);
+    query.bindValue(10, m_totalDevelopmentTime);
+    query.bindValue(11, m_agitateCount);
+    query.bindValue(12, m_developmentSteps);
+    query.bindValue(13, m_filmArea);
+    query.bindValue(14, m_sigmaConst);
+    query.bindValue(15, m_layerMixConst);
+    query.bindValue(16, m_layerTimeDivisor);
+    query.bindValue(17, m_rolloffBoundary);
+    query.bindValue(18, m_exposureComp);
+    query.bindValue(19, m_whitepoint);
+    query.bindValue(20, m_blackpoint);
+    query.bindValue(21, m_shadowsX);
+    query.bindValue(22, m_shadowsY);
+    query.bindValue(23, m_highlightsX);
+    query.bindValue(24, m_highlightsY);
+    query.bindValue(25, m_highlights);
+    query.bindValue(26, m_caEnabled);
+    query.bindValue(27, m_temperature);
+    query.bindValue(28, m_tint);
+    query.bindValue(29, m_vibrance);
+    query.bindValue(30, m_saturation);
+    query.bindValue(31, m_rotation);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -711,6 +687,7 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(1, imageID);
     query.exec();
     //Write that it's been edited to the QueueTable
+    //If it's not in the queue yet then this won't do anything.
     query.prepare("UPDATE QueueTable SET QTprocessed = ? WHERE QTsearchID = ?;");
     query.bindValue(0, QVariant(true));
     query.bindValue(1, imageID);
@@ -761,7 +738,8 @@ unsigned int gcd(unsigned int u, unsigned int v)
 //selectImage deals with selection from qml.
 //It accepts the searchID (the md5 with the instance number appended).
 //It loads the default parameters, and commands the parameters to be loaded.
-void ParameterManager::selectImage(QString imageID)
+//If there is no ProcTable stuff for the image, it will load from defaults and write to the db.
+void ParameterManager::selectImage(const QString imageID)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
     disableParamChange();//Prevent aborting of computation.
@@ -790,19 +768,19 @@ void ParameterManager::selectImage(QString imageID)
     //Filename. First is the full path for the image pipeline.
     nameCol = rec.indexOf("FTfilePath");
     if (-1 == nameCol) { std::cout << "paramManager FTfilePath" << endl; }
-    QString name = query.value(0).toString();
+    QString name = query.value(nameCol).toString();
     m_fullFilename = name.toStdString();
     filename = name.right(name.size() - name.lastIndexOf(QString("/")) - 1);
     emit filenameChanged();
 
     nameCol = rec.indexOf("FTsensitivity");
     if (-1 == nameCol) { std::cout << "paramManager FTsensitivity" << endl; }
-    sensitivity = query.value(1).toInt();
+    sensitivity = query.value(nameCol).toInt();
     emit sensitivityChanged();
 
     nameCol = rec.indexOf("FTexposureTime");
     if (-1 == nameCol) { std::cout << "paramManager FTexposureTime" << endl; }
-    QString expTimeTemp = query.value(2).toString();
+    QString expTimeTemp = query.value(nameCol).toString();
     bool okNum;
     unsigned int numerator = expTimeTemp.left(expTimeTemp.lastIndexOf("/")).toInt(&okNum, 10);
     bool okDen;
@@ -830,16 +808,35 @@ void ParameterManager::selectImage(QString imageID)
 
     nameCol = rec.indexOf("FTaperture");
     if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
-    aperture = query.value(3).toFloat();
+    aperture = query.value(nameCol).toFloat();
     emit apertureChanged();
 
     nameCol = rec.indexOf("FTfocalLength");
     if (-1 == nameCol) { std::cout << "paramManager FTfocalLength" << endl; }
-    focalLength = query.value(4).toFloat();
+    focalLength = query.value(nameCol).toFloat();
     emit focalLengthChanged();
 
     //Copy all of the processing parameters from the db into this param manager.
-    loadParams(imageID);
+    //First we check and see if it's new or not.
+    query.prepare("SELECT COUNT(*) FROM SearchTable WHERE STsearchID = ?;");
+    query.bindValue(0, QVariant(imageID));
+    query.exec();
+    query.first();
+    const bool newImage = query.value(0).toInt() == 1;
+    if (newImage == true)
+    {
+        //Load the defaults for this image (including rotation and WB)
+        loadDefaults(CopyDefaults::loadToParams, m_fullFilename);
+        //Write them to the database
+        writeToDB(imageID);
+    }
+    else
+    {
+        //Load parameters from the database
+        loadParams(imageID);
+        //Load the defaults, but don't change the main parameters.
+        loadDefaults(CopyDefaults::loadOnlyDefaults, m_fullFilename);
+    }
 
     paramLocker.unlock();
 
@@ -876,6 +873,38 @@ void ParameterManager::selectImage(QString imageID)
     emit saturationChanged();
     emit rotationChanged();
 
+    emit defCaEnabledChanged();
+    emit defHighlightsChanged();
+    emit defExposureCompChanged();
+    emit defTemperatureChanged();
+    emit defTintChanged();
+    emit defInitialDeveloperConcentrationChanged();
+    emit defReservoirThicknessChanged();
+    emit defActiveLayerThicknessChanged();
+    emit defCrystalsPerPixelChanged();
+    emit defInitialCrystalRadiusChanged();
+    emit defInitialSilverSaltDensityChanged();
+    emit defDeveloperConsumptionConstChanged();
+    emit defCrystalGrowthConstChanged();
+    emit defSilverSaltConsumptionConstChanged();
+    emit defTotalDevelopmentTimeChanged();
+    emit defAgitateCountChanged();
+    emit defDevelopmentStepsChanged();
+    emit defFilmAreaChanged();
+    emit defSigmaConstChanged();
+    emit defLayerMixConstChanged();
+    emit defLayerTimeDivisorChanged();
+    emit defRolloffBoundaryChanged();
+    emit defBlackpointChanged();
+    emit defWhitepointChanged();
+    emit defShadowsXChanged();
+    emit defShadowsYChanged();
+    emit defHighlightsXChanged();
+    emit defHighlightsYChanged();
+    emit defVibranceChanged();
+    emit defSaturationChanged();
+    emit defRotationChanged();
+
 
     //Mark that it's safe for sliders to move again.
     QMutexLocker signalLocker(&signalMutex);
@@ -883,6 +912,367 @@ void ParameterManager::selectImage(QString imageID)
     paramChangeWrapper(QString("selectImage"));
 
 }
+
+//This loads all of the default processing params into the param manager.
+//
+//If told to copyDefaults, it'll load all of the defaults into everything.
+//If the file path is an empty string, it doesn't perform any computations on the exif data
+// and just loads from the default profile.
+void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::string absFilePath)
+{
+    QSqlRecord rec;
+    int nameCol;
+    QSqlQuery query;
+
+    //This query will be shared.
+    query.prepare("SELECT * FROM ProfileTable WHERE ProfTprofileID = ?;");
+    query.bindValue(0, "Default");
+    query.exec();
+    query.first();
+    rec = query.record();
+
+    //These should be changed depending on the file, once we get this loading tiffs.
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        validity = Valid::none;
+        m_tiffIn = false;
+        m_jpegIn = false;
+    }
+
+    //First is caEnabled.
+    nameCol = rec.indexOf("ProfTcaEnabled");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTcaEnabled" << endl; }
+    const bool temp_caEnabled = query.value(nameCol).toBool();
+    d_caEnabled = temp_caEnabled;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_caEnabled = temp_caEnabled;
+    }
+
+    //Next is highlights (highlight recovery)
+    nameCol = rec.indexOf("ProfThighlightRecovery");
+    if (-1 == nameCol) { std::cout << "paramManager ProfThighlightRecovery" << endl; }
+    const int temp_highlights = query.value(nameCol).toInt();
+    d_highlights = temp_highlights;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_highlights = temp_highlights;
+    }
+
+    //Exposure compensation
+    nameCol = rec.indexOf("ProfTexposureComp");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTexposureComp" << endl; }
+    const float temp_exposureComp = query.value(nameCol).toFloat();
+    d_exposureComp = temp_exposureComp;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_exposureComp = temp_exposureComp;
+    }
+
+    if ("" == filename)
+    {
+        //If there is no filename supplied, then get the defaults from the db standard profile.
+        //Temperature
+        nameCol = rec.indexOf("ProfTtemperature");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTtemperature" << endl; }
+        const float temp_temperature = query.value(nameCol).toFloat();
+        d_temperature = temp_temperature;
+
+        //Tint
+        nameCol = rec.indexOf("ProfTtint");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTtint" << endl; }
+        const float temp_tint = query.value(nameCol).toFloat();
+        d_tint = temp_tint;
+    }
+    else
+    {
+        //If there is a file, calculate the camera WB.
+        float temp_temperature, temp_tint;
+        optimizeWBMults(absFilePath, temp_temperature, temp_tint);
+        d_temperature = temp_temperature;
+        d_tint = temp_tint;
+    }
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_temperature = d_temperature;
+        m_tint = d_tint;
+    }
+
+    //Initial developer concentration
+    nameCol = rec.indexOf("ProfTinitialDeveloperConcentration");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTinitialDeveloperConcentration" << endl; }
+    const float temp_initialDeveloperConcentration = query.value(nameCol).toFloat();
+    d_initialDeveloperConcentration = temp_initialDeveloperConcentration;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_initialDeveloperConcentration = temp_initialDeveloperConcentration;
+    }
+
+    //Reservoir thickness
+    nameCol = rec.indexOf("ProfTreservoirThickness");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTreservoirThickness" << endl; }
+    const float temp_reservoirThickness = query.value(nameCol).toFloat();
+    d_reservoirThickness = temp_reservoirThickness;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_reservoirThickness = temp_reservoirThickness;
+    }
+
+    //Active layer thickness
+    nameCol = rec.indexOf("ProfTactiveLayerThickness");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTactiveLayerThickness" << endl; }
+    const float temp_activeLayerThickness = query.value(nameCol).toFloat();
+    d_activeLayerThickness = temp_activeLayerThickness;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_activeLayerThickness = temp_activeLayerThickness;
+    }
+
+    //Crystals per pixel
+    nameCol = rec.indexOf("ProfTcrystalsPerPixel");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTcrystalsPerPixel" << endl; }
+    const float temp_crystalsPerPixel = query.value(nameCol).toFloat();
+    d_crystalsPerPixel = temp_crystalsPerPixel;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_crystalsPerPixel = temp_crystalsPerPixel;
+    }
+
+    //Initial crystal radius
+    nameCol = rec.indexOf("ProfTinitialCrystalRadius");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTinitialCrystalRadius" << endl; }
+    const float temp_initialCrystalRadius = query.value(nameCol).toFloat();
+    d_initialCrystalRadius = temp_initialCrystalRadius;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_initialCrystalRadius = temp_initialCrystalRadius;
+    }
+
+    //Initial silver salt area density
+    nameCol = rec.indexOf("ProfTinitialSilverSaltDensity");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTinitialSilverSaltDensity" << endl; }
+    const float temp_initialSilverSaltDensity = query.value(nameCol).toFloat();
+    d_initialSilverSaltDensity = temp_initialSilverSaltDensity;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_initialSilverSaltDensity = temp_initialSilverSaltDensity;
+    }
+
+    //Developer consumption rate constant
+    nameCol = rec.indexOf("ProfTdeveloperConsumptionConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTdeveloperConsumptionConst" << endl; }
+    const float temp_developerConsumptionConst = query.value(nameCol).toFloat();
+    d_developerConsumptionConst = temp_developerConsumptionConst;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_developerConsumptionConst = temp_developerConsumptionConst;
+    }
+
+    //Crystal growth rate constant
+    nameCol = rec.indexOf("ProfTcrystalGrowthConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTcrystalGrowthConst" << endl; }
+    const float temp_crystalGrowthConst = query.value(nameCol).toFloat();
+    d_crystalGrowthConst = temp_crystalGrowthConst;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_crystalGrowthConst = temp_crystalGrowthConst;
+    }
+
+    //Silver halide consumption rate constant
+    nameCol = rec.indexOf("ProfTsilverSaltConsumptionConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTsilverSaltConsumptionConst" << endl; }
+    const float temp_silverSaltConsumptionConst = query.value(nameCol).toFloat();
+    d_silverSaltConsumptionConst = temp_silverSaltConsumptionConst;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_silverSaltConsumptionConst = temp_silverSaltConsumptionConst;
+    }
+
+    //Total development time
+    nameCol = rec.indexOf("ProfTtotalDevelopmentTime");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTtotalDevelopmentTime" << endl; }
+    const float temp_totalDevelopmentTime = query.value(nameCol).toFloat();
+    d_totalDevelopmentTime = temp_totalDevelopmentTime;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_totalDevelopmentTime = temp_totalDevelopmentTime;
+    }
+
+    //Number of agitations
+    nameCol = rec.indexOf("ProfTagitateCount");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTagitateCount" << endl; }
+    const int temp_agitateCount = query.value(nameCol).toInt();
+    d_agitateCount = temp_agitateCount;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_agitateCount = temp_agitateCount;
+    }
+
+    //Number of simulation steps for development
+    nameCol = rec.indexOf("ProfTdevelopmentSteps");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTdevelopmentSteps" << endl; }
+    const int temp_developmentSteps = query.value(nameCol).toInt();
+    d_developmentSteps = temp_developmentSteps;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_developmentSteps = temp_developmentSteps;
+    }
+
+    //Area of film for the simulation
+    nameCol = rec.indexOf("ProfTfilmArea");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTfilmArea" << endl; }
+    const float temp_filmArea = query.value(nameCol).toFloat();
+    d_filmArea = temp_filmArea;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_filmArea = temp_filmArea;
+    }
+
+    //A constant for the size of the diffusion. It...affects the same thing as film area.
+    nameCol = rec.indexOf("ProfTsigmaConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTsigmaConst" << endl; }
+    const float temp_sigmaConst = query.value(nameCol).toFloat();
+    d_sigmaConst = temp_sigmaConst;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_sigmaConst = temp_sigmaConst;
+    }
+
+    //Layer mix constant: the amount of active developer that gets exchanged with the reservoir.
+    nameCol = rec.indexOf("ProfTlayerMixConst");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTlayerMixConst" << endl; }
+    const float temp_layerMixConst = query.value(nameCol).toFloat();
+    d_layerMixConst = temp_layerMixConst;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_layerMixConst = temp_layerMixConst;
+    }
+
+    //Layer time divisor: Controls the relative intra-layer and inter-layer diffusion.
+    nameCol = rec.indexOf("ProfTlayerTimeDivisor");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTlayerTimeDivisor" << endl; }
+    const float temp_layerTimeDivisor = query.value(nameCol).toFloat();
+    d_layerTimeDivisor = temp_layerTimeDivisor;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_layerTimeDivisor = temp_layerTimeDivisor;
+    }
+
+    //Rolloff boundary. This is where highlights start to roll off.
+    nameCol = rec.indexOf("ProfTrolloffBoundary");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrolloffBoundary" << endl; }
+    const float temp_rolloffBoundary = query.value(nameCol).toFloat();
+    d_rolloffBoundary = temp_rolloffBoundary;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rolloffBoundary = temp_rolloffBoundary;
+    }
+
+    //Post-filmulator black clipping point
+    nameCol = rec.indexOf("ProfTblackpoint");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTblackpoint" << endl; }
+    const float temp_blackpoint = query.value(nameCol).toFloat();
+    d_blackpoint = temp_blackpoint;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_blackpoint = temp_blackpoint;
+    }
+
+    //Post-filmulator white clipping point
+    nameCol = rec.indexOf("ProfTwhitepoint");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTwhitepoint" << endl; }
+    const float temp_whitepoint = query.value(nameCol).toFloat();
+    d_whitepoint = temp_whitepoint;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_whitepoint = temp_whitepoint;
+    }
+
+    //Shadow control point x value
+    nameCol = rec.indexOf("ProfTshadowsX");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTshadowsX" << endl; }
+    const float temp_shadowsX = query.value(nameCol).toFloat();
+    d_shadowsX = temp_shadowsX;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_shadowsX = temp_shadowsX;
+    }
+
+    //Shadow control point y value
+    nameCol = rec.indexOf("ProfTshadowsY");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTshadowsY" << endl; }
+    const float temp_shadowsY = query.value(nameCol).toFloat();
+    d_shadowsY = temp_shadowsY;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_shadowsY = temp_shadowsY;
+    }
+
+    //Highlight control point x value
+    nameCol = rec.indexOf("ProfThighlightsX");
+    if (-1 == nameCol) { std::cout << "paramManager ProfThighlightsX" << endl; }
+    const float temp_highlightsX = query.value(nameCol).toFloat();
+    d_highlightsX = temp_highlightsX;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_highlightsX = temp_highlightsX;
+    }
+
+    //Highlight control point y value
+    nameCol = rec.indexOf("ProfThighlightsY");
+    if (-1 == nameCol) { std::cout << "paramManager ProfThighlightsY" << endl; }
+    const float temp_highlightsY = query.value(nameCol).toFloat();
+    d_highlightsY = temp_highlightsY;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_highlightsY = temp_highlightsY;
+    }
+
+    //Vibrance (saturation of less-saturated things)
+    nameCol = rec.indexOf("ProfTvibrance");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTvibrance" << endl; }
+    const float temp_vibrance = query.value(nameCol).toFloat();
+    d_vibrance = temp_vibrance;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_vibrance = temp_vibrance;
+    }
+
+    //Saturation
+    nameCol = rec.indexOf("ProfTsaturation");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTsaturation" << endl; }
+    const float temp_saturation = query.value(nameCol).toFloat();
+    d_saturation = temp_saturation;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_saturation = temp_saturation;
+    }
+
+    //Rotation
+    if ("" == filename)
+    {
+        nameCol = rec.indexOf("ProfTrotation");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTrotation" << endl; }
+        const int temp_rotation = query.value(nameCol).toInt();
+        d_rotation = temp_rotation;
+        if (copyDefaults == CopyDefaults::loadToParams)
+        {
+            m_rotation = temp_rotation;
+        }
+    }
+    else
+    {
+        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(absFilePath);
+        image->readMetadata();
+        Exiv2::ExifData exifData = image->exifData();
+        d_rotation = exifDefaultRotation(exifData);
+        if (copyDefaults == CopyDefaults::loadToParams)
+        {
+            m_rotation = d_rotation;
+        }
+    }
+}
+
 
 //This loads all of the processing params from the imageID into the param manager.
 //TODO: for partial copying, make a loadParams that lets you select which ones
