@@ -116,7 +116,6 @@ SplitView {
                     id: bottomImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
-                    //mipmap: true
                     mipmap: settings.getMipmapView()
                     onStatusChanged: {
                         if (bottomImage.status == Image.Ready) {
