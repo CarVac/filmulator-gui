@@ -190,3 +190,24 @@ bool Settings::getAppendHash()
     emit appendHashChanged();
     return appendHash;
 }
+
+void Settings::setMipmapView(bool mipmapViewIn)
+{
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    mipmapView = mipmapViewIn;
+    settings.setValue("edit/mipmapView", mipmapViewIn);
+    emit mipmapViewChanged();
+}
+
+bool Settings::getMipmapView()
+{
+    const bool oldMipmapView = mipmapView;
+    QSettings settings(QSettings::UserScope, QString("Filmulator"));
+    mipmapView = settings.value("edit/mipmapView", 1).toBool();
+    if (oldMipmapView == mipmapView)
+    {
+        //This loops like crazy.
+        //emit mipmapViewChanged();
+    }
+    return mipmapView;
+}
