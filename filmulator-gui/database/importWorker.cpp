@@ -17,7 +17,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                               const QDateTime importStartTime,
                               const bool appendHash)
 {
-    cout << "importing1" << endl;
     //Generate a hash of the raw file.
     QCryptographicHash hash(QCryptographicHash::Md5);
     QFile file(infoIn.absoluteFilePath());
@@ -26,7 +25,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         qDebug("File couldn't be opened.");
     }
 
-    cout << "importing2" << endl;
     //Load data into the hash function.
     while (!file.atEnd())
     {
@@ -47,16 +45,12 @@ void ImportWorker::importFile(const QFileInfo infoIn,
 
         for (int i = 0; i < 7; i++)
         {
-            cout << "Iteration " << i << endl;
             //Convert the byte to an integer.
             int value = carry + ((uint8_t) hashArray.at(i));
+            //Carry it so that it affects the next one.
             carry = value / 62;
             int val = value % 62;
             subFilename.append(a[val]);
-            cout << "value: " << value << endl;
-            cout << "carry: " << carry << endl;
-            cout << "val: " << val << endl;
-            cout << "output: " << a[val] << endl;
         }
         subFilename.append(extension);
         filename = subFilename;
@@ -69,7 +63,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     Exiv2::ExifData exifData = image->exifData();
     Exiv2::XmpData xmpData = image->xmpData();
 
-    cout << "importing3" << endl;
     //Set up the main directory to insert the file, and the full file path.
     //This is based on what time it was in the timezone of photo capture.
     QString outputPath = photoDir;
@@ -98,7 +91,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         }
     }
 
-    cout << "importing4" << endl;
     //Check to see if it's already present in the database.
     QSqlQuery query;
     query.prepare("SELECT FTfilepath FROM FileTable WHERE (FTfileID = ?);");
@@ -108,11 +100,9 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     const QString dbRecordedPath = query.value(0).toString();
     if (dbRecordedPath == "")//It's not in the database yet.
     {
-        cout << "importing5" << endl;
         //Copy the file into our main directory. We assume it's not in here yet.
         QFile::copy(infoIn.absoluteFilePath(), outputPathName);
 
-        cout << "importing6" << endl;
         //Insert it into the database.
         fileInsert(hashString, outputPathName, exifData);
 
@@ -130,14 +120,12 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         //Eventually we'll have the parameter manager read the wb from the destination.
 
         //Request that we enqueue the image.
-        cout << "importing7" << endl;
-        cout << "SearchID: " << STsearchID.toStdString() << endl;
+        cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
         emit enqueueThis(STsearchID);
         //It might be ignored downstream, but that's not our problem here.
     }
     else //it's already in the database, so just move the file.
     {
-        cout << "importing8" << endl;
         //See if the file is in its old location.
         //If the user deleted the local copy of the raw file, but are re-importing
         // from the backup, this situation might occur.

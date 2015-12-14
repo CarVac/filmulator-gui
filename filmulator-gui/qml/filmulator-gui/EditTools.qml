@@ -127,7 +127,7 @@ SplitView {
                 ToolSlider {
                     id: temperatureSlider
                     title: qsTr("Temperature")
-                    tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.")
+                    tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.\n\nThe default value is the camera's chosen WB.")
                     minimumValue: Math.log(2000)
                     maximumValue: Math.log(20000)
                     value: Math.log(paramManager.temperature)
@@ -155,7 +155,7 @@ SplitView {
                 ToolSlider {
                     id: tintSlider
                     title: qsTr("Tint")
-                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Positive values are greener, and negative values are magenta.")
+                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Positive values are greener, and negative values are magenta.\n\nThe default value is the camera's chosen WB.")
                     minimumValue: 0.1
                     maximumValue: 3
                     value: paramManager.tint
