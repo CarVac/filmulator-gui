@@ -281,8 +281,26 @@ SplitView {
             uiScale: root.uiScale
         }
         Text {
-            id: filenameText
+            id: apertureText
             x: 200 * uiScale
+            y: 0 * uiScale
+            color: "white"
+            text: " f/" + paramManager.aperture
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+        }
+        Text {
+            id: shutterText
+            x: 200 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: " " + paramManager.exposureTime + " s"
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+        }
+        Text {
+            id: filenameText
+            x: 300 * uiScale
             y: 0 * uiScale
             color: "white"
             text: paramManager.filename
@@ -290,29 +308,11 @@ SplitView {
             elide: Text.ElideRight
         }
         Text {
-            id: text2
-            x: 200 * uiScale
+            id: isoText
+            x: 300 * uiScale
             y: 15 * uiScale
-            color: "white"
-            text: paramManager.exposureTime + " s"
-            font.pixelSize: 12.0 * uiScale
-            elide: Text.ElideRight
-        }
-        Text {
-            id: text3
-            x: 350 * uiScale
-            y: 0 * uiScale
             color: "white"
             text: "ISO " + paramManager.sensitivity
-            font.pixelSize: 12.0 * uiScale
-            elide: Text.ElideRight
-        }
-        Text {
-            id: text4
-            x: 350 * uiScale
-            y: 15 * uiScale
-            color: "white"
-            text: "f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }

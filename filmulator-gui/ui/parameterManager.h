@@ -100,7 +100,7 @@ class ParameterManager : public QObject
     Q_PROPERTY(QString filename     READ getFilename     NOTIFY filenameChanged)
     Q_PROPERTY(int sensitivity      READ getSensitivity  NOTIFY sensitivityChanged)
     Q_PROPERTY(QString exposureTime READ getExposureTime NOTIFY exposureTimeChanged)
-    Q_PROPERTY(float aperture       READ getAperture     NOTIFY apertureChanged)
+    Q_PROPERTY(QString aperture     READ getAperture     NOTIFY apertureChanged)
     Q_PROPERTY(float focalLength    READ getFocalLength  NOTIFY focalLengthChanged)
 
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
@@ -254,7 +254,7 @@ protected:
     QString filename;
     int sensitivity;
     QString exposureTime;
-    float aperture;
+    QString aperture;
     float focalLength;
 
     Valid validity;
@@ -350,7 +350,7 @@ protected:
     QString getFilename(){return filename;}
     int getSensitivity(){return sensitivity;}
     QString getExposureTime(){return exposureTime;}
-    float getAperture(){return aperture;}
+    QString getAperture(){return aperture;}
     float getFocalLength(){return focalLength;}
 
     bool getPasteable(){return pasteable;}

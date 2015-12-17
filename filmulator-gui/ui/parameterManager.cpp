@@ -808,7 +808,15 @@ void ParameterManager::selectImage(const QString imageID)
 
     nameCol = rec.indexOf("FTaperture");
     if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
-    aperture = query.value(nameCol).toFloat();
+    float numAperture = query.value(nameCol).toFloat();
+    if (numAperture >= 8)
+    {
+        aperture = QString::number(numAperture,'f',0);
+    }
+    else //numAperture < 8
+    {
+        aperture = QString::number(numAperture,'f',1);
+    }
     emit apertureChanged();
 
     nameCol = rec.indexOf("FTfocalLength");
