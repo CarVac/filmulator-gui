@@ -481,7 +481,7 @@ SplitView {
                             shadowBrightnessSlider.value = paramManager.shadowsY
                         }
                         onDefShadowsYChanged: {
-                            shadowBrightnessSlider.value = paramManager.defShadowsY
+                            shadowBrightnessSlider.defaultValue = paramManager.defShadowsY
                         }
                     }
                     Component.onCompleted: {
