@@ -93,7 +93,7 @@ Rectangle {
         ImportDirEntry {
             id: photoDirEntry
             title: qsTr("Destination Directory")
-            tooltipText: qsTr("Select or type in the root directory of your photo file structure.")
+            tooltipText: qsTr("Select or type in the root directory of your photo file structure. If it doesn\'t exist, then it will be created.")
             dirDialogTitle: qsTr("Select the destination root directory")
             enteredText: settings.getPhotoStorageDir()
             onEnteredTextChanged: {
@@ -109,7 +109,7 @@ Rectangle {
         ImportDirEntry {
             id: backupDirEntry
             title: qsTr("Backup Directory")
-            tooltipText: qsTr("Select or type in the root directory of your backup file structure. If it doesn't exist, then no backup copies will be created.")
+            tooltipText: qsTr("Select or type in the root directory of your backup file structure. If it doesn\'t exist, then no backup copies will be made.")
             dirDialogTitle: qsTr("Select the backup root directory")
             enteredText: settings.getPhotoBackupDir()
             onEnteredTextChanged: {
@@ -118,7 +118,7 @@ Rectangle {
             }
             Component.onCompleted: {
                 importModel.backupDir = enteredText
-                photoDirEntry.tooltipWanted.connect(root.tooltipWanted)
+                backupDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
         }
@@ -135,6 +135,27 @@ Rectangle {
             Component.onCompleted: {
                 importModel.dirConfig = enteredText
                 dirStructureEntry.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolSwitch {
+            id: appendSwitch
+            text: qsTr("Append unique identifier")
+            tooltipText: qsTr("This is recommended if you have multiple cameras of the same brand.\nIt appends an underscore and seven characters (derived from the file contents) to the filename, to prevent the same filename from being used twice in a folder.")
+            isOn: settings.getAppendHash()
+            onIsOnChanged: {
+                importModel.appendHash = isOn
+                settings.appendHash = isOn
+            }
+            defaultOn: false
+            onResetToDefault: {
+                importModel.appendHash = isOn
+                settings.appendHash = isOn
+            }
+            Component.onCompleted: {
+                importModel.appendHash = isOn
+                appendSwitch.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
         }

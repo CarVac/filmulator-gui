@@ -15,26 +15,6 @@ SplitView {
     Layout.minimumWidth: 250 * uiScale
     orientation: Qt.Vertical
 
-    //Here we set up the properties that let us communicate
-    // both the image-specific settings (on reloading of an
-    // already processed image), as well as default settings
-    // for when the user resets the tool back to 'default'.
-    property real defaultExposureComp
-    property real defaultWhitepoint
-    property real defaultBlackpoint
-    property real defaultShadowsY
-    property real defaultHighlightsY
-    property real defaultFilmSize
-    property int defaultHighlightRecovery
-    property real defaultLayerMixConst
-    property bool defaultCaEnabled
-    property real defaultTemperature
-    property real defaultTint
-    property real defaultVibrance
-    property real defaultSaturation
-    property bool defaultOverdriveEnabled
-    property real defaultHighlightRolloff
-
     signal tooltipWanted(string text, int x, int y)
 
     Item {
@@ -91,7 +71,7 @@ SplitView {
                     tooltipText: qsTr("Automatically correct directional color fringing.")
                     text: qsTr("CA correction")
                     isOn: paramManager.caEnabled
-                    defaultOn: root.defaultCaEnabled
+                    defaultOn: paramManager.defCaEnabled
                     onIsOnChanged: {
                         paramManager.caEnabled = isOn
                         paramManager.writeback()
@@ -104,6 +84,9 @@ SplitView {
                         target: paramManager
                         onCaEnabledChanged: {
                             caSwitch.isOn = paramManager.caEnabled
+                        }
+                        onDefCaEnabledChanged: {
+                            caSwitch.defaultOn = paramManager.defCaEnabled
                         }
                     }
                     Component.onCompleted: {
@@ -121,7 +104,7 @@ SplitView {
                     stepSize: 1
                     tickmarksEnabled: true
                     value: paramManager.highlights
-                    defaultValue: root.defaultHighlightRecovery
+                    defaultValue: paramManager.defHighlights
                     onValueChanged: {
                         paramManager.highlights = value
                     }
@@ -130,6 +113,9 @@ SplitView {
                         target: paramManager
                         onHighlightsChanged: {
                             highlightRecoverySlider.value = paramManager.highlights
+                        }
+                        onDefHighlightsChanged: {
+                            highlightRecoverySlider.defaultValue = paramManager.defHighlights
                         }
                     }
                     Component.onCompleted: {
@@ -141,11 +127,11 @@ SplitView {
                 ToolSlider {
                     id: temperatureSlider
                     title: qsTr("Temperature")
-                    tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.")
+                    tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.\n\nThe default value is the camera's chosen WB.")
                     minimumValue: Math.log(2000)
                     maximumValue: Math.log(20000)
                     value: Math.log(paramManager.temperature)
-                    defaultValue: Math.log(root.defaultTemperature)
+                    defaultValue: Math.log(paramManager.defTemperature)
                     valueText: Math.exp(value)
                     onValueChanged: {
                         paramManager.temperature = Math.exp(value)
@@ -155,6 +141,9 @@ SplitView {
                         target: paramManager
                         onTemperatureChanged: {
                             temperatureSlider.value = Math.log(paramManager.temperature)
+                        }
+                        onDefTemperatureChanged: {
+                            temperatureSlider.defaultValue = Math.log(paramManager.defTemperature)
                         }
                     }
                     Component.onCompleted: {
@@ -166,11 +155,11 @@ SplitView {
                 ToolSlider {
                     id: tintSlider
                     title: qsTr("Tint")
-                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Positive values are greener, and negative values are magenta.")
+                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Positive values are greener, and negative values are magenta.\n\nThe default value is the camera's chosen WB.")
                     minimumValue: 0.1
                     maximumValue: 3
                     value: paramManager.tint
-                    defaultValue: root.defaultTint
+                    defaultValue: paramManager.defTint
                     onValueChanged: {
                         paramManager.tint = value
                     }
@@ -179,6 +168,9 @@ SplitView {
                         target: paramManager
                         onTintChanged: {
                             tintSlider.value = paramManager.tint
+                        }
+                        onDefTintChanged: {
+                            tintSlider.defaultValue = paramManager.defTint
                         }
                     }
                     Component.onCompleted: {
@@ -197,7 +189,7 @@ SplitView {
                     tickmarksEnabled: true
                     tickmarkFactor: 6
                     value: paramManager.exposureComp
-                    defaultValue: root.defaultExposureComp
+                    defaultValue: paramManager.defExposureComp
                     onValueChanged: {
                         paramManager.exposureComp = value
                     }
@@ -206,6 +198,9 @@ SplitView {
                         target: paramManager
                         onExposureCompChanged: {
                             exposureCompSlider.value = paramManager.exposureComp
+                        }
+                        onDefExposureCompChanged: {
+                            exposureCompSlider.defaultValue = paramManager.defExposureComp
                         }
                     }
                     Component.onCompleted: {
@@ -258,7 +253,7 @@ SplitView {
                     minimumValue: 1
                     maximumValue: 65535
                     value: paramManager.rolloffBoundary
-                    defaultValue: root.defaultHighlightRolloff
+                    defaultValue: paramManager.defRolloffBoundary
                     valueText: value/65535
                     onValueChanged: {
                         paramManager.rolloffBoundary = value
@@ -268,6 +263,9 @@ SplitView {
                         target: paramManager
                         onRolloffBoundaryChanged: {
                             rolloffSlider.value = paramManager.rolloffBoundary
+                        }
+                        onDefRolloffBoundaryChanged: {
+                            rolloffSlider.defaultValue = paramManager.defRolloffBoundary
                         }
                     }
                     Component.onCompleted: {
@@ -283,18 +281,21 @@ SplitView {
                     minimumValue: 1.2//less than log of 10
                     maximumValue: 6//greater than log of 300
                     value: Math.log(Math.sqrt(paramManager.filmArea))
-                    defaultValue: Math.log(Math.sqrt(root.defaultFilmSize))
+                    defaultValue: Math.log(Math.sqrt(paramManager.defFilmArea))
                     //The following thresholds are 24mmx65mm and twice 6x9cm film's
                     // areas, respectively.
                     valueText: (Math.exp(value*2) < 1560) ? "SF" : (Math.exp(value*2) < 9408) ? "MF" : "LF"
                     onValueChanged: {
-                        paramManager.filmArea = Math.exp(value*2)//exp(value)*exp(value)
+                        paramManager.filmArea = Math.exp(value*2)
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onFilmAreaChanged: {
                             filmSizeSlider.value = Math.log(Math.sqrt(paramManager.filmArea))
+                        }
+                        onDefFilmAreaChanged: {
+                            filmSizeSlider.defaultValue = Math.log(Math.sqrt(paramManager.defFilmArea))
                         }
                     }
                     Component.onCompleted: {
@@ -310,7 +311,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 100
                     value: 100*paramManager.layerMixConst
-                    defaultValue: 100*root.defaultLayerMixConst
+                    defaultValue: 100*paramManager.defLayerMixConst
                     onValueChanged: {
                         paramManager.layerMixConst = value/100;
                     }
@@ -319,6 +320,9 @@ SplitView {
                         target: paramManager
                         onLayerMixConstChanged: {
                             filmDramaSlider.value = 100*paramManager.layerMixConst
+                        }
+                        onDefLayerMixConstChanged: {
+                            filmDramaSlider.defaultValue = 100*paramManager.defLayerMixConst
                         }
                     }
                     Component.onCompleted: {
@@ -332,7 +336,7 @@ SplitView {
                     tooltipText: qsTr("In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you.")
                     text: qsTr("Overdrive Mode")
                     isOn: (paramManager.agitateCount == 0)
-                    defaultOn: root.defaultOverdriveEnabled
+                    defaultOn: (paramManager.defAgitateCount == 0)
                     onIsOnChanged: {
                         paramManager.agitateCount = isOn ? 0 : 1
                         paramManager.writeback()
@@ -344,7 +348,10 @@ SplitView {
                     Connections {
                         target: paramManager
                         onAgitateCountChanged: {
-                            overdriveSwitch.isOn = (paramManager.agitateCount == 0);
+                            overdriveSwitch.isOn = (paramManager.agitateCount == 0)
+                        }
+                        onDefAgitateCountChanged: {
+                            overdriveSwitch.defaultOn = (paramManager.defAgitateCount == 0)
                         }
                     }
                     Component.onCompleted: {
@@ -406,7 +413,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 1.4
                     value: Math.sqrt(paramManager.blackpoint*1000)
-                    defaultValue: Math.sqrt(root.defaultBlackpoint*1000)
+                    defaultValue: Math.sqrt(paramManager.defBlackpoint*1000)
                     valueText: value*value/2
                     onValueChanged: {
                         paramManager.blackpoint = value*value/1000
@@ -416,6 +423,9 @@ SplitView {
                         target: paramManager
                         onBlackpointChanged: {
                             blackpointSlider.value = Math.sqrt(paramManager.blackpoint*1000)
+                        }
+                        onDefBlackpointChanged: {
+                            blackpointSlider.defaultValue = Math.sqrt(paramManager.defBlackpoint*1000)
                         }
                     }
                     Component.onCompleted: {
@@ -431,7 +441,7 @@ SplitView {
                     minimumValue: 0.1/1000
                     maximumValue: 2.5/1000
                     value: paramManager.whitepoint
-                    defaultValue: root.defaultWhitepoint
+                    defaultValue: paramManager.defWhitepoint
                     valueText: value*500// 1000/2
                     onValueChanged: {
                         paramManager.whitepoint = value
@@ -441,6 +451,9 @@ SplitView {
                         target: paramManager
                         onWhitepointChanged: {
                             whitepointSlider.value = paramManager.whitepoint
+                        }
+                        onDefWhitepointChanged: {
+                            whitepointSlider.defaultValue = paramManager.defWhitepoint
                         }
                     }
                     Component.onCompleted: {
@@ -456,7 +469,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 1
                     value: paramManager.shadowsY
-                    defaultValue: root.defaultShadowsY
+                    defaultValue: paramManager.defShadowsY
                     valueText: value*1000
                     onValueChanged: {
                         paramManager.shadowsY = value
@@ -466,6 +479,9 @@ SplitView {
                         target: paramManager
                         onShadowsYChanged: {
                             shadowBrightnessSlider.value = paramManager.shadowsY
+                        }
+                        onDefShadowsYChanged: {
+                            shadowBrightnessSlider.defaultValue = paramManager.defShadowsY
                         }
                     }
                     Component.onCompleted: {
@@ -481,7 +497,7 @@ SplitView {
                     minimumValue: 0
                     maximumValue: 1
                     value: paramManager.highlightsY
-                    defaultValue: root.defaultHighlightsY
+                    defaultValue: paramManager.defHighlightsY
                     valueText: value*1000
                     onValueChanged: {
                         paramManager.highlightsY = value
@@ -491,6 +507,9 @@ SplitView {
                         target: paramManager
                         onHighlightsYChanged: {
                             highlightBrightnessSlider.value = paramManager.highlightsY
+                        }
+                        onDefHighlightsYChanged: {
+                            highlightBrightnessSlider.defaultValue = paramManager.defHighlightsY
                         }
                     }
                     Component.onCompleted: {
@@ -506,7 +525,7 @@ SplitView {
                     minimumValue: -0.5
                     maximumValue: 0.5
                     value: paramManager.vibrance
-                    defaultValue: root.defaultVibrance
+                    defaultValue: paramManager.defVibrance
                     valueText: value*200
                     onValueChanged: {
                         paramManager.vibrance = value
@@ -516,6 +535,9 @@ SplitView {
                         target: paramManager
                         onVibranceChanged: {
                             vibranceSlider.value = paramManager.vibrance
+                        }
+                        onDefVibranceChanged: {
+                            vibranceSlider.defaultValue = paramManager.defVibrance
                         }
                     }
                     Component.onCompleted: {
@@ -531,7 +553,7 @@ SplitView {
                     minimumValue: -0.5
                     maximumValue: 0.5
                     value: paramManager.saturation
-                    defaultValue: root.defaultSaturation
+                    defaultValue: paramManager.defSaturation
                     valueText: value*200
                     onValueChanged: {
                         paramManager.saturation = value
@@ -541,6 +563,9 @@ SplitView {
                         target: paramManager
                         onSaturationChanged: {
                             saturationSlider.value = paramManager.saturation
+                        }
+                        onDefSaturationChanged: {
+                            saturationSlider.defaultValue = paramManager.defSaturation
                         }
                     }
                     Component.onCompleted: {

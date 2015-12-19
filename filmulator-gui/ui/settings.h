@@ -18,6 +18,8 @@ class Settings : public QObject
     Q_PROPERTY(int organizeRating READ getOrganizeRating WRITE setOrganizeRating NOTIFY organizeRatingChanged)
     Q_PROPERTY(float uiScale READ getUiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool enqueue READ getEnqueue WRITE setEnqueue NOTIFY enqueueChanged)
+    Q_PROPERTY(bool appendHash READ getAppendHash WRITE setAppendHash NOTIFY appendHashChanged)
+    Q_PROPERTY(bool mipmapView READ getMipmapView WRITE setMipmapView NOTIFY mipmapViewChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
@@ -31,6 +33,8 @@ public:
     void setOrganizeRating(int ratingIn);
     void setUiScale(float uiScaleIn);
     void setEnqueue(bool enqueueIn);
+    void setAppendHash(bool appendHashIn);
+    void setMipmapView(bool mipmapViewIn);
 
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
@@ -42,6 +46,8 @@ public:
     Q_INVOKABLE int getOrganizeRating();
     Q_INVOKABLE float getUiScale();
     Q_INVOKABLE bool getEnqueue();
+    Q_INVOKABLE bool getAppendHash();
+    Q_INVOKABLE bool getMipmapView();
 
 protected:
     QString photoStorageDir;
@@ -54,6 +60,8 @@ protected:
     int organizeRating;
     float uiScale;
     bool enqueue;
+    bool appendHash;
+    bool mipmapView;
 
 signals:
     void photoStorageDirChanged();
@@ -66,6 +74,8 @@ signals:
     void organizeRatingChanged();
     void uiScaleChanged();
     void enqueueChanged();
+    void appendHashChanged();
+    bool mipmapViewChanged();
 };
 
 #endif // SETTINGS_H

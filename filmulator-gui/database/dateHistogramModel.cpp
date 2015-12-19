@@ -117,12 +117,53 @@ void DateHistogramModel::setQuery(const int timezone,
     {
         QSqlRecord rec = dateQuery.record();
         int nameCol = rec.indexOf("julday");
-        firstDay = ROUND_JULDAY(dateQuery.value(nameCol).toDouble());
-    } else {
+        firstDay = min(today, ROUND_JULDAY(dateQuery.value(nameCol).toDouble()));
+    }
+    else//the db is empty
+    {
         firstDay = today;
     }
+
+    //Now we set up the query to get the latest day
+    //We don't do any filtering on this.
+    std::string dateHistoString3 =
+                            "SELECT";
+    dateHistoString3.append("    julianday(unixtime, 'unixepoch', '");
+    dateHistoString3.append(std::to_string(int(timezone)));
+    dateHistoString3.append(" hours') AS julday");
+    dateHistoString3.append("   ,thedate");
+    dateHistoString3.append("   ,strftime('%Y/%m', thedate) AS yearmonth");
+    dateHistoString3.append("   ,strftime('%m', thedate) AS themonth");
+    dateHistoString3.append("   ,strftime('%d', thedate) AS theday");
+    dateHistoString3.append("   ,thecount ");
+    dateHistoString3.append("FROM");
+    dateHistoString3.append("    (SELECT");
+    dateHistoString3.append("        date(SearchTable.STcaptureTime, 'unixepoch', '");
+    dateHistoString3.append(std::to_string(int(timezone)));
+    dateHistoString3.append(" hours') AS thedate");//This SQL is apparently whitespace sensitive.
+    dateHistoString3.append("       ,COUNT(STcaptureTime) AS thecount");
+    dateHistoString3.append("       ,STcaptureTime AS unixtime");
+    dateHistoString3.append("    FROM");
+    dateHistoString3.append("        SearchTable");
+    dateHistoString3.append("    GROUP BY");
+    dateHistoString3.append("        thedate)");
+    dateHistoString3.append("ORDER BY");
+    dateHistoString3.append("    thedate DESC;");
+    QSqlQuery dateQuery2 = QSqlQuery(QString::fromStdString(dateHistoString3));
+
+    //Oldest day in the database
+    double lastDay;
+    dateQuery2.exec();
+    if (dateQuery2.first())
+    {
+        QSqlRecord rec = dateQuery2.record();
+        int nameCol = rec.indexOf("julday");
+        lastDay = max(today, ROUND_JULDAY(dateQuery2.value(nameCol).toDouble()));
+    } else {
+        lastDay = today;
+    }
     //The row count of all the data we will eventually serve to the view.
-    m_rowCount = today - firstDay + 1;
+    m_rowCount = lastDay - firstDay + 1;
 
     cout << "m_rowcount1: " << m_rowCount << endl;
 

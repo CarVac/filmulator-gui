@@ -40,6 +40,7 @@ ApplicationWindow {
             Tab {
                 id: importTab
                 title: qsTr("Import")
+                active: true
                 Import {
                     id: importItem
                     Component.onCompleted: {
@@ -52,6 +53,7 @@ ApplicationWindow {
             Tab {
                 id: organizeTab
                 title: qsTr("Organize")
+                active: true
                 Organize {
                     id: organizeItem
                     Component.onCompleted: {
@@ -63,41 +65,10 @@ ApplicationWindow {
 
             Tab {
                 id: editorTab
-                property real defaultExposureComp: 0
-                property real defaultWhitepoint: 2/1000
-                property real defaultBlackpoint: 0
-                property real defaultShadowsY: 0.25
-                property real defaultHighlightsY: 0.75
-                property real defaultFilmSize: 864
-                property int defaultHighlightRecovery: 0
-                property real defaultLayerMixConst: 0.2
-                property bool defaultCaEnabled: false
-                property real defaultTemperature: 5200
-                property real defaultTint: 1
-                property real defaultVibrance: 0
-                property real defaultSaturation: 0
-                property bool defaultOverdriveEnabled: false
-                property real defaultHighlightRolloff: 51275
-
                 title: qsTr("Filmulate")
+                active: true
                 Edit {
                     id: editItem
-                    defaultExposureComp: editorTab.defaultExposureComp
-                    defaultFilmSize: editorTab.defaultFilmSize
-                    defaultWhitepoint: editorTab.defaultWhitepoint
-                    defaultBlackpoint: editorTab.defaultBlackpoint
-                    defaultShadowsY: editorTab.defaultShadowsY
-                    defaultHighlightsY: editorTab.defaultHighlightsY
-                    defaultHighlightRecovery: editorTab.defaultHighlightRecovery
-                    defaultLayerMixConst: editorTab.defaultLayerMixConst
-                    defaultCaEnabled: editorTab.defaultCaEnabled
-                    defaultTemperature: editorTab.defaultTemperature
-                    defaultTint: editorTab.defaultTint
-                    defaultVibrance: editorTab.defaultVibrance
-                    defaultSaturation: editorTab.defaultSaturation
-                    defaultOverdriveEnabled: editorTab.defaultOverdriveEnabled
-                    defaultHighlightRolloff: editorTab.defaultHighlightRolloff
-
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
                         editItem.imageURL.connect(root.imageURL)
@@ -108,12 +79,14 @@ ApplicationWindow {
 
             Tab {
                 id: outputTab
+                active: true
                 title: qsTr("Output")
             }
 
             Tab {
                 id: settingsTab
                 title: qsTr("Settings")
+                active: true
                 Settings {
                     id: settingsItem
                     Component.onCompleted: {

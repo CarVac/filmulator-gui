@@ -10,22 +10,6 @@ SplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
 
-    property alias defaultExposureComp: editTools.defaultExposureComp
-    property alias defaultWhitepoint: editTools.defaultWhitepoint
-    property alias defaultBlackpoint: editTools.defaultBlackpoint
-    property alias defaultShadowsY: editTools.defaultShadowsY
-    property alias defaultHighlightsY: editTools.defaultHighlightsY
-    property alias defaultFilmSize: editTools.defaultFilmSize
-    property alias defaultHighlightRecovery: editTools.defaultHighlightRecovery
-    property alias defaultLayerMixConst: editTools.defaultLayerMixConst
-    property alias defaultCaEnabled: editTools.defaultCaEnabled
-    property alias defaultTemperature: editTools.defaultTemperature
-    property alias defaultTint: editTools.defaultTint
-    property alias defaultVibrance: editTools.defaultVibrance
-    property alias defaultSaturation: editTools.defaultSaturation
-    property alias defaultOverdriveEnabled: editTools.defaultOverdriveEnabled
-    property alias defaultHighlightRolloff: editTools.defaultHighlightRolloff
-
     signal tooltipWanted(string text, int x, int y)
     signal imageURL(string newURL)
 
@@ -47,7 +31,7 @@ SplitView {
             property real fitScaleX: flicky.width/bottomImage.width
             property real fitScaleY: flicky.height/bottomImage.height
             property real fitScale: Math.min(fitScaleX, fitScaleY)
-            property real oldWindowScale: 1//size of the window relative to fit scale; we want this to remain after the image changes size
+            property real sizeRatio: 1
             property bool fit: true
             //Here, if the window size changed, we set it to fitScale. Except that it didn't update in time, so we make it compute it from scratch.
             onWidthChanged:  if (flicky.fit) {bottomImage.scale = Math.min(flicky.width/bottomImage.width, flicky.height/bottomImage.height)}
@@ -71,9 +55,7 @@ SplitView {
                     source: "image://filmy/" + indexString
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
-                    mipmap: true
-                    property real realWidth: width * scale
-                    property real realHeight: height * scale
+                    mipmap: settings.getMipmapView()
                     property int index: 0
                     property string indexString: "000000"
                     scale: bottomImage.scale
@@ -89,11 +71,26 @@ SplitView {
                             console.log("Edit.qml; updateImage index: " + s)
                         }
                     }
+                    Connections {
+                        target: settings
+                        onMipmapViewChanged: topImage.mipmap = settings.getMipmapView()
+                    }
                     onStatusChanged: {
                         if (topImage.status == Image.Ready) {
-                            //Record the old scale relative to the window so that we stay in the same place if the image size changes
-                            flicky.oldWindowScale = topImage.scale/flicky.fitScale
-                            bottomImage.source = topImage.source
+                            var topFitScaleX = flicky.width/topImage.width
+                            var topFitScaleY = flicky.height/topImage.height
+                            var topFitScale = Math.min(topFitScaleX, topFitScaleY)
+                            flicky.sizeRatio = topFitScale / flicky.fitScale
+                            if (flicky.sizeRatio > 1) {
+                                //If the new image is smaller, we need to scale the bottom image up before selecting the image.
+                                bottomImage.scale = bottomImage.scale * flicky.sizeRatio
+                                bottomImage.source = topImage.source
+                            }
+                            else {
+                                //If the new image is bigger, we want to select the image and then scale it down.
+                                bottomImage.source = topImage.source
+                                //This has to happen after the size actually changes. It's put below.
+                            }
                             root.imageURL(topImage.source)
                         }
                     }
@@ -103,17 +100,21 @@ SplitView {
                     id: bottomImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
-                    mipmap: true
+                    mipmap: settings.getMipmapView()
                     onStatusChanged: {
-                        if (flicky.fit) {
-                            //This is probably not necessary given the else below, but I don't want rounding errors to crop up.
-                            bottomImage.scale = flicky.fitScale
+                        if (bottomImage.status == Image.Ready) {
+                            if (flicky.fit) {
+                                //This is probably not necessary, but I don't want rounding errors to crop up.
+                                bottomImage.scale = flicky.fitScale
+                            }
+                            else if (flicky.sizeRatio <= 1) {
+                                bottomImage.scale = bottomImage.scale * flicky.sizeRatio
+                            }
                         }
-                        else
-                        {
-                            //We want the image to stay in the same place. But what about different aspect ratios?
-                            bottomImage.scale = flicky.fitScale * flicky.oldWindowScale
-                        }
+                    }
+                    Connections {
+                        target: settings
+                        onMipmapViewChanged: bottomImage.mipmap = settings.getMipmapView()
                     }
                 }
                 MouseArea {
@@ -280,8 +281,26 @@ SplitView {
             uiScale: root.uiScale
         }
         Text {
-            id: filenameText
+            id: apertureText
             x: 200 * uiScale
+            y: 0 * uiScale
+            color: "white"
+            text: " f/" + paramManager.aperture
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+        }
+        Text {
+            id: shutterText
+            x: 200 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: " " + paramManager.exposureTime + " s"
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+        }
+        Text {
+            id: filenameText
+            x: 300 * uiScale
             y: 0 * uiScale
             color: "white"
             text: paramManager.filename
@@ -289,29 +308,11 @@ SplitView {
             elide: Text.ElideRight
         }
         Text {
-            id: text2
-            x: 200 * uiScale
+            id: isoText
+            x: 300 * uiScale
             y: 15 * uiScale
-            color: "white"
-            text: paramManager.exposureTime + " s"
-            font.pixelSize: 12.0 * uiScale
-            elide: Text.ElideRight
-        }
-        Text {
-            id: text3
-            x: 350 * uiScale
-            y: 0 * uiScale
             color: "white"
             text: "ISO " + paramManager.sensitivity
-            font.pixelSize: 12.0 * uiScale
-            elide: Text.ElideRight
-        }
-        Text {
-            id: text4
-            x: 350 * uiScale
-            y: 15 * uiScale
-            color: "white"
-            text: "f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }

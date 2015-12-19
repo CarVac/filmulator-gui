@@ -41,7 +41,8 @@ void setupDB(QSqlDatabase *db)
                "STlatitude real,"
                "STlongitude real,"
                "STimportTime integer,"//unix time
-               "STlastProcessedTime integer"//unix time
+               "STlastProcessedTime integer,"//unix time
+               "STimportStartTime integer"//unix time
                ");"
                );
     query.exec("create index if not exists TimeIndex"
@@ -285,6 +286,11 @@ void setupDB(QSqlDatabase *db)
         query.exec("DROP VIEW integers4;");
         query.exec("DROP VIEW integers3;");
         versionString = "PRAGMA user_version = 4;";
+    case 4:
+        query.exec("ALTER TABLE SearchTable "
+                   "ADD COLUMN STimportStartTime integer;");
+        query.exec("UPDATE SearchTable SET STimportStartTime = STimportTime;");
+        versionString = "PRAGMA user_version = 5;";
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.
