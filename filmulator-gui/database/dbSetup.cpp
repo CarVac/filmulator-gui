@@ -291,6 +291,9 @@ void setupDB(QSqlDatabase *db)
                    "ADD COLUMN STimportStartTime integer;");
         query.exec("UPDATE SearchTable SET STimportStartTime = STimportTime;");
         versionString = "PRAGMA user_version = 5;";
+    case 5:
+        query.exec("UPDATE SearchTable SET STrating = min(5,max(0,STrating));");
+        versionString = "PRAGMA user_version = 6;";
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.
