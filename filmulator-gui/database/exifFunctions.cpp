@@ -3,6 +3,8 @@
 
 using std::cout;
 using std::endl;
+using std::max;
+using std::min;
 
 QDateTime exifUtcTime(Exiv2::ExifData exifData, const int cameraTZ)
 {
@@ -95,7 +97,7 @@ int exifRating(Exiv2::ExifData exifData, Exiv2::XmpData xmpData)
     std::string maker = exifData["Exif.Image.Make"].toString();
     if (maker.compare("Canon") == 0)
     {
-        return (int) xmpData["Xmp.xmp.Rating"].toLong();
+        return min(5,max(0,(int) xmpData["Xmp.xmp.Rating"].toLong()));
     }
     return 0;
 }
