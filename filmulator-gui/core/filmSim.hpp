@@ -98,7 +98,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                const float timestep);
 
 //Reading raws with libraw
-bool imread( string input_image_filename, matrix<float> &returnmatrix,
+bool imread( std::string input_image_filename, matrix<float> &returnmatrix,
              Exiv2::ExifData &exifData, int highlights, bool caEnabled, bool lowQuality );
 
 //Reading tiff files
