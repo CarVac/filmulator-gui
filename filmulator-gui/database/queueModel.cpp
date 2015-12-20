@@ -55,6 +55,8 @@ void QueueModel::deQueue(const QString searchID)
     query.prepare("DELETE FROM QueueTable WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
+
+    //Update what the largest index is.
     resetIndex();
 
     //Everything after the index in question needs to be decremented.
@@ -71,6 +73,9 @@ void QueueModel::deQueue(const QString searchID)
         queryModel.fetchMore();
     }
     endRemoveRows();
+    //Now tell it to update the indices of all of the rows above that.
+    //We update everything just for thoroughness's sake.
+    emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
 
 }
 
@@ -168,4 +173,7 @@ void QueueModel::move(const QString searchID, const int destIndex)
         //Do nothing
     }
     query.exec("END TRANSACTION");
+    //Now tell it to update all of the indices.
+    //We update everything just for thoroughness's sake.
+    emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
 }
