@@ -3,7 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import "../colors.js" as Colors
 
-MouseArea {
+Item {
     id: root
     property real dim
     property real widthScale: 1

@@ -73,7 +73,7 @@ void QueueModel::deQueue(const QString searchID)
         queryModel.fetchMore();
     }
     endRemoveRows();
-    //Now tell it to update the indices of all of the rows above that.
+    //Now tell the view to update the indices of all of the rows above that.
     //We update everything just for thoroughness's sake.
     emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
 
@@ -173,7 +173,7 @@ void QueueModel::move(const QString searchID, const int destIndex)
         //Do nothing
     }
     query.exec("END TRANSACTION");
-    //Now tell it to update all of the indices.
+    //Now tell the view to update all of the indices.
     //We update everything just for thoroughness's sake.
     emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
 }
