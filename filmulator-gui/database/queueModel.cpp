@@ -89,7 +89,10 @@ void QueueModel::enQueue(const QString searchID)
     query.next();
     const int importTime = query.value(0).toInt();
     const int lastProcessedTime = query.value(1).toInt();
-    const bool edited = importTime < lastProcessedTime;
+
+    //When edited and import times were the same, this sometimes led to false positives.
+    //I subtract 1 from the lastProcessedTime to give it some buffer for (floating point?) error.
+    const bool edited = importTime < (lastProcessedTime-1);
     query.prepare("INSERT OR IGNORE INTO QueueTable "
                   "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID) "
                   "VALUES (?,?,?,?,?);");
