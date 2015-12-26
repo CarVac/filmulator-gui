@@ -4,6 +4,7 @@ using namespace Halide;
 
 #include "RGBtoHSV.cpp"
 #include "HSVtoRGB.cpp"
+#include "applyfilmlikecurve.cpp"
 
 struct BlackWhiteParams {
     float blackpoint;
@@ -31,18 +32,18 @@ HalideExtern_5(float,shadows_highlights,float,float,float,float,float);
 
 class postFilmulationGenerator : public Halide::Generator<postFilmulationGenerator> {
   public:
-    Param<float> blackPoint;
-    Param<float> whitePoint;
+    Param<float> blackPoint{"blackPoint"};
+    Param<float> whitePoint{"whitePoint"};
 
-    Param<float> shadowsX;
-    Param<float> shadowsY;
-    Param<float> highlightsX;
-    Param<float> highlightsY;
+    Param<float> shadowsX{"shadowsX"};
+    Param<float> shadowsY{"shadowsY"};
+    Param<float> highlightsX{"highlightsX"};
+    Param<float> highlightsY{"highlightsY"};
 
-    Param<float> saturation;
-    Param<float> vibrance;
+    Param<float> saturation{"saturation"};
+    Param<float> vibrance{"vibrance"};
 
-    Param<int> rotation;
+    Param<int> rotation{"rotation"};
 
     ImageParam postFilmulationImage{Float(32), 3, "postFilmulationImage"};
 
@@ -51,7 +52,7 @@ class postFilmulationGenerator : public Halide::Generator<postFilmulationGenerat
     Func build() {
 
       Func blackWhited;
-      blackWhited(x,y,c) = clamp(whitePoint*(postFilmulationImage(x,y)-blackPoint),0,1);
+      blackWhited(x,y,c) = clamp(whitePoint*(postFilmulationImage(x,y,c)-blackPoint),0,1);
 
       Func LUT;
       Expr maxval = 2^16 - 1;
@@ -63,7 +64,7 @@ class postFilmulationGenerator : public Halide::Generator<postFilmulationGenerat
       LUT.bound(x,0,maxval+1);
 
       Func curved;
-      curved(x,y,c) = LUT(floor((maxval)*blackWhited(x,y,c)));
+      curved = applyFilmlikeCurve(blackWhited,LUT);
 
       Func HSVed;
       HSVed = RGBtoHSV(curved);
