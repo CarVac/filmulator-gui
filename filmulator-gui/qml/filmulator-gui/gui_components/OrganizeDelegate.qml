@@ -26,7 +26,9 @@ Rectangle {
     Rectangle {
         id: backgroundRect
         anchors.fill: parent
-        color: (importTime < lastProcessedTime) ? "green" : "#000000"
+        //When they are equal in the DB, this sometimes turned on randomly.
+        //Subtracting 1 from the lastProcessedTime makes it not.
+        color: (importTime < (lastProcessedTime-1)) ? "green" : "#000000"
         opacity: isCurrentItem ? .3 : .1
     }
 

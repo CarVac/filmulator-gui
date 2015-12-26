@@ -345,13 +345,14 @@ SplitView {
                     if (wheel.angleDelta.y > 0 && !gridView.atYBeginning) {
                         //up
                         //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                        gridView.flick(0, velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? 500 : 0))
+                        //It uses the angle delta to handle smooth scrolling touchpads.
+                        gridView.flick(0, velocity < 0 ? Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0))
                         //It's not 1,000,000 (1000 squared) because it feels slightly sluggish at that level.
                         //And 1000 isn't higher because otherwise a single scroll click is too far.
                     }
                     else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
                         //down
-                        gridView.flick(0, velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? -500 : 0))
+                        gridView.flick(0, velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0))
                     }
                 }
             }
