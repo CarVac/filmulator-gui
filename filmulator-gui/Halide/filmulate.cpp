@@ -144,13 +144,10 @@ Func blur(Func input, Expr sigma, Expr width, Expr height) {
 
     // compute iir coefficients using the method of young and van vliet.
     Func coeff;
-    cout << "before coeffs" << endl;
     Expr q = select(sigma < 2.5f,
                     3.97156f - 4.14554f*sqrt(1 - 0.26891f*sigma),
                     0.98711f*sigma - 0.96330f);
-    cout << "after q" << endl;
     Expr denom = 1.57825f + 2.44413f*q + 1.4281f*q*q + 0.422205f*q*q*q;
-    cout << "after denom" << endl;
     coeff(x) = undef<float>();
     coeff(1) = (2.44413f*q + 2.85619f*q*q + 1.26661f*q*q*q)/denom;
     coeff(2) = -(1.4281f*q*q + 1.26661f*q*q*q)/denom;
@@ -162,17 +159,14 @@ Func blur(Func input, Expr sigma, Expr width, Expr height) {
     Func f;
     f(x, y) = input(x, y);
     f = blur_then_transpose(f, coeff, height, sigma);
-    cout << "after first transpose" << endl;
     f = blur_then_transpose(f, coeff, width, sigma);
     return f;
 }
 
 Func diffuse(Func input, Expr sigma_const, Expr pixels_per_millimeter, Expr timestep, Expr width, Expr height){
 
-    cout << "in diffuse" << endl;
     Expr sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
     Func blurred;
-    cout << "before blurred" << endl;
     blurred = blur(input,sigma,width,height);
     return blurred;
 }
@@ -180,7 +174,6 @@ Func diffuse(Func input, Expr sigma_const, Expr pixels_per_millimeter, Expr time
 Func calcLayerMix(Func developer_concentration, Expr layer_mix_const, Expr timestep,
                   Expr layer_time_divisor, Expr reservoir_developer_concentration){
     Expr layer_mix = pow(layer_mix_const,timestep/layer_time_divisor);
-    
     Expr reservoir_portion = (1 - layer_mix) * reservoir_developer_concentration;
 
     Func output;
@@ -201,6 +194,7 @@ int main(int argc, char **argv) {
     Param<float> sigmaConst;
     Param<float> layerMixConst;
     Param<float> layerTimeDivisor;
+    Param<int> diffuseMethod;
 
     ImageParam input(type_of<float>(), 3);
     Func filmulationData = lambda(x,y,c,input(x,y,c));
@@ -219,20 +213,14 @@ int main(int argc, char **argv) {
                         stepTime);
     std::vector<Argument> devArgs = developed.infer_arguments();
     developed.compile_to_file("develop",devArgs);
-    cout << "finishedDevelop" << endl;
-
 
     Expr pixelsPerMillimeter = sqrt(input.width()*input.height()/filmArea);
     initialDeveloper(x,y) = filmulationData(x,y,DEVEL_CONC);
     //initialDeveloperMirrored[i] = BoundaryConditions::mirror_interior(initialDeveloper[i],0,input.width(),0,input.height());
-    cout << "start diffuse" << endl;
     diffused = diffuse(initialDeveloper,sigmaConst,pixelsPerMillimeter, stepTime,
                           input.width(), input.height());
-    cout << "args diffuse" << endl;
     std::vector<Argument> diffArgs = diffused.infer_arguments();
-    cout << "compile diffuse" << endl;
     diffused.compile_to_file("diffuse", diffArgs);
-    cout << "after diffuse" << endl;
 
 
     ImageParam devConc(type_of<float>(),2);
