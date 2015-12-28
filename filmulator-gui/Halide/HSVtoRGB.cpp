@@ -3,9 +3,9 @@ Halide::Func HSVtoRGB(Func in)
   Func out;
   Var x,y,c;
   Func h,s,v;
-  h(x,y) = in(0,x,y);
-  s(x,y) = in(1,x,y);
-  v(x,y) = in(2,x,y);
+  h(x,y) = in(x,y,0);
+  s(x,y) = in(x,y,1);
+  v(x,y) = in(x,y,2);
   Func r,g,b;
   Func hd,i,f,p,q,t;
   hd(x,y) = h(x,y)/60;
@@ -38,10 +38,11 @@ Halide::Func HSVtoRGB(Func in)
         select(i(x,y) == 3 || i(x,y) == 4,
         v(x,y),
         q(x,y))));//5,default
-  out(c,x,y) = select(s(x,y) != 0,
-                select(c == 0, r(x,y), select(c == 1, g(x,y), b(x,y))),
-                v(x,y));
-  //out(x,y,c) = h(x,y)/360;
+  out(x,y,c) = select(s(x,y) == 0,
+                      v(x,y),
+                      select(c == 0, r(x,y),
+                             c == 1, g(x,y),
+                                     b(x,y)));
   return out;
 }
 
