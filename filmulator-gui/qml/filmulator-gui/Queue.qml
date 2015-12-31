@@ -223,6 +223,7 @@ Item {
                                     paramManager.paste(QTsearchID)
                                     queueDelegate.rightClicked = false
                                     loadMenu.sourceComponent = undefined
+                                    queueModel.updateAll();
                                 }
                                 uiScale: root.uiScale
                             }
