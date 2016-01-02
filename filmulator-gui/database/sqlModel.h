@@ -23,6 +23,8 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QHash<int,QByteArray> roleNames() const;
 
+    Q_INVOKABLE void updateAll();
+
 public slots:
     void updateTable(QString table, int operation);
 

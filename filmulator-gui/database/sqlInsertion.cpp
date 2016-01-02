@@ -135,6 +135,12 @@ QString createNewProfile(const QString fileHash,
     worker.writeThumb(searchID);
     //imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
 
+    //Because it might take some time to prepare the thumbnail,
+    // set the import time to be equal to the last processed time.
+    query.prepare("update SearchTable set STimportTime = STlastProcessedTime WHERE STsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+
     //Return STsearchID.
     return searchID;
 }

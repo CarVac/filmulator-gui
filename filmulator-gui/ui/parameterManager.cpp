@@ -688,9 +688,8 @@ void ParameterManager::writeToDB(QString imageID)
     query.exec();
     //Write that it's been edited to the QueueTable
     //If it's not in the queue yet then this won't do anything.
-    query.prepare("UPDATE QueueTable SET QTprocessed = ? WHERE QTsearchID = ?;");
-    query.bindValue(0, QVariant(true));
-    query.bindValue(1, imageID);
+    query.prepare("UPDATE QueueTable SET QTprocessed = 1, QTexported = 0 WHERE QTsearchID = ?;");
+    query.bindValue(0, imageID);
     query.exec();
     query.exec("COMMIT;");//Apply all the changes together.
     emit updateTableOut("ProcessingTable", 0);//0 means edit

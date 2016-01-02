@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE void setQueueQuery();
     Q_INVOKABLE void clearQueue();
     Q_INVOKABLE void move(const QString searchID, const int destIndex);
+    Q_INVOKABLE void markSaved(const QString searchID);
 
 public slots:
     Q_INVOKABLE void deQueue(const QString searchID);

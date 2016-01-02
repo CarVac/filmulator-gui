@@ -223,6 +223,7 @@ Item {
                                     paramManager.paste(QTsearchID)
                                     queueDelegate.rightClicked = false
                                     loadMenu.sourceComponent = undefined
+                                    queueModel.updateAll();
                                 }
                                 uiScale: root.uiScale
                             }
@@ -378,14 +379,15 @@ Item {
         acceptedButtons: Qt.NoButton
         onWheel: {
             var velocity = listView.horizontalVelocity
-            if (wheel.angleDelta.x + wheel.angleDelta.y > 0 && !listView.atXBeginning) {
+            if (wheel.angleDelta.y > 0 && !listView.atXBeginning) {
                 //Leftward; up on the scroll wheel.
                 //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                listView.flick(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? 500 : 0), 0)
+                //We use the angle delta to handle multi-size scrolling like smooth scrolling touchpads.
+                listView.flick(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0), 0)
             }
-            if (wheel.angleDelta.x + wheel.angleDelta.y < 0 && !listView.atXEnd) {
+            if (wheel.angleDelta.y < 0 && !listView.atXEnd) {
                 //Rightward; down on the scroll wheel.
-                listView.flick(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000) : (velocity == 0 ? -500 : 0), 0)
+                listView.flick(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0), 0)
             }
         }
     }
