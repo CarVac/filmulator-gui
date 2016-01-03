@@ -66,11 +66,9 @@ class filmulateIterationGenerator : public Halide::Generator<filmulateIterationG
       Func newReservoirConcentration;
       // Total developer moved in units of density*mm^3
       Expr totalFluxMM = fluxSum(0)*activeLayerThickness * 1/pow(pixelsPerMillimeter,2);
-      // should be
-      // Expr reservoirVolume = reservoirThickness*filmArea;
-      // Expr reservoirTotalDeveloper = reservoirVolume*reservoirconcentration;
-      // newReservoirConcentration(x) = (reservoirTotalDeveloper - totalFluxMM)/reservoirVolume;
-      newReservoirConcentration(x) = reservoirConcentration - totalFluxMM/reservoirThickness;
+      Expr reservoirVolume = reservoirThickness*filmArea;
+      Expr reservoirTotalDeveloper = reservoirVolume*reservoirConcentration;
+      newReservoirConcentration(x) = (reservoirTotalDeveloper - totalFluxMM)/reservoirVolume;
 
       Func filmulationDataOut;
       filmulationDataOut(x,y,c) = select(c == DEVEL_CONC && doDiffuse == 1,
