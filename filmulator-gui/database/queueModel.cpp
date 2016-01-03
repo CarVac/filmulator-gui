@@ -195,3 +195,14 @@ void QueueModel::move(const QString searchID, const int destIndex)
     //We update everything just for thoroughness's sake.
     emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
 }
+
+void QueueModel::markSaved(const QString searchID)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE QueueTable "
+                  "SET QTexported = 1 "
+                  "WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    updateAll();
+}

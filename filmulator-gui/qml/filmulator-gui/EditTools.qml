@@ -615,6 +615,7 @@ SplitView {
             text: qsTr("Save TIFF")
             onTriggered: {
                 filmProvider.writeTiff()
+                queueModel.markSaved(paramManager.imageIndex)
             }
         }
         ToolButton {
@@ -627,6 +628,7 @@ SplitView {
             text: qsTr("Save JPEG")
             onTriggered: {
                 filmProvider.writeJpeg()
+                queueModel.markSaved(paramManager.imageIndex)
             }
         }
     }

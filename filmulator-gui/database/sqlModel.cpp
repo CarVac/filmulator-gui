@@ -82,11 +82,12 @@ void SqlModel::updateTable(QString table, int operation)
     }
     if (operation == 0) //an update of data, not addition or removal
     {
+        updateAll();
         //It doesn't refresh the internal data model unless you reset the query.
-        queryModel.setQuery(modelQuery());
+        //queryModel.setQuery(modelQuery());
         //We don't want to reset the query directly because that leads to bad handling of the change in the views.
         //So we have a virtual function that tells the view that things have changed.
-        emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
+        //emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
         //emitChange();
         //Eventually we'll have to separate the QSqlQueryModel from the model seen by qml.
         //That'll require us to use the dataChanged() method.
@@ -96,6 +97,14 @@ void SqlModel::updateTable(QString table, int operation)
         //cout << "SqlModel::UpdateTable: not a data update" << endl;
         return;
     }
+}
+
+void SqlModel::updateAll()
+{
+    //It doesn't refresh the internal data model unless you reset the query.
+    queryModel.setQuery(modelQuery());
+    //Tell it to grab everything when updating.
+    emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
 }
 
 //We want a proxy model to hold data that can be updated incrementally.
