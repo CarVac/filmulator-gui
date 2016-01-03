@@ -23,9 +23,9 @@ Func develop(Func inputs, Expr crystalGrowthConst,
       select(c == DEVEL_CONC       , max(0,inputs(x,y,c) -
                                      dcc*(dCrystalVol(x,y,0) + dCrystalVol(x,y,1) + dCrystalVol(x,y,2))),
 
-      select(c == SILVER_SALT_DEN_R, inputs(x,y,c) - sscc*dCrystalVol(x,y,0),
-      select(c == SILVER_SALT_DEN_G, inputs(x,y,c) - sscc*dCrystalVol(x,y,1),
-      select(c == SILVER_SALT_DEN_B, inputs(x,y,c) - sscc*dCrystalVol(x,y,2),
+      select(c == SILVER_SALT_DEN_R, max(0,inputs(x,y,c) - sscc*dCrystalVol(x,y,0)),
+      select(c == SILVER_SALT_DEN_G, max(0,inputs(x,y,c) - sscc*dCrystalVol(x,y,1)),
+      select(c == SILVER_SALT_DEN_B, max(0,inputs(x,y,c) - sscc*dCrystalVol(x,y,2)),
 
       //Otherwise (active crystals) output=input
                                      inputs(x,y,c))))))));
