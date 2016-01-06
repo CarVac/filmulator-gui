@@ -99,6 +99,8 @@ void SqlModel::updateTable(QString table, int operation)
     }
 }
 
+//This refreshes the internal data, and then tells the view that everything has updated.
+//DO NOT CALL THIS WHEN ROW COUNTS CHANGE!
 void SqlModel::updateAll()
 {
     //It doesn't refresh the internal data model unless you reset the query.
