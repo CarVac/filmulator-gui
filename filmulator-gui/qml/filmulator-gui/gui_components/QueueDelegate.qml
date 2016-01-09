@@ -117,6 +117,8 @@ Item {
         y: root.height*0.96875
         color: exported ? "green" : (processed ? Colors.medOrange : "#00000000")
     }
+    //Instead of another color to indicate output queueing,
+    //just place another green rectangle over the center third of the processedSavedRect.
 
     Component.onCompleted: {
         loadThumb.sourceComponent = thumbImage

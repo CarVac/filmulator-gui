@@ -72,6 +72,10 @@ void layer_mix(matrix<float> &developer_concentration,
         sum * active_layer_thickness /
         (pow(pixels_per_millimeter,2) * reservoir_thickness);
 
+    //The reservoir thickness is not actually the reservoir thickness, but volume.
+    //This is a major weirdness from when it was originally thickness on the outside
+    //but we called it volume because that's what it is on the inside, like here.
+
     //Now, we subtract how much went into the layer from the reservoir.
     reservoir_developer_concentration -= reservoir_concentration_change;
     return;

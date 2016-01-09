@@ -81,37 +81,55 @@ void QueueModel::deQueue(const QString searchID)
 
 void QueueModel::enQueue(const QString searchID)
 {
+    //First check to see if it's already in the queue.
     QSqlQuery query;
-    query.exec("BEGIN TRANSACTION;");
-    query.prepare("SELECT STimportTime,STlastProcessedTime FROM SearchTable WHERE STsearchID=?;");
+    query.prepare("SELECT COUNT(*) FROM QueueTable WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
     query.next();
-    const int importTime = query.value(0).toInt();
-    const int lastProcessedTime = query.value(1).toInt();
-    const bool edited = importTime < lastProcessedTime;
-    query.prepare("INSERT OR IGNORE INTO QueueTable "
-                  "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID) "
-                  "VALUES (?,?,?,?,?);");
-    query.bindValue(0, maxIndex);
-    query.bindValue(1, edited);
-    query.bindValue(2, false);
-    query.bindValue(3, false);
-    query.bindValue(4, searchID);
-    query.exec();
-    query.exec("END TRANSACTION;");
+    const bool alreadyInqueue = query.value(0).toInt() == 1;
 
-    //Tell the model which row was added, then fetch the new data.
-    beginInsertRows(QModelIndex(),maxIndex,maxIndex);
-    queryModel.setQuery(modelQuery());
-    while (queryModel.canFetchMore())
+    if (alreadyInqueue)
     {
-        queryModel.fetchMore();
+        //do nothingg
     }
-    endInsertRows();
+    else
+    {
 
-    //Increment the index.
-    maxIndex++;
+        query.exec("BEGIN TRANSACTION;");
+        query.prepare("SELECT STimportTime,STlastProcessedTime FROM SearchTable WHERE STsearchID=?;");
+        query.bindValue(0, searchID);
+        query.exec();
+        query.next();
+        const int importTime = query.value(0).toInt();
+        const int lastProcessedTime = query.value(1).toInt();
+
+        //When edited and import times were the same, this sometimes led to false positives.
+        //I subtract 1 from the lastProcessedTime to give it some buffer for (floating point?) error.
+        const bool edited = importTime < (lastProcessedTime-1);
+        query.prepare("INSERT OR IGNORE INTO QueueTable "
+                      "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID) "
+                      "VALUES (?,?,?,?,?);");
+        query.bindValue(0, maxIndex);
+        query.bindValue(1, edited);
+        query.bindValue(2, false);
+        query.bindValue(3, false);
+        query.bindValue(4, searchID);
+        query.exec();
+        query.exec("END TRANSACTION;");
+
+        //Tell the model which row was added, then fetch the new data.
+        beginInsertRows(QModelIndex(),maxIndex,maxIndex);
+        queryModel.setQuery(modelQuery());
+        while (queryModel.canFetchMore())
+        {
+            queryModel.fetchMore();
+        }
+        endInsertRows();
+
+        //Increment the index.
+        maxIndex++;
+    }
 }
 
 void QueueModel::clearQueue()
@@ -176,4 +194,15 @@ void QueueModel::move(const QString searchID, const int destIndex)
     //Now tell the view to update all of the indices.
     //We update everything just for thoroughness's sake.
     emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
+}
+
+void QueueModel::markSaved(const QString searchID)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE QueueTable "
+                  "SET QTexported = 1 "
+                  "WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    updateAll();
 }
