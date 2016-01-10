@@ -20,7 +20,7 @@ Item {
     property bool exported
     property bool markedForOutput
     property bool rightClicked: false
-    z: rightClicked ? 1 : 0
+    property bool held
 
     property string __thumbPath: rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
 
@@ -51,7 +51,7 @@ Item {
         id: currentImageRect
         width: root.width
         height: root.height*0.03125
-        color: rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000")
+        color: held ? Colors.brightOrange : (rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000"))
     }
 
     Loader {

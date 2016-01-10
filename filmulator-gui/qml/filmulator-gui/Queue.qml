@@ -65,19 +65,20 @@ Item {
 
                 property int visualIndex: DelegateModel.itemsIndex
 
-                z: queueDelegate.rightClicked ? 1 : 0
+                z: (held || queueDelegate.rightClicked) ? 1 : 0
 
-                drag.target: queueDelegate
+                property bool held: false
+
+                //Tell it to move the queueDelegate
+                drag.target: held ? queueDelegate : undefined
                 drag.axis: Drag.XAxis
 
                 acceptedButtons: Qt.LeftButton
                 onPressAndHold: {
-                    console.log("startdrag")
-                    delegateRoot.drag.active = true
+                    held = true
                 }
                 onReleased: {
-                    console.log("end drag")
-                    delegateRoot.drag.active = false
+                    held = false
                 }
 
                 onDoubleClicked: {
@@ -101,16 +102,6 @@ Item {
                     queueIndex: QTindex
 
                     freshURL: root.url
-
-                //    MouseArea {
-                //        anchors.fill: parent
-                //        acceptedButtons: Qt.LeftButton
-                //        propagateComposedEvents: true
-                //        onDoubleClicked: {
-                //            console.log("New image: " + QTsearchID)
-                //            paramManager.selectImage(QTsearchID)
-                //        }
-                //    }
 
                     MouseArea {
                         anchors.fill: parent
@@ -364,14 +355,20 @@ Item {
                         }
                     }
 
-                    Drag.active: delegateRoot.drag.active
+                    held: delegateRoot.held
+                    Drag.active: held
                     Drag.source: delegateRoot
-                    Drag.hotSpot.x: queueDelegate.width/2
-                    Drag.hotSpot.y: queueDelegate.height/2
+                    Drag.hotSpot.x: width/2
+                    Drag.hotSpot.y: height/2
+                    onHeldChanged: {
+                        if (held === false) {
+                            Drag.drop()
+                        }
+                    }
 
                     states: [
                         State {
-                            when: queueDelegate.drag.active
+                            when: delegateRoot.held
                             ParentChange {
                                 target: queueDelegate
                                 parent: listView
@@ -386,11 +383,16 @@ Item {
 
                 DropArea {
                     anchors.fill: parent
-                    anchors.margins: 15
+                    anchors.margins: 15 * uiScale
                     onEntered: {
-                        visualModel.items.move(drag.source.visualIndex, delegateRoot.visualIndex)
+                        var source = drag.source.visualIndex
+                        var dest = delegateRoot.visualIndex
+                        //console.log("moved from: " + source)
+                        //console.log("moved to: " + dest)
+                        visualModel.items.move(source, dest)
                     }
                     onDropped: {
+                        //console.log("dropped on: " + delegateRoot.visualIndex)
                         queueModel.move(queueDelegate.searchID, delegateRoot.visualIndex)
                     }
                 }
