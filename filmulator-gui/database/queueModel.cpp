@@ -1,8 +1,10 @@
 #include "queueModel.h"
 #include <iostream>
+#include <string>
 
 using std::cout;
 using std::endl;
+using std::to_string;
 
 QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
 {
@@ -148,6 +150,9 @@ void QueueModel::move(const QString searchID, const int destIndex)
 {
     QSqlQuery query;
 
+    query.exec("BEGIN TRANSACTION;");
+
+
     //Get the source index.
     query.prepare("SELECT QTindex FROM QueueTable  WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
@@ -155,15 +160,15 @@ void QueueModel::move(const QString searchID, const int destIndex)
     query.next();
     const int sourceIndex = query.value(0).toInt();
 
-    query.exec("BEGIN TRANSACTION;");
     if (sourceIndex < destIndex) //Move one to the right, shift the rest leftward
     {
-        query.prepare("UPDATE QueueTable "
-                      "SET QTindex = QTindex - 1 "
-                      "WHERE QTindex > ? AND QTindex <= ?;");
-        query.bindValue(0, sourceIndex);
-        query.bindValue(1, destIndex);
-        query.exec();
+        std::string queryString = "UPDATE QueueTable SET QTindex = QTindex - 1 ";
+        queryString.append("WHERE QTindex >= ");
+        queryString.append(to_string(sourceIndex));
+        queryString.append(" AND QTindex <= ");
+        queryString.append(to_string(destIndex));
+        queryString.append(";");
+        query.exec(QString::fromStdString(queryString));
         query.prepare("UPDATE QueueTable "
                       "SET QTindex = ? "
                       "WHERE QTsearchID = ?;");
@@ -173,12 +178,13 @@ void QueueModel::move(const QString searchID, const int destIndex)
     }
     else if (sourceIndex > destIndex) //move one to the left, shift the rest rightward
     {
-        query.prepare("UPDATE QueueTable "
-                      "SET QTindex = QTindex + 1 "
-                      "WHERE QTindex => ? AND QTindex < ?;");
-        query.bindValue(0, destIndex);
-        query.bindValue(1, sourceIndex);
-        query.exec();
+        std::string queryString = "UPDATE QueueTable SET QTindex = QTindex + 1 ";
+        queryString.append("WHERE QTindex >= ");
+        queryString.append(to_string(destIndex));
+        queryString.append(" AND QTindex <= ");
+        queryString.append(to_string(sourceIndex));
+        queryString.append(";");
+        query.exec(QString::fromStdString(queryString));
         query.prepare("UPDATE QueueTable "
                       "SET QTindex = ? "
                       "WHERE QTsearchID = ?;");

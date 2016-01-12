@@ -10,7 +10,50 @@ import "colors.js" as Colors
 Item {
     id: root
     property real uiScale: 1
+
+    //The url gives us the resource name of the most recently produced image.
     property string url: ""
+
+    property real thirdWidth: width/3
+
+    property bool dragging: false
+    property bool wasDragScrolling: false
+
+    property real oldX
+    property real newX
+
+    onDraggingChanged: {
+        //Always reset it back to off when the state changes.
+        wasDragScrolling = false
+    }
+
+    onNewXChanged: {
+        //Only do this if we were already dragScrolling.
+        //This is to prevent the initial drag activation from initiating scrolling.
+
+        //We want it to ramp up slowly, so that even towards the edges, you can swap two adjacent images without trouble.
+        // Hence, the (-velocity/10 +-430)/uiScale term.
+
+        //We cap the speed at the flick strength, which gets stronger from 1/3 from the edge towards the edge.
+
+        //Additionally, the bigger the window, the faster we can go without the empty gap flying off the edge, so
+        // flickStrength is multiplied by the square root of the window size relative to the 720p window size.
+        var velocity = listView.horizontalVelocity
+        var flickStrength
+        if (newX >= oldX && newX >= 2*thirdWidth && wasDragScrolling) {
+            flickStrength = Math.sqrt(width/(1280*uiScale))*(newX-2*thirdWidth)/thirdWidth
+            listView.flick(uiScale*Math.max((-velocity/10 -430)/uiScale, -3000*flickStrength),0)
+        }
+        else if (newX <= oldX && newX <= thirdWidth && wasDragScrolling) {
+            flickStrength = Math.sqrt(width/(1280*uiScale))*(thirdWidth-newX)/thirdWidth
+            listView.flick(uiScale*Math.min((-velocity/10 +430)/uiScale, 3000*flickStrength),0)
+        }
+        else {
+            listView.flick(0,0)
+        }
+        oldX = newX
+        wasDragScrolling = true
+    }
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -18,14 +61,13 @@ Item {
         id: listView
         anchors.fill: parent
         flow: GridView.FlowTopToBottom
-        //orientation: Qt.Horizontal
         layoutDirection: Qt.LeftToRight
         cacheBuffer: 10
         cellWidth: root.height
         cellHeight: root.height
 
         boundsBehavior: Flickable.StopAtBounds
-        flickDeceleration: 3000
+        flickDeceleration: 6000 * uiScale
         maximumFlickVelocity: 10000 * uiScale
 
         displaced: Transition {
@@ -64,10 +106,24 @@ Item {
                 height: root.height
 
                 property int visualIndex: DelegateModel.itemsIndex
+                property int oldVisualIndex
+
+                /*DEBUG for QUEUE DRAG&DROP
+                Text {
+                    color: "white"
+                    text: visualIndex
+                }
+                Text {
+                    color: "white"
+                    y: 10
+                    text: QTsearchID
+                }*/
 
                 z: (held || queueDelegate.rightClicked) ? 1 : 0
 
                 property bool held: false
+
+                property alias widthScale: queueDelegate.widthScale
 
                 //Tell it to move the queueDelegate
                 drag.target: held ? queueDelegate : undefined
@@ -76,16 +132,18 @@ Item {
                 acceptedButtons: Qt.LeftButton
                 onPressAndHold: {
                     held = true
+                    oldVisualIndex = visualIndex
+                    root.dragging = true
                 }
                 onReleased: {
                     held = false
+                    root.dragging = false
                 }
 
                 onDoubleClicked: {
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)
                 }
-
 
                 QueueDelegate {
                     id: queueDelegate
@@ -101,7 +159,9 @@ Item {
                     markedForOutput: QToutput
                     queueIndex: QTindex
 
+                    //This is the location of the latest image from the film image provider.
                     freshURL: root.url
+
 
                     MouseArea {
                         anchors.fill: parent
@@ -382,17 +442,25 @@ Item {
                 }
 
                 DropArea {
+                    id: dropArea
                     anchors.fill: parent
-                    anchors.margins: 15 * uiScale
+
                     onEntered: {
                         var source = drag.source.visualIndex
                         var dest = delegateRoot.visualIndex
-                        //console.log("moved from: " + source)
-                        //console.log("moved to: " + dest)
+                        //Tell the root that the cursor has moved to initiate scrolling.
+                        root.newX = mapToItem(root,drag.x,drag.y).x
                         visualModel.items.move(source, dest)
                     }
+
+                    onPositionChanged: {
+                        //Tell the root that the cursor has moved to initiate scrolling.
+                        root.newX = mapToItem(root,drag.x,drag.y).x
+                    }
+
                     onDropped: {
-                        //console.log("dropped on: " + delegateRoot.visualIndex)
+                        var source = drag.source.oldVisualIndex
+                        //console.log("Dropped " + queueDelegate.searchID + " from " + source + " at index " + delegateRoot.visualIndex)
                         queueModel.move(queueDelegate.searchID, delegateRoot.visualIndex)
                     }
                 }
@@ -408,7 +476,6 @@ Item {
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
             }
-            //onDataChanged: console.log("queue.qml data changed")
         }
 
         //This one will have to go away when we get proper updates.
@@ -422,22 +489,25 @@ Item {
         }
     }
 
+    //Custom scrolling implementation.
+    //It's disabled while you drag an image.
     MouseArea {
         id: wheelstealer
-        //Custom scrolling implementation.
         anchors.fill: listView
         acceptedButtons: Qt.NoButton
         onWheel: {
             var velocity = listView.horizontalVelocity
-            if (wheel.angleDelta.y > 0 && !listView.atXBeginning) {
+            if (wheel.angleDelta.y > 0 && !listView.atXBeginning && !root.dragging) {
                 //Leftward; up on the scroll wheel.
+
                 //This formula makes each click of the wheel advance the 'target' a fixed distance.
                 //We use the angle delta to handle multi-size scrolling like smooth scrolling touchpads.
-                listView.flick(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0), 0)
+                //We scale by uiScale.
+                listView.flick(uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)), 0)
             }
-            if (wheel.angleDelta.y < 0 && !listView.atXEnd) {
+            if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
                 //Rightward; down on the scroll wheel.
-                listView.flick(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0), 0)
+                listView.flick(uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0)), 0)
             }
         }
     }
