@@ -68,7 +68,7 @@ Item {
 
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 6000 * uiScale
-        maximumFlickVelocity: 10000 * uiScale
+        maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
 
         displaced: Transition {
             NumberAnimation {
@@ -503,11 +503,11 @@ Item {
                 //This formula makes each click of the wheel advance the 'target' a fixed distance.
                 //We use the angle delta to handle multi-size scrolling like smooth scrolling touchpads.
                 //We scale by uiScale.
-                listView.flick(uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)), 0)
+                listView.flick(uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)), 0)
             }
             if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
                 //Rightward; down on the scroll wheel.
-                listView.flick(uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0)), 0)
+                listView.flick(uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/(-120)): (velocity == 0 ? -500 : 0)), 0)
             }
         }
     }
