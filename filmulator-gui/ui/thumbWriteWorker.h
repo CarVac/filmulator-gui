@@ -5,6 +5,7 @@
 #include "../core/imagePipeline.h"
 #include <QMutex>
 #include <QMutexLocker>
+#include <QSqlQuery>
 
 class ThumbWriteWorker : public QObject
 {

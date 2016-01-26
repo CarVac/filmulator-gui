@@ -42,7 +42,9 @@ void setupDB(QSqlDatabase *db)
                "STlongitude real,"
                "STimportTime integer,"//unix time
                "STlastProcessedTime integer,"//unix time
-               "STimportStartTime integer"//unix time
+               "STimportStartTime integer,"//unix time
+               "STthumbWritten integer,"//-1 for error, 0 for not written or invalidated, 1 for written
+               "STbigThumbWritten integer"//same as above
                ");"
                );
     query.exec("create index if not exists TimeIndex"
@@ -294,6 +296,14 @@ void setupDB(QSqlDatabase *db)
     case 5:
         query.exec("UPDATE SearchTable SET STrating = min(5,max(0,STrating));");
         versionString = "PRAGMA user_version = 6;";
+    case 6:
+        query.exec("ALTER TABLE SearchTable "
+                   "ADD COLUMN STthumbWritten bool;");
+        query.exec("ALTER TABLE SearchTable "
+                   "ADD COLUMN STbigThumbWritten bool;");
+        query.exec("UPDATE SearchTable SET STthumbWritten = 1;");
+        query.exec("UPDATE SearchTable SET STbigThumbWritten = 0;");
+        versionString = "PRAGMA user_version = 7;";
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.
