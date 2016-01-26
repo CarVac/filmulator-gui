@@ -59,6 +59,8 @@ SplitView {
                     property int index: 0
                     property string indexString: "000000"
                     scale: bottomImage.scale
+
+                    //This connection finds out when the parameters are done changing, and then updates the url to fetch the latest image.
                     Connections {
                         target: paramManager//root
                         onUpdateImage: {
@@ -91,6 +93,9 @@ SplitView {
                                 bottomImage.source = topImage.source
                                 //This has to happen after the size actually changes. It's put below.
                             }
+
+                            //This signal is for passing the url to the queue,
+                            // which displays the same latest image as the edit window.
                             root.imageURL(topImage.source)
                         }
                     }

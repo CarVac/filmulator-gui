@@ -3,7 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import "../colors.js" as Colors
 
-MouseArea {
+Item {
     id: root
     property real dim
     property real widthScale: 1
@@ -20,7 +20,7 @@ MouseArea {
     property bool exported
     property bool markedForOutput
     property bool rightClicked: false
-    z: rightClicked ? 1 : 0
+    property bool held
 
     property string __thumbPath: rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
 
@@ -51,7 +51,7 @@ MouseArea {
         id: currentImageRect
         width: root.width
         height: root.height*0.03125
-        color: rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000")
+        color: held ? Colors.brightOrange : (rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000"))
     }
 
     Loader {

@@ -41,16 +41,17 @@ class filmulateIterationGenerator : public Halide::Generator<filmulateIterationG
 
       Func diffused;
       Func initialDeveloper, initialDeveloperMirrored;
-      initialDeveloper(x,y) = filmulationData(x,y,DEVEL_CONC);
+      initialDeveloper(x,y) = developed(x,y,DEVEL_CONC);
       initialDeveloperMirrored = BoundaryConditions::mirror_interior(initialDeveloper,0,input.width(),0,input.height());
       Expr pixelsPerMillimeter = sqrt(input.width()*input.height()/filmArea);
-      diffused = diffuse(initialDeveloperMirrored,sigmaConst,pixelsPerMillimeter, stepTime,
+      diffused = diffuse(initialDeveloper,sigmaConst,pixelsPerMillimeter, stepTime,
                          input.width(), input.height());
       diffused.compute_root();
 
       Func developerFlux; //Developer moving from reservoir to active layer
       Expr layerMixCoef = pow(layerMixConst,stepTime/layerTimeDivisor);
       developerFlux(x,y) = (reservoirConcentration - diffused(x,y))*layerMixCoef;
+      developerFlux.compute_root();
 
       Func layerMixed;
       layerMixed(x,y) = diffused(x,y) + developerFlux(x,y);
@@ -59,23 +60,22 @@ class filmulateIterationGenerator : public Halide::Generator<filmulateIterationG
       Func fluxSum; // Total developer moved in units of density*pixelVolume^3
       RDom r(0, input.width(), 0, input.height());
       fluxSum(x) = 0.0f;
-      fluxSum(0) -= developerFlux(r.x,r.y);
+      fluxSum(0) += developerFlux(r.x,r.y);
+      fluxSum.compute_root();
 
       Func newReservoirConcentration;
       // Total developer moved in units of density*mm^3
       Expr totalFluxMM = fluxSum(0)*activeLayerThickness * 1/pow(pixelsPerMillimeter,2);
-      // should be
-      // Expr reservoirVolume = reservoirThickness*filmArea;
-      // Expr reservoirTotalDeveloper = reservoirVolume*reservoirconcentration;
-      // newReservoirConcentration(x) = (reservoirTotalDeveloper - totalFluxMM)/reservoirVolume;
-      newReservoirConcentration(x) = reservoirConcentration - totalFluxMM/reservoirThickness;
+      Expr reservoirVolume = reservoirThickness*filmArea;
+      Expr reservoirTotalDeveloper = reservoirVolume*reservoirConcentration;
+      newReservoirConcentration(x) = (reservoirTotalDeveloper - totalFluxMM)/reservoirVolume;
 
       Func filmulationDataOut;
-      filmulationDataOut(x,y,c) = select(c == DEVEL_CONC && doDiffuse,
+      filmulationDataOut(x,y,c) = select(c == DEVEL_CONC && doDiffuse == 1,
                                          layerMixed(x,y),
                                          developed(x,y,c));
       Func reservoirConcentrationOut;
-      reservoirConcentrationOut(x) = select(doDiffuse,
+      reservoirConcentrationOut(x) = select(doDiffuse == 1,
                                             newReservoirConcentration(x),
                                             reservoirConcentration);
       return Pipeline({filmulationDataOut,reservoirConcentrationOut});
