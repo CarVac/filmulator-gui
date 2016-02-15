@@ -15,7 +15,8 @@ void ThumbWriteWorker::setImage(const matrix<unsigned short> imageIn,
     exifData = dataIn;
 }
 
-void ThumbWriteWorker::writeThumb(QString searchID)
+//writeThumb writes the thumb if the image is non-zero sized.
+bool ThumbWriteWorker::writeThumb(QString searchID)
 {
     dataMutex.lock();
     int rows = image.nr();
@@ -30,7 +31,7 @@ void ThumbWriteWorker::writeThumb(QString searchID)
         query.exec();
         emit doneWritingThumb();
         dataMutex.unlock();
-        return;
+        return true;
     }
 
     matrix<float> linear;
@@ -65,9 +66,10 @@ void ThumbWriteWorker::writeThumb(QString searchID)
     //Then we write.
     imwrite_jpeg(gammaCurved, outputFilename.toStdString(), exifData, 95);
 
-    query.prepare("UPDATE SearchTable SET STthumbWritten = 1 WHERE QTsearchID = ?;");
+    query.prepare("UPDATE SearchTable SET STthumbWritten = 1 WHERE STsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
 
     emit doneWritingThumb();
+    return false;
 }

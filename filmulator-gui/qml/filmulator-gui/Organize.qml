@@ -294,6 +294,7 @@ SplitView {
                     lastProcessedTime: STlastProcessedTime
                     rating: STrating
                     filename: STfilename
+                    thumbWritten: STthumbWritten
 
                     isCurrentItem: index === gridView.currentIndex
 

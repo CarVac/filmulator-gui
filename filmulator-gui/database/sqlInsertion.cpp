@@ -138,7 +138,7 @@ QString createNewProfile(const QString fileHash,
     //Write the thumbnail.
     ThumbWriteWorker worker;
     worker.setImage(image, exif);
-    worker.writeThumb(searchID);
+    bool writeError = worker.writeThumb(searchID);
     //imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
 
     //Because it might take some time to prepare the thumbnail,
@@ -147,6 +147,13 @@ QString createNewProfile(const QString fileHash,
     query.bindValue(0, searchID);
     query.exec();
 
-    //Return STsearchID.
-    return searchID;
+    //Return STsearchID, only if the thumb was written successfully.
+    if(!writeError)
+    {
+        return searchID;
+    }
+    else
+    {
+        return QString("");
+    }
 }
