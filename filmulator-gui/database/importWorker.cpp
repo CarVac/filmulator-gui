@@ -121,7 +121,10 @@ void ImportWorker::importFile(const QFileInfo infoIn,
 
         //Request that we enqueue the image.
         cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
-        emit enqueueThis(STsearchID);
+        if (QString("") != STsearchID)
+        {
+            emit enqueueThis(STsearchID);
+        }
         //It might be ignored downstream, but that's not our problem here.
     }
     else //it's already in the database, so just move the file.

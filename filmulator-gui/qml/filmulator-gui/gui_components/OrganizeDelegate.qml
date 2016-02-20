@@ -15,6 +15,7 @@ Rectangle {
     property int lastProcessedTime
     property int rating
     property string filename
+    property int thumbWritten
 
     property string __thumbPath: rootDir + '/'+ searchID.slice(0,4) + '/' + searchID + '.jpg'
 
@@ -51,9 +52,29 @@ Rectangle {
             sourceSize.height: 290 * uiScale
         }
     }
-    Component.onCompleted: {
-        loadThumb.sourceComponent = thumbImage
+    Component {
+        id: thumbPlaceholder
+        Text {
+            id: thumbMissingText
+            width: 290 * uiScale
+            height: 290 * uiScale
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: qsTr("Image file is\nunreadable")
+            color: "white"
+            font.pixelSize: 12.0 * uiScale
+        }
     }
+    Component.onCompleted: {
+        if (thumbWritten === 1) {
+            loadThumb.sourceComponent = thumbImage
+        }
+        else if (thumbWritten === -1) {
+            loadThumb.sourceComponent = thumbPlaceholder
+        }
+        //If it's 0, then we wait for it to become 1.
+    }
+
     ToolTip {
         id: tooltip
         anchors.fill: loadThumb
@@ -98,5 +119,14 @@ Rectangle {
             border.color: Colors.medOrange
             opacity: 0.8
         }
+    }
+    onThumbWrittenChanged: {
+        if (thumbWritten === 1) {
+            loadThumb.sourceComponent = thumbImage
+        }
+        else if (thumbWritten === -1) {
+            loadThumb.sourceComponent = thumbPlaceholder
+        }
+        //If it's 0, then we wait for it to become 1.
     }
 }

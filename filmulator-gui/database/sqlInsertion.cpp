@@ -69,9 +69,11 @@ QString createNewProfile(const QString fileHash,
                   "STlongitude, "
                   "STimportTime, "
                   "STlastProcessedTime, "
-                  "STimportStartTime) "
-                  "values (?,?,?,?,?,?,?,?,?,?,?);");
-                         //0 1 2 3 4 5 6 7 8 9 10
+                  "STimportStartTime, "
+                  "STthumbWritten, "
+                  "STbigThumbWritten) "
+                  "values (?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                         //0 1 2 3 4 5 6 7 8 9 101112
 
     //searchID (filehash with the increment appended)
     QString searchID = fileHash;
@@ -102,6 +104,10 @@ QString createNewProfile(const QString fileHash,
     query.bindValue(9, now.toTime_t());
     //importStartTime (unix time): lets us group together import batches.
     query.bindValue(10, importStartTime.toTime_t());
+    //thumbWritten
+    query.bindValue(11, 0);
+    //bigThumbWritten (the preview)
+    query.bindValue(12, 0);
 
     query.exec();
 
@@ -132,7 +138,7 @@ QString createNewProfile(const QString fileHash,
     //Write the thumbnail.
     ThumbWriteWorker worker;
     worker.setImage(image, exif);
-    worker.writeThumb(searchID);
+    bool writeError = worker.writeThumb(searchID);
     //imwrite_jpeg(image, outputFilename.toStdString(), exif, 90);
 
     //Because it might take some time to prepare the thumbnail,
@@ -141,6 +147,13 @@ QString createNewProfile(const QString fileHash,
     query.bindValue(0, searchID);
     query.exec();
 
-    //Return STsearchID.
-    return searchID;
+    //Return STsearchID, only if the thumb was written successfully.
+    if(!writeError)
+    {
+        return searchID;
+    }
+    else
+    {
+        return QString("");
+    }
 }
