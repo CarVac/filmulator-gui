@@ -20,9 +20,9 @@ SplitView {
         Flickable {
             id: flicky
             x: 0 * uiScale
-            y: 30 * uiScale
+            y: Math.ceil(30 * uiScale)
             width: parent.width
-            height: parent.height - 30 * uiScale
+            height: Math.floor(parent.height - 30 * uiScale)
             contentWidth:  Math.max(bottomImage.width *bottomImage.scale, this.width);
             contentHeight: Math.max(bottomImage.height*bottomImage.scale, this.height);
             flickableDirection: Flickable.HorizontalAndVerticalFlick
