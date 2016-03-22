@@ -232,12 +232,12 @@ ApplicationWindow {
         tab: Item {
             property int totalOverlap: tabOverlap * (control.count - 1)
             implicitWidth: Math.min (((styleData.availableWidth + totalOverlap) / control.count) - control.count, 105 * uiScale)
-            implicitHeight: 37 * uiScale
+            implicitHeight: Math.round(37 * uiScale)
             Rectangle {
                 x: 4 * uiScale
                 y: 4 * uiScale
                 width: parent.implicitWidth - 5 * uiScale
-                height: parent.implicitHeight - 8 * uiScale
+                height: parent.implicitHeight - Math.round(8 * uiScale)
                 radius: 8 * uiScale
                 border.width: 1 * uiScale
                 border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray

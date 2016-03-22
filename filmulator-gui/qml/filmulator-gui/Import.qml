@@ -16,7 +16,7 @@ Rectangle {
     signal tooltipWanted(string text, int x, int y)
 
     ColumnLayout {
-        id: importToolList
+        id: importDirToolList
         spacing: 0
         x: 3 * uiScale
         y: 3 * uiScale
