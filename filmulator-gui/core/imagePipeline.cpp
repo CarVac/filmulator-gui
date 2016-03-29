@@ -67,6 +67,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         matrix<float> input_image;
         //Reads in the photo.
+        cout << "load start:" << timeDiff (timeRequested) << endl;
+        struct timeval imload_time;
+        gettimeofday( &imload_time, NULL );
         if (imload(loadParam.fullFilename,
                   input_image,
                   loadParam.tiffIn,
@@ -80,6 +83,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             //It was setting valid back to none.
             return emptyMatrix();
         }
+        cout << "load time: " << timeDiff(imload_time);
 
         cout << "ImagePipeline::processImage: Demosaic complete." << endl;
 
@@ -290,7 +294,7 @@ void ImagePipeline::updateProgress(Valid valid, float stepProgress)
 {
     double totalTime = numeric_limits<double>::epsilon();
     double totalCompletedTime = 0;
-    for (int i = 0; i < completionTimes.size(); i++)
+    for (int i = 0; i < (int) completionTimes.size(); i++)
     {
         totalTime += completionTimes[i];
         float fractionCompleted = 0;

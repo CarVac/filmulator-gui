@@ -40,7 +40,7 @@ bool imread(std::string input_image_filename, matrix<float> &returnmatrix,
 #define COLOR image_processor.imgdata.color
 
     //Now we'll set demosaic and other processing settings.
-    PARAM.user_qual = 9;//10 is AMaZE; -q[#] in dcraw
+    PARAM.user_qual = 10;//9;//10 is AMaZE; -q[#] in dcraw
     PARAM.no_auto_bright = 1;//Don't autoadjust brightness (-W)
     PARAM.output_bps = 16;//16 bits per channel (-6)
     PARAM.gamm[0] = 1;
@@ -51,6 +51,7 @@ bool imread(std::string input_image_filename, matrix<float> &returnmatrix,
     PARAM.output_color = 1;//1: Use sRGB regardless.
     PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
     PARAM.highlight = highlights;//Set highlight recovery (-H #)
+    PARAM.med_passes = 1;//median filter
 
     if (lowQuality)
     {

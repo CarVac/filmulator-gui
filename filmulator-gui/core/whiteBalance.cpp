@@ -140,14 +140,14 @@ void whiteBalanceMults(float temperature, float tint, std::string inputFilename,
         // raw color space to sRGB.
 
         //Grab the xyz2cam matrix.
-        float xyzToCam[3][3];
+//        float xyzToCam[3][3];
         float camToRgb[3][3];
 //        cout << "white_balance: camToRgb" << endl;//===========================
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
             {
-                xyzToCam[i][j] = COLOR.cam_xyz[i][j];
+//                xyzToCam[i][j] = COLOR.cam_xyz[i][j];
                 camToRgb[i][j] = COLOR.rgb_cam[i][j];
 //                cout << COLOR.rgb_cam[i][j] << " ";//===========================
             }

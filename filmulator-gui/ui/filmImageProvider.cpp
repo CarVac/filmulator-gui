@@ -32,9 +32,9 @@ FilmImageProvider::~FilmImageProvider()
 {
 }
 
-QImage FilmImageProvider::requestImage(const QString &id,
+QImage FilmImageProvider::requestImage(const QString& /*id*/,
                                        QSize *size,
-                                       const QSize &requestedSize)
+                                       const QSize& /*requestedSize*/)
 {
     gettimeofday(&request_start_time,NULL);
     QImage output = emptyImage();

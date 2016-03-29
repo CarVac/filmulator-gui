@@ -3,24 +3,39 @@
 #include <math.h>
 
 template <typename T>
-void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, bool interleaved);
+void downscaleDivisible1D(const matrix<T> input,
+                          matrix<T> &output,
+                          const int scaleFactor,
+                          const bool interleaved);
 template <typename T>
-void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end, double scaleFactor, bool interleaved);
+void downscaleBilinear1D(const matrix<T> input,
+                         matrix<T> &output,
+                         const int start,
+                         const int end,
+                         const double scaleFactor,
+                         const bool interleaved);
 
 
 
 //Scales the input to the output to fit within the output sizes.
-void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputStartX, int inputStartY, int inputEndX, int inputEndY, int outputXSize, int outputYSize)
+void downscale_and_crop(const matrix<float> input,
+                        matrix<float> &output,
+                        const int inputStartX,
+                        const int inputStartY,
+                        const int inputEndX,
+                        const int inputEndY,
+                        const int outputXSize,
+                        const int outputYSize)
 {
-    int inputXSize = inputEndX - inputStartX + 1;
-    int inputYSize = inputEndY - inputStartY + 1;
+    const int inputXSize = inputEndX - inputStartX + 1;
+    const int inputYSize = inputEndY - inputStartY + 1;
 
     //Determine the split of the scaling between integer and bilinear scaling.
     //Integer is much faster, but we can only do integer multiples.
     //Bilinear can only do shrinks between 1 and 2.
-    double overallScaleFactor = max(double(inputXSize)/double(outputXSize),double(inputYSize)/double(outputYSize));
-    int integerScaleFactor = floor(overallScaleFactor);
-    double bilinearScaleFactor = overallScaleFactor/double(integerScaleFactor);
+    const double overallScaleFactor = max(double(inputXSize)/double(outputXSize),double(inputYSize)/double(outputYSize));
+    const int integerScaleFactor = floor(overallScaleFactor);
+    //double bilinearScaleFactor = overallScaleFactor/double(integerScaleFactor);
 
     //Downscale in one direction
     matrix<float> bilinearX;
@@ -47,11 +62,14 @@ void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputSta
 
 //Scales the image such that the number of columns is redeuced by integer factor scaleFactor.
 template <typename T>
-void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, bool interleaved)
+void downscaleDivisible1D(const matrix<T> input,
+                          matrix<T> &output,
+                          const int scaleFactor,
+                          const bool interleaved)
 {
-    int inputNumRows = input.nr();
-    int inputNumCols = input.nc();
-    int outputNumRows = inputNumRows;
+    const int inputNumRows = input.nr();
+    const int inputNumCols = input.nc();
+    const int outputNumRows = inputNumRows;
     //We must use the ceiling here in order to not undersize the output matrix.
     int outputNumCols;
     if (interleaved)
@@ -66,7 +84,7 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
 
     if (interleaved)
     {
-        #pragma omp parallel for shared(input, output)
+        #pragma omp parallel for shared(output)
         for (int i = 0; i < outputNumRows; i++)
             for (int j = 0; j < outputNumCols; j = j+3)
             {
@@ -86,7 +104,7 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
     }
     else
     {
-        #pragma omp parallel for shared(input, output)
+        #pragma omp parallel for shared(output)
         for (int i = 0; i < outputNumRows; i++)
             for (int j = 0; j < outputNumCols; j++)
             {
@@ -105,39 +123,44 @@ void downscaleDivisible1D(matrix<T> input, matrix<T> &output, int scaleFactor, b
 //The scaling factor is computed from the overall scale factor such that it ends up an integer multiple
 // of the desired final size.
 template <typename T>
-void downscaleBilinear1D(matrix<T> input, matrix<T> &output, int start, int end, double overallScaleFactor, bool interleaved)
+void downscaleBilinear1D(const matrix<T> input,
+                         matrix<T> &output,
+                         const int start,
+                         const int end,
+                         const double overallScaleFactor,
+                         const bool interleaved)
 {
-    int inputNumRows = input.nr();
-    int inputNumCols = end - start + 1;
+    const int inputNumRows = input.nr();
+    const int inputNumCols = end - start + 1;
 
-    int outputNumRows = inputNumRows;
+    const int outputNumRows = inputNumRows;
 
-    int endNumCols = round(double(inputNumCols)/overallScaleFactor);
+    const int endNumCols = round(double(inputNumCols)/overallScaleFactor);
     //We need to make sure that it ends up being a whole multiple of the final size.
-    float newOverallScaleFactor = inputNumCols/double(endNumCols);
+    const float newOverallScaleFactor = inputNumCols/double(endNumCols);
     //We assume that floor of newOverallScaleFactor is the same as the original.
-    int intScaleFactor = floor(newOverallScaleFactor);
+    const int intScaleFactor = floor(newOverallScaleFactor);
     //This is the scale factor used for bilinear.
-    float scaleFactor = newOverallScaleFactor/intScaleFactor;
+    const float scaleFactor = newOverallScaleFactor/intScaleFactor;
 
-    int outputNumCols = endNumCols * intScaleFactor;
+    const int outputNumCols = endNumCols * intScaleFactor;
 
     if(interleaved)
         output.set_size(outputNumRows,outputNumCols*3);
     else
         output.set_size(outputNumRows,outputNumCols);
 
-    #pragma omp parallel for shared(input, output)
+    #pragma omp parallel for shared(output)
     for (int i = 0; i < outputNumRows; i++)
     {
         for (int j = 0; j < outputNumCols-1; j++)
         {
-            double inputPoint = (double(j) + 0.5)*scaleFactor -0.5 + double(start);
-            int inputStart = floor(inputPoint);
-            int inputEnd = ceil(inputPoint);
+            const double inputPoint = (double(j) + 0.5)*scaleFactor -0.5 + double(start);
+            const int inputStart = floor(inputPoint);
+            const int inputEnd = ceil(inputPoint);
             double notUsed;
-            double endWeight = modf(inputPoint, &notUsed);
-            double startWeight = 1 - endWeight;
+            const double endWeight = modf(inputPoint, &notUsed);
+            const double startWeight = 1 - endWeight;
             if (interleaved)
                 for (int c = 0; c < 3; c++)
                 {

@@ -23,7 +23,7 @@ class FilmImageProvider : public QObject, public QQuickImageProvider, public Int
 public:
     FilmImageProvider(ParameterManager*);
     ~FilmImageProvider();
-    QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
+    QImage requestImage(const QString& /*id*/, QSize* size, const QSize& /*requestedSize*/);
 
 
     //Setter methods
