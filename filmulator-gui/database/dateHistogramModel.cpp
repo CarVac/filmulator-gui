@@ -184,7 +184,7 @@ void DateHistogramModel::setQuery(const int timezone,
     //DateHistogramModel::data() will fill in the rest of the info.
 
     //Preallocate the vector.
-    if (m_dataVector.capacity() < (m_rowCount + 1)*VECTORCOUNT)
+    if ((int) m_dataVector.capacity() < (m_rowCount + 1)*VECTORCOUNT)
     {
         cout << "m_rowcount: " << m_rowCount << endl;
         m_dataVector.reserve((m_rowCount + 1)*VECTORCOUNT);
@@ -281,7 +281,7 @@ QVariant DateHistogramModel::data(const QModelIndex &index, int role) const
 /*
  * This gets the row count. Not the same as what came from SQL.
  */
-int DateHistogramModel::rowCount(const QModelIndex &parent) const
+int DateHistogramModel::rowCount(const QModelIndex& /*parent*/) const
 {
     return m_rowCount;
 }

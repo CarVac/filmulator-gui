@@ -15,7 +15,7 @@ void fileInsert(const QString hash,
                 Exiv2::ExifData exifData);
 QString createNewProfile(const QString fileHash,
                          const QString fileName,
-                         const QString absoluteFilePath,
+                         const QString /*absoluteFilePath*/,
                          const QDateTime captureTime,
                          const QDateTime importTime,
                          Exiv2::ExifData exifData,

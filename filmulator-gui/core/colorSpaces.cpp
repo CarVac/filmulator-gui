@@ -121,7 +121,7 @@ float Lab_forward_gamma(float c)
 
 //Arithmetic operations from L* curved XYZ to L*a*b*
 //Reference: http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html
-float XYZ_to_Lab(float fx, float fy, float fz,
+void XYZ_to_Lab(float fx, float fy, float fz,
                  float &L, float &a, float &b)
 {
     L = max( 0.0f, min(1.0f, 116*fy - 16  ));
@@ -130,7 +130,7 @@ float XYZ_to_Lab(float fx, float fy, float fz,
 }
 
 //Arithmetic operations from L*a*b* to L* curved XYZ
-float Lab_to_XYZ(float   L, float   a, float   b,
+void Lab_to_XYZ(float   L, float   a, float   b,
                  float &fx, float &fy, float &fz)
 {
     fy = (L + 16)/116;

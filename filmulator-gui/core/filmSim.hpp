@@ -218,7 +218,14 @@ void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
                          double vibrance, double saturation);
 
-void downscale_and_crop(matrix<float> input, matrix<float> &output, int inputStartX, int inputStartY, int inputEndX, int inputEndY, int outputXSize, int outputYSize);
+void downscale_and_crop(const matrix<float> input,
+                        matrix<float> &output,
+                        const int inputStartX,
+                        const int inputStartY,
+                        const int inputEndX,
+                        const int inputEndY,
+                        const int outputXSize,
+                        const int outputYSize);
 
 //Converts sRGB with D50 illuminant to XYZ with D50 illuminant.
 void sRGB_to_XYZ(float  r, float  g, float  b,
@@ -241,11 +248,11 @@ float Lab_inverse_gamma(float c);
 float Lab_forward_gamma(float c);
 
 //Arithmetic operations from L*-curved XYZ to L*a*b*
-float XYZ_to_Lab(float fx, float fy, float fz,
+void XYZ_to_Lab(float fx, float fy, float fz,
                  float &L, float &a, float &b);
 
 //Arithmetic operations from L*a*b* to L* curved XYZ
-float Lab_to_XYZ(float   L, float   a, float   b,
+void Lab_to_XYZ(float   L, float   a, float   b,
                  float &fx, float &fy, float &fz);
 
 //Converts gamma-curved sRGB to linear, short int to float.
