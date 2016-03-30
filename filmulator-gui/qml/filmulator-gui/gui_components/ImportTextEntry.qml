@@ -39,7 +39,7 @@ Rectangle {
         height: 25 * uiScale
         x: __padding
         y: 25 * uiScale + __padding
-        TextEdit {
+        TextInput {
             id: textEntryBox
             x: __padding
             y: __padding * 1.25
@@ -49,6 +49,7 @@ Rectangle {
             selectByMouse: true
             cursorVisible: focus
             font.pixelSize: 12.0 * uiScale
+            clip: true
         }
     }
 
