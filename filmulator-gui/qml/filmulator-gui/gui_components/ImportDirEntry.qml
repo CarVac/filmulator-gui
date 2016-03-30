@@ -64,6 +64,7 @@ Rectangle {
         text: qsTr( "Select a directory" )
         action: Action {
             onTriggered: {
+                dirDialog.folder = textEntryBox.text
                 dirDialog.open()
             }
         }
