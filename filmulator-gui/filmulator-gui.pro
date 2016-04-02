@@ -51,6 +51,13 @@ SOURCES += main.cpp \
     ./database/basicSqlModel.cpp \
     database/dateHistogramModel.cpp
 
+lupdate_only {
+SOURCES += qml/filmulator-gui/*.qml \
+    qml/filmulator-gui/gui_components/*.qml
+}
+
+TRANSLATIONS = translations/filmulator-gui_de.ts
+
 # Installation path
 target.path = /usr/lib/filmulator-gui
 

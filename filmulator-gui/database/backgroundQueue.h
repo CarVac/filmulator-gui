@@ -53,6 +53,7 @@ protected:
     QList< sanitizeQueue;
     std::deque previewQueue;
 };
+*/
 
 #endif // BACKGROUNDQUEUE_H
 
