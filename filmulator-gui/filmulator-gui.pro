@@ -103,7 +103,7 @@ QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp
 
-QT += sql core quick qml widgets
+QT += sql core quick qml widgets webkit
 
 RESOURCES += \
     resources/pixmaps.qrc
