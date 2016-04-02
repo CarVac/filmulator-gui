@@ -52,7 +52,7 @@ SOURCES += main.cpp \
     database/dateHistogramModel.cpp
 
 # Installation path
-# target.path = /usr/lib/filmulator-gui
+target.path = /usr/lib/filmulator-gui
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
