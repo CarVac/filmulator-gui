@@ -66,9 +66,11 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
+    #main.qml \
+    #import.qml \
     #Organize.qml \
     #Edit.qml \
-    #EditTools.qml #\
+    #EditTools.qml \
     #qml/filmulator-gui/gui_components/ToolSlider.qml \
     #qml/filmulator-gui/generateHistogram.js
     #gui_components/SSlider.qml \
@@ -103,7 +105,7 @@ QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp
 
-QT += sql core quick qml widgets webkit
+QT += sql core quick qml widgets
 
 RESOURCES += \
     resources/pixmaps.qrc
