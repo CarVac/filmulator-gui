@@ -696,6 +696,9 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(0, imageID);
     query.exec();
     query.exec("COMMIT;");//Apply all the changes together.
+
+    //Notify other database models of the changes.
+    //If you change this, you have to change the same in paste() as well.
     emit updateTableOut("ProcessingTable", 0);//0 means edit
     emit updateTableOut("SearchTable", 0);//0 means edit
     emit updateTableOut("QueueTable", 0);//0 means edit
@@ -1692,6 +1695,10 @@ void ParameterManager::paste(QString toImageID)
             ParameterManager tempParams;
             tempParams.loadParams(copyFromImageIndex);
             tempParams.writeToDB(toImageID);
+            //The tempParams do not have their updateTableOut connected.
+            emit updateTableOut("ProcessingTable", 0);//0 means edit
+            emit updateTableOut("SearchTable", 0);//0 means edit
+            emit updateTableOut("QueueTable", 0);//0 means edit
         }
         else// we only want to copy some of the parameters.
         {
