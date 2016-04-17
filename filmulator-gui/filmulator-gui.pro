@@ -59,21 +59,43 @@ SOURCES += qml/filmulator-gui/*.qml \
 TRANSLATIONS = translations/filmulator-gui_de.ts
 
 # Installation path
-target.path = /usr/lib/filmulator-gui
+unix:target.path = /usr/lib/filmulator-gui
+unix:desktop.path = /usr/share/applications
+
+unix:desktop.files += ./filmulator_gui.desktop
+
+unix {
+script.extra = move_script; install -m 755 -p filmulator 
+extra.path = /usr/bin
+extra.
+}
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    #main.qml \
-    #import.qml \
-    #Organize.qml \
-    #Edit.qml \
-    #EditTools.qml \
-    #qml/filmulator-gui/gui_components/ToolSlider.qml \
-    #qml/filmulator-gui/generateHistogram.js
-    #gui_components/SSlider.qml \
+    qml/filmulator-gui/main.qml \
+    qml/filmulator-gui/Edit.qml \
+    qml/filmulator-gui/EditTools.qml \
+    qml/filmulator-gui/Import.qml \
+    qml/filmulator-gui/Organize.qml \
+    qml/filmulator-gui/Queue.qml \
+    qml/filmulator-gui/Settings.qml \
+    qml/filmulator-gui/gui_components/FilmProgressBar.qml \
+    qml/filmulator-gui/gui_components/ImportDirEntry.qml \
+    qml/filmulator-gui/gui_components/ImportTextEntry.qml \
+    qml/filmulator-gui/gui_components/OrganizeDelegate.qml \
+    qml/filmulator-gui/gui_components/QueueDelegate.qml \
+    qml/filmulator-gui/gui_components/SlipperySlider.qml \
+    qml/filmulator-gui/gui_components/ToolButton.qml \
+    qml/filmulator-gui/gui_components/ToolButtonStyle.qml \
+    qml/filmulator-gui/gui_components/ToolCalendar.qml \
+    qml/filmulator-gui/gui_components/ToolSlider.qml \
+    qml/filmulator-gui/gui_components/ToolSwitch.qml \
+    qml/filmulator-gui/gui_components/ToolTip.qml \
+    qml/filmulator-gui/generateHistogram.js\
+    filmulator
 
 HEADERS += \
     ./core/lut.hpp \
@@ -106,6 +128,8 @@ QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp
 
 QT += sql core quick qml widgets
+
+INSTALLS += desktop extra
 
 RESOURCES += \
     resources/pixmaps.qrc

@@ -4,17 +4,17 @@
 <context>
     <name>Edit</name>
     <message>
-        <location filename="../qml/filmulator-gui/Edit.qml" line="190"/>
+        <location filename="../qml/filmulator-gui/Edit.qml" line="189"/>
         <source>Rotate Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/filmulator-gui/Edit.qml" line="203"/>
+        <location filename="../qml/filmulator-gui/Edit.qml" line="202"/>
         <source>Rotate Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/filmulator-gui/Edit.qml" line="215"/>
+        <location filename="../qml/filmulator-gui/Edit.qml" line="214"/>
         <source>Fit</source>
         <translation type="unfinished"></translation>
     </message>
