@@ -66,13 +66,12 @@ Rectangle {
         }
     }
     Component.onCompleted: {
-        if (thumbWritten === 1) {
-            loadThumb.sourceComponent = thumbImage
-        }
-        else if (thumbWritten === -1) {
+        if (thumbWritten === -1) {
             loadThumb.sourceComponent = thumbPlaceholder
         }
-        //If it's 0, then we wait for it to become 1.
+        else {
+            loadThumb.sourceComponent = thumbImage
+        }
     }
 
     ToolTip {
@@ -122,6 +121,7 @@ Rectangle {
     }
     onThumbWrittenChanged: {
         if (thumbWritten === 1) {
+            loadThumb.sourceComponent = ""
             loadThumb.sourceComponent = thumbImage
         }
         else if (thumbWritten === -1) {

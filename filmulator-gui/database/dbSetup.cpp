@@ -304,6 +304,11 @@ void setupDB(QSqlDatabase *db)
         query.exec("UPDATE SearchTable SET STthumbWritten = 1;");
         query.exec("UPDATE SearchTable SET STbigThumbWritten = 0;");
         versionString = "PRAGMA user_version = 7;";
+    case 7:
+        query.exec("ALTER TABLE QueueTable "
+                   "ADD COLUMN QTsortedIndex;");
+        query.exec("UPDATE QueueTable SET QTsortedIndex = QTindex;");
+        versionString = "PRAGMA user_version = 8;";
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

@@ -137,6 +137,7 @@ Item {
                 }
                 onReleased: {
                     held = false
+                    queueModel.move(queueDelegate.searchID, delegateRoot.visualIndex)
                     root.dragging = false
                 }
 
@@ -457,14 +458,7 @@ Item {
                         //Tell the root that the cursor has moved to initiate scrolling.
                         root.newX = mapToItem(root,drag.x,drag.y).x
                     }
-
-                    onDropped: {
-                        var source = drag.source.oldVisualIndex
-                        //console.log("Dropped " + queueDelegate.searchID + " from " + source + " at index " + delegateRoot.visualIndex)
-                        queueModel.move(queueDelegate.searchID, delegateRoot.visualIndex)
-                    }
                 }
-
             }
         }
 

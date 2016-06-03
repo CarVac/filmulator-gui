@@ -8,6 +8,12 @@ using std::to_string;
 
 QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
 {
+    //The queue needs to have a separate sorting index.
+    //When the queue is reordered, the original indices must remain, because
+    // the associated delegates move around otherwise when the data is updated.
+    //Thus, we simply track the sorted index and
+    QSqlQuery query;
+    query.exec("UPDATE QueueTable SET QTindex = QTsortedIndex;");
     maxIndex = 0;
     tableName = "QueueTable";
     resetIndex();
@@ -16,6 +22,7 @@ QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
 QSqlQuery QueueModel::modelQuery()
 {
     QString queryString = "SELECT QueueTable.QTindex AS QTindex ";
+    queryString.append("         ,QueueTable.QTsortedIndex AS QTsortedIndex ");
     queryString.append("         ,QueueTable.QTprocessed AS QTprocessed ");
     queryString.append("         ,QueueTable.QTexported AS QTexported ");
     queryString.append("         ,QueueTable.QToutput AS QToutput ");
@@ -42,18 +49,31 @@ void QueueModel::resetIndex()
     QSqlQuery query;
     query.exec("SELECT COUNT(QTindex) FROM QueueTable;");
     query.next();
-    maxIndex = query.value( 0 ).toInt();
+    maxIndex = query.value(0).toInt();
 }
 
 void QueueModel::deQueue(const QString searchID)
 {
     QSqlQuery query;
     query.exec("BEGIN TRANSACTION;");
+    // We need to update all the indices.
+    // We grab the index of the removed item, then decrement all the greater ones.
+
+    //First we grab the index of the row to be removed.
     query.prepare("SELECT QTindex FROM QueueTable WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
     query.next();
     const int indexRemoved = query.value(0).toInt();
+
+    //We also need to get the sorted index.
+    query.prepare("SELECT QTsortedIndex FROM QueueTable WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    const int sortedIndexRemoved = query.value(0).toInt();
+
+    //Now we remove the item in question.
     query.prepare("DELETE FROM QueueTable WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
@@ -65,6 +85,12 @@ void QueueModel::deQueue(const QString searchID)
     query.prepare("UPDATE QueueTable SET QTindex = QTindex - 1 WHERE QTindex > ?;");
     query.bindValue(0, indexRemoved);
     query.exec();
+
+    //We need to also do the same for the sorted index.
+    query.prepare("UPDATE QueueTable SET QTsortedIndex = QTsortedIndex - 1 WHERE QTsortedIndex > ?;");
+    query.bindValue(0, sortedIndexRemoved);
+    query.exec();
+
     query.exec("COMMIT TRANSACTION");
 
     //Tell the model which row was removed
@@ -154,7 +180,7 @@ void QueueModel::move(const QString searchID, const int destIndex)
 
 
     //Get the source index.
-    query.prepare("SELECT QTindex FROM QueueTable  WHERE QTsearchID = ?;");
+    query.prepare("SELECT QTsortedIndex FROM QueueTable  WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
     query.next();
@@ -162,15 +188,15 @@ void QueueModel::move(const QString searchID, const int destIndex)
 
     if (sourceIndex < destIndex) //Move one to the right, shift the rest leftward
     {
-        std::string queryString = "UPDATE QueueTable SET QTindex = QTindex - 1 ";
-        queryString.append("WHERE QTindex >= ");
+        std::string queryString = "UPDATE QueueTable SET QTsortedIndex = QTsortedIndex - 1 ";
+        queryString.append("WHERE QTsortedIndex >= ");
         queryString.append(to_string(sourceIndex));
-        queryString.append(" AND QTindex <= ");
+        queryString.append(" AND QTsortedIndex <= ");
         queryString.append(to_string(destIndex));
         queryString.append(";");
         query.exec(QString::fromStdString(queryString));
         query.prepare("UPDATE QueueTable "
-                      "SET QTindex = ? "
+                      "SET QTsortedIndex = ? "
                       "WHERE QTsearchID = ?;");
         query.bindValue(0, destIndex);
         query.bindValue(1, searchID);
@@ -178,15 +204,15 @@ void QueueModel::move(const QString searchID, const int destIndex)
     }
     else if (sourceIndex > destIndex) //move one to the left, shift the rest rightward
     {
-        std::string queryString = "UPDATE QueueTable SET QTindex = QTindex + 1 ";
-        queryString.append("WHERE QTindex >= ");
+        std::string queryString = "UPDATE QueueTable SET QTsortedIndex = QTsortedIndex + 1 ";
+        queryString.append("WHERE QTsortedIndex >= ");
         queryString.append(to_string(destIndex));
-        queryString.append(" AND QTindex <= ");
+        queryString.append(" AND QTsortedIndex <= ");
         queryString.append(to_string(sourceIndex));
         queryString.append(";");
         query.exec(QString::fromStdString(queryString));
         query.prepare("UPDATE QueueTable "
-                      "SET QTindex = ? "
+                      "SET QTsortedIndex = ? "
                       "WHERE QTsearchID = ?;");
         query.bindValue(0, destIndex);
         query.bindValue(1, searchID);
