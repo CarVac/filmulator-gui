@@ -136,13 +136,14 @@ void QueueModel::enQueue(const QString searchID)
         //I subtract 1 from the lastProcessedTime to give it some buffer for (floating point?) error.
         const bool edited = importTime < (lastProcessedTime-1);
         query.prepare("INSERT OR IGNORE INTO QueueTable "
-                      "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID) "
-                      "VALUES (?,?,?,?,?);");
+                      "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID, QTsortedIndex) "
+                      "VALUES (?,?,?,?,?,?);");
         query.bindValue(0, maxIndex);
         query.bindValue(1, edited);
         query.bindValue(2, false);
         query.bindValue(3, false);
         query.bindValue(4, searchID);
+        query.bindValue(5, maxIndex);
         query.exec();
         query.exec("END TRANSACTION;");
 
@@ -156,7 +157,7 @@ void QueueModel::enQueue(const QString searchID)
         endInsertRows();
 
         //Increment the index.
-        maxIndex++;
+        resetIndex();
     }
 }
 
