@@ -1,4 +1,4 @@
-import QtQuick 2.4
+import QtQuick 2.3
 import QtQuick.Layouts 1.1
 import QtQml.Models 2.1
 import "gui_components"
