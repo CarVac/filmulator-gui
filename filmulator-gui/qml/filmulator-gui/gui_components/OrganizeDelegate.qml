@@ -50,6 +50,7 @@ Rectangle {
             source: root.__thumbPath
             sourceSize.width: 290 * uiScale
             sourceSize.height: 290 * uiScale
+            cache: false
         }
     }
     Component {
@@ -121,7 +122,7 @@ Rectangle {
     }
     onThumbWrittenChanged: {
         if (thumbWritten === 1) {
-            loadThumb.sourceComponent = ""
+            loadThumb.source = ""
             loadThumb.sourceComponent = thumbImage
         }
         else if (thumbWritten === -1) {
