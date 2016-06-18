@@ -12,6 +12,8 @@ Rectangle {
     color: Colors.darkGrayL
     anchors.fill: parent
     property string folderPath: ""
+    property bool sourceIsFolder: true
+    property bool importInPlace: true
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -45,6 +47,53 @@ Rectangle {
             }
             uiScale: root.uiScale
         }
+
+        RowLayout {
+            id: sourceSelector
+            spacing: 0
+            width: parent.width
+            height: 30 * uiScale
+
+            ExclusiveGroup {id: sourceSelectorGroup}
+
+            ToolRadioButton {
+                id: sourceDirButton
+                width: parent.width/2
+                height: parent.height
+                text: qsTr("Import Directory")
+                tooltipText: qsTr("Import from a directory and all subdirectories.")
+                checked: true
+                exclusiveGroup: sourceSelectorGroup
+                onCheckedChanged: {
+                    if (checked) {
+                        root.sourceIsFolder = true
+                    }
+                }
+                Component.onCompleted: {
+                    sourceDirButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+
+            ToolRadioButton {
+                id: sourceFileButton
+                width: parent.width/2
+                height: parent.height
+                text: qsTr("Import Files")
+                tooltipText: qsTr("Import one or more files.")
+                exclusiveGroup: sourceSelectorGroup
+                onCheckedChanged: {
+                    if (checked) {
+                        root.sourceIsFolder = false
+                    }
+                }
+                Component.onCompleted: {
+                    sourceFileButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+        }
+
         ImportDirEntry {
             id: sourceDirEntry
             title: qsTr("Source Directory")
@@ -65,6 +114,16 @@ Rectangle {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
+            visible: root.sourceIsFolder
+        }
+
+        ImportFileEntry {
+            id: sourceFileEntry
+            title: qsTr("Source Files")
+            tooltipText: qsTr("Select one or more files to import.")
+            fileDialogTitle: qsTr("Select the file(s) to import.")
+            uiScale: root.uiScale
+            visible: !root.sourceIsFolder
         }
 
         ToolSlider {
@@ -90,6 +149,54 @@ Rectangle {
             }
             uiScale: root.uiScale
         }
+
+        RowLayout {
+            id: destSelector
+            spacing: 0
+            width: parent.width
+            height: 30 * uiScale
+
+            ExclusiveGroup {id: destSelectorGroup}
+
+            ToolRadioButton {
+                id: importAndMoveButton
+                width: parent.width/2
+                height: parent.height
+                text: qsTr("Move to directory")
+                tooltipText: qsTr("Copy files to a folder structure based on date and time of capture. This lets you create backup copies at the same time.")
+                checked: true
+                exclusiveGroup: destSelectorGroup
+                onCheckedChanged: {
+                    if (checked) {
+                        root.importInPlace = false
+                    }
+                }
+                Component.onCompleted: {
+                    importAndMoveButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+
+            ToolRadioButton {
+                id: importInPlaceButton
+                width: parent.width/2
+                height: parent.height
+                text: qsTr("Import in place")
+                tooltipText: qsTr("Import files into the database without moving or copying them.")
+                exclusiveGroup: destSelectorGroup
+                onCheckedChanged: {
+                    if (checked) {
+                        root.importInPlace = true
+                    }
+                }
+                Component.onCompleted: {
+                    importInPlaceButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+
+                uiScale: root.uiScale
+            }
+        }
+
         ImportDirEntry {
             id: photoDirEntry
             title: qsTr("Destination Directory")
@@ -105,6 +212,7 @@ Rectangle {
                 photoDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
+            visible: !root.importInPlace
         }
         ImportDirEntry {
             id: backupDirEntry
@@ -121,6 +229,7 @@ Rectangle {
                 backupDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
+            visible: !root.importInPlace
         }
 
         ImportTextEntry {
@@ -137,6 +246,7 @@ Rectangle {
                 dirStructureEntry.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
+            visible: !root.importInPlace
         }
 
         ToolSwitch {
@@ -158,6 +268,7 @@ Rectangle {
                 appendSwitch.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
+            visible: !root.importInPlace
         }
 
         ToolSwitch {
@@ -186,7 +297,7 @@ Rectangle {
             x: 0 * uiScale
             y: 0 * uiScale
             text: qsTr("Import")
-            tooltipText: qsTr("Copy photos from the source directory into the destination (and optional backup), as well as adding them to the database.")
+            tooltipText: qsTr("Start importing the selected file or folder. If importing is currently in progress, then the current file or folder will be imported after all current imports are complete.")
             width: parent.width
             height: 40 * uiScale
             onTriggered: {

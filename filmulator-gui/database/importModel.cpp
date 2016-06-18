@@ -104,6 +104,61 @@ void ImportModel::importDirectory_r(const QString dir)
     startWorker(queue.front());
 }
 
+//This will import a single file, taking in a file path as a QString.
+void ImportModel::importFile(const QString name)
+{
+
+    /*
+    directory.setFilter(QDir::Files | QDir::NoSymLinks);
+    QStringList nameFilters;
+    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF" << "*.RAF" << "*.ORF";
+    directory.setNameFilters(nameFilters);
+    QFileInfoList fileList = directory.entryInfoList();
+
+    if (fileList.size() == 0)
+    {
+        return;
+    }
+
+    QMutexLocker locker(&mutex);
+    if (0 == queue.size())
+    {
+        maxQueue = 0;
+    }
+
+    QDateTime now = QDateTime::currentDateTime();
+    for (int i = 0; i < fileList.size(); i++)
+    {
+        importParams params;
+        params.fileInfoParam = fileList.at(i);
+        params.importTZParam = importTZ;
+        params.cameraTZParam = cameraTZ;
+        params.photoDirParam = photoDir;
+        params.backupDirParam = backupDir;
+        params.dirConfigParam = dirConfig;
+        params.importStartTimeParam = now;
+        params.appendHashParam = appendHash;
+        queue.push_back(params);
+        maxQueue++;
+    }
+
+    progress = float(maxQueue - queue.size())/float(maxQueue);
+    progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
+    emit progressChanged();
+    emit progressFracChanged();
+
+    paused = false;
+
+    startWorker(queue.front());
+    */
+}
+
+//This will import multiple files, but I'm not sure exactly how it works.
+void ImportModel::importFileList(const QString name)
+{
+    cout << name.toStdString() << endl;
+}
+
 void ImportModel::workerFinished()
 {
     QMutexLocker locker(&mutex);
