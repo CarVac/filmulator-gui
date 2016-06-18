@@ -14,13 +14,14 @@ Rectangle {
     property alias isOn: toggleSwitch.checked
     property bool defaultOn: false
     property bool changed: true
+    property bool highlight: false
 
     property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
     signal resetToDefault()
 
-    color: Colors.darkGray
+    color: highlight ? Colors.darkOrangeH : Colors.darkGray
 
     state: defaultOn ? "ON" : "OFF"
 

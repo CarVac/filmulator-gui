@@ -26,6 +26,8 @@ Rectangle {
     property bool changed: true
     property bool editMade: false
 
+    property bool highlight: false
+
     property real __padding: 4 * uiScale
 
     signal tooltipWanted(string text, int coordX, int coordY)
@@ -43,7 +45,7 @@ Rectangle {
         }
     }
 
-    color: Colors.darkGray
+    color: highlight ? Colors.darkOrangeH : Colors.darkGray
 
     Text {
         id: label

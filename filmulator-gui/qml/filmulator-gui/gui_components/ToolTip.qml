@@ -6,6 +6,7 @@ Rectangle {
     color: "#00000000"
     property string tooltipText
     property real milliSecondDelay: 1000
+    property alias hovered: tooltipArea.containsMouse
 
     signal tooltipWanted(string text, int x, int y)
 

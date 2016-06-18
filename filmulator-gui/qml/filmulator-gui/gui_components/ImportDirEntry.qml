@@ -11,12 +11,14 @@ Rectangle {
     property real __padding: 4 * uiScale
     implicitHeight: 2*__padding + 49 * uiScale
     implicitWidth: parent.width
-    color: Colors.darkGray
     property alias title: label.text
     property alias tooltipText: labelTooltip.tooltipText
     property alias dirDialogTitle: dirDialog.title
     property alias enteredText: textEntryBox.text
     property bool erroneous: false
+    property bool highlight: false
+
+    color: highlight ? Colors.darkOrangeH : Colors.darkGray
 
     signal tooltipWanted( string text, int coordX, int coordY )
 

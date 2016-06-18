@@ -12,14 +12,16 @@ Rectangle {
     property alias checked: button.checked
     property alias tooltipText: tooltip.tooltipText
     property alias exclusiveGroup: button.exclusiveGroup
+    property alias hovered: tooltip.hovered
     property bool standalone: false
+    property bool highlight: false
 
     signal pressed()
     signal tooltipWanted(string text, int x, int y)
     width: 30 * uiScale
     height: 30 * uiScale
 
-    color: standalone ? Colors.darkGray : "#00000000"
+    color: standalone ? highlight ? Colors.darkOrangeH : Colors.darkGray : "#00000000"
 
     RadioButton {
         id: button

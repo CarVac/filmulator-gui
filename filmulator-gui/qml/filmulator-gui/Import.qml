@@ -57,6 +57,8 @@ Rectangle {
 
             ExclusiveGroup {id: sourceSelectorGroup}
 
+            property bool hovered: (sourceDirButton.hovered || sourceFileButton.hovered)
+
             ToolRadioButton {
                 id: sourceDirButton
                 width: parent.width/2
@@ -117,6 +119,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: root.sourceIsFolder
+            highlight: sourceSelector.hovered
         }
 
         ImportFileEntry {
@@ -133,6 +136,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: !root.sourceIsFolder
+            highlight: sourceSelector.hovered
         }
 
         RowLayout {
@@ -142,6 +146,8 @@ Rectangle {
             height: 30 * uiScale
 
             ExclusiveGroup {id: destSelectorGroup}
+
+            property bool hovered: (importAndMoveButton.hovered || importInPlaceButton.hovered)
 
             ToolRadioButton {
                 id: importAndMoveButton
@@ -207,6 +213,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: !root.importInPlace
+            highlight: destSelector.hovered
         }
 
         ImportDirEntry {
@@ -225,6 +232,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: !root.importInPlace
+            highlight: destSelector.hovered
         }
         ImportDirEntry {
             id: backupDirEntry
@@ -242,6 +250,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: !root.importInPlace
+            highlight: destSelector.hovered
         }
 
         ImportTextEntry {
@@ -259,6 +268,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: !root.importInPlace
+            highlight: destSelector.hovered
         }
 
         ToolSwitch {
@@ -281,6 +291,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: !root.importInPlace
+            highlight: destSelector.hovered
         }
 
         ToolSwitch {
