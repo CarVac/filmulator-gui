@@ -61,6 +61,7 @@ Rectangle {
                 id: sourceDirButton
                 width: parent.width/2
                 height: parent.height
+                standalone: true
                 text: qsTr("Import Directory")
                 tooltipText: qsTr("Import from a directory and all subdirectories.")
                 checked: true
@@ -80,6 +81,7 @@ Rectangle {
                 id: sourceFileButton
                 width: parent.width/2
                 height: parent.height
+                standalone: true
                 text: qsTr("Import Files")
                 tooltipText: qsTr("Import one or more files.")
                 exclusiveGroup: sourceSelectorGroup
@@ -133,6 +135,55 @@ Rectangle {
             visible: !root.sourceIsFolder
         }
 
+        RowLayout {
+            id: destSelector
+            spacing: 0
+            width: parent.width
+            height: 30 * uiScale
+
+            ExclusiveGroup {id: destSelectorGroup}
+
+            ToolRadioButton {
+                id: importAndMoveButton
+                width: parent.width/2
+                height: parent.height
+                standalone: true
+                text: qsTr("Copy to directory")
+                tooltipText: qsTr("When importing, copy files to a folder structure based on date and time of capture. This lets you create backup copies at the same time.")
+                checked: true
+                exclusiveGroup: destSelectorGroup
+                onCheckedChanged: {
+                    if (checked) {
+                        root.importInPlace = false
+                    }
+                }
+                Component.onCompleted: {
+                    importAndMoveButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+
+            ToolRadioButton {
+                id: importInPlaceButton
+                width: parent.width/2
+                height: parent.height
+                standalone: true
+                text: qsTr("Import in place")
+                tooltipText: qsTr("Import files into the database without moving or copying them.")
+                exclusiveGroup: destSelectorGroup
+                onCheckedChanged: {
+                    if (checked) {
+                        root.importInPlace = true
+                    }
+                }
+                Component.onCompleted: {
+                    importInPlaceButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+
+                uiScale: root.uiScale
+            }
+        }
+
         ToolSlider {
             id: localOffset
             title: qsTr("Local UTC Offset")
@@ -155,53 +206,7 @@ Rectangle {
                 localOffset.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
-        }
-
-        RowLayout {
-            id: destSelector
-            spacing: 0
-            width: parent.width
-            height: 30 * uiScale
-
-            ExclusiveGroup {id: destSelectorGroup}
-
-            ToolRadioButton {
-                id: importAndMoveButton
-                width: parent.width/2
-                height: parent.height
-                text: qsTr("Move to directory")
-                tooltipText: qsTr("Copy files to a folder structure based on date and time of capture. This lets you create backup copies at the same time.")
-                checked: true
-                exclusiveGroup: destSelectorGroup
-                onCheckedChanged: {
-                    if (checked) {
-                        root.importInPlace = false
-                    }
-                }
-                Component.onCompleted: {
-                    importAndMoveButton.tooltipWanted.connect(root.tooltipWanted)
-                }
-                uiScale: root.uiScale
-            }
-
-            ToolRadioButton {
-                id: importInPlaceButton
-                width: parent.width/2
-                height: parent.height
-                text: qsTr("Import in place")
-                tooltipText: qsTr("Import files into the database without moving or copying them.")
-                exclusiveGroup: destSelectorGroup
-                onCheckedChanged: {
-                    if (checked) {
-                        root.importInPlace = true
-                    }
-                }
-                Component.onCompleted: {
-                    importInPlaceButton.tooltipWanted.connect(root.tooltipWanted)
-                }
-
-                uiScale: root.uiScale
-            }
+            visible: !root.importInPlace
         }
 
         ImportDirEntry {

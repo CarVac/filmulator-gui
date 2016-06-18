@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.2
 import "../colors.js" as Colors
 import "."
 
-Item {
+Rectangle {
     id: root
     property real uiScale: 1
     property real __padding: 2 * uiScale
@@ -12,11 +12,15 @@ Item {
     property alias checked: button.checked
     property alias tooltipText: tooltip.tooltipText
     property alias exclusiveGroup: button.exclusiveGroup
+    property bool standalone: false
 
     signal pressed()
     signal tooltipWanted(string text, int x, int y)
     width: 30 * uiScale
     height: 30 * uiScale
+
+    color: standalone ? Colors.darkGray : "#00000000"
+
     RadioButton {
         id: button
         width: parent.width - __padding * 2
