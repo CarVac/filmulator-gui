@@ -53,15 +53,21 @@ Rectangle {
             id: sourceSelector
             spacing: 0
             width: parent.width
-            height: 30 * uiScale
+            height: 30 * root.uiScale
 
             ExclusiveGroup {id: sourceSelectorGroup}
 
             property bool hovered: (sourceDirButton.hovered || sourceFileButton.hovered)
 
+            Rectangle {
+                width: 2 * root.uiScale
+                height: parent.height
+                color: Colors.darkGray
+            }
+
             ToolRadioButton {
                 id: sourceDirButton
-                width: parent.width/2
+                width: parent.width/2 - 2*uiScale
                 height: parent.height
                 standalone: true
                 text: qsTr("Import Directory")
@@ -81,7 +87,7 @@ Rectangle {
 
             ToolRadioButton {
                 id: sourceFileButton
-                width: parent.width/2
+                width: parent.width/2 - 2*uiScale
                 height: parent.height
                 standalone: true
                 text: qsTr("Import Files")
@@ -96,6 +102,12 @@ Rectangle {
                     sourceFileButton.tooltipWanted.connect(root.tooltipWanted)
                 }
                 uiScale: root.uiScale
+            }
+
+            Rectangle {
+                width: 2 * root.uiScale
+                height: parent.height
+                color: Colors.darkGray
             }
         }
 
@@ -149,9 +161,15 @@ Rectangle {
 
             property bool hovered: (importAndMoveButton.hovered || importInPlaceButton.hovered)
 
+            Rectangle {
+                width: 2 * root.uiScale
+                height: parent.height
+                color: Colors.darkGray
+            }
+
             ToolRadioButton {
                 id: importAndMoveButton
-                width: parent.width/2
+                width: parent.width/2 - 2*uiScale
                 height: parent.height
                 standalone: true
                 text: qsTr("Copy to directory")
@@ -171,7 +189,7 @@ Rectangle {
 
             ToolRadioButton {
                 id: importInPlaceButton
-                width: parent.width/2
+                width: parent.width/2 - 2*uiScale
                 height: parent.height
                 standalone: true
                 text: qsTr("Import in place")
@@ -187,6 +205,12 @@ Rectangle {
                 }
 
                 uiScale: root.uiScale
+            }
+
+            Rectangle {
+                width: 2 * root.uiScale
+                height: parent.height
+                color: Colors.darkGray
             }
         }
 
