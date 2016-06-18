@@ -16,6 +16,7 @@ Rectangle {
     property alias tooltipText: labelTooltip.tooltipText
     property alias fileDialogTitle: fileDialog.title
     property alias enteredText: textEntryBox.text
+    property alias nameFilters: fileDialog.nameFilters
     property bool erroneous: false
 
     signal tooltipWanted(string text, int coordX, int coordY)

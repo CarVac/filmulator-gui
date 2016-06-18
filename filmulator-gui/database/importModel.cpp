@@ -1,7 +1,6 @@
 
 #include "importModel.h"
 #include <iostream>
-#include <QStringList>
 
 using std::cout;
 using std::endl;
@@ -9,6 +8,14 @@ using std::endl;
 ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
 {
     tableName = "SearchTable";
+
+    //Set up the files that it accepts as raw files on directory import
+    rawNameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF" << "*.RAF" << "*.ORF";
+
+    //Set up the files that it'll show in the file picker
+    dirNameFilters << "Raw image files (*.CR2 *.NEF *.DNG *.dng *.RW2 *.IIQ *.ARW *.PEF *.RAF *.ORF)";// << "All files (*)";
+
+    //Set up the import worker thread
     ImportWorker *worker = new ImportWorker;
     worker->moveToThread(&workerThread);
     connect(this, SIGNAL(workForWorker(const QFileInfo,
@@ -62,9 +69,7 @@ void ImportModel::importDirectory_r(const QString dir)
 
     //Next, we filter for files.
     directory.setFilter(QDir::Files | QDir::NoSymLinks);
-    QStringList nameFilters;
-    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF" << "*.RAF" << "*.ORF";
-    directory.setNameFilters(nameFilters);
+    directory.setNameFilters(rawNameFilters);
     QFileInfoList fileList = directory.entryInfoList();
 
     if (fileList.size() == 0)
@@ -102,6 +107,11 @@ void ImportModel::importDirectory_r(const QString dir)
     paused = false;
 
     startWorker(queue.front());
+}
+
+QStringList ImportModel::getNameFilters()
+{
+    return dirNameFilters;
 }
 
 //This will import a single file, taking in a file path as a QString.

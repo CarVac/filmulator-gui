@@ -12,6 +12,7 @@ Rectangle {
     color: Colors.darkGrayL
     anchors.fill: parent
     property string folderPath: ""
+    property string filePath: ""
     property bool sourceIsFolder: true
     property bool importInPlace: true
 
@@ -98,7 +99,7 @@ Rectangle {
             id: sourceDirEntry
             title: qsTr("Source Directory")
             tooltipText: qsTr("Select or type in the directory containing photos to be imported.")
-            dirDialogTitle: qsTr("Select the directory containing the photos to import.")
+            dirDialogTitle: qsTr("Select the directory containing the photos to import. It will only import raw files.")
             erroneous: importModel.emptyDir
             onEnteredTextChanged: {
                 root.folderPath = enteredText
@@ -109,7 +110,6 @@ Rectangle {
                     sourceDirEntry.erroneous = importModel.emptyDir
                 }
             }
-
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -122,6 +122,13 @@ Rectangle {
             title: qsTr("Source Files")
             tooltipText: qsTr("Select one or more files to import.")
             fileDialogTitle: qsTr("Select the file(s) to import.")
+            nameFilters: importModel.getNameFilters();
+            onEnteredTextChanged: {
+                root.filePath = enteredText
+            }
+            Component.onCompleted: {
+                sourceFileEntry.tooltipWanted.connect(root.tooltipWanted)
+            }
             uiScale: root.uiScale
             visible: !root.sourceIsFolder
         }
@@ -301,7 +308,11 @@ Rectangle {
             width: parent.width
             height: 40 * uiScale
             onTriggered: {
-                importModel.importDirectory_r(root.folderPath)
+                if (root.sourceIsFolder) {
+                    importModel.importDirectory_r(root.folderPath)
+                } else {
+                    importModel.importFileList(root.filePath)
+                }
             }
             Component.onCompleted: {
                 importButton.tooltipWanted.connect(root.tooltipWanted)

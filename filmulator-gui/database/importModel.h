@@ -11,6 +11,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QDateTime>
+#include <QStringList>
 
 struct importParams {
     QFileInfo fileInfoParam;
@@ -48,6 +49,7 @@ public:
     Q_INVOKABLE void importDirectory_r(const QString dir);
     Q_INVOKABLE void importFile(const QString name);
     Q_INVOKABLE void importFileList(const QString name);
+    Q_INVOKABLE QStringList getNameFilters();
 
     void setImportTZ(const int offsetIn);
     void setCameraTZ(const int offsetIn);
@@ -119,6 +121,11 @@ protected:
 
     bool enqueue;
     bool appendHash;
+
+    //For what is accepted on directory import
+    QStringList rawNameFilters;
+    //For the file picker
+    QStringList dirNameFilters;
 
     std::deque<importParams> queue;
     int maxQueue;
