@@ -30,13 +30,15 @@ A note: Use a standalone git client to clone the repository initially, and then 
 
 # Using Filmulator
 
-First, import your photos. The import process by default sorts the photos into directories based upon the date captured, in both the Destination Directory and the Backup Directory. These can be sorted correctly by setting the Camera UTC Offset to the timezone you set the camera's clock in, and the Local UTC Offset to the timezone where the photo was captured. Select the source directory (your card, or a directory containing your photos), and pressing the Import button will begin pulling the photos into the database and writing out the source directory.
+First, import your photos. You can select directories to import, or individual files. You can also select whether to leave the photos where they are, or to copy them into a directory structure based upon the date captured, in both the Destination Directory and the Backup Directory. These can be sorted correctly by setting the Camera UTC Offset to the timezone you set the camera's clock in, and the Local UTC Offset to the timezone where the photo was captured. Select the source directory (your card, or a directory containing your photos), and pressing the Import button will begin pulling the photos into the database and writing out the source directory.
 
-Next, go to the Organize tab, where you can select photos to enqueue. The calendar lets you select photos from a given day, while the Timezone slider lets you adjust how to 'slice' the day: it always displays from midnight to midnight.
+If you choose to enqueue imported photos before you import, you can skip the Organize tab, but you should check it out anyway.
 
-To enqueue photos, double-click on them in the grid view in the organize tab. To remove them from the queue, right-click on the queue entry and select 'Remove from queue'.
+Next, go to the Organize tab, where you can select photos to enqueue. The calendar and the date histogram let you select photos from a given day, while the timezone slider lets you adjust how to 'slice' the day: it always displays from midnight to midnight.
 
-At this point, we get to the Filmulate tab, which lets you process your photos. Double-click on a photo to load it through the filmulation process, and set the sliders to your taste.
+To enqueue photos, double-click on them in the grid view in the organize tab. To remove them from the queue, right-click on the queue entry and select 'Remove from queue'. From either the Organize tab or from the queue, you can rate images from zero through five, and you can filter the organize tab to show only photos above a certain rating.
+
+At this point, go to the Filmulate tab, which lets you process your photos. Double-click on a photo in the queue to load it through the Filmulation process, and set the sliders to your taste.
 
 The tools are arranged in pipeline order: the processing they control occurs from top to bottom. Thus, we advise you mostly work top-down through the tools.
 
@@ -51,7 +53,7 @@ If you want the UI to appear larger on a high-pixel density display, use the Use
 
 # Status
 
-If told to make a version number for it right now, I'd put it as 0.5 Alpha.
+If told to make a version number for it right now, I'd put it as 0.6 Alpha.
 
 Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the Import and Organize tabs need some UI massaging, as does the queue. Finally, the Output tab hasn't even been started yet.
 
