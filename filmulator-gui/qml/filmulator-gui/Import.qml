@@ -49,26 +49,21 @@ Rectangle {
             uiScale: root.uiScale
         }
 
-        RowLayout {
+        Rectangle {
             id: sourceSelector
-            spacing: 0
             width: parent.width
             height: 30 * root.uiScale
+            color: Colors.darkGray
 
             ExclusiveGroup {id: sourceSelectorGroup}
 
             property bool hovered: (sourceDirButton.hovered || sourceFileButton.hovered)
 
-            Rectangle {
-                width: 2 * root.uiScale
-                height: parent.height
-                color: Colors.darkGray
-            }
-
             ToolRadioButton {
                 id: sourceDirButton
                 width: parent.width/2 - 2*uiScale
                 height: parent.height
+                x: 2*uiScale
                 standalone: true
                 text: qsTr("Import Directory")
                 tooltipText: qsTr("Import from a directory and all subdirectories.")
@@ -89,6 +84,7 @@ Rectangle {
                 id: sourceFileButton
                 width: parent.width/2 - 2*uiScale
                 height: parent.height
+                x: parent.width/2
                 standalone: true
                 text: qsTr("Import Files")
                 tooltipText: qsTr("Import one or more files.")
@@ -102,12 +98,6 @@ Rectangle {
                     sourceFileButton.tooltipWanted.connect(root.tooltipWanted)
                 }
                 uiScale: root.uiScale
-            }
-
-            Rectangle {
-                width: 2 * root.uiScale
-                height: parent.height
-                color: Colors.darkGray
             }
         }
 
@@ -160,26 +150,21 @@ Rectangle {
             highlight: sourceSelector.hovered
         }
 
-        RowLayout {
+        Rectangle {
             id: destSelector
-            spacing: 0
             width: parent.width
             height: 30 * uiScale
+            color: Colors.darkGray
 
             ExclusiveGroup {id: destSelectorGroup}
 
             property bool hovered: (importAndMoveButton.hovered || importInPlaceButton.hovered)
 
-            Rectangle {
-                width: 2 * root.uiScale
-                height: parent.height
-                color: Colors.darkGray
-            }
-
             ToolRadioButton {
                 id: importAndMoveButton
                 width: parent.width/2 - 2*uiScale
                 height: parent.height
+                x: 2*uiScale
                 standalone: true
                 text: qsTr("Copy to directory")
                 tooltipText: qsTr("When importing, copy files to a folder structure based on date and time of capture. This lets you create backup copies at the same time.")
@@ -200,6 +185,7 @@ Rectangle {
                 id: importInPlaceButton
                 width: parent.width/2 - 2*uiScale
                 height: parent.height
+                x: parent.width/2
                 standalone: true
                 text: qsTr("Import in place")
                 tooltipText: qsTr("Import files into the database without moving or copying them.")
@@ -214,12 +200,6 @@ Rectangle {
                 }
 
                 uiScale: root.uiScale
-            }
-
-            Rectangle {
-                width: 2 * root.uiScale
-                height: parent.height
-                color: Colors.darkGray
             }
         }
 
