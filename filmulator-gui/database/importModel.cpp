@@ -44,6 +44,37 @@ QSqlQuery ImportModel::modelQuery()
     return QSqlQuery(QString(""));
 }
 
+//We want to scan for DCIM to warn people not to import in place from a memory card.
+//If any cameras eventually have things that are not DCIM, they should be added here.
+bool ImportModel::pathContainsDCIM(const QString dir, const bool notDirectory)
+{
+    //First, check to see if the directory contains the substring DCIM.
+    if (dir.contains("DCIM", Qt::CaseSensitive))
+    {
+        return true;
+    }
+    else if (notDirectory)
+    {
+        return false;
+    }
+    else
+    {
+        //Next, we call this function recursively on the folders within.
+        QDir directory = QDir(dir);
+        directory.setFilter(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+        directory.setSorting(QDir::Name);
+        QFileInfoList dirList = directory.entryInfoList();
+        for (int i=0; i < dirList.size(); i++)
+        {
+            if (pathContainsDCIM(dirList.at(i).absoluteFilePath(), false))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void ImportModel::importDirectory_r(const QString dir)
 {
     //This function reads in a directory and puts the raws into the database.

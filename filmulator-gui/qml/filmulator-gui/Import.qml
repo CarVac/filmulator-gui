@@ -116,14 +116,18 @@ Rectangle {
             title: qsTr("Source Directory")
             tooltipText: qsTr("Select or type in the directory containing photos to be imported.")
             dirDialogTitle: qsTr("Select the directory containing the photos to import. It will only import raw files.")
-            erroneous: importModel.emptyDir
+            warningTooltipText: empty ? qsTr("Choose a directory to import from.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
+            erroneous: (empty || (importInPlace && containsDCIM))
+            property bool containsDCIM: false
+            property bool empty: false
             onEnteredTextChanged: {
                 root.folderPath = enteredText
+                containsDCIM = importModel.pathContainsDCIM(enteredText, false)
             }
             Connections {
                 target: importModel
                 onEmptyDirChanged: {
-                    sourceDirEntry.erroneous = importModel.emptyDir
+                    sourceDirEntry.empty = importModel.emptyDir
                 }
             }
             Component.onCompleted: {
@@ -139,9 +143,14 @@ Rectangle {
             title: qsTr("Source Files")
             tooltipText: qsTr("Select one or more files to import.")
             fileDialogTitle: qsTr("Select the file(s) to import.")
+            warningTooltipText: invalid ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
+            erroneous: (invalid || (importInPlace && containsDCIM))
+            property bool containsDCIM: false
+            property bool invalid: false
             nameFilters: importModel.getNameFilters();
             onEnteredTextChanged: {
                 root.filePath = enteredText
+                containsDCIM = importModel.pathContainsDCIM(enteredText, true)
             }
             Component.onCompleted: {
                 sourceFileEntry.tooltipWanted.connect(root.tooltipWanted)

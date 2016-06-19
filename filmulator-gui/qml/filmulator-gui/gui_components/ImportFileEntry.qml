@@ -13,6 +13,7 @@ Rectangle {
     implicitWidth: parent.width
     property alias title: label.text
     property alias tooltipText: labelTooltip.tooltipText
+    property alias warningTooltipText: textEntryTooltip.tooltipText
     property alias fileDialogTitle: fileDialog.title
     property alias enteredText: textEntryBox.text
     property alias nameFilters: fileDialog.nameFilters
@@ -87,5 +88,12 @@ Rectangle {
         id: labelTooltip
         anchors.fill: labelBox
         Component.onCompleted: labelTooltip.tooltipWanted.connect(root.tooltipWanted)
+    }
+
+    ToolTip {
+        id: textEntryTooltip
+        anchors.fill: textEntryRect
+        Component.onCompleted: textEntryTooltip.tooltipWanted.connect(root.tooltipWanted)
+        visible: root.erroneous
     }
 }
