@@ -25,6 +25,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                        const QString,
                                        const QString,
                                        const QDateTime,
+                                       const bool,
                                        const bool)),
             worker, SLOT(importFile(const QFileInfo,
                                     const int,
@@ -33,6 +34,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                     const QString,
                                     const QString,
                                     const QDateTime,
+                                    const bool,
                                     const bool)));
     connect(worker, SIGNAL(doneProcessing()), this, SLOT(workerFinished()));
     connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
@@ -75,7 +77,7 @@ bool ImportModel::pathContainsDCIM(const QString dir, const bool notDirectory)
     return false;
 }
 
-void ImportModel::importDirectory_r(const QString dir)
+void ImportModel::importDirectory_r(const QString dir, const bool importInPlace)
 {
     //This function reads in a directory and puts the raws into the database.
     if (dir.length() == 0)
@@ -84,9 +86,11 @@ void ImportModel::importDirectory_r(const QString dir)
         emit emptyDirChanged();
         return;
     }
-
-    emptyDir = false;
-    emit emptyDirChanged();
+    else
+    {
+        emptyDir = false;
+        emit emptyDirChanged();
+    }
 
     //First, we call itself recursively on the folders within.
     QDir directory = QDir(dir);
@@ -95,7 +99,7 @@ void ImportModel::importDirectory_r(const QString dir)
     QFileInfoList dirList = directory.entryInfoList();
     for (int i=0; i < dirList.size(); i++)
     {
-        importDirectory_r(dirList.at(i).absoluteFilePath());
+        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace);
     }
 
     //Next, we filter for files.
@@ -126,6 +130,7 @@ void ImportModel::importDirectory_r(const QString dir)
         params.dirConfigParam = dirConfig;
         params.importStartTimeParam = now;
         params.appendHashParam = appendHash;
+        params.importInPlace = importInPlace;
         queue.push_back(params);
         maxQueue++;
     }
@@ -145,20 +150,40 @@ QStringList ImportModel::getNameFilters()
     return dirNameFilters;
 }
 
-//This will import a single file, taking in a file path as a QString.
-void ImportModel::importFile(const QString name)
+//This imports a single file, taking in a file path URL as a QString.
+void ImportModel::importFile(const QString name, const bool importInPlace)
 {
 
-    /*
-    directory.setFilter(QDir::Files | QDir::NoSymLinks);
-    QStringList nameFilters;
-    nameFilters << "*.CR2" << "*.NEF" << "*.DNG" << "*.dng" << "*.RW2" << "*.IIQ" << "*.ARW" << "*.PEF" << "*.RAF" << "*.ORF";
-    directory.setNameFilters(nameFilters);
-    QFileInfoList fileList = directory.entryInfoList();
-
-    if (fileList.size() == 0)
+    //First check that it's a file.
+    const QFileInfo file = QFileInfo(name.mid(7));
+    if (!file.isFile())
     {
+        invalidFile = true;
+        emit invalidFileChanged();
         return;
+    }
+
+    bool isReadableFile = false;
+    //First check if it's raw.
+    for (int i = 0; i < rawNameFilters.size(); i++)
+    {
+        if (file.fileName().endsWith(rawNameFilters.at(i).mid(1)))
+        {
+            isReadableFile = true;
+        }
+    }
+    //Future type checks go here.
+    //Now we tell the GUI the result:
+    if (!isReadableFile)
+    {
+        invalidFile = true;
+        emit invalidFileChanged();
+        return;
+    }
+    else
+    {
+        invalidFile = false;
+        emit invalidFileChanged();
     }
 
     QMutexLocker locker(&mutex);
@@ -168,20 +193,18 @@ void ImportModel::importFile(const QString name)
     }
 
     QDateTime now = QDateTime::currentDateTime();
-    for (int i = 0; i < fileList.size(); i++)
-    {
-        importParams params;
-        params.fileInfoParam = fileList.at(i);
-        params.importTZParam = importTZ;
-        params.cameraTZParam = cameraTZ;
-        params.photoDirParam = photoDir;
-        params.backupDirParam = backupDir;
-        params.dirConfigParam = dirConfig;
-        params.importStartTimeParam = now;
-        params.appendHashParam = appendHash;
-        queue.push_back(params);
-        maxQueue++;
-    }
+    importParams params;
+    params.fileInfoParam = file;
+    params.importTZParam = importTZ;
+    params.cameraTZParam = cameraTZ;
+    params.photoDirParam = photoDir;
+    params.backupDirParam = backupDir;
+    params.dirConfigParam = dirConfig;
+    params.importStartTimeParam = now;
+    params.appendHashParam = appendHash;
+    params.importInPlace = importInPlace;
+    queue.push_back(params);
+    maxQueue++;
 
     progress = float(maxQueue - queue.size())/float(maxQueue);
     progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
@@ -191,23 +214,26 @@ void ImportModel::importFile(const QString name)
     paused = false;
 
     startWorker(queue.front());
-    */
 }
 
 //This will import multiple files, but I'm not sure exactly how it works.
-void ImportModel::importFileList(const QString name)
+void ImportModel::importFileList(const QString name, const bool importInPlace)
 {
-    cout << name.toStdString() << endl;
+    const QStringList nameList = name.split(",");
+    for (int i = 0; i < nameList.size(); i++)
+    {
+        importFile(nameList.at(i), importInPlace);
+    }
 }
 
 void ImportModel::workerFinished()
 {
     QMutexLocker locker(&mutex);
-    cout << "ImportModel queue items remaining: " << queue.size() << endl;
+    //cout << "ImportModel queue items remaining: " << queue.size() << endl;
     emit searchTableChanged();
     if (queue.size() <= 0)
     {
-        cout << "ImportModel no more work; empty queue" << endl;
+        //cout << "ImportModel no more work; empty queue" << endl;
         return;
     }
 
@@ -216,14 +242,14 @@ void ImportModel::workerFinished()
     {
         progress = float(maxQueue - queue.size())/float(maxQueue);
         progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
-        cout << "ImportModel::workerFinished; progress = " << progress << endl;
+        //cout << "ImportModel::workerFinished; progress = " << progress << endl;
         emit progressChanged();
         emit progressFracChanged();
     }
 
     if (queue.size() <= 0)
     {
-        cout << "ImportModel no more work; just emptied the queue" << endl;
+        //cout << "ImportModel no more work; just emptied the queue" << endl;
         return;
     }
     else if (!paused)
@@ -232,7 +258,7 @@ void ImportModel::workerFinished()
     }
 }
 
-void ImportModel::enqueueRequested(QString STsearchID)
+void ImportModel::enqueueRequested(const QString STsearchID)
 {
     if (enqueue)
     {
@@ -240,7 +266,7 @@ void ImportModel::enqueueRequested(QString STsearchID)
     }
 }
 
-void ImportModel::startWorker(importParams params)
+void ImportModel::startWorker(const importParams params)
 {
     const QFileInfo info = params.fileInfoParam;
     const int iTZ = params.importTZParam;
@@ -250,5 +276,6 @@ void ImportModel::startWorker(importParams params)
     const QString dConf = params.dirConfigParam;
     const QDateTime time = params.importStartTimeParam;
     const bool append = params.appendHashParam;
-    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time, append);
+    const bool inPlace = params.importInPlace;
+    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time, append, inPlace);
 }

@@ -22,6 +22,7 @@ struct importParams {
     QString dirConfigParam;
     QDateTime importStartTimeParam;
     bool appendHashParam;
+    bool importInPlace;
 };
 
 class ImportModel : public SqlModel
@@ -43,13 +44,14 @@ class ImportModel : public SqlModel
     Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
     Q_PROPERTY(QString progressFrac READ getProgressFrac NOTIFY progressFracChanged)
     Q_PROPERTY(bool emptyDir READ getEmptyDir NOTIFY emptyDirChanged)
+    Q_PROPERTY(bool invalidFile READ getInvalidFile NOTIFY invalidFileChanged)
 
 public:
     explicit ImportModel(QObject *parent = 0);
     Q_INVOKABLE bool pathContainsDCIM(const QString dir, const bool notDirectory);
-    Q_INVOKABLE void importDirectory_r(const QString dir);
-    Q_INVOKABLE void importFile(const QString name);
-    Q_INVOKABLE void importFileList(const QString name);
+    Q_INVOKABLE void importDirectory_r(const QString dir, const bool importInPlace);
+    Q_INVOKABLE void importFile(const QString name, const bool importInPlace);
+    Q_INVOKABLE void importFileList(const QString name, const bool importInPlace);
     Q_INVOKABLE QStringList getNameFilters();
 
     void setImportTZ(const int offsetIn);
@@ -75,10 +77,11 @@ public:
     float getProgress() {return progress;}
     QString getProgressFrac() {return progressFrac;}
     bool getEmptyDir() {return emptyDir;}
+    bool getInvalidFile() {return invalidFile;}
 
 public slots:
     void workerFinished();
-    void enqueueRequested(QString STsearchID);
+    void enqueueRequested(const QString STsearchID);
 
 signals:
     void importTZChanged();
@@ -94,9 +97,10 @@ signals:
     void progressChanged();
     void progressFracChanged();
     void emptyDirChanged();
+    void invalidFileChanged();
 
     void searchTableChanged();
-    void enqueueThis(QString STsearchID);
+    void enqueueThis(const QString STsearchID);
 
     void workForWorker(const QFileInfo infoIn,
                        const int importTZ,
@@ -105,7 +109,8 @@ signals:
                        const QString backupDir,
                        const QString dirConfig,
                        const QDateTime importStartTime,
-                       const bool appendHash);
+                       const bool appendHash,
+                       const bool importInPlace);
 
     void importChanged();
 
@@ -133,6 +138,7 @@ protected:
     float progress = 1;
     QString progressFrac = "Progress: 0/0";
     bool emptyDir = false;
+    bool invalidFile = false;
 
     QThread workerThread;
 
@@ -140,7 +146,7 @@ protected:
 
     QMutex mutex;
 
-    void startWorker(importParams);
+    void startWorker(const importParams);
 };
 
 #endif // IMPORTMODEL_H

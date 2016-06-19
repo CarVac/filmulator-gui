@@ -142,6 +142,13 @@ Rectangle {
                 root.filePath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, true)
             }
+            Connections {
+                target: importModel
+                onInvalidFileChanged: {
+                    sourceFileEntry.invalid = importModel.invalidFile
+                }
+            }
+
             Component.onCompleted: {
                 sourceFileEntry.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -338,9 +345,9 @@ Rectangle {
             height: 40 * uiScale
             onTriggered: {
                 if (root.sourceIsFolder) {
-                    importModel.importDirectory_r(root.folderPath)
+                    importModel.importDirectory_r(root.folderPath, root.importInPlace)
                 } else {
-                    importModel.importFileList(root.filePath)
+                    importModel.importFileList(root.filePath, root.importInPlace)
                 }
             }
             Component.onCompleted: {

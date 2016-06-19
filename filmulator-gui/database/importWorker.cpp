@@ -15,7 +15,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                               const QString backupDir,
                               const QString dirConfig,
                               const QDateTime importStartTime,
-                              const bool appendHash)
+                              const bool appendHash,
+                              const bool importInPlace)
 {
     //Generate a hash of the raw file.
     QCryptographicHash hash(QCryptographicHash::Md5);
@@ -25,6 +26,14 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         qDebug("File couldn't be opened.");
     }
 
+    //Grab EXIF data from the file.
+    const std::string abspath = infoIn.absoluteFilePath().toStdString();
+    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(abspath);
+    image->readMetadata();
+    Exiv2::ExifData exifData = image->exifData();
+    Exiv2::XmpData xmpData = image->xmpData();
+
+
     //Load data into the hash function.
     while (!file.atEnd())
     {
@@ -32,9 +41,10 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     }
     QString hashString = QString(hash.result().toHex());
 
-    //Optionally append 7 alphanumeric characters derived from the hash to the filename
     QString filename = infoIn.fileName();
-    if (appendHash)
+    //Optionally append 7 alphanumeric characters derived from the hash to the filename
+    //We don't want it to do this if we're importing in place.
+    if (!importInPlace && appendHash)
     {
         QString subFilename = filename.left(filename.length()-4);
         QString extension = filename.right(4);
@@ -56,13 +66,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         filename = subFilename;
     }
 
-    //Grab EXIF data from the file.
-    const std::string abspath = infoIn.absoluteFilePath().toStdString();
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(abspath);
-    image->readMetadata();
-    Exiv2::ExifData exifData = image->exifData();
-    Exiv2::XmpData xmpData = image->xmpData();
-
     //Set up the main directory to insert the file, and the full file path.
     //This is based on what time it was in the timezone of photo capture.
     QString outputPath = photoDir;
@@ -79,9 +82,9 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     QString backupPathName = backupPath;
     backupPathName.append(filename);
 
-    //Create the directory, if the root exists.
+    //Create the directory, if the root exists, and we're not importing in place.
     QDir backupRoot(backupDir);
-    if (backupRoot.exists())
+    if (backupRoot.exists() && !importInPlace)
     {
         QDir backupDirectory(backupPath);
         backupDirectory.mkpath(backupPath);
@@ -90,6 +93,10 @@ void ImportWorker::importFile(const QFileInfo infoIn,
             QFile::copy(infoIn.absoluteFilePath(), backupPathName);
         }
     }
+
+
+
+
 
     //Check to see if it's already present in the database.
     QSqlQuery query;
@@ -100,24 +107,27 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     const QString dbRecordedPath = query.value(0).toString();
     if (dbRecordedPath == "")//It's not in the database yet.
     {
-        //Copy the file into our main directory. We assume it's not in here yet.
-        QFile::copy(infoIn.absoluteFilePath(), outputPathName);
-
-        //Insert it into the database.
-        fileInsert(hashString, outputPathName, exifData);
+        //Record the file location in the database.
+        if (!importInPlace)
+        {
+            //Copy the file into our main directory. We assume it's not in here yet.
+            QFile::copy(infoIn.absoluteFilePath(), outputPathName);
+            fileInsert(hashString, outputPathName, exifData);
+        }
+        else
+        {
+            //If it's being imported in place, then we don't copy the file.
+            fileInsert(hashString, infoIn.absoluteFilePath(), exifData);
+        }
 
         //Now create a profile and a search table entry, and a thumbnail.
         QString STsearchID;
         STsearchID = createNewProfile(hashString,
                                       filename,
-                                      infoIn.absoluteFilePath(),
                                       exifUtcTime(exifData, cameraTZ),
                                       importStartTime,
                                       exifData,
                                       xmpData);
-        //We left the absolute file path FOR NOW because it looks up WB from the
-        //original file. FOR NOW.
-        //Eventually we'll have the parameter manager read the wb from the destination.
 
         //Request that we enqueue the image.
         cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
@@ -132,7 +142,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         //See if the file is in its old location.
         //If the user deleted the local copy of the raw file, but are re-importing
         // from the backup, this situation might occur.
-        if (!QFile::exists(dbRecordedPath))
+        if (!QFile::exists(dbRecordedPath) && !importInPlace)
         {
             QFile::copy(infoIn.absoluteFilePath(), outputPathName);
         }

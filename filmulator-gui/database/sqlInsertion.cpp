@@ -38,7 +38,6 @@ void fileInsert(const QString hash,
 /*It returns a QString containing the STsearchID.*/
 QString createNewProfile(const QString fileHash,
                          const QString fileName,
-                         const QString /*absoluteFilePath*/,
                          const QDateTime captureTime,
                          const QDateTime importStartTime,
                          Exiv2::ExifData exifData,
