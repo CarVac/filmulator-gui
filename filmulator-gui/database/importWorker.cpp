@@ -73,8 +73,11 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     QString outputPathName = outputPath;
     outputPathName.append(filename);
     //Create the directory.
-    QDir dir(outputPath);
-    dir.mkpath(outputPath);
+    if (!importInPlace)
+    {
+        QDir dir(outputPath);
+        dir.mkpath(outputPath);
+    }
 
     //Sets up the backup directory.
     QString backupPath = backupDir;
