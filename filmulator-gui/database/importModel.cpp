@@ -152,7 +152,7 @@ QStringList ImportModel::getNameFilters()
 
 //This imports a single file, taking in a file path URL as a QString.
 //If invalid, returns Validity::invalid
-Validity ImportModel::importFile(const QString name, const bool importInPlace)
+Validity ImportModel::importFile(const QString name, const bool importInPlace, const bool onlyCheck)
 {
 
     //Check for "url://" at the beginning
@@ -190,30 +190,35 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace)
         emit invalidFileChanged();
     }
 
-    QMutexLocker locker(&mutex);
-    if (0 == queue.size())
+    //Now if it's not just checking validity, we enqueue.
+
+    if (!onlyCheck)
     {
-        maxQueue = 0;
+        QMutexLocker locker(&mutex);
+        if (0 == queue.size())
+        {
+            maxQueue = 0;
+        }
+
+        QDateTime now = QDateTime::currentDateTime();
+        importParams params;
+        params.fileInfoParam = file;
+        params.importTZParam = importTZ;
+        params.cameraTZParam = cameraTZ;
+        params.photoDirParam = photoDir;
+        params.backupDirParam = backupDir;
+        params.dirConfigParam = dirConfig;
+        params.importStartTimeParam = now;
+        params.appendHashParam = appendHash;
+        params.importInPlace = importInPlace;
+        queue.push_back(params);
+        maxQueue++;
+
+        progress = float(maxQueue - queue.size())/float(maxQueue);
+        progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
+        emit progressChanged();
+        emit progressFracChanged();
     }
-
-    QDateTime now = QDateTime::currentDateTime();
-    importParams params;
-    params.fileInfoParam = file;
-    params.importTZParam = importTZ;
-    params.cameraTZParam = cameraTZ;
-    params.photoDirParam = photoDir;
-    params.backupDirParam = backupDir;
-    params.dirConfigParam = dirConfig;
-    params.importStartTimeParam = now;
-    params.appendHashParam = appendHash;
-    params.importInPlace = importInPlace;
-    queue.push_back(params);
-    maxQueue++;
-
-    progress = float(maxQueue - queue.size())/float(maxQueue);
-    progressFrac = "Progress: "+QString::number(maxQueue - queue.size())+"/"+QString::number(maxQueue);
-    emit progressChanged();
-    emit progressFracChanged();
 
     return Validity::valid;
 }
@@ -223,9 +228,10 @@ void ImportModel::importFileList(const QString name, const bool importInPlace)
 {
     Validity validity = Validity::valid;
     const QStringList nameList = name.split(",");
+    //First check for validity.
     for (int i = 0; i < nameList.size(); i++)
     {
-        validity = importFile(nameList.at(i), importInPlace);
+        validity = importFile(nameList.at(i), importInPlace, true);
         if (Validity::invalid == validity)
         {
             break;
@@ -233,6 +239,11 @@ void ImportModel::importFileList(const QString name, const bool importInPlace)
     }
     if (Validity::valid == validity)
     {
+        //If it's valid, we run it again, this time enqueuing them.
+        for (int i = 0; i < nameList.size(); i++)
+        {
+            importFile(nameList.at(i), importInPlace, false);
+        }
         paused = false;
         startWorker(queue.front());
     }
