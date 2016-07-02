@@ -13,15 +13,13 @@
 #include <QMetaType>
 #include <QFileInfo>
 #include <QIcon>
-#include <QtWidgets/QApplication>
 #include <QFont>
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     QFont sansFont("Sans Serif",9);
     app.setFont(sansFont);
-    //QQmlApplicationEngine engine("qml/filmulator-gui/main.qml");
     QQmlApplicationEngine engine;
 
     QTranslator translator;
