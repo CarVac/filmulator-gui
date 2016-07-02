@@ -25,6 +25,11 @@ struct importParams {
     bool importInPlace;
 };
 
+enum Validity {
+    valid,
+    invalid
+};
+
 class ImportModel : public SqlModel
 {
     Q_OBJECT
@@ -50,7 +55,7 @@ public:
     explicit ImportModel(QObject *parent = 0);
     Q_INVOKABLE bool pathContainsDCIM(const QString dir, const bool notDirectory);
     Q_INVOKABLE void importDirectory_r(const QString dir, const bool importInPlace);
-    Q_INVOKABLE void importFile(const QString name, const bool importInPlace);
+    Q_INVOKABLE Validity importFile(const QString name, const bool importInPlace);
     Q_INVOKABLE void importFileList(const QString name, const bool importInPlace);
     Q_INVOKABLE QStringList getNameFilters();
 

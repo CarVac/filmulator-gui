@@ -151,20 +151,24 @@ QStringList ImportModel::getNameFilters()
 }
 
 //This imports a single file, taking in a file path URL as a QString.
-void ImportModel::importFile(const QString name, const bool importInPlace)
+//If invalid, returns Validity::invalid
+Validity ImportModel::importFile(const QString name, const bool importInPlace)
 {
 
-    //First check that it's a file.
-    const QFileInfo file = QFileInfo(name.mid(7));
+    //Check for "url://" at the beginning
+    const int count = name.startsWith("file://") ? 7 : 0;
+
+    //Then check that it's a real file.
+    const QFileInfo file = QFileInfo(name.mid(count));
     if (!file.isFile())
     {
         invalidFile = true;
         emit invalidFileChanged();
-        return;
+        return Validity::invalid;
     }
 
     bool isReadableFile = false;
-    //First check if it's raw.
+    //And then check if the file extension indicates that it's raw.
     for (int i = 0; i < rawNameFilters.size(); i++)
     {
         if (file.fileName().endsWith(rawNameFilters.at(i).mid(1)))
@@ -178,7 +182,7 @@ void ImportModel::importFile(const QString name, const bool importInPlace)
     {
         invalidFile = true;
         emit invalidFileChanged();
-        return;
+        return Validity::invalid;
     }
     else
     {
@@ -211,18 +215,26 @@ void ImportModel::importFile(const QString name, const bool importInPlace)
     emit progressChanged();
     emit progressFracChanged();
 
-    paused = false;
-
-    startWorker(queue.front());
+    return Validity::valid;
 }
 
 //This will import multiple files, but I'm not sure exactly how it works.
 void ImportModel::importFileList(const QString name, const bool importInPlace)
 {
+    Validity validity = Validity::valid;
     const QStringList nameList = name.split(",");
     for (int i = 0; i < nameList.size(); i++)
     {
-        importFile(nameList.at(i), importInPlace);
+        validity = importFile(nameList.at(i), importInPlace);
+        if (Validity::invalid == validity)
+        {
+            break;
+        }
+    }
+    if (Validity::valid == validity)
+    {
+        paused = false;
+        startWorker(queue.front());
     }
 }
 
