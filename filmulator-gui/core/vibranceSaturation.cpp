@@ -90,10 +90,6 @@ void HSVtoRGB( float h, float s, float v, float &r, float &g, float &b)
 
 }
 
-float log2(float i)
-{
-    return(log(i)/log(2));
-}
 float shift23=(1<<23);
 float OOshift23=1.0/(1<<23);
 
