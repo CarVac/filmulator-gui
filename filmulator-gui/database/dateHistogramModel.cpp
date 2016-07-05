@@ -1,6 +1,7 @@
 
 #include "dateHistogramModel.h"
 #include <QDate>
+#include <math.h>
 #include <QString>
 #include <iostream>
 #include <QSqlRecord>

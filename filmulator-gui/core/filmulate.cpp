@@ -102,9 +102,13 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     float timestep = total_development_time/development_steps;
 	int agitate_period;
 	if(agitate_count > 0)
+    {
         agitate_period = floor(development_steps/agitate_count);
+    }
     else
+    {
         agitate_period = 3*development_steps;
+    }
 	int half_agitate_period = floor(agitate_period/2);
    
     tout << "Initialization time: " << timeDiff(initialize_start)
