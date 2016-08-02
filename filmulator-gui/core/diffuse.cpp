@@ -195,44 +195,43 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
     }
 
     double denom = 1.57825 + 2.44413*q + 1.4281*q*q + 0.422205*q*q*q;
-    double coeff [4];
 
-    coeff[1] = (2.44413*q + 2.85619*q*q + 1.26661*q*q*q)/denom;
-    coeff[2] = (-1.4281*q*q - 1.26661*q*q*q)/denom;
-    coeff[3] = (0.422205*q*q*q)/denom;
-    coeff[0] = 1 - (coeff[1] + coeff[2] + coeff[3]);
+    const double coeff1 = (2.44413*q + 2.85619*q*q + 1.26661*q*q*q)/denom;
+    const double coeff2 = (-1.4281*q*q - 1.26661*q*q*q)/denom;
+    const double coeff3 = (0.422205*q*q*q)/denom;
+    const double coeff0 = 1 - (coeff1 + coeff2 + coeff3);
 
     //We blur ones in order to cancel the edge attenuation.
 
     //First we do horizontally.
     vector<double> attenuationX(paddedWidth);
     //Set up the boundary
-    attenuationX[0] = coeff[0]; //times 1
-    attenuationX[1] = coeff[0] + coeff[1]*attenuationX[0];
-    attenuationX[2] = coeff[0] + coeff[1]*attenuationX[1] + coeff[2]*attenuationX[0];
+    attenuationX[0] = coeff0; //times 1
+    attenuationX[1] = coeff0 + coeff1*attenuationX[0];
+    attenuationX[2] = coeff0 + coeff1*attenuationX[1] + coeff2*attenuationX[0];
     //Go over the image width
     for (int i = 3; i < width; i++)
     {
-        attenuationX[i] = coeff[0] + //times 1
-                          coeff[1] * attenuationX[i-1] +
-                          coeff[2] * attenuationX[i-2] +
-                          coeff[3] * attenuationX[i-3];
+        attenuationX[i] = coeff0 + //times 1
+                          coeff1 * attenuationX[i-1] +
+                          coeff2 * attenuationX[i-2] +
+                          coeff3 * attenuationX[i-3];
     }
     //Fill in the padding (which is all zeros)
     for (int i = width; i < paddedWidth; i++)
     {
-        //All zeros, so no coeff[0]*1 here.
-        attenuationX[i] = coeff[1] * attenuationX[i-1] +
-                          coeff[2] * attenuationX[i-2] +
-                          coeff[3] * attenuationX[i-3];
+        //All zeros, so no coeff0*1 here.
+        attenuationX[i] = coeff1 * attenuationX[i-1] +
+                          coeff2 * attenuationX[i-2] +
+                          coeff3 * attenuationX[i-3];
     }
     //And go back.
     for (int i = paddedWidth - 3 - 1; i >= 0; i--)
     {
-        attenuationX[i] = coeff[0] * attenuationX[i] +
-                          coeff[1] * attenuationX[i+1] +
-                          coeff[2] * attenuationX[i+2] +
-                          coeff[3] * attenuationX[i+3];
+        attenuationX[i] = coeff0 * attenuationX[i] +
+                          coeff1 * attenuationX[i+1] +
+                          coeff2 * attenuationX[i+2] +
+                          coeff3 * attenuationX[i+3];
     }
 
 #pragma omp parallel for
@@ -251,32 +250,32 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
     //And now vertically.
     vector<double> attenuationY(paddedHeight);
     //Set up the boundary
-    attenuationY[0] = coeff[0]; //times 1
-    attenuationY[1] = coeff[0] + coeff[1]*attenuationY[0];
-    attenuationY[2] = coeff[0] + coeff[1]*attenuationY[1] + coeff[2]*attenuationY[0];
+    attenuationY[0] = coeff0; //times 1
+    attenuationY[1] = coeff0 + coeff1*attenuationY[0];
+    attenuationY[2] = coeff0 + coeff1*attenuationY[1] + coeff2*attenuationY[0];
     //Go over the image height
     for (int i = 3; i < height; i++)
     {
-        attenuationY[i] = coeff[0] + //times 1
-                          coeff[1] * attenuationY[i-1] +
-                          coeff[2] * attenuationY[i-2] +
-                          coeff[3] * attenuationY[i-3];
+        attenuationY[i] = coeff0 + //times 1
+                          coeff1 * attenuationY[i-1] +
+                          coeff2 * attenuationY[i-2] +
+                          coeff3 * attenuationY[i-3];
     }
     //Fill in the padding (which is all zeros)
     for (int i = height; i < paddedHeight; i++)
     {
-        //All zeros, so no coeff[0]*1 here.
-        attenuationY[i] = coeff[1] * attenuationY[i-1] +
-                          coeff[2] * attenuationY[i-2] +
-                          coeff[3] * attenuationY[i-3];
+        //All zeros, so no coeff0*1 here.
+        attenuationY[i] = coeff1 * attenuationY[i-1] +
+                          coeff2 * attenuationY[i-2] +
+                          coeff3 * attenuationY[i-3];
     }
     //And go back.
     for (int i = paddedHeight - 3 - 1; i >= 0; i--)
     {
-        attenuationY[i] = coeff[0] * attenuationY[i  ] +
-                          coeff[1] * attenuationY[i+1] +
-                          coeff[2] * attenuationY[i+2] +
-                          coeff[3] * attenuationY[i+3];
+        attenuationY[i] = coeff0 * attenuationY[i  ] +
+                          coeff1 * attenuationY[i+1] +
+                          coeff2 * attenuationY[i+2] +
+                          coeff3 * attenuationY[i+3];
     }
 
 #pragma omp parallel for
@@ -295,7 +294,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 
     //X direction blurring.
     //We slice by individual rows.
-#pragma omp parallel shared(developer_concentration, coeff, attenuationX)
+#pragma omp parallel shared(developer_concentration, attenuationX)
     {
         vector<double> devel_concX(paddedWidth);
 #pragma omp for schedule(dynamic)
@@ -307,34 +306,34 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                 devel_concX[col] = double(developer_concentration(row,col));
             }
             //Set up the boundary
-            devel_concX[0] = coeff[0] * devel_concX[0];
-            devel_concX[1] = coeff[0] * devel_concX[1] +
-                             coeff[1] * devel_concX[0];
-            devel_concX[2] = coeff[0] * devel_concX[2] +
-                             coeff[1] * devel_concX[1] +
-                             coeff[2] * devel_concX[0];
+            devel_concX[0] = coeff0 * devel_concX[0];
+            devel_concX[1] = coeff0 * devel_concX[1] +
+                             coeff1 * devel_concX[0];
+            devel_concX[2] = coeff0 * devel_concX[2] +
+                             coeff1 * devel_concX[1] +
+                             coeff2 * devel_concX[0];
             //Iterate over the main part of the image, except for the setup
             for (int col = 3; col < width; col++)
             {
-                devel_concX[col] = coeff[0] * devel_concX[col  ] +
-                                   coeff[1] * devel_concX[col-1] +
-                                   coeff[2] * devel_concX[col-2] +
-                                   coeff[3] * devel_concX[col-3];
+                devel_concX[col] = coeff0 * devel_concX[col  ] +
+                                   coeff1 * devel_concX[col-1] +
+                                   coeff2 * devel_concX[col-2] +
+                                   coeff3 * devel_concX[col-3];
             }
             //Iterate over the zeroed tail
             for (int col = width; col < paddedWidth; col++)
             {
-                devel_concX[col] = coeff[1] * devel_concX[col-1] +
-                                   coeff[2] * devel_concX[col-2] +
-                                   coeff[3] * devel_concX[col-3];
+                devel_concX[col] = coeff1 * devel_concX[col-1] +
+                                   coeff2 * devel_concX[col-2] +
+                                   coeff3 * devel_concX[col-3];
             }
             //And go back
             for (int col = paddedWidth - 3 - 1; col >= 0; col--)
             {
-                devel_concX[col] = coeff[0] * devel_concX[col  ] +
-                                   coeff[1] * devel_concX[col+1] +
-                                   coeff[2] * devel_concX[col+2] +
-                                   coeff[3] * devel_concX[col+3];
+                devel_concX[col] = coeff0 * devel_concX[col  ] +
+                                   coeff1 * devel_concX[col+1] +
+                                   coeff2 * devel_concX[col+2] +
+                                   coeff3 * devel_concX[col+3];
             }
             //And undo the attenuation, copying back from the temp.
 #pragma omp simd
@@ -347,7 +346,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 
     //Y direction blurring. We slice into columns a whole number of cache lines wide.
     //Each cache line is 8 doubles wide.
-#pragma omp parallel shared(developer_concentration, coeff, attenuationY)
+#pragma omp parallel shared(developer_concentration, attenuationY)
     {
         matrix<double> devel_concY;
         int thickness = 8; //of the slice
@@ -390,12 +389,12 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
             for (int col = 0; col < 8; col++)
             {
-                devel_concY(0,col) = coeff[0] * devel_concY(0,col);
-                devel_concY(1,col) = coeff[0] * devel_concY(1,col) +
-                                     coeff[1] * devel_concY(0,col);
-                devel_concY(2,col) = coeff[0] * devel_concY(2,col) +
-                                     coeff[1] * devel_concY(1,col) +
-                                     coeff[2] * devel_concY(0,col);
+                devel_concY(0,col) = coeff0 * devel_concY(0,col);
+                devel_concY(1,col) = coeff0 * devel_concY(1,col) +
+                                     coeff1 * devel_concY(0,col);
+                devel_concY(2,col) = coeff0 * devel_concY(2,col) +
+                                     coeff1 * devel_concY(1,col) +
+                                     coeff2 * devel_concY(0,col);
             }
             //Iterate over the main part of the image, except for the setup.
             for (int row = 3; row < height; row++)
@@ -403,10 +402,10 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
                 for (int col = 0; col < 8; col++)
                 {
-                    devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
-                                           coeff[1] * devel_concY(row-1,col) +
-                                           coeff[2] * devel_concY(row-2,col) +
-                                           coeff[3] * devel_concY(row-3,col);
+                    devel_concY(row,col) = coeff0 * devel_concY(row  ,col) +
+                                           coeff1 * devel_concY(row-1,col) +
+                                           coeff2 * devel_concY(row-2,col) +
+                                           coeff3 * devel_concY(row-3,col);
                 }
             }
             //Iterate over the zeroed tail
@@ -415,9 +414,9 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
                 for (int col = 0; col < 8; col++)
                 {
-                    devel_concY(row,col) = coeff[1] * devel_concY(row-1,col) +
-                                           coeff[2] * devel_concY(row-2,col) +
-                                           coeff[3] * devel_concY(row-3,col);
+                    devel_concY(row,col) = coeff1 * devel_concY(row-1,col) +
+                                           coeff2 * devel_concY(row-2,col) +
+                                           coeff3 * devel_concY(row-3,col);
                 }
             }
             //And go back
@@ -426,10 +425,10 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
                 for (int col = 0; col < 8; col++)
                 {
-                    devel_concY(row,col) = coeff[0] * devel_concY(row  ,col) +
-                                           coeff[1] * devel_concY(row+1,col) +
-                                           coeff[2] * devel_concY(row+2,col) +
-                                           coeff[3] * devel_concY(row+3,col);
+                    devel_concY(row,col) = coeff0 * devel_concY(row  ,col) +
+                                           coeff1 * devel_concY(row+1,col) +
+                                           coeff2 * devel_concY(row+2,col) +
+                                           coeff3 * devel_concY(row+3,col);
                 }
             }
             //And undo the attenuation, copying back from the temp.
