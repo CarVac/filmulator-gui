@@ -339,7 +339,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
             for (int col = 0; col < width; col++)
             {
-                developer_concentration(row,col) = devel_concX[col]*attenuationX[col];
+                developer_concentration(row,col) = devel_concX[col]*attenuationX[col];//not going SIMD
             }
         }
     }
@@ -380,7 +380,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
                     for (int col = 0; col < 8; col++)
                     {
-                        devel_concY(row,col) = developer_concentration(row,col+offset);
+                        devel_concY(row,col) = developer_concentration(row,col+offset);//not going SIMD
                     }
                 }
             }
@@ -449,7 +449,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
 #pragma omp simd
                     for (int col = 0; col < 8; col++)
                     {
-                        developer_concentration(row,col+offset) = devel_concY(row,col)*attenuationY[row];
+                        developer_concentration(row,col+offset) = devel_concY(row,col)*attenuationY[row];//not going SIMD
                     }
                 }
             }
