@@ -32,6 +32,8 @@ SOURCES += main.cpp \
     core/vibranceSaturation.cpp \
     core/whiteBalance.cpp \
     core/whitepointBlackpoint.cpp \
+    database/basicSqlModel.cpp \
+    database/dateHistogramModel.cpp \
     database/dbSetup.cpp \
     database/exifFunctions.cpp \
     database/importModel.cpp \
@@ -43,8 +45,6 @@ SOURCES += main.cpp \
     database/sqlModel.cpp \
     database/sqlInsertion.cpp \
     database/signalSwitchboard.cpp \
-    database/basicSqlModel.cpp \
-    database/dateHistogramModel.cpp \
     ui/filmImageProvider.cpp \
     ui/parameterManager.cpp \
     ui/settings.cpp \
@@ -97,7 +97,7 @@ OTHER_FILES += \
     qml/filmulator-gui/gui_components/ToolSlider.qml \
     qml/filmulator-gui/gui_components/ToolSwitch.qml \
     qml/filmulator-gui/gui_components/ToolTip.qml \
-    qml/filmulator-gui/generateHistogram.js\
+    qml/filmulator-gui/generateHistogram.js \
     filmulator
 
 HEADERS += \
@@ -106,7 +106,7 @@ HEADERS += \
     core/interface.h \
     core/lut.hpp \
     core/matrix.hpp \
-    database/backgroundQueue.h
+    database/backgroundQueue.h \
     database/basicSqlModel.h \
     database/dateHistogramModel.h \
     database/exifFunctions.h \
@@ -121,7 +121,7 @@ HEADERS += \
     ui/filmImageProvider.h \
     ui/parameterManager.h \
     ui/settings.h \
-    ui/thumbWriteWorker.h \
+    ui/thumbWriteWorker.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math
