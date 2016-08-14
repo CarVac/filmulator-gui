@@ -8,48 +8,48 @@ QML_IMPORT_PATH =
 
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
-    ./core/agitate.cpp \
-    ./core/curves.cpp \
-    ./core/develop.cpp \
-    ./core/diffuse.cpp \
-    ./core/exposure.cpp \
-    ./core/imload.cpp \
-    ./core/imread.cpp \
-    ./core/filmulate.cpp \
-    ./ui/updateHistograms.cpp \
-    ./ui/settings.cpp \
-    ./core/imagePipeline.cpp \
-    ./core/timeDiff.cpp \
-    ./ui/filmImageProvider.cpp \
-    ./database/dbSetup.cpp \
-    ./database/exifFunctions.cpp \
-    ./database/organizeModel.cpp \
-    ./database/organizeProperties.cpp \
-    ./database/sqlModel.cpp \
-    ./core/colorCurves.cpp \
-    ./core/imreadJpeg.cpp \
-    ./core/imreadTiff.cpp \
-    ./core/imwriteTiff.cpp \
-    ./core/imwriteJpeg.cpp \
-    ./core/layerMix.cpp \
-    ./core/mergeExps.cpp \
-    ./core/outputFile.cpp \
-    ./core/rotateImage.cpp \
-    ./core/vibranceSaturation.cpp \
-    ./core/whiteBalance.cpp \
-    ./core/whitepointBlackpoint.cpp \
-    ./database/sqlInsertion.cpp \
-    ./database/importModel.cpp \
-    ./database/importProperties.cpp \
-    ./database/importWorker.cpp \
-    ./database/queueModel.cpp \
-    ./ui/parameterManager.cpp \
-    ./core/scale.cpp \
-    ./database/signalSwitchboard.cpp \
-    ./ui/thumbWriteWorker.cpp \
-    ./core/colorSpaces.cpp \
-    ./database/basicSqlModel.cpp \
-    database/dateHistogramModel.cpp
+    core/agitate.cpp \
+    core/colorCurves.cpp \
+    core/colorSpaces.cpp \
+    core/curves.cpp \
+    core/develop.cpp \
+    core/diffuse.cpp \
+    core/exposure.cpp \
+    core/filmulate.cpp \
+    core/imagePipeline.cpp \
+    core/imload.cpp \
+    core/imread.cpp \
+    core/imreadJpeg.cpp \
+    core/imreadTiff.cpp \
+    core/imwriteJpeg.cpp \
+    core/imwriteTiff.cpp \
+    core/layerMix.cpp \
+    core/mergeExps.cpp \
+    core/outputFile.cpp \
+    core/rotateImage.cpp \
+    core/scale.cpp \
+    core/timeDiff.cpp \
+    core/vibranceSaturation.cpp \
+    core/whiteBalance.cpp \
+    core/whitepointBlackpoint.cpp \
+    database/basicSqlModel.cpp \
+    database/dateHistogramModel.cpp \
+    database/dbSetup.cpp \
+    database/exifFunctions.cpp \
+    database/importModel.cpp \
+    database/importProperties.cpp \
+    database/importWorker.cpp \
+    database/organizeModel.cpp \
+    database/organizeProperties.cpp \
+    database/queueModel.cpp \
+    database/sqlModel.cpp \
+    database/sqlInsertion.cpp \
+    database/signalSwitchboard.cpp \
+    ui/filmImageProvider.cpp \
+    ui/parameterManager.cpp \
+    ui/settings.cpp \
+    ui/thumbWriteWorker.cpp \
+    ui/updateHistograms.cpp
 
 lupdate_only {
 SOURCES += qml/filmulator-gui/*.qml \
@@ -84,6 +84,7 @@ OTHER_FILES += \
     qml/filmulator-gui/Settings.qml \
     qml/filmulator-gui/gui_components/FilmProgressBar.qml \
     qml/filmulator-gui/gui_components/ImportDirEntry.qml \
+    qml/filmulator-gui/gui_components/ImportFileEntry.qml \
     qml/filmulator-gui/gui_components/ImportTextEntry.qml \
     qml/filmulator-gui/gui_components/OrganizeDelegate.qml \
     qml/filmulator-gui/gui_components/QueueDelegate.qml \
@@ -91,34 +92,36 @@ OTHER_FILES += \
     qml/filmulator-gui/gui_components/ToolButton.qml \
     qml/filmulator-gui/gui_components/ToolButtonStyle.qml \
     qml/filmulator-gui/gui_components/ToolCalendar.qml \
+    qml/filmulator-gui/gui_components/ToolRadioButton.qml \
+    qml/filmulator-gui/gui_components/ToolRadioButtonStyle.qml \
     qml/filmulator-gui/gui_components/ToolSlider.qml \
     qml/filmulator-gui/gui_components/ToolSwitch.qml \
     qml/filmulator-gui/gui_components/ToolTip.qml \
-    qml/filmulator-gui/generateHistogram.js\
+    qml/filmulator-gui/generateHistogram.js \
     filmulator
 
 HEADERS += \
-    ./core/lut.hpp \
-    ./core/matrix.hpp \
-    ./core/interface.h \
-    ./ui/settings.h \
-    ./core/imagePipeline.h \
-    ./ui/filmImageProvider.h \
-    ./database/exifFunctions.h \
-    ./database/organizeModel.h \
-    ./database/filmulatorDB.h \
-    ./database/sqlModel.h \
-    ./core/filmSim.hpp \
-    ./database/sqlInsertion.h \
-    ./database/importModel.h \
-    ./database/importWorker.h \
-    ./database/queueModel.h \
-    ./ui/parameterManager.h \
-    ./database/signalSwitchboard.h \
-    ./ui/thumbWriteWorker.h \
-    ./database/basicSqlModel.h \
+    core/filmSim.hpp \
+    core/imagePipeline.h \
+    core/interface.h \
+    core/lut.hpp \
+    core/matrix.hpp \
+    database/backgroundQueue.h \
+    database/basicSqlModel.h \
     database/dateHistogramModel.h \
-    database/backgroundQueue.h
+    database/exifFunctions.h \
+    database/filmulatorDB.h \
+    database/importModel.h \
+    database/importWorker.h \
+    database/organizeModel.h \
+    database/queueModel.h \
+    database/signalSwitchboard.h \
+    database/sqlInsertion.h \
+    database/sqlModel.h \
+    ui/filmImageProvider.h \
+    ui/parameterManager.h \
+    ui/settings.h \
+    ui/thumbWriteWorker.h
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math

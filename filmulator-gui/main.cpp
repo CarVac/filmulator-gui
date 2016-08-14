@@ -13,11 +13,16 @@
 #include <QMetaType>
 #include <QFileInfo>
 #include <QIcon>
+#include <QtWidgets/QApplication>
 #include <QFont>
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    //It cannot properly fall back to Qt Widgets versions of the dialogs if
+    // we use a QGuiApplication, which only supports QML stuff.
+    //QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
+
     QFont sansFont("Sans Serif",9);
     app.setFont(sansFont);
     QQmlApplicationEngine engine;
