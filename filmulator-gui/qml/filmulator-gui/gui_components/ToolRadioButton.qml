@@ -16,7 +16,7 @@ Rectangle {
     property bool standalone: false
     property bool highlight: false
 
-    signal pressed()
+    signal clicked()
     signal tooltipWanted(string text, int x, int y)
     width: 30 * uiScale
     height: 30 * uiScale
