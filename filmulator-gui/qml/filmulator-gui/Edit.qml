@@ -16,6 +16,16 @@ SplitView {
         id: photoBox
         color: "black"
         Layout.fillWidth: true
+        property int backgroundColor: backgroundBrightnessSlider.value
+        Rectangle {//This is because before the image is loaded there's no background.
+            id: background
+            x: 0 * uiScale
+            y: Math.ceil(30 * uiScale)
+            width: parent.width
+            height: Math.floor(parent.height - 30 * uiScale)
+            color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
+        }
+
         Flickable {
             id: flicky
             x: 0 * uiScale
@@ -47,7 +57,7 @@ SplitView {
                 width: Math.floor(Math.max(bottomImage.width*bottomImage.scale,parent.width));
                 height: Math.floor(Math.max(bottomImage.height*bottomImage.scale,parent.height));
                 transformOrigin: Item.TopLeft
-                color: "#000000"
+                color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
                 Image {
                     anchors.centerIn: parent
                     id: topImage
@@ -181,6 +191,38 @@ SplitView {
                 else {flicky.fit = false}
             }
         }
+
+        Item {
+            id: backgroundColorBox
+            y: 0 * uiScale
+            width: 180 * uiScale
+            height: 30 * uiScale
+            anchors.right: rotateLeft.left
+            Text {
+                id: backgroundColorText
+                x: 0 * uiScale
+                y: 4 * uiScale
+                width: parent.width
+                color: "white"
+                text: qsTr("Background Brightness")
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: 12.0 * uiScale
+            }
+
+            SlipperySlider {
+                id: backgroundBrightnessSlider
+                x: 40 * uiScale
+                y: 22 * uiScale
+                width: parent.width - 80 * uiScale
+                anchors.right: rotateLeft.left
+                minimumValue: 0
+                maximumValue: 2
+                value: 0
+                stepSize: 1
+                tickmarksEnabled: true
+            }
+        }
+
         ToolButton {
             id: rotateLeft
             anchors.right: rotateRight.left
