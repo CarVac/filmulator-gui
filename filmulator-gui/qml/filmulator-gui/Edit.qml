@@ -61,7 +61,6 @@ SplitView {
                 Image {
                     anchors.centerIn: parent
                     id: topImage
-                    source: "image://filmy/" + indexString
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     mipmap: settings.getMipmapView()
@@ -79,6 +78,7 @@ SplitView {
                             var size = 6 //6 digit number
                             while (s.length < size) {s = "0" + s}
                             topImage.indexString = s
+                            topImage.source = "image://filmy/" + topImage.indexString
                             console.log("Edit.qml; updateImage index: " + s)
                         }
                     }
@@ -214,7 +214,6 @@ SplitView {
                 x: 40 * uiScale
                 y: 22 * uiScale
                 width: parent.width - 80 * uiScale
-                anchors.right: rotateLeft.left
                 minimumValue: 0
                 maximumValue: 2
                 value: 0
