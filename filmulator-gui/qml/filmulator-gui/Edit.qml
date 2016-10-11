@@ -10,6 +10,8 @@ SplitView {
     property real uiScale: 1
 
     signal tooltipWanted(string text, int x, int y)
+
+    //This is for telling the queue the latest image source so it can show it until the thumb updates.
     signal imageURL(string newURL)
 
     Rectangle {
@@ -68,18 +70,51 @@ SplitView {
                     property string indexString: "000000"
                     scale: bottomImage.scale
 
+                    //This is a hidden image to do filmImageProvider loading without interrupting thumbnails.
+                    Image {
+                        z: -1
+                        id: hiddenImage
+                        x:0
+                        y:0
+                        mipmap: settings.getMipmapView()
+                        opacity: 0
+                        asynchronous: true
+                        onStatusChanged: {
+                            if (hiddenImage.status == Image.Ready) {
+                                console.log("hidden image ready")
+                                topImage.state = "i"
+                                topImage.source = hiddenImage.source
+                            }
+                        }
+                    }
+
+                    property string state: "p"
+                    property string rootDir: organizeModel.thumbDir()
                     //This connection finds out when the parameters are done changing, and then updates the url to fetch the latest image.
                     Connections {
                         target: paramManager//root
                         onUpdateImage: {
-                            var num = (topImage.index + 1) % 1000000//1 in a million
-                            topImage.index = num;
-                            var s = num+"";
-                            var size = 6 //6 digit number
-                            while (s.length < size) {s = "0" + s}
-                            topImage.indexString = s
-                            topImage.source = "image://filmy/" + topImage.indexString
-                            console.log("Edit.qml; updateImage index: " + s)
+                            console.log("update image")
+                            if (topImage.state == "i") {//only if we're done with the thumbnail
+                                var num = (topImage.index + 1) % 1000000//1 in a million
+                                topImage.index = num;
+                                var s = num+"";
+                                var size = 6 //6 digit number
+                                while (s.length < size) {s = "0" + s}
+                                topImage.indexString = s
+                                //topImage.source = "image://filmy/" + topImage.indexString
+                                hiddenImage.source = "image://filmy/" + topImage.indexString
+                            }
+                            if (topImage.state == "p") {//if we're planning on doing the thumbnail
+                                var thumbPath = topImage.rootDir + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
+                                console.log("thumb path: " + thumbPath)
+                                topImage.source = thumbPath
+                            }
+                        }
+                        onImageIndexChanged: {
+                            console.log("image index changed")
+                            topImage.state = "p"
+                            //topImage.source = topImage.thumbPath
                         }
                     }
                     Connections {
@@ -88,6 +123,7 @@ SplitView {
                     }
                     onStatusChanged: {
                         if (topImage.status == Image.Ready) {
+                            console.log("top image ready")
                             var topFitScaleX = flicky.width/topImage.width
                             var topFitScaleY = flicky.height/topImage.height
                             var topFitScale = Math.min(topFitScaleX, topFitScaleY)
@@ -103,9 +139,27 @@ SplitView {
                                 //This has to happen after the size actually changes. It's put below.
                             }
 
-                            //This signal is for passing the url to the queue,
-                            // which displays the same latest image as the edit window.
-                            root.imageURL(topImage.source)
+                            console.log("TopImage state: " + topImage.state)
+
+                            if (topImage.state == "i") {//if it's the full image
+                                //now we notify the queue that the latest image is ready for display
+                                root.imageURL(topImage.source)
+                            }
+                            if (topImage.state == "p") {//if the thumbnail or full size preview is loaded
+                                //now we say that the state is loading the actual image, so as to not load a new preview.
+                                topImage.state = "i"
+                                console.log("TopImage state: " + topImage.state)
+
+                                //begin loading the main image
+                                var num = (topImage.index + 1) % 1000000//1 in a million
+                                topImage.index = num;
+                                var s = num+"";
+                                var size = 6 //6 digit number
+                                while (s.length < size) {s = "0" + s}
+                                topImage.indexString = s
+                                //topImage.source = "image://filmy/" + topImage.indexString
+                                hiddenImage.source = "image://filmy/" + topImage.indexString
+                            }
                         }
                     }
                 }
