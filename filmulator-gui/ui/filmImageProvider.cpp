@@ -40,8 +40,6 @@ QImage FilmImageProvider::requestImage(const QString& /*id*/,
     QImage output = emptyImage();
     cout << "FilmImageProvider::requestImage Here?" << endl;
 
-    //Ensure that the tiff and jpeg outputs don't write the previous image.
-    processMutex.lock();
 
     //Copy out the filename.
     std::string filename = paramManager->getFullFilename();
@@ -50,6 +48,8 @@ QImage FilmImageProvider::requestImage(const QString& /*id*/,
     Exiv2::ExifData data;
     matrix<unsigned short> image = pipeline.processImage(paramManager, this, data);
 
+    //Ensure that the tiff and jpeg outputs don't write the previous image.
+    processMutex.lock();
     //Ensure that the thumbnail writer writes matching filenames and images
     writeDataMutex.lock();
     //Prepare the exif data for output.
