@@ -153,7 +153,7 @@ void downscaleBilinear1D(const matrix<T> input,
     #pragma omp parallel for shared(output)
     for (int i = 0; i < outputNumRows; i++)
     {
-        for (int j = 0; j < outputNumCols-1; j++)
+        for (int j = 0; j < outputNumCols; j++)
         {
             const double inputPoint = (double(j) + 0.5)*scaleFactor -0.5 + double(start);
             const int inputStart = floor(inputPoint);
