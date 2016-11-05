@@ -266,13 +266,14 @@ SplitView {
             SlipperySlider {
                 id: backgroundBrightnessSlider
                 x: 40 * uiScale
-                y: 22 * uiScale
+                y: 18 * uiScale
                 width: parent.width - 80 * uiScale
                 minimumValue: 0
                 maximumValue: 2
                 value: 0
                 stepSize: 1
                 tickmarksEnabled: true
+                uiScale: root.uiScale
             }
         }
 
