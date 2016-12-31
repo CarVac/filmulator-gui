@@ -166,7 +166,7 @@ void DateHistogramModel::setQuery(const int timezone,
     //The row count of all the data we will eventually serve to the view.
     m_rowCount = lastDay - firstDay + 1;
 
-    cout << "m_rowcount1: " << m_rowCount << endl;
+//    cout << "m_rowcount1: " << m_rowCount << endl;
 
     //Now, we tell the internal model to grab stuff.
     queryModel.setQuery(m_modelQuery);
@@ -187,7 +187,7 @@ void DateHistogramModel::setQuery(const int timezone,
     //Preallocate the vector.
     if ((int) m_dataVector.capacity() < (m_rowCount + 1)*VECTORCOUNT)
     {
-        cout << "m_rowcount: " << m_rowCount << endl;
+//        cout << "m_rowcount: " << m_rowCount << endl;
         m_dataVector.reserve((m_rowCount + 1)*VECTORCOUNT);
     }
     else

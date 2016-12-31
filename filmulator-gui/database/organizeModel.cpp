@@ -112,7 +112,7 @@ QSqlQuery OrganizeModel::modelQuery()
 void OrganizeModel::setOrganizeQuery()
 {
     setQuery(modelQuery());
-    cout << "organize row count: " << rowCount() << endl;
+//    cout << "organize row count: " << rowCount() << endl;
 }
 
 void OrganizeModel::setDateHistoQuery()
