@@ -155,7 +155,7 @@ SplitView {
                 ToolSlider {
                     id: tintSlider
                     title: qsTr("Tint")
-                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Positive values are greener, and negative values are magenta.\n\nThe default value is the camera's chosen WB.")
+                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.\n\nThe default value is the camera's chosen WB.")
                     minimumValue: 0.1
                     maximumValue: 3
                     value: paramManager.tint
