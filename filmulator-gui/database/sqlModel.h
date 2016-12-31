@@ -24,6 +24,7 @@ public:
     QHash<int,QByteArray> roleNames() const;
 
     Q_INVOKABLE void updateAll();
+    Q_INVOKABLE void refreshAll();
 
 public slots:
     void updateTable(QString table, int operation);
