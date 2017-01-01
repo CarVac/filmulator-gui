@@ -23,6 +23,10 @@ int main(int argc, char *argv[])
     //QGuiApplication app(argc, argv);
     QApplication app(argc, argv);
 
+    //This is for the QSettings defaults from things like the qt file dialog and stuff...
+    app.setApplicationName("Filmulator");
+    app.setOrganizationName("Filmulator");
+
     QFont sansFont("Sans Serif",9);
     app.setFont(sansFont);
     QQmlApplicationEngine engine;
