@@ -239,6 +239,10 @@ Rectangle {
             onReleased: {
                 spinnerCircle.dragging = false
                 preventStealing = false
+                if (root.editMade) {
+                    root.editMade = false
+                    root.editComplete()
+                }
             }
         }
         ToolTip {
