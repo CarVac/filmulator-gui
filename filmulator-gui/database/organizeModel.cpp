@@ -112,6 +112,10 @@ QSqlQuery OrganizeModel::modelQuery()
 void OrganizeModel::setOrganizeQuery()
 {
     setQuery(modelQuery());
+    while(queryModel.canFetchMore())
+    {
+        queryModel.fetchMore();
+    }
 //    cout << "organize row count: " << rowCount() << endl;
 }
 
