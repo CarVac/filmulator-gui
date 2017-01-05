@@ -84,7 +84,21 @@ int main(int argc, char *argv[])
                      queueModel, SLOT(enQueue(QString)));
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
-    engine.load(QUrl::fromLocalFile("qml/filmulator-gui/main.qml"));
+    if (QFile("qml/filmulator-gui/main.qml").exists())
+    {
+        cout << "loading UI from copy in directory" << endl;
+        engine.load(QUrl::fromLocalFile("qml/filmulator-gui/main.qml"));
+    }
+    else if (QFile("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml").exists())
+    {
+        cout << "loading UI from /usr/lib/" << endl;
+        engine.load(QUrl::fromLocalFile("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml"));
+    }
+    else
+    {
+        qWarning("QML UI file missing");
+        return -1;
+    }
 
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
