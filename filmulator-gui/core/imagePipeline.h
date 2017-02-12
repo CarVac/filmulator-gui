@@ -56,6 +56,9 @@ protected:
                    matrix<float> &output_density,
                    ParameterManager * paramManager,
                    ImagePipeline * pipeline);
+
+    //Callback for LibRaw cancellation
+    static int libraw_callback(void *data, enum LibRaw_progress p, int iteration, int expected);
 };
 
 #endif // IMAGEPIPELINE_H

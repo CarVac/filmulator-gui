@@ -18,6 +18,9 @@
  */
 
 //imread.cpp uses libraw to load raw files.
+//TODO: remove this file
+//PROBABLY NOT NECESSARY ANYMORE
+//We've included the loader into ImagePipeline now.
 #include "filmSim.hpp"
 
 bool imread(std::string input_image_filename, matrix<float> &returnmatrix,

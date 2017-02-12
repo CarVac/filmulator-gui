@@ -19,6 +19,10 @@
 
 // This file contains the function imload, which calls an image retrieval
 // function and loads the data into a matrix.
+
+//TODO: remove this file
+//PROBABLY NOT NECESSARY ANYMORE
+//We've included this code into ImagePipeline now.
 #include "filmSim.hpp"
 
 bool imload(std::string filename,
