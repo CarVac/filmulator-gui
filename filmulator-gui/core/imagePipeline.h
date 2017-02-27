@@ -3,14 +3,17 @@
 #include "filmSim.hpp"
 #include "interface.h"
 #include "../ui/parameterManager.h"
+#include <QMutex>
+#include <QMutexLocker>
 
-enum CacheAndHisto { BothCacheAndHisto, NoCacheNoHisto };
+enum Cache {WithCache, NoCache};
+enum Histo {WithHisto, NoHisto};
 enum QuickQuality { LowQuality, HighQuality };
 
 class ImagePipeline
 {
 public:
-    ImagePipeline(CacheAndHisto, QuickQuality);
+    ImagePipeline(Cache, Histo, QuickQuality);
 
     //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
     matrix<unsigned short> processImage(ParameterManager * paramManager,
@@ -21,12 +24,19 @@ public:
     float getProgress(){return progress;}
 
     //Returns a copy of the latest image, in a full color interleaved 16-bit per color format.
+    //TODO: remove this!
     matrix<unsigned short> getLastImage();
+
+    //Lets the consumer turn cache on and off
+    void setCache(Cache cacheIn);
 
 protected:
     matrix<unsigned short> emptyMatrix(){matrix<unsigned short> mat; return mat;}
 
-    CacheAndHisto cacheHisto;
+    Cache cache;
+    bool cacheEmpty = false;
+    bool hasStartedProcessing = false;
+    Histo histo;
     QuickQuality quality;
     Interface * interface;
 

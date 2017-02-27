@@ -1,8 +1,9 @@
 #include "imagePipeline.h"
 
-ImagePipeline::ImagePipeline(CacheAndHisto cacheAndHistoIn, QuickQuality qualityIn)
+ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
-    cacheHisto = cacheAndHistoIn;
+    cache = cacheIn;
+    histo = histoIn;
     quality = qualityIn;
     valid = Valid::none;
 
@@ -46,12 +47,19 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                                                    Interface * interface_in,
                                                    Exiv2::ExifData &exifOutput)
 {
+    //Say that we've started processing to prevent cache status from changing..
+    hasStartedProcessing = true;
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
     gettimeofday(&timeRequested, NULL);
     interface = interface_in;
 
     valid = paramManager->getValid();
+    if (NoCache == cache || true == cacheEmpty)
+    {
+        valid = none;//we need to start fresh if nothing is going to be cached.
+    }
+
     LoadParams loadParam;
     DemosaicParams demosaicParam;
     PrefilmParams prefilmParam;
@@ -256,11 +264,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      prefilmParam.tint,
                      prefilmParam.fullFilename);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             cropped_image.set_size( 0, 0 );
+            cacheEmpty = true;
         }
-        else//(BothCacheAndHisto == cacheHisto)
+        else
+        {
+            cacheEmpty = false;
+        }
+        if (WithHisto == histo)
         {
             //Histogram work
             interface->updateHistPreFilm(pre_film_image, 65535);
@@ -286,11 +299,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             pre_film_image.set_size(0, 0);
+            cacheEmpty = true;
         }
         else
+        {
+            cacheEmpty = false;
+        }
+        if (WithHisto == histo)
         {
             //Histogram work
             interface->updateHistPostFilm(filmulated_image, .0025);//TODO connect this magic number to the qml
@@ -318,9 +336,14 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             filmulated_image.set_size(0, 0);
+            cacheEmpty = true;
+        }
+        else
+        {
+            cacheEmpty = false;
         }
         updateProgress(valid, 0.0f);
     }
@@ -337,9 +360,13 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     lutG,
                     lutB);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             contrast_image.set_size(0, 0);
+        }
+        else
+        {
+            cacheEmpty = false;
         }
         updateProgress(valid, 0.0f);
     }
@@ -371,10 +398,15 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                             curvesParam.vibrance,
                             curvesParam.saturation);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             color_curve_image.set_size(0, 0);
+            cacheEmpty = true;
             //film_curve_image is going out of scope anyway.
+        }
+        else
+        {
+            cacheEmpty = false;
         }
 
         updateProgress(valid, 0.0f);
@@ -394,11 +426,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      rotated_image,
                      orientationParam.rotation);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             vibrance_saturation_image.set_size(0, 0);
+            cacheEmpty = true;
         }
         else
+        {
+            cacheEmpty = false;
+        }
+        if (WithHisto == histo)
         {
             interface->updateHistFinal(rotated_image);
         }
@@ -443,4 +480,13 @@ void ImagePipeline::updateProgress(Valid valid, float stepProgress)
         totalCompletedTime += completionTimes[i]*fractionCompleted;
     }
     interface->setProgress(totalCompletedTime/totalTime);
+}
+
+//Do not call this on something that's already been used!
+void ImagePipeline::setCache(Cache cacheIn)
+{
+    if (false == hasStartedProcessing)
+    {
+        cache = cacheIn;
+    }
 }

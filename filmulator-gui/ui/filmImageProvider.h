@@ -13,6 +13,7 @@
 #include "parameterManager.h"
 #include <QThread>
 #include "thumbWriteWorker.h"
+#include "../ui/settings.h"
 
 class FilmImageProvider : public QObject, public QQuickImageProvider, public Interface
 {
@@ -46,7 +47,7 @@ public:
     Q_INVOKABLE void writeThumbnail(QString searchID);
 
 protected:
-    ImagePipeline pipeline = ImagePipeline( BothCacheAndHisto, HighQuality );
+    ImagePipeline pipeline = ImagePipeline(WithCache, WithHisto, HighQuality);
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;

@@ -26,6 +26,17 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     connect(this, SIGNAL(requestThumbnail(QString)), worker, SLOT(writeThumb(QString)));
     connect(worker, SIGNAL(doneWritingThumb()), this, SLOT(thumbDoneWriting()));
     workerThread.start(QThread::LowPriority);
+
+    //Check if we want the pipeline to cache.
+    Settings settingsObject;
+    if (settingsObject.getLowMemMode() == true)
+    {
+        pipeline.setCache(NoCache);
+    }
+    else
+    {
+        pipeline.setCache(WithCache);
+    }
 }
 
 FilmImageProvider::~FilmImageProvider()
