@@ -8,11 +8,13 @@ SplitView {
     anchors.fill: parent
     orientation: Qt.Horizontal
     property real uiScale: 1
+    property bool imageReady: false
 
     signal tooltipWanted(string text, int x, int y)
 
     //This is for telling the queue the latest image source so it can show it until the thumb updates.
     signal imageURL(string newURL)
+
 
     Rectangle {
         id: photoBox
@@ -84,6 +86,10 @@ SplitView {
                                 console.log("hidden image ready")
                                 topImage.state = "i"
                                 topImage.source = hiddenImage.source
+                                root.imageReady = true
+                            }
+                            else {
+                                root.imageReady = false
                             }
                         }
                     }
@@ -420,6 +426,7 @@ SplitView {
     EditTools {
         id: editTools
         uiScale: root.uiScale
+        imageReady: root.imageReady
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)
         }
