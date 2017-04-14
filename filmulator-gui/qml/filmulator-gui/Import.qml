@@ -333,7 +333,7 @@ Rectangle {
             }
             uiScale: root.uiScale
             visible: root.importInPlace
-            highlight: !destSelector.hovered
+            highlight: destSelector.hovered
         }
 
         ToolSwitch {
