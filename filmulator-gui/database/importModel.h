@@ -23,6 +23,7 @@ struct importParams {
     QDateTime importStartTimeParam;
     bool appendHashParam;
     bool importInPlace;
+    bool replaceLocation;
 };
 
 enum Validity {
@@ -54,9 +55,9 @@ class ImportModel : public SqlModel
 public:
     explicit ImportModel(QObject *parent = 0);
     Q_INVOKABLE bool pathContainsDCIM(const QString dir, const bool notDirectory);
-    Q_INVOKABLE void importDirectory_r(const QString dir, const bool importInPlace);
-    Q_INVOKABLE Validity importFile(const QString name, const bool importInPlace, const bool onlyCheck);
-    Q_INVOKABLE void importFileList(const QString name, const bool importInPlace);
+    Q_INVOKABLE void importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation);
+    Q_INVOKABLE Validity importFile(const QString name, const bool importInPlace, const bool replaceLocation, const bool onlyCheck);
+    Q_INVOKABLE void importFileList(const QString name, const bool importInPlace, const bool replaceLocation);
     Q_INVOKABLE QStringList getNameFilters();
 
     void setImportTZ(const int offsetIn);
@@ -85,7 +86,7 @@ public:
     bool getInvalidFile() {return invalidFile;}
 
 public slots:
-    void workerFinished();
+    void workerFinished(bool changedST);
     void enqueueRequested(const QString STsearchID);
 
 signals:
@@ -115,7 +116,8 @@ signals:
                        const QString dirConfig,
                        const QDateTime importStartTime,
                        const bool appendHash,
-                       const bool importInPlace);
+                       const bool importInPlace,
+                       const bool replaceLocation);
 
     void importChanged();
 
