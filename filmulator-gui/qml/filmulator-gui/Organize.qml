@@ -56,10 +56,12 @@ SplitView {
                     onValueChanged: {
                         settings.organizeTZ = value
                         organizeModel.timeZone = value
+                        gridView.returnToBounds()
                     }
                     Component.onCompleted: {
                         timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.timeZone = value
+                        gridView.returnToBounds()
                     }
                     uiScale: root.uiScale
                 }
@@ -99,6 +101,7 @@ SplitView {
                         }
                         if (isChanged === 1) {
                             organizeModel.setMinMaxCaptureTime(tempDate)
+                            gridView.returnToBounds()
                         }
                     }
 
@@ -127,6 +130,7 @@ SplitView {
                     Component.onCompleted: {
                         captureCalendar.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.setMinMaxCaptureTime(selectedDate)
+                        gridView.returnToBounds()
                     }
                     Connections {
                         target: organizeModel
@@ -151,6 +155,7 @@ SplitView {
                     onValueChanged: {
                         settings.organizeRating = value
                         organizeModel.minRating = value
+                        gridView.returnToBounds()
                     }
                     uiScale: root.uiScale
                     Component.onCompleted: {
@@ -231,6 +236,7 @@ SplitView {
                         anchors.fill: parent
                         onDoubleClicked: {
                             organizeModel.setMinMaxCaptureTimeString(parent.theDate)
+                            gridView.returnToBounds()
                         }
                     }
                 }
