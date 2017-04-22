@@ -12,6 +12,8 @@ Filmulator accepts raw files from cameras and simulates the development of film 
 
 The program's design ideology is to have the best tool for any job, and only that one tool. The tradeoff here is a slight decrease in flexibility, but gaining a greatly simplified and streamlined user interface.
 
+![Filmulate overview](http://i.imgur.com/hXIHUkd.png)
+
 # Building Filmulator
 
 This program depends on:
