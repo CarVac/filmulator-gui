@@ -14,6 +14,9 @@ OrganizeModel::OrganizeModel(QObject *parent) :
 {
     tableName = "SearchTable";
     captureSort = 1;
+    ratingSort = 0;
+    processedSort = 0;
+    importSort = 0;
     dateHistogramSet = false;
 }
 
