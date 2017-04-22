@@ -187,19 +187,18 @@ SplitView {
                 cellHeight: dateHistogram.height
                 boundsBehavior: Flickable.StopAtBounds
 
-                property string selectedDate
 
                 delegate: Rectangle {
                     id: dateHistoDelegate
                     width: 5.01 * uiScale //This has to be sliiightly bigger to ensure overlap
-                    property string selectedDate: dateHistoView.selectedDate
+                    property int julianDay: julday
                     property string theDate: thedate
                     property int count: thecount
                     property string yearMonthString: yearmonth
                     property int month: themonth
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
-                    property bool sel: selectedDate == theDate
+                    property bool sel: organizeModel.isDateSelected(theDate)//selectedDate == theDate
                     height: dateHistogram.height
                     color: (1===themonth%2) ? (sel ? Colors.darkOrangeH : Colors.darkGrayH) : (sel ? Colors.darkOrangeL : Colors.darkGrayL)
                     clip: true
@@ -225,7 +224,7 @@ SplitView {
                     ToolTip {
                         id: dateHistoTooltip
                         anchors.fill: parent
-                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Count: ') + parent.count
+                        tooltipText: qsTr('julday: ') + parent.julianDay + '\n' + qsTr('Date: ') + parent.theDate + '\n' + qsTr('Count: ') + parent.count
                         milliSecondDelay: 0
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
@@ -234,17 +233,25 @@ SplitView {
                     MouseArea {//Change the date when double-clicked.
                         id: dateChanger
                         anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
                         onDoubleClicked: {
-                            organizeModel.setMinMaxCaptureTimeString(parent.theDate)
-                            gridView.returnToBounds()
+                            if(mouse.button === Qt.LeftButton) {
+                                organizeModel.setMinMaxCaptureTimeString(parent.theDate)
+                                gridView.returnToBounds()
+                            }
+                        }
+                        onClicked: {
+                            if(mouse.button === Qt.RightButton || (mouse.button === Qt.LeftButton && (mouse.modifiers & Qt.ShiftModifier))) {
+                                organizeModel.extendMinMaxCaptureTimeString(parent.theDate)
+                                gridView.returnToBounds()
+                            }
                         }
                     }
-                }
-
-                Connections {
-                    target: organizeModel
-                    onCaptureDateChanged: {
-                        dateHistoView.selectedDate = organizeModel.getSelectedYMDString()
+                    Connections {
+                        target: organizeModel
+                        onCaptureDateChanged: {
+                            sel = organizeModel.isDateSelected(theDate)
+                        }
                     }
                 }
 

@@ -40,6 +40,8 @@ public:
 
     Q_INVOKABLE void setMinMaxCaptureTime(QDate captureTimeIn);
     Q_INVOKABLE void setMinMaxCaptureTimeString(QString captureTimeIn);
+    Q_INVOKABLE void extendMinMaxCaptureTimeString(QString captureTimeIn);
+    Q_INVOKABLE bool isDateSelected(QString captureTimeIn);
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);
     void setMinImportTime(QDate importTimeIn);
@@ -99,6 +101,7 @@ protected:
     //Was the histogram query initialized yet?
     bool dateHistogramSet;
 
+    QDate startCaptureTime;
     QDate minCaptureTime;
     QDate maxCaptureTime;
     QDate minImportTime;
