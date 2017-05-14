@@ -225,6 +225,30 @@ SplitView {
                         }
                     }
                 }
+
+                //From here are the crop markers.
+                //There are four parameters that get stored.
+                // crop height as % of image height
+                property real cropheight: 0.5
+                // width / height (aspect ratio of the crop)
+                property real cropaspect: 1.666666667
+                // voffset as % of image height, center from center
+                property real cropVoffset: 0.1
+                // hoffset as % of image width, center from center
+                property real cropHoffset: -0.3
+                Rectangle {
+                    id: cropmarker
+                    color: 'green'
+                    property real tempHeight: bottomImage.height * imageRect.cropheight * bottomImage.scale
+                    width: Math.min(tempHeight * imageRect.cropaspect, bottomImage.width * bottomImage.scale)
+                    height: Math.min(tempHeight, width / imageRect.cropaspect)
+                    anchors.horizontalCenter: bottomImage.horizontalCenter
+                    //Hoffsets need work.
+                    property real tempHoffset: Math.max(Math.min(imageRect.cropHoffset, (1 - (width / bottomImage.width)))/1, ((width/bottomImage.width) - 1)/1)
+                    anchors.horizontalCenterOffset: bottomImage.width * bottomImage.scale * tempHoffset
+                    anchors.verticalCenter: bottomImage.verticalCenter
+                    anchors.verticalCenterOffset: bottomImage.height * imageRect.cropVoffset * bottomImage.scale
+                }
             }
         }
         MouseArea {
@@ -257,7 +281,7 @@ SplitView {
             y: 0 * uiScale
             width: 180 * uiScale
             height: 30 * uiScale
-            anchors.right: rotateLeft.left
+            anchors.right: crop.left
             Text {
                 id: backgroundColorText
                 x: 0 * uiScale
@@ -281,6 +305,19 @@ SplitView {
                 tickmarksEnabled: true
                 uiScale: root.uiScale
             }
+        }
+
+        ToolButton {
+            id: crop
+            anchors.right: rotateLeft.left
+            y: 0 * uiScale
+            width: 120 * uiScale
+            text: qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
+            tooltipText: qsTr("Click this to begin cropping.")//change to "Hold shift to snap to common aspect ratios" when cropping in progress
+            Component.onCompleted: {
+                crop.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
         }
 
         ToolButton {
