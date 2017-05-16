@@ -244,11 +244,15 @@ SplitView {
                     height: Math.min(tempHeight, width / imageRect.cropaspect)
                     anchors.horizontalCenter: bottomImage.horizontalCenter
                     //Hoffsets need work.
-                    property real tempHoffset: Math.max(Math.min(imageRect.cropHoffset, (1 - (width / bottomImage.width)))/1, ((width/bottomImage.width) - 1)/1)
-                    anchors.horizontalCenterOffset: bottomImage.width * bottomImage.scale * tempHoffset
+                    property real maxHoffset: (1-(width/(bottomImage.width*bottomImage.scale)))/2
+                    anchors.horizontalCenterOffset: bottomImage.width * bottomImage.scale * Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)
                     anchors.verticalCenter: bottomImage.verticalCenter
                     anchors.verticalCenterOffset: bottomImage.height * imageRect.cropVoffset * bottomImage.scale
                 }
+                property real readheight: cropmarker.height / bottomImage.scale
+                property real readwidth: cropmarker.width / bottomImage.scale
+                property real readHoffset: cropmarker.x//-bottomImage.x) / bottomImage.scale
+                property real readVoffset: bottomImage.x//cropmarker.maxHoffset//(cropmarker.y-bottomImage.y) // bottomImage.scale
             }
         }
         MouseArea {
@@ -314,6 +318,9 @@ SplitView {
             width: 120 * uiScale
             text: qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
             tooltipText: qsTr("Click this to begin cropping.")//change to "Hold shift to snap to common aspect ratios" when cropping in progress
+            onTriggered: {
+                cropmarker.visible = !cropmarker.visible
+            }
             Component.onCompleted: {
                 crop.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -428,7 +435,8 @@ SplitView {
             x: 200 * uiScale
             y: 0 * uiScale
             color: "white"
-            text: " f/" + paramManager.aperture
+            //text: " f/" + paramManager.aperture
+            text: imageRect.readheight
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -437,25 +445,30 @@ SplitView {
             x: 200 * uiScale
             y: 15 * uiScale
             color: "white"
-            text: " " + paramManager.exposureTime + " s"
+            //text: " " + paramManager.exposureTime + " s"
+            text: imageRect.readwidth
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
         Text {
             id: filenameText
-            x: 300 * uiScale
+            //x: 300 * uiScale
+            x: 350 * uiScale
             y: 0 * uiScale
             color: "white"
-            text: paramManager.filename
+            //text: paramManager.filename
+            text: imageRect.readHoffset
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
         Text {
             id: isoText
-            x: 300 * uiScale
+            //x: 300 * uiScale
+            x: 350 * uiScale
             y: 15 * uiScale
             color: "white"
-            text: "ISO " + paramManager.sensitivity
+            //text: "ISO " + paramManager.sensitivity
+            text: imageRect.readVoffset
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
