@@ -51,6 +51,7 @@ SplitView {
             onHeightChanged: if (flicky.fit) {bottomImage.scale = Math.min(flicky.width/bottomImage.width, flicky.height/bottomImage.height)}
 
             //The centers are the coordinates in display space of the center of the image.
+            //They're used for the zoom buttons which zoom about the center of the screen.
             property real centerX: (contentX +  bottomImage.width*Math.min(bottomImage.scale, fitScaleX)/2) / bottomImage.scale
             property real centerY: (contentY + bottomImage.height*Math.min(bottomImage.scale, fitScaleY)/2) / bottomImage.scale
             Rectangle {
@@ -63,13 +64,18 @@ SplitView {
                 transformOrigin: Item.TopLeft
                 color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
                 Image {
-                    anchors.centerIn: parent
+                    x: Math.floor(parent.width/2) - Math.floor(width / 2)
+                    y: Math.floor(parent.height/2) - Math.floor(height / 2)
                     id: topImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     mipmap: settings.getMipmapView()
                     property int index: 0
                     property string indexString: "000000"
+                    //===================================================================IMPLEMENT THESE=======================================================================
+                    //We need to
+                    //property real customScale: bottomImage.customScale
+                    //transform: Scale {xScale: customScale; yScale: customScale}
                     scale: bottomImage.scale
 
                     //This is a hidden image to do filmImageProvider loading without interrupting thumbnails.
@@ -170,7 +176,8 @@ SplitView {
                     }
                 }
                 Image {
-                    anchors.centerIn: parent
+                    x: Math.floor(parent.width/2) - Math.floor(width / 2)
+                    y: Math.floor(parent.height/2) - Math.floor(height / 2)
                     id: bottomImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
@@ -229,30 +236,34 @@ SplitView {
                 //From here are the crop markers.
                 //There are four parameters that get stored.
                 // crop height as % of image height
-                property real cropheight: 0.5
+                property real cropheight: 0.5312353
                 // width / height (aspect ratio of the crop)
-                property real cropaspect: 1.666666667
+                property real cropaspect: 1.5
                 // voffset as % of image height, center from center
-                property real cropVoffset: 0.1
+                property real cropVoffset: 0.0
                 // hoffset as % of image width, center from center
                 property real cropHoffset: -0.3
                 Rectangle {
                     id: cropmarker
                     color: 'green'
-                    property real tempHeight: bottomImage.height * imageRect.cropheight * bottomImage.scale
-                    width: Math.min(tempHeight * imageRect.cropaspect, bottomImage.width * bottomImage.scale)
+                    property real tempHeight: bottomImage.height * imageRect.cropheight
+                    width: Math.min(tempHeight * imageRect.cropaspect, bottomImage.width)
                     height: Math.min(tempHeight, width / imageRect.cropaspect)
-                    anchors.horizontalCenter: bottomImage.horizontalCenter
                     //Hoffsets need work.
-                    property real maxHoffset: (1-(width/(bottomImage.width*bottomImage.scale)))/2
-                    anchors.horizontalCenterOffset: bottomImage.width * bottomImage.scale * Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)
-                    anchors.verticalCenter: bottomImage.verticalCenter
-                    anchors.verticalCenterOffset: bottomImage.height * imageRect.cropVoffset * bottomImage.scale
+                    property real maxHoffset: (1-(width /bottomImage.width ))/2
+                    property real maxVoffset: (1-(height/bottomImage.height))/2
+                    property real hoffset: Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)
+                    property real voffset: Math.max(Math.min(imageRect.cropVoffset, maxVoffset), -maxVoffset)
+                    x: Math.floor(parent.width/2)  - Math.floor(width/2)  + Math.floor(hoffset*bottomImage.width*scale)
+                    y: Math.floor(parent.height/2) - Math.floor(height/2) + Math.floor(voffset*bottomImage.height*scale)
+                    scale: bottomImage.scale
                 }
-                property real readheight: cropmarker.height / bottomImage.scale
-                property real readwidth: cropmarker.width / bottomImage.scale
-                property real readHoffset: cropmarker.x//-bottomImage.x) / bottomImage.scale
-                property real readVoffset: bottomImage.x//cropmarker.maxHoffset//(cropmarker.y-bottomImage.y) // bottomImage.scale
+
+                //Test readouts of the properties for writing back to database.
+                property real readheight: cropmarker.height / bottomImage.height
+                property real readwidth: cropmarker.width / cropmarker.width
+                property real readHoffset: cropmarker.hoffset
+                property real readVoffset: cropmarker.voffset
             }
         }
         MouseArea {
