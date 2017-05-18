@@ -64,19 +64,16 @@ SplitView {
                 transformOrigin: Item.TopLeft
                 color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
                 Image {
-                    x: Math.floor(parent.width/2) - Math.floor(width / 2)
-                    y: Math.floor(parent.height/2) - Math.floor(height / 2)
+                    x: Math.floor(parent.width/2) - Math.floor(width*scale/2)
+                    y: Math.floor(parent.height/2) - Math.floor(height*scale/2)
                     id: topImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     mipmap: settings.getMipmapView()
                     property int index: 0
                     property string indexString: "000000"
-                    //===================================================================IMPLEMENT THESE=======================================================================
-                    //We need to
-                    //property real customScale: bottomImage.customScale
-                    //transform: Scale {xScale: customScale; yScale: customScale}
                     scale: bottomImage.scale
+                    transformOrigin: Item.TopLeft
 
                     //This is a hidden image to do filmImageProvider loading without interrupting thumbnails.
                     Image {
@@ -176,12 +173,13 @@ SplitView {
                     }
                 }
                 Image {
-                    x: Math.floor(parent.width/2) - Math.floor(width / 2)
-                    y: Math.floor(parent.height/2) - Math.floor(height / 2)
+                    x: Math.floor(parent.width/2) - Math.floor(width*scale/2)
+                    y: Math.floor(parent.height/2) - Math.floor(height*scale/2)
                     id: bottomImage
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     mipmap: settings.getMipmapView()
+                    transformOrigin: Item.TopLeft
                     onStatusChanged: {
                         if (bottomImage.status == Image.Ready) {
                             if (flicky.fit) {
@@ -242,7 +240,7 @@ SplitView {
                 // voffset as % of image height, center from center
                 property real cropVoffset: 0.0
                 // hoffset as % of image width, center from center
-                property real cropHoffset: -0.3
+                property real cropHoffset: 0.5
                 Rectangle {
                     id: cropmarker
                     color: 'green'
@@ -254,16 +252,17 @@ SplitView {
                     property real maxVoffset: (1-(height/bottomImage.height))/2
                     property real hoffset: Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)
                     property real voffset: Math.max(Math.min(imageRect.cropVoffset, maxVoffset), -maxVoffset)
-                    x: Math.floor(parent.width/2)  - Math.floor(width/2)  + Math.floor(hoffset*bottomImage.width*scale)
-                    y: Math.floor(parent.height/2) - Math.floor(height/2) + Math.floor(voffset*bottomImage.height*scale)
+                    x: bottomImage.x + Math.ceil((0.5*(bottomImage.width -width) +hoffset*bottomImage.width) *scale)
+                    y: bottomImage.y + Math.ceil((0.5*(bottomImage.height-height)+voffset*bottomImage.height)*scale)
                     scale: bottomImage.scale
+                    transformOrigin: Item.TopLeft//==========================================================this needs to be the IMAGE top left, actually.
                 }
 
                 //Test readouts of the properties for writing back to database.
                 property real readheight: cropmarker.height / bottomImage.height
                 property real readwidth: cropmarker.width / cropmarker.width
                 property real readHoffset: cropmarker.hoffset
-                property real readVoffset: cropmarker.voffset
+                property real readVoffset: cropmarker.maxHoffset
             }
         }
         MouseArea {
