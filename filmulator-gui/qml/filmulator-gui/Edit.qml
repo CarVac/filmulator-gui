@@ -249,17 +249,16 @@ SplitView {
                     visible: root.cropping
                     property real tempHeight: bottomImage.height * Math.max(Math.min(1,imageRect.cropHeight),0)
                     property real tempAspect: imageRect.cropAspect <= 0 ? 1 : imageRect.cropAspect
-                    width: Math.min(tempHeight * tempAspect, bottomImage.width)
-                    height: Math.min(tempHeight, width / tempAspect)
-                    //Hoffsets need work.
+                    width: Math.round(Math.min(tempHeight * tempAspect, bottomImage.width))
+                    height: Math.round(Math.min(tempHeight, width / tempAspect))
+                    //TODO: ROUND THE OFFSETS PROPERLY SO PIXELS LINE UP
+                    //TODO: COPY THIS CODE TO THE MouseArea BELOW
                     property real maxHoffset: (1-(width /bottomImage.width ))/2
                     property real maxVoffset: (1-(height/bottomImage.height))/2
                     property real hoffset: Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)
                     property real voffset: Math.max(Math.min(imageRect.cropVoffset, maxVoffset), -maxVoffset)
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width -width)*bottomImage.scale  + hoffset*bottomImage.width*bottomImage.scale)
                     y: bottomImage.y + Math.round(0.5*(bottomImage.height-height)*bottomImage.scale + voffset*bottomImage.height*bottomImage.scale)
-                    //x: bottomImage.x + 0.5*(bottomImage.width - width) + hoffset*bottomImage.width
-                    //y: bottomImage.y + 0.5*(bottomImage.height-height) + voffset*bottomImage.width
                     transform: Scale {//The scale happens after positioning, about the origin.
                         origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
                         origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
@@ -305,6 +304,10 @@ SplitView {
                 property real readAspect: cropmarker.width / cropmarker.height
                 property real readHoffset: cropmarker.hoffset
                 property real readVoffset: cropmarker.voffset
+                property real displayHeight: cropmarker.height
+                property real displayWidth:  cropmarker.width
+                property real displayHoffset: cropmarker.hoffset * bottomImage.width
+                property real displayVoffset: cropmarker.voffset * bottomImage.height
 
                 function validateCrop() {
                     imageRect.cropHeight = imageRect.readHeight
@@ -325,9 +328,9 @@ SplitView {
                     property real cropHoffset
                     property real tempHeight: bottomImage.height * Math.max(Math.min(1,cropHeight),0)
                     property real tempAspect: cropAspect <= 0 ? 1 : cropAspect
-                    width: Math.min(tempHeight * tempAspect, bottomImage.width)
-                    height: Math.min(tempHeight, width / tempAspect)
-                    //Hoffsets need work.
+                    width: Math.round(Math.min(tempHeight * tempAspect, bottomImage.width))
+                    height: Math.round(Math.min(tempHeight, width / tempAspect))
+                    //TODO: copy from above
                     property real maxHoffset: (1-(width /bottomImage.width ))/2
                     property real maxVoffset: (1-(height/bottomImage.height))/2
                     property real hoffset: Math.max(Math.min(cropHoffset, maxHoffset), -maxHoffset)
@@ -569,7 +572,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             //text: " f/" + paramManager.aperture
-            text: imageRect.readHeight
+            text: imageRect.displayWidth
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -579,7 +582,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             //text: " " + paramManager.exposureTime + " s"
-            text: imageRect.readAspect
+            text: imageRect.displayHeight
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -590,7 +593,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             //text: paramManager.filename
-            text: imageRect.readHoffset
+            text: imageRect.displayHoffset
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -601,7 +604,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             //text: "ISO " + paramManager.sensitivity
-            text: imageRect.readVoffset
+            text: imageRect.displayVoffset
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
