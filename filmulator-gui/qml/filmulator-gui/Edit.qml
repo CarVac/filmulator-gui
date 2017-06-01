@@ -9,6 +9,7 @@ SplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
     property bool imageReady: false
+    property bool cropping: false
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -234,9 +235,9 @@ SplitView {
                 //From here are the crop markers.
                 //There are four parameters that get stored.
                 // crop height as % of image height
-                property real cropheight: 0.5312353
+                property real cropHeight: 0.5312353
                 // width / height (aspect ratio of the crop)
-                property real cropaspect: 1.5
+                property real cropAspect: 1.5
                 // voffset as % of image height, center from center
                 property real cropVoffset: 0.0
                 // hoffset as % of image width, center from center
@@ -244,31 +245,153 @@ SplitView {
                 Rectangle {
                     id: cropmarker
                     color: 'green'
-                    property real tempHeight: bottomImage.height * imageRect.cropheight
-                    width: Math.min(tempHeight * imageRect.cropaspect, bottomImage.width)
-                    height: Math.min(tempHeight, width / imageRect.cropaspect)
+                    opacity: 0.5
+                    visible: root.cropping
+                    property real tempHeight: bottomImage.height * Math.max(Math.min(1,imageRect.cropHeight),0)
+                    property real tempAspect: imageRect.cropAspect <= 0 ? 1 : imageRect.cropAspect
+                    width: Math.min(tempHeight * tempAspect, bottomImage.width)
+                    height: Math.min(tempHeight, width / tempAspect)
                     //Hoffsets need work.
                     property real maxHoffset: (1-(width /bottomImage.width ))/2
                     property real maxVoffset: (1-(height/bottomImage.height))/2
                     property real hoffset: Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)
                     property real voffset: Math.max(Math.min(imageRect.cropVoffset, maxVoffset), -maxVoffset)
-                    x: bottomImage.x + Math.ceil((0.5*(bottomImage.width -width) +hoffset*bottomImage.width) *scale)
-                    y: bottomImage.y + Math.ceil((0.5*(bottomImage.height-height)+voffset*bottomImage.height)*scale)
-                    scale: bottomImage.scale
-                    transformOrigin: Item.TopLeft//==========================================================this needs to be the IMAGE top left, actually.
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width -width)*bottomImage.scale  + hoffset*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-height)*bottomImage.scale + voffset*bottomImage.height*bottomImage.scale)
+                    //x: bottomImage.x + 0.5*(bottomImage.width - width) + hoffset*bottomImage.width
+                    //y: bottomImage.y + 0.5*(bottomImage.height-height) + voffset*bottomImage.width
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
+                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: cropright
+                    color: 'blue'
+                    opacity: 0.5
+                    visible: root.cropping
+                    width: 20*uiScale/bottomImage.scale
+                    anchors.top: cropmarker.top
+                    anchors.bottom: cropmarker.bottom
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
+                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: cropleft
+                    color: 'blue'
+                    opacity: 0.5
+                    visible: root.cropping
+                    width: 20*uiScale/bottomImage.scale
+                    anchors.top: cropmarker.top
+                    anchors.bottom: cropmarker.bottom
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
+                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
                 }
 
                 //Test readouts of the properties for writing back to database.
-                property real readheight: cropmarker.height / bottomImage.height
-                property real readwidth: cropmarker.width / cropmarker.width
+                property real readHeight: cropmarker.height / bottomImage.height
+                property real readAspect: cropmarker.width / cropmarker.height
                 property real readHoffset: cropmarker.hoffset
-                property real readVoffset: cropmarker.maxHoffset
+                property real readVoffset: cropmarker.voffset
+
+                function validateCrop() {
+                    imageRect.cropHeight = imageRect.readHeight
+                    imageRect.cropAspect = imageRect.readAspect
+                    imageRect.cropHoffset = imageRect.readHoffset
+                    imageRect.cropVoffset = imageRect.readVoffset
+                }
+
+                MouseArea {
+                    id: cropDrag
+                    //cursorShape: Qt.DragMoveCursor
+                    cursorShape: Qt.WaitCursor
+                    acceptedButtons: Qt.LeftButton
+                    enabled: false
+                    property real cropHeight
+                    property real cropAspect
+                    property real cropVoffset
+                    property real cropHoffset
+                    property real tempHeight: bottomImage.height * Math.max(Math.min(1,cropHeight),0)
+                    property real tempAspect: cropAspect <= 0 ? 1 : cropAspect
+                    width: Math.min(tempHeight * tempAspect, bottomImage.width)
+                    height: Math.min(tempHeight, width / tempAspect)
+                    //Hoffsets need work.
+                    property real maxHoffset: (1-(width /bottomImage.width ))/2
+                    property real maxVoffset: (1-(height/bottomImage.height))/2
+                    property real hoffset: Math.max(Math.min(cropHoffset, maxHoffset), -maxHoffset)
+                    property real voffset: Math.max(Math.min(cropVoffset, maxVoffset), -maxVoffset)
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width -width)*bottomImage.scale  + hoffset*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-height)*bottomImage.scale + voffset*bottomImage.height*bottomImage.scale)
+
+                    function updatePosition() {
+                        cropDrag.cropHeight = imageRect.cropHeight
+                        cropDrag.cropAspect = imageRect.cropAspect
+                        cropDrag.cropHoffset = imageRect.cropHoffset
+                        cropDrag.cropVoffset = imageRect.cropVoffset
+                    }
+
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                    Connections {
+                        target: root
+                        onCroppingChanged: {
+                            if (cropping) {
+                                cropDrag.updatePosition()
+                                cropDrag.enabled = true
+                                cropDrag.visible = true
+                            }
+                            else {
+                                console.log("cropDrag cropping disabled")
+                                cropDrag.enabled = false
+                                cropDrag.visible = false
+                            }
+                        }
+                    }
+
+                    property real oldX
+                    property real oldY
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldX = mouse.x
+                        oldY = mouse.y
+                    }
+                    onPositionChanged: {
+                        var deltaX = mouse.x - oldX
+                        var deltaY = mouse.y - oldY
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        imageRect.cropHoffset = imageRect.cropHoffset + deltaX/bottomImage.width
+                        imageRect.cropVoffset = imageRect.cropVoffset + deltaY/bottomImage.height
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                }
             }
         }
         MouseArea {
             id: wheelCapture
             anchors.fill: flicky
-            acceptedButtons: Qt.RightButton
+            acceptedButtons: Qt.NoButton//Qt.RightButton
             onWheel: {
                 var oldMouseX = wheel.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-bottomImage.width*bottomImage.scale))
                 var oldMouseY = wheel.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-bottomImage.height*bottomImage.scale))
@@ -329,7 +452,7 @@ SplitView {
             text: qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
             tooltipText: qsTr("Click this to begin cropping.")//change to "Hold shift to snap to common aspect ratios" when cropping in progress
             onTriggered: {
-                cropmarker.visible = !cropmarker.visible
+                root.cropping = !root.cropping
             }
             Component.onCompleted: {
                 crop.tooltipWanted.connect(root.tooltipWanted)
@@ -446,7 +569,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             //text: " f/" + paramManager.aperture
-            text: imageRect.readheight
+            text: imageRect.readHeight
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -456,7 +579,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             //text: " " + paramManager.exposureTime + " s"
-            text: imageRect.readwidth
+            text: imageRect.readAspect
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
