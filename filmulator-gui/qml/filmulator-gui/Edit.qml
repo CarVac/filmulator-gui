@@ -239,17 +239,19 @@ SplitView {
                 //From here are the crop markers.
                 //There are four parameters that get stored.
                 // crop height as % of image height
-                property real cropHeight: 0.5312353
+                //property real cropHeight: 0.5312353
+                property real cropHeight: 0.5225
                 // width / height (aspect ratio of the crop)
                 property real cropAspect: 1.5
                 // voffset as % of image height, center from center
                 property real cropVoffset: 0.0
                 // hoffset as % of image width, center from center
                 property real cropHoffset: 0.5
-                Rectangle {
+                //Rectangle {
+                Item {
                     id: cropmarker
-                    color: 'green'
-                    opacity: 0.5
+                    //color: 'green'
+                    //opacity: 0
                     visible: root.cropping
                     property real tempHeight: bottomImage.height * Math.max(Math.min(1,imageRect.cropHeight),0)
                     property real tempAspect: imageRect.cropAspect <= 0 ? 1 : imageRect.cropAspect
@@ -259,10 +261,28 @@ SplitView {
                     //TODO: COPY THIS CODE TO THE MouseArea BELOW
                     property real maxHoffset: (1-(width /bottomImage.width ))/2
                     property real maxVoffset: (1-(height/bottomImage.height))/2
-                    property real hoffset: Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)
-                    property real voffset: Math.max(Math.min(imageRect.cropVoffset, maxVoffset), -maxVoffset)
+                    property real oddH: Math.round((bottomImage.width - width)/2)*2 === (bottomImage.width - width) ? 0 : 0.5//it's 0.5 if odd.
+                    property real oddV: Math.round((bottomImage.height - height)/2)*2 === (bottomImage.height - height) ? 0 : 0.5// it's 0.5 if odd.
+                    property real hoffset: (Math.round(Math.max(Math.min(imageRect.cropHoffset, maxHoffset), -maxHoffset)*bottomImage.width+oddH)-oddH)/bottomImage.width
+                    property real voffset: (Math.round(Math.max(Math.min(imageRect.cropVoffset, maxVoffset), -maxVoffset)*bottomImage.height+oddV)-oddV)/bottomImage.height
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width -width)*bottomImage.scale  + hoffset*bottomImage.width*bottomImage.scale)
                     y: bottomImage.y + Math.round(0.5*(bottomImage.height-height)*bottomImage.scale + voffset*bottomImage.height*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
+                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: cropleft
+                    color: 'blue'
+                    opacity: 0.5
+                    visible: root.cropping
+                    width: 20*uiScale/bottomImage.scale
+                    anchors.top: cropmarker.top
+                    anchors.bottom: cropmarker.bottom
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
                     transform: Scale {//The scale happens after positioning, about the origin.
                         origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
                         origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
@@ -287,14 +307,30 @@ SplitView {
                     }
                 }
                 Rectangle {
-                    id: cropleft
+                    id: croptop
                     color: 'blue'
                     opacity: 0.5
                     visible: root.cropping
-                    width: 20*uiScale/bottomImage.scale
-                    anchors.top: cropmarker.top
-                    anchors.bottom: cropmarker.bottom
-                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    height: 20*uiScale/bottomImage.scale
+                    anchors.left: cropmarker.left
+                    anchors.right: cropmarker.right
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-2*height)*bottomImage.scale + (cropmarker.voffset - cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
+                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: cropbottom
+                    color: 'blue'
+                    opacity: 0.5
+                    visible: root.cropping
+                    height: 20*uiScale/bottomImage.scale
+                    anchors.left: cropmarker.left
+                    anchors.right: cropmarker.right
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height)*bottomImage.scale + (cropmarker.voffset + cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
                     transform: Scale {//The scale happens after positioning, about the origin.
                         origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
                         origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
@@ -334,7 +370,6 @@ SplitView {
                     property real tempAspect: cropAspect <= 0 ? 1 : cropAspect
                     width: Math.round(Math.min(tempHeight * tempAspect, bottomImage.width))
                     height: Math.round(Math.min(tempHeight, width / tempAspect))
-                    //TODO: copy from above
                     property real maxHoffset: (1-(width /bottomImage.width ))/2
                     property real maxVoffset: (1-(height/bottomImage.height))/2
                     property real hoffset: Math.max(Math.min(cropHoffset, maxHoffset), -maxHoffset)
