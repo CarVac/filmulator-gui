@@ -39,10 +39,10 @@ SplitView {
             height: Math.floor(parent.height - 30 * uiScale)
             contentWidth:  Math.max(bottomImage.width *bottomImage.scale, this.width);
             contentHeight: Math.max(bottomImage.height*bottomImage.scale, this.height);
-            leftMargin: 300*uiScale*cropping
-            rightMargin: 300*uiScale*cropping
-            topMargin: 300*uiScale*cropping
-            bottomMargin: 300*uiScale*cropping
+            leftMargin: 200*uiScale*cropping
+            rightMargin: 200*uiScale*cropping
+            topMargin: 200*uiScale*cropping
+            bottomMargin: 200*uiScale*cropping
             flickableDirection: Flickable.HorizontalAndVerticalFlick
             clip: true
             pixelAligned: true
