@@ -268,24 +268,26 @@ SplitView {
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width -width)*bottomImage.scale  + hoffset*bottomImage.width*bottomImage.scale)
                     y: bottomImage.y + Math.round(0.5*(bottomImage.height-height)*bottomImage.scale + voffset*bottomImage.height*bottomImage.scale)
                     transform: Scale {//The scale happens after positioning, about the origin.
-                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
-                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        origin.x: 0
+                        origin.y: 0
                         xScale: bottomImage.scale
                         yScale: bottomImage.scale
                     }
                 }
+
+                property real cropHandleWidth: 30
                 Rectangle {
                     id: cropleft
                     color: 'blue'
                     opacity: 0.5
                     visible: root.cropping
-                    width: 20*uiScale/bottomImage.scale
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.top: cropmarker.top
                     anchors.bottom: cropmarker.bottom
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
                     transform: Scale {//The scale happens after positioning, about the origin.
-                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
-                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        origin.x: 0
+                        origin.y: 0
                         xScale: bottomImage.scale
                         yScale: bottomImage.scale
                     }
@@ -295,13 +297,13 @@ SplitView {
                     color: 'blue'
                     opacity: 0.5
                     visible: root.cropping
-                    width: 20*uiScale/bottomImage.scale
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.top: cropmarker.top
                     anchors.bottom: cropmarker.bottom
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
                     transform: Scale {//The scale happens after positioning, about the origin.
-                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
-                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        origin.x: 0
+                        origin.y: 0
                         xScale: bottomImage.scale
                         yScale: bottomImage.scale
                     }
@@ -311,13 +313,13 @@ SplitView {
                     color: 'blue'
                     opacity: 0.5
                     visible: root.cropping
-                    height: 20*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.left: cropmarker.left
                     anchors.right: cropmarker.right
                     y: bottomImage.y + Math.round(0.5*(bottomImage.height-2*height)*bottomImage.scale + (cropmarker.voffset - cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
                     transform: Scale {//The scale happens after positioning, about the origin.
-                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
-                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        origin.x: 0
+                        origin.y: 0
                         xScale: bottomImage.scale
                         yScale: bottomImage.scale
                     }
@@ -327,13 +329,77 @@ SplitView {
                     color: 'blue'
                     opacity: 0.5
                     visible: root.cropping
-                    height: 20*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.left: cropmarker.left
                     anchors.right: cropmarker.right
                     y: bottomImage.y + Math.round(0.5*(bottomImage.height)*bottomImage.scale + (cropmarker.voffset + cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
                     transform: Scale {//The scale happens after positioning, about the origin.
-                        origin.x: 0//-(0.5*(bottomImage.width - width) + hoffset*bottomImage.width)
-                        origin.y: 0//-(0.5*(bottomImage.height-height) + voffset*bottomImage.height)
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: croptopleft
+                    color: 'purple'
+                    opacity: 0.5
+                    visible: root.cropping
+                    width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-2*height)*bottomImage.scale + (cropmarker.voffset - cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: croptopright
+                    color: 'purple'
+                    opacity: 0.5
+                    visible: root.cropping
+                    width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-2*height)*bottomImage.scale + (cropmarker.voffset - cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: cropbottomleft
+                    color: 'purple'
+                    opacity: 0.5
+                    visible: root.cropping
+                    width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height)*bottomImage.scale + (cropmarker.voffset + cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+                }
+                Rectangle {
+                    id: cropbottomright
+                    color: 'purple'
+                    opacity: 0.5
+                    visible: root.cropping
+                    width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height)*bottomImage.scale + (cropmarker.voffset + cropmarker.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {//The scale happens after positioning, about the origin.
+                        origin.x: 0
+                        origin.y: 0
                         xScale: bottomImage.scale
                         yScale: bottomImage.scale
                     }
