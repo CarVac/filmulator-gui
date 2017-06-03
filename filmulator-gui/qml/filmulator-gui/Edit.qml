@@ -677,7 +677,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             //text: " f/" + paramManager.aperture
-            text: imageRect.displayWidth
+            text: root.cropping ? imageRect.displayWidth : " f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -687,7 +687,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             //text: " " + paramManager.exposureTime + " s"
-            text: imageRect.displayHeight
+            text: root.cropping ? imageRect.displayHeight : " " + paramManager.exposureTime + " s"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -698,7 +698,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             //text: paramManager.filename
-            text: imageRect.displayHoffset
+            text: root.cropping ? imageRect.displayHoffset : paramManager.filename
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -709,7 +709,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             //text: "ISO " + paramManager.sensitivity
-            text: imageRect.displayVoffset
+            text: root.cropping ? imageRect.displayVoffset : "ISO " + paramManager.sensitivity
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
