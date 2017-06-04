@@ -46,6 +46,7 @@ Item {
     }
 
     signal openThisImage( string filePath, string sensitivity, string exposureTime, real aperture, real focalLength, real initialDeveloperConcentration, real reservoirThickness, real activeLayerThickness, real crystalsPerPixel, real initialCrystalRadius, real initialSilverSaltDensity, real developerConsumptionConst, real crystalGrowthConst, real silverSaltConsumptionConst, real totalDevelopmentTime, int agitateCount, int developmentResolution, real filmArea, real sigmaConst, real layerMixConst, real layerTimeDivisor, int rolloffBoundary, real exposureComp, real whitepoint, real blackpoint, real shadowsX, real shadowsY, real highlightsX, real highlightsY, int highlightRecovery, bool caEnabled, real temperature, real tint, real vibrance, real saturation, int orientation )
+    signal refresh();
 
     Rectangle {
         id: currentImageRect
@@ -122,5 +123,11 @@ Item {
 
     Component.onCompleted: {
         loadThumb.sourceComponent = thumbImage
+        if (searchID == "") {
+            console.log('queue delegate: model empty, but refreshing')
+            //QueueModel.refreshAll()
+            //QueueModel.updateAll()
+            refresh()
+        }
     }
 }

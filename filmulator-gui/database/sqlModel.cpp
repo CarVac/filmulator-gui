@@ -105,7 +105,22 @@ void SqlModel::updateAll()
 {
     //It doesn't refresh the internal data model unless you reset the query.
     queryModel.setQuery(modelQuery());
-    //Tell it to grab everything when updating.
+
+    //Occasionally it wouldn't grab everything when updating the queue, leaving empty spots.
+    //This fixed that.
+    while(queryModel.canFetchMore())
+    {
+        queryModel.fetchMore();
+    }
+
+    //Tell it to update every delegate in the view.
+    refreshAll();
+}
+
+//This tells the view to refresh.
+//This is just shorthand.
+void SqlModel::refreshAll()
+{
     emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
 }
 

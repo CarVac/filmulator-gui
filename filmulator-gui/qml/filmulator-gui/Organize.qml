@@ -56,10 +56,12 @@ SplitView {
                     onValueChanged: {
                         settings.organizeTZ = value
                         organizeModel.timeZone = value
+                        gridView.returnToBounds()
                     }
                     Component.onCompleted: {
                         timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.timeZone = value
+                        gridView.returnToBounds()
                     }
                     uiScale: root.uiScale
                 }
@@ -99,6 +101,7 @@ SplitView {
                         }
                         if (isChanged === 1) {
                             organizeModel.setMinMaxCaptureTime(tempDate)
+                            gridView.returnToBounds()
                         }
                     }
 
@@ -127,6 +130,7 @@ SplitView {
                     Component.onCompleted: {
                         captureCalendar.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.setMinMaxCaptureTime(selectedDate)
+                        gridView.returnToBounds()
                     }
                     Connections {
                         target: organizeModel
@@ -151,6 +155,7 @@ SplitView {
                     onValueChanged: {
                         settings.organizeRating = value
                         organizeModel.minRating = value
+                        gridView.returnToBounds()
                     }
                     uiScale: root.uiScale
                     Component.onCompleted: {
@@ -182,19 +187,18 @@ SplitView {
                 cellHeight: dateHistogram.height
                 boundsBehavior: Flickable.StopAtBounds
 
-                property string selectedDate
 
                 delegate: Rectangle {
                     id: dateHistoDelegate
                     width: 5.01 * uiScale //This has to be sliiightly bigger to ensure overlap
-                    property string selectedDate: dateHistoView.selectedDate
+                    property int julianDay: julday
                     property string theDate: thedate
                     property int count: thecount
                     property string yearMonthString: yearmonth
                     property int month: themonth
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
-                    property bool sel: selectedDate == theDate
+                    property bool sel: organizeModel.isDateSelected(theDate)//selectedDate == theDate
                     height: dateHistogram.height
                     color: (1===themonth%2) ? (sel ? Colors.darkOrangeH : Colors.darkGrayH) : (sel ? Colors.darkOrangeL : Colors.darkGrayL)
                     clip: true
@@ -229,16 +233,25 @@ SplitView {
                     MouseArea {//Change the date when double-clicked.
                         id: dateChanger
                         anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
                         onDoubleClicked: {
-                            organizeModel.setMinMaxCaptureTimeString(parent.theDate)
+                            if(mouse.button === Qt.LeftButton) {
+                                organizeModel.setMinMaxCaptureTimeString(parent.theDate)
+                                gridView.returnToBounds()
+                            }
+                        }
+                        onClicked: {
+                            if(mouse.button === Qt.RightButton || (mouse.button === Qt.LeftButton && (mouse.modifiers & Qt.ShiftModifier))) {
+                                organizeModel.extendMinMaxCaptureTimeString(parent.theDate)
+                                gridView.returnToBounds()
+                            }
                         }
                     }
-                }
-
-                Connections {
-                    target: organizeModel
-                    onCaptureDateChanged: {
-                        dateHistoView.selectedDate = organizeModel.getSelectedYMDString()
+                    Connections {
+                        target: organizeModel
+                        onCaptureDateChanged: {
+                            sel = organizeModel.isDateSelected(theDate)
+                        }
                     }
                 }
 

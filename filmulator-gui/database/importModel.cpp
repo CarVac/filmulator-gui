@@ -26,6 +26,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                        const QString,
                                        const QDateTime,
                                        const bool,
+                                       const bool,
                                        const bool)),
             worker, SLOT(importFile(const QFileInfo,
                                     const int,
@@ -35,8 +36,9 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                     const QString,
                                     const QDateTime,
                                     const bool,
+                                    const bool,
                                     const bool)));
-    connect(worker, SIGNAL(doneProcessing()), this, SLOT(workerFinished()));
+    connect(worker, SIGNAL(doneProcessing(bool)), this, SLOT(workerFinished(bool)));
     connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
     workerThread.start(QThread::LowPriority);
 }
@@ -77,7 +79,7 @@ bool ImportModel::pathContainsDCIM(const QString dir, const bool notDirectory)
     return false;
 }
 
-void ImportModel::importDirectory_r(const QString dir, const bool importInPlace)
+void ImportModel::importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation)
 {
     //This function reads in a directory and puts the raws into the database.
     if (dir.length() == 0)
@@ -99,7 +101,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace)
     QFileInfoList dirList = directory.entryInfoList();
     for (int i=0; i < dirList.size(); i++)
     {
-        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace);
+        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace, replaceLocation);
     }
 
     //Next, we filter for files.
@@ -131,6 +133,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace)
         params.importStartTimeParam = now;
         params.appendHashParam = appendHash;
         params.importInPlace = importInPlace;
+        params.replaceLocation = replaceLocation;
         queue.push_back(params);
         maxQueue++;
     }
@@ -152,7 +155,7 @@ QStringList ImportModel::getNameFilters()
 
 //This imports a single file, taking in a file path URL as a QString.
 //If invalid, returns Validity::invalid
-Validity ImportModel::importFile(const QString name, const bool importInPlace, const bool onlyCheck)
+Validity ImportModel::importFile(const QString name, const bool importInPlace, const bool replaceLocation, const bool onlyCheck)
 {
 
     //Check for "url://" at the beginning
@@ -211,6 +214,7 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
         params.importStartTimeParam = now;
         params.appendHashParam = appendHash;
         params.importInPlace = importInPlace;
+        params.replaceLocation = replaceLocation;
         queue.push_back(params);
         maxQueue++;
 
@@ -223,15 +227,15 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
     return Validity::valid;
 }
 
-//This will import multiple files, but I'm not sure exactly how it works.
-void ImportModel::importFileList(const QString name, const bool importInPlace)
+//This will import multiple files recursively.
+void ImportModel::importFileList(const QString name, const bool importInPlace, const bool replaceLocation)
 {
     Validity validity = Validity::valid;
     const QStringList nameList = name.split(",");
     //First check for validity.
     for (int i = 0; i < nameList.size(); i++)
     {
-        validity = importFile(nameList.at(i), importInPlace, true);
+        validity = importFile(nameList.at(i), importInPlace, replaceLocation, true);
         if (Validity::invalid == validity)
         {
             break;
@@ -242,18 +246,21 @@ void ImportModel::importFileList(const QString name, const bool importInPlace)
         //If it's valid, we run it again, this time enqueuing them.
         for (int i = 0; i < nameList.size(); i++)
         {
-            importFile(nameList.at(i), importInPlace, false);
+            importFile(nameList.at(i), importInPlace, replaceLocation, false);
         }
         paused = false;
         startWorker(queue.front());
     }
 }
 
-void ImportModel::workerFinished()
+void ImportModel::workerFinished(bool changedST)
 {
     QMutexLocker locker(&mutex);
+    if(changedST)
+    {
+        emit searchTableChanged();
+    }
     //cout << "ImportModel queue items remaining: " << queue.size() << endl;
-    emit searchTableChanged();
     if (queue.size() <= 0)
     {
         //cout << "ImportModel no more work; empty queue" << endl;
@@ -300,5 +307,6 @@ void ImportModel::startWorker(const importParams params)
     const QDateTime time = params.importStartTimeParam;
     const bool append = params.appendHashParam;
     const bool inPlace = params.importInPlace;
-    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time, append, inPlace);
+    const bool replaceLocation = params.replaceLocation;
+    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time, append, inPlace, replaceLocation);
 }

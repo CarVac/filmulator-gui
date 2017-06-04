@@ -20,6 +20,7 @@ class Settings : public QObject
     Q_PROPERTY(bool enqueue READ getEnqueue WRITE setEnqueue NOTIFY enqueueChanged)
     Q_PROPERTY(bool appendHash READ getAppendHash WRITE setAppendHash NOTIFY appendHashChanged)
     Q_PROPERTY(bool mipmapView READ getMipmapView WRITE setMipmapView NOTIFY mipmapViewChanged)
+    Q_PROPERTY(bool lowMemMode READ getLowMemMode WRITE setLowMemMode NOTIFY lowMemModeChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
@@ -35,6 +36,7 @@ public:
     void setEnqueue(bool enqueueIn);
     void setAppendHash(bool appendHashIn);
     void setMipmapView(bool mipmapViewIn);
+    void setLowMemMode(bool lowMemModeIn);
 
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
@@ -48,6 +50,7 @@ public:
     Q_INVOKABLE bool getEnqueue();
     Q_INVOKABLE bool getAppendHash();
     Q_INVOKABLE bool getMipmapView();
+    Q_INVOKABLE bool getLowMemMode();
 
 protected:
     QString photoStorageDir;
@@ -62,6 +65,7 @@ protected:
     bool enqueue;
     bool appendHash;
     bool mipmapView;
+    bool lowMemMode;
 
 signals:
     void photoStorageDirChanged();
@@ -75,7 +79,8 @@ signals:
     void uiScaleChanged();
     void enqueueChanged();
     void appendHashChanged();
-    bool mipmapViewChanged();
+    void mipmapViewChanged();
+    void lowMemModeChanged();
 };
 
 #endif // SETTINGS_H

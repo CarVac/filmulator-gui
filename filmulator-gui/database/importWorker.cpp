@@ -16,7 +16,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                               const QString dirConfig,
                               const QDateTime importStartTime,
                               const bool appendHash,
-                              const bool importInPlace)
+                              const bool importInPlace,
+                              const bool replaceLocation)
 {
     //Generate a hash of the raw file.
     QCryptographicHash hash(QCryptographicHash::Md5);
@@ -108,8 +109,13 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     query.exec();
     query.next();
     const QString dbRecordedPath = query.value(0).toString();
-    if (dbRecordedPath == "")//It's not in the database yet.
+    //If it's not in the database yet,
+    //And we're not updating locations
+    //  (if we are updating locations, we don't want it to add new things to the db)
+    bool changedST = false;
+    if (dbRecordedPath == "" && !replaceLocation)
     {
+        cout << "importWorker no replace, doesn't exist" << endl;
         //Record the file location in the database.
         if (!importInPlace)
         {
@@ -139,17 +145,36 @@ void ImportWorker::importFile(const QFileInfo infoIn,
             emit enqueueThis(STsearchID);
         }
         //It might be ignored downstream, but that's not our problem here.
+
+        //Tell the views we need updating.
+        changedST = true;
     }
-    else //it's already in the database, so just move the file.
+    else if (dbRecordedPath != "")//it's already in the database, so just move the file.
     {
-        //See if the file is in its old location.
-        //If the user deleted the local copy of the raw file, but are re-importing
-        // from the backup, this situation might occur.
-        if (!QFile::exists(dbRecordedPath) && !importInPlace)
+        //See if the file is in its old location, and copy if not.
+        //DON'T do this if we're updating the location.
+        if (!QFile::exists(dbRecordedPath) && !importInPlace && !replaceLocation)
         {
             QFile::copy(infoIn.absoluteFilePath(), outputPathName);
         }
-        //TODO: Perhaps there should be a "local copy available" flag set here.
+
+        //If we want to update the location of the file.
+        if (replaceLocation)
+        {
+            fileInsert(hashString, infoIn.absoluteFilePath(), exifData);
+            cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
+
+            QString STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));
+            cout << "importWorker replace STsearchID: " << STsearchID.toStdString() << endl;
+
+            if (QString("") != STsearchID)
+            {
+                emit enqueueThis(STsearchID);
+            }
+        }
     }
-    emit doneProcessing();
+    //else do nothing.
+
+    //Tell the ImportModel whether we did anything to the SearchTable
+    emit doneProcessing(changedST);
 }

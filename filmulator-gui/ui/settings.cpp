@@ -211,3 +211,21 @@ bool Settings::getMipmapView()
     }
     return mipmapView;
 }
+
+void Settings::setLowMemMode(bool lowMemModeIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    lowMemMode = lowMemModeIn;
+    settings.setValue("edit/lowMemMode", lowMemModeIn);
+    emit lowMemModeChanged();
+}
+
+bool Settings::getLowMemMode()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    //Default: 0
+    lowMemMode = settings.value("edit/lowMemMode", 0).toBool();
+    cout << "low memory mode changed: " << lowMemMode << endl;
+    emit lowMemModeChanged();
+    return lowMemMode;
+}

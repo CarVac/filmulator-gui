@@ -1,8 +1,9 @@
 #include "imagePipeline.h"
 
-ImagePipeline::ImagePipeline(CacheAndHisto cacheAndHistoIn, QuickQuality qualityIn)
+ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
-    cacheHisto = cacheAndHistoIn;
+    cache = cacheIn;
+    histo = histoIn;
     quality = qualityIn;
     valid = Valid::none;
 
@@ -18,16 +19,47 @@ ImagePipeline::ImagePipeline(CacheAndHisto cacheAndHistoIn, QuickQuality quality
 
 }
 
+//int ImagePipeline::libraw_callback(void *data, LibRaw_progress p, int iteration, int expected)
+//but we only need data.
+int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
+{
+    AbortStatus abort;
+    Valid validity;
+
+    //Recover the param_manager from the data
+    ParameterManager * pManager = static_cast<ParameterManager*>(data);
+    //See whether to abort or not.
+    //Because LibRaw does the demosaicing, we need to use the check that's performed afterwards
+    //That's prefilmulation.
+    //If we ever use LibRaw only for decoding, then change this to do the check for demosaicing.
+    std::tie(validity, abort, std::ignore) = pManager->claimPrefilmParams();
+    if (abort == AbortStatus::restart)
+    {
+        return 1;//cancel processing
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManager,
                                                    Interface * interface_in,
                                                    Exiv2::ExifData &exifOutput)
 {
+    //Say that we've started processing to prevent cache status from changing..
+    hasStartedProcessing = true;
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
     gettimeofday(&timeRequested, NULL);
     interface = interface_in;
 
     valid = paramManager->getValid();
+    if (NoCache == cache || true == cacheEmpty)
+    {
+        valid = none;//we need to start fresh if nothing is going to be cached.
+    }
+
     LoadParams loadParam;
     DemosaicParams demosaicParam;
     PrefilmParams prefilmParam;
@@ -70,6 +102,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         cout << "load start:" << timeDiff (timeRequested) << endl;
         struct timeval imload_time;
         gettimeofday( &imload_time, NULL );
+        /*
         if (imload(loadParam.fullFilename,
                   input_image,
                   loadParam.tiffIn,
@@ -82,6 +115,118 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             //Tell the param manager to abort back for some reason? maybe?
             //It was setting valid back to none.
             return emptyMatrix();
+        }
+        */
+        if (loadParam.tiffIn)
+        {
+            if (imread_tiff(loadParam.fullFilename, input_image, exifData))
+            {
+                cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
+                return emptyMatrix();
+            }
+        }
+        else if (loadParam.jpegIn)
+        {
+            if (imread_jpeg(loadParam.fullFilename, input_image, exifData))
+            {
+                cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
+                return emptyMatrix();
+            }
+        }
+        else //raw
+        {
+            //Create image processor for reading raws.
+            LibRaw image_processor;
+
+            //Connect image processor with callback for cancellation
+            image_processor.set_progress_handler(ImagePipeline::libraw_callback, paramManager);
+
+            //Open the file.
+            const char *cstr = loadParam.fullFilename.c_str();
+            if (0 != image_processor.open_file(cstr))
+            {
+                cerr << "processImage: Could not read input file!" << endl;
+                return emptyMatrix();
+            }
+             //Make abbreviations for brevity in accessing data.
+#define SIZES image_processor.imgdata.sizes
+#define PARAM image_processor.imgdata.params
+#define IMAGE image_processor.imgdata.image
+#define COLOR image_processor.imgdata.color
+
+            //Now we'll set demosaic and other processing settings.
+            PARAM.user_qual = 10;//9;//10 is AMaZE; -q[#] in dcraw
+            PARAM.no_auto_bright = 1;//Don't autoadjust brightness (-W)
+            PARAM.output_bps = 16;//16 bits per channel (-6)
+            PARAM.gamm[0] = 1;
+            PARAM.gamm[1] = 1;//Linear gamma (-g 1 1)
+            PARAM.ca_correc = demosaicParam.caEnabled;//Turn on CA auto correction
+            PARAM.cared = 0;
+            PARAM.cablue = 0;
+            PARAM.output_color = 1;//1: Use sRGB regardless.
+            PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
+            PARAM.highlight = demosaicParam.highlights;//Set highlight recovery (-H #)
+            PARAM.med_passes = 1;//median filter
+
+            if (LowQuality == quality)
+            {
+                //PARAM.half_size = 1;//half-size output, should dummy down demosaic.
+                /* The above sometimes read out a dng thumbnail instead of the image itself. */
+                PARAM.user_qual = 0;//nearest-neighbor demosaic
+                PARAM.ca_correc = 0;//turn off auto CA correction.
+            }
+
+            AbortStatus abort;
+            std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
+            if (abort == AbortStatus::restart)
+            {
+                return emptyMatrix();
+            }
+
+            //This makes IMAGE contains the sensel value and 3 blank values at every
+            //location.
+            if (0 != image_processor.unpack())
+            {
+                cerr << "processImage: Could not read input file, or was canceled" << endl;
+                return emptyMatrix();
+            }
+
+            std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
+            if (abort == AbortStatus::restart)
+            {
+                return emptyMatrix();
+            }
+
+            //This calls the dcraw processing on the raw sensel data.
+            //Now, it contains 3 color values and one blank value at every location.
+            //We will ignore the last blank value.
+            if (0 != image_processor.dcraw_process())
+            {
+                cerr << "processImage: Processing was canceled during dcraw_process" << endl;
+                return emptyMatrix();
+            }
+
+            long rSum = 0, gSum = 0, bSum = 0;
+            input_image.set_size(SIZES.iheight, SIZES.iwidth*3);
+            for (int row = 0; row < SIZES.iheight; row++)
+            {
+                //IMAGE is an (width*height) by 4 array, not width by height by 4.
+                int rowoffset = row*SIZES.iwidth;
+                for (int col = 0; col < SIZES.iwidth; col++)
+                {
+                    input_image(row, col*3    ) = IMAGE[rowoffset + col][0];//R
+                    input_image(row, col*3 + 1) = IMAGE[rowoffset + col][1];//G
+                    input_image(row, col*3 + 2) = IMAGE[rowoffset + col][2];//B
+                    rSum += IMAGE[rowoffset + col][0];
+                    gSum += IMAGE[rowoffset + col][1];
+                    bSum += IMAGE[rowoffset + col][2];
+                }
+            }
+            image_processor.recycle();
+            Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
+            assert(image.get() != 0);
+            image->readMetadata();
+            exifData = image->exifData();
         }
         cout << "load time: " << timeDiff(imload_time);
 
@@ -119,11 +264,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      prefilmParam.tint,
                      prefilmParam.fullFilename);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             cropped_image.set_size( 0, 0 );
+            cacheEmpty = true;
         }
-        else//(BothCacheAndHisto == cacheHisto)
+        else
+        {
+            cacheEmpty = false;
+        }
+        if (WithHisto == histo)
         {
             //Histogram work
             interface->updateHistPreFilm(pre_film_image, 65535);
@@ -149,11 +299,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             pre_film_image.set_size(0, 0);
+            cacheEmpty = true;
         }
         else
+        {
+            cacheEmpty = false;
+        }
+        if (WithHisto == histo)
         {
             //Histogram work
             interface->updateHistPostFilm(filmulated_image, .0025);//TODO connect this magic number to the qml
@@ -181,9 +336,14 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             filmulated_image.set_size(0, 0);
+            cacheEmpty = true;
+        }
+        else
+        {
+            cacheEmpty = false;
         }
         updateProgress(valid, 0.0f);
     }
@@ -200,9 +360,13 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     lutG,
                     lutB);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             contrast_image.set_size(0, 0);
+        }
+        else
+        {
+            cacheEmpty = false;
         }
         updateProgress(valid, 0.0f);
     }
@@ -234,10 +398,15 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                             curvesParam.vibrance,
                             curvesParam.saturation);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             color_curve_image.set_size(0, 0);
+            cacheEmpty = true;
             //film_curve_image is going out of scope anyway.
+        }
+        else
+        {
+            cacheEmpty = false;
         }
 
         updateProgress(valid, 0.0f);
@@ -257,11 +426,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      rotated_image,
                      orientationParam.rotation);
 
-        if (NoCacheNoHisto == cacheHisto)
+        if (NoCache == cache)
         {
             vibrance_saturation_image.set_size(0, 0);
+            cacheEmpty = true;
         }
         else
+        {
+            cacheEmpty = false;
+        }
+        if (WithHisto == histo)
         {
             interface->updateHistFinal(rotated_image);
         }
@@ -306,4 +480,13 @@ void ImagePipeline::updateProgress(Valid valid, float stepProgress)
         totalCompletedTime += completionTimes[i]*fractionCompleted;
     }
     interface->setProgress(totalCompletedTime/totalTime);
+}
+
+//Do not call this on something that's already been used!
+void ImagePipeline::setCache(Cache cacheIn)
+{
+    if (false == hasStartedProcessing)
+    {
+        cache = cacheIn;
+    }
 }

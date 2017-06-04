@@ -161,6 +161,11 @@ Item {
                     //This is the location of the latest image from the film image provider.
                     freshURL: root.url
 
+                    onRefresh: {
+                        console.log('refreshing queue')
+                        queueModel.updateAll()
+                    }
+
 
                     MouseArea {
                         anchors.fill: parent

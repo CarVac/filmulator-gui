@@ -64,8 +64,9 @@ void OrganizeModel::setMinMaxCaptureTime(QDate captureTimeIn)
 }
 void OrganizeModel::setMinMaxCaptureTimeString(QString captureTimeIn)
 {
-    minCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
-    maxCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    startCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    minCaptureTime = startCaptureTime;//QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    maxCaptureTime = startCaptureTime;//QDate::fromString(captureTimeIn,"yyyy/MM/dd");
     QDateTime morning = QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     QDateTime evening = QDateTime(maxCaptureTime, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
     minCaptureTime_i = morning.toTime_t();
@@ -74,6 +75,52 @@ void OrganizeModel::setMinMaxCaptureTimeString(QString captureTimeIn)
     emit maxCaptureTimeChanged();
     emit captureDateChanged();
     emit organizeFilterChanged();
+}
+
+//This is used by the date histogram to select multiple days.
+void OrganizeModel::extendMinMaxCaptureTimeString(QString captureTimeIn)
+{
+    QDate tempMinCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    QDate tempMaxCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    if (tempMinCaptureTime < startCaptureTime)
+    {
+        minCaptureTime = tempMinCaptureTime;
+    }
+    else
+    {
+        minCaptureTime = startCaptureTime;
+    }
+    if (tempMaxCaptureTime > startCaptureTime)
+    {
+        maxCaptureTime = tempMaxCaptureTime;
+    }
+    else
+    {
+        maxCaptureTime = startCaptureTime;
+    }
+    QDateTime morning = QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
+    QDateTime evening = QDateTime(maxCaptureTime, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
+    minCaptureTime_i = morning.toTime_t();
+    maxCaptureTime_i = evening.toTime_t();
+    emit minCaptureTimeChanged();
+    emit maxCaptureTimeChanged();
+    emit captureDateChanged();
+    emit organizeFilterChanged();
+}
+
+//This checks whether a day is selected, for use in the date histogram (and maybe calendar)
+bool OrganizeModel::isDateSelected(QString captureTimeIn)
+{
+    QDate testCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    if (testCaptureTime >= minCaptureTime && testCaptureTime <= maxCaptureTime)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
 }
 
 QDate OrganizeModel::getSelectedDate()

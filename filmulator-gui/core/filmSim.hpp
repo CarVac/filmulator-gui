@@ -98,6 +98,9 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                const float timestep);
 
 //Reading raws with libraw
+//TODO: remove
+//PROBABLY NOT NECESSARY ANYMORE
+//The code is included in ImagePipeline now.
 bool imread( std::string input_image_filename, matrix<float> &returnmatrix,
              Exiv2::ExifData &exifData, int highlights, bool caEnabled, bool lowQuality );
 
@@ -109,6 +112,9 @@ bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
 bool imread_jpeg(string input_image_filename, matrix<float> &returnmatrix,
 		Exiv2::ExifData &exifData);
 
+//TODO: remove
+//PROBABLY NOT NECESSARY ANYMORE
+//The code is included in ImagePipeline now.
 bool imload(std::string filename,
         matrix<float> &input_image,
         bool tiff, bool jpeg_in, Exiv2::ExifData &exifData, int highlights,

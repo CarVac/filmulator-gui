@@ -61,13 +61,27 @@ Rectangle {
             uiScale: root.uiScale
         }
 
+        ToolSwitch {
+            id: lowMemModeSwitch
+            text: qsTr("Reduce memory usage")
+            tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
+            isOn: settings.getLowMemMode()
+            defaultOn: settings.getLowMemMode()
+            changed: false
+            onIsOnChanged: lowMemModeSwitch.changed = true
+            Component.onCompleted: {
+                lowMemModeSwitch.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
         ToolButton {
             id: saveSettings
             text: qsTr("Save Settings")
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed
+            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed
             onTriggered: {
                 settings.uiScale = uiScaleSlider.value
                 uiScaleSlider.defaultValue = uiScaleSlider.value
@@ -75,6 +89,9 @@ Rectangle {
                 settings.mipmapView = mipmapSwitch.isOn
                 mipmapSwitch.defaultOn = mipmapSwitch.isOn
                 mipmapSwitch.changed = false
+                settings.lowMemMode = lowMemModeSwitch.isOn
+                lowMemModeSwitch.defaultOn = lowMemModeSwitch.isOn
+                lowMemModeSwitch.changed = false;
             }
             uiScale: root.uiScale
         }

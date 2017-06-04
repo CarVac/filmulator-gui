@@ -15,6 +15,8 @@ SplitView {
     Layout.minimumWidth: 250 * uiScale
     orientation: Qt.Vertical
 
+    property bool imageReady
+
     signal tooltipWanted(string text, int x, int y)
 
     Item {
@@ -612,6 +614,7 @@ SplitView {
             uiScale: root.uiScale
             x: 0
             y: 0
+            notDisabled: root.imageReady
             text: qsTr("Save TIFF")
             onTriggered: {
                 filmProvider.writeTiff()
@@ -625,6 +628,7 @@ SplitView {
             uiScale: root.uiScale
             x: width
             y: 0
+            notDisabled: root.imageReady
             text: qsTr("Save JPEG")
             onTriggered: {
                 filmProvider.writeJpeg()

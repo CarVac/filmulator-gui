@@ -15,6 +15,8 @@ Rectangle {
     property string filePath: ""
     property bool sourceIsFolder: true
     property bool importInPlace: true
+    property bool replaceLocation: false
+    property bool replace: importInPlace && replaceLocation
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -315,6 +317,26 @@ Rectangle {
         }
 
         ToolSwitch {
+            id: replaceLocationSwitch
+            text: qsTr("Update file locations")
+            tooltipText: qsTr("If you need to remove files from your main working directory, enable this switch and run it on your backup to change the associated file locations.")
+            isOn: false
+            onIsOnChanged: {
+                root.replaceLocation = replaceLocationSwitch.isOn
+            }
+            onResetToDefault: {
+                replaceLocationSwitch.isOn = false
+                root.replaceLocation = false
+            }
+            Component.onCompleted: {
+                replaceLocationSwitch.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+            visible: root.importInPlace
+            highlight: destSelector.hovered
+        }
+
+        ToolSwitch {
             id: enqueueSwitch
             text: qsTr("Enqueue imported photos")
             tooltipText: qsTr("As photos get imported, append them to the work queue.")
@@ -345,9 +367,9 @@ Rectangle {
             height: 40 * uiScale
             onTriggered: {
                 if (root.sourceIsFolder) {
-                    importModel.importDirectory_r(root.folderPath, root.importInPlace)
+                    importModel.importDirectory_r(root.folderPath, root.importInPlace, root.replace)
                 } else {
-                    importModel.importFileList(root.filePath, root.importInPlace)
+                    importModel.importFileList(root.filePath, root.importInPlace, root.replace)
                 }
             }
             Component.onCompleted: {

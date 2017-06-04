@@ -29,11 +29,12 @@ public slots:
                     const QString dirConfig,
                     const QDateTime importStartTime,
                     const bool appendHash,
-                    const bool importInPlace);
+                    const bool importInPlace,
+                    const bool replaceLocation);
 
 signals:
     void enqueueThis(QString STsearchID);
-    void doneProcessing();
+    void doneProcessing(bool changedST);
 
 };
 

@@ -226,7 +226,7 @@ void QueueModel::move(const QString searchID, const int destIndex)
     query.exec("END TRANSACTION");
     //Now tell the view to update all of the indices.
     //We update everything just for thoroughness's sake.
-    emit dataChanged(createIndex(0,0),createIndex(rowCount(),columnCount()));
+    refreshAll();
 }
 
 void QueueModel::markSaved(const QString searchID)
