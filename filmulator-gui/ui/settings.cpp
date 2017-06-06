@@ -225,7 +225,6 @@ bool Settings::getLowMemMode()
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
     //Default: 0
     lowMemMode = settings.value("edit/lowMemMode", 0).toBool();
-    cout << "low memory mode changed: " << lowMemMode << endl;
     emit lowMemModeChanged();
     return lowMemMode;
 }
