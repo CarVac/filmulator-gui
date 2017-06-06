@@ -3,7 +3,6 @@ import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
 import QtQuick.Controls.Styles 1.2
-import "gui_components"
 import "colors.js" as Colors
 
 ApplicationWindow {

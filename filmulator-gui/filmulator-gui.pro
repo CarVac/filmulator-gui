@@ -65,7 +65,7 @@ unix:desktop.path = /usr/share/applications
 unix:desktop.files += ./filmulator_gui.desktop
 
 unix {
-script.extra = move_script; install -m 755 -p filmulator 
+script.extra = move_script; install -m 755 -p filmulator
 extra.path = /usr/bin
 extra.
 }
@@ -75,29 +75,9 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    qml/filmulator-gui/main.qml \
-    qml/filmulator-gui/Edit.qml \
-    qml/filmulator-gui/EditTools.qml \
-    qml/filmulator-gui/Import.qml \
-    qml/filmulator-gui/Organize.qml \
-    qml/filmulator-gui/Queue.qml \
-    qml/filmulator-gui/Settings.qml \
-    qml/filmulator-gui/gui_components/FilmProgressBar.qml \
-    qml/filmulator-gui/gui_components/ImportDirEntry.qml \
-    qml/filmulator-gui/gui_components/ImportFileEntry.qml \
-    qml/filmulator-gui/gui_components/ImportTextEntry.qml \
-    qml/filmulator-gui/gui_components/OrganizeDelegate.qml \
-    qml/filmulator-gui/gui_components/QueueDelegate.qml \
-    qml/filmulator-gui/gui_components/SlipperySlider.qml \
-    qml/filmulator-gui/gui_components/ToolButton.qml \
-    qml/filmulator-gui/gui_components/ToolButtonStyle.qml \
-    qml/filmulator-gui/gui_components/ToolCalendar.qml \
-    qml/filmulator-gui/gui_components/ToolRadioButton.qml \
-    qml/filmulator-gui/gui_components/ToolRadioButtonStyle.qml \
-    qml/filmulator-gui/gui_components/ToolSlider.qml \
-    qml/filmulator-gui/gui_components/ToolSwitch.qml \
-    qml/filmulator-gui/gui_components/ToolTip.qml \
+    qml/filmulator-gui/colors.js\
     qml/filmulator-gui/generateHistogram.js \
+    qml/filmulator-gui/getRoot.js\
     filmulator
 
 HEADERS += \
