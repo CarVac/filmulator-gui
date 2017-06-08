@@ -12,6 +12,7 @@ install:
     - source /opt/qt58/bin/qt58-env.sh
 
 script:
+  - cd filmulator-gui
   - qmake PREFIX=/usr
   - make -j4
   - make INSTALL_ROOT=appdir install ; find appdir/
