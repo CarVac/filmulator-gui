@@ -8,7 +8,7 @@ before_install:
     - sudo apt-get update -qq
     
 install: 
-    - sudo apt-get -y install qt58base qt58declarative
+    - sudo apt-get -y install qt58base qt58declarative libtiff-dev libgomp1 libexiv2dev libjpeg-dev libraw-dev
     - source /opt/qt58/bin/qt58-env.sh
 
 script:
