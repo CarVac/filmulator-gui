@@ -22,6 +22,7 @@ script:
   - rm -rf appdir/usr/lib/filmulator-gui/
   - mkdir -p appdir/usr/share/applications/ ; cp filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
   - sed -i -e 's|^Exec=.*|Exec=filmulator-gui|g' appdir/usr/share/applications/filmulator-gui.desktop
+  - cp filmulator-gui64.png filmulator-gui.png
   - find appdir/
   - wget -c https://transfer.sh/14Hp4a/linuxdeployqt-continuous-x86_64.AppImage # "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage
