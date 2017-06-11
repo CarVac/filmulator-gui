@@ -254,7 +254,7 @@ SplitView {
                     //opacity: 0
                     visible: root.cropping
                     property real tempHeight: bottomImage.height * Math.max(Math.min(1,imageRect.cropHeight),0)
-                    property real tempAspect: imageRect.cropAspect > 100 ? 100 : (imageRect.cropAspect < 0.01 ? 0.01 : imageRect.cropAspect)
+                    property real tempAspect: imageRect.cropAspect > 10000 ? 10000 : (imageRect.cropAspect < 0.0001 ? 0.0001 : imageRect.cropAspect)
                     width: Math.round(Math.min(tempHeight * tempAspect, bottomImage.width))
                     height: Math.round(Math.min(tempHeight, width / tempAspect))
                     //TODO: ROUND THE OFFSETS PROPERLY SO PIXELS LINE UP
@@ -543,6 +543,8 @@ SplitView {
                         // Add the offset (in pixels) to get to the middle of the image.
                         // Add half of the width of the crop itself.
                         clippedWidth = Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth)
+
+                        //TODO: we need to deal with rounding properly.
                         imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
                         //Now we want to remember where the right edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldOffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
