@@ -257,8 +257,6 @@ SplitView {
                     property real tempAspect: imageRect.cropAspect > 10000 ? 10000 : (imageRect.cropAspect < 0.0001 ? 0.0001 : imageRect.cropAspect)
                     width: Math.round(Math.min(tempHeight * tempAspect, bottomImage.width))
                     height: Math.round(Math.min(tempHeight, width / tempAspect))
-                    //TODO: ROUND THE OFFSETS PROPERLY SO PIXELS LINE UP
-                    //TODO: COPY THIS CODE TO THE MouseArea BELOW
                     property real maxHoffset: (1-(width /bottomImage.width ))/2
                     property real maxVoffset: (1-(height/bottomImage.height))/2
                     property real oddH: Math.round((bottomImage.width - width)/2)*2 === (bottomImage.width - width) ? 0 : 0.5//it's 0.5 if odd.
@@ -273,6 +271,20 @@ SplitView {
                         xScale: bottomImage.scale
                         yScale: bottomImage.scale
                     }
+                }
+                onCropAspectChanged: {
+                    console.log("crop aspect changed=============================")
+                    console.log("tempHeight",cropmarker.tempHeight)
+                    console.log("tempAspect",cropmarker.tempAspect)
+                    console.log("width",cropmarker.width)
+                    console.log("height",cropmarker.height)
+                }
+                onCropHeightChanged: {
+                    console.log("crop height changed=============================")
+                    console.log("tempHeight",cropmarker.tempHeight)
+                    console.log("tempAspect",cropmarker.tempAspect)
+                    console.log("width",cropmarker.width)
+                    console.log("height",cropmarker.height)
                 }
 
                 property real cropHandleWidth: 30
@@ -415,10 +427,12 @@ SplitView {
                 //property real displayHeight: cropmarker.height
                 //property real displayHoffset: cropmarker.hoffset * bottomImage.width
                 //property real displayVoffset: cropmarker.voffset * bottomImage.height
-                property real displayWidth: cropResizeLeft.oldX
-                property real displayHeight: cropmarker.width
-                property real displayHoffset: cropResizeLeft.clippedWidth
-                property real displayVoffset: cropResizeLeft.unclippedWidth
+
+                //property real displayWidth: cropResizeTop.oldY
+                property real displayWidth: imageRect.cropHeight
+                property real displayHeight: cropmarker.height
+                property real displayHoffset: cropResizeTop.clippedHeight
+                property real displayVoffset: cropResizeTop.unclippedHeight
 
                 function validateCrop() {
                     imageRect.cropHeight = imageRect.readHeight
@@ -522,7 +536,6 @@ SplitView {
                     property real oldWidth
                     property real unclippedWidth
                     property real clippedWidth
-                    property real unclippedOffset
                     property real oldOffset
                     onPressed: {
                         imageRect.validateCrop()
@@ -539,7 +552,7 @@ SplitView {
                         unclippedWidth = unclippedWidth - deltaX//The width of the image after this drag. It may be zero or negative, or impossibly big.
                         //So obviously we want to clip it at 0 before using it, but we should try to keep track of this value.
                         //We also need to keep it from getting too wide.
-                        // The full image's width is bottomImage.width
+                        // The full image's width is bottomImage.width, divided by two to start at the middle.
                         // Add the offset (in pixels) to get to the middle of the image.
                         // Add half of the width of the crop itself.
                         //And then we round.
@@ -574,7 +587,6 @@ SplitView {
                     property real oldWidth
                     property real unclippedWidth
                     property real clippedWidth
-                    property real unclippedOffset
                     property real oldOffset
                     onPressed: {
                         imageRect.validateCrop()
@@ -591,14 +603,107 @@ SplitView {
                         unclippedWidth = unclippedWidth + deltaX//The width of the image after this drag. It may be zero or negative, or impossibly big.
                         //So obviously we want to clip it at 0 before using it, but we should try to keep track of this value.
                         //We also need to keep it from getting too wide.
-                        // The full image's width is bottomImage.width
-                        // Add the offset (in pixels) to get to the middle of the image.
+                        // The full image's width is bottomImage.width, divided by two to start at the middle.
+                        // Subtract the offset (in pixels) to get to the middle of the image.
                         // Add half of the width of the crop itself.
                         //And then we round.
                         clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
                         imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
-                        //Now we want to remember where the right edge of the image was, and preserve that.
+                        //Now we want to remember where the left edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldOffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                }
+                MouseArea {
+                    id: cropResizeTop
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    anchors.left: cropDrag.left
+                    anchors.right: cropDrag.right
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-2*height)*bottomImage.scale + (cropDrag.voffset - cropDrag.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldY
+                    property real oldHeight
+                    property real unclippedHeight
+                    property real clippedHeight
+                    property real oldOffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldY = mouse.y
+                        oldHeight = cropmarker.height
+                        unclippedHeight = cropmarker.height
+                        clippedHeight = cropmarker.height
+                        oldOffset = cropmarker.voffset
+                    }
+                    onPositionChanged: {
+                        var deltaY = mouse.y - oldY
+                        oldY = mouse.y
+                        unclippedHeight = unclippedHeight - deltaY
+                        clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
+                        imageRect.cropAspect = cropDrag.width/clippedHeight
+                        console.log("clippedHeight:",clippedHeight)
+                        imageRect.cropHeight = clippedHeight/bottomImage.height
+                        //Remember where the bottom edge is.
+                        imageRect.cropVoffset = oldOffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                }
+                MouseArea {
+                    id: cropResizeBottom
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    anchors.left: cropDrag.left
+                    anchors.right: cropDrag.right
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height)*bottomImage.scale + (cropDrag.voffset + cropDrag.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldY
+                    property real oldHeight
+                    property real unclippedHeight
+                    property real clippedHeight
+                    property real oldOffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldY = mouse.y
+                        oldHeight = cropmarker.height
+                        unclippedHeight = cropmarker.height
+                        clippedHeight = cropmarker.height
+                        oldOffset = cropmarker.voffset
+                    }
+                    onPositionChanged: {
+                        var deltaY = mouse.y - oldY
+                        oldY = mouse.y
+                        unclippedHeight = unclippedHeight + deltaY
+                        clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
+                        imageRect.cropAspect = cropDrag.width/clippedHeight
+                        imageRect.cropHeight = clippedHeight/bottomImage.height
+                        //Remember where the bottom edge is.
+                        imageRect.cropVoffset = oldOffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
                     }
                     onReleased: {
                         preventStealing = false
