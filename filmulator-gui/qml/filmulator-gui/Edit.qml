@@ -254,7 +254,7 @@ SplitView {
                     //opacity: 0
                     visible: root.cropping
                     property real tempHeight: bottomImage.height * Math.max(Math.min(1,imageRect.cropHeight),0)
-                    property real tempAspect: imageRect.cropAspect <= 0 ? 1 : imageRect.cropAspect
+                    property real tempAspect: imageRect.cropAspect > 100 ? 100 : (imageRect.cropAspect < 0.01 ? 0.01 : imageRect.cropAspect)
                     width: Math.round(Math.min(tempHeight * tempAspect, bottomImage.width))
                     height: Math.round(Math.min(tempHeight, width / tempAspect))
                     //TODO: ROUND THE OFFSETS PROPERLY SO PIXELS LINE UP
@@ -408,12 +408,17 @@ SplitView {
                 //Test readouts of the properties for writing back to database.
                 property real readHeight: cropmarker.height / bottomImage.height
                 property real readAspect: cropmarker.width / cropmarker.height
-                property real readHoffset: cropmarker.hoffset
                 property real readVoffset: cropmarker.voffset
-                property real displayHeight: cropmarker.height
-                property real displayWidth:  cropmarker.width
-                property real displayHoffset: cropmarker.hoffset * bottomImage.width
-                property real displayVoffset: cropmarker.voffset * bottomImage.height
+                property real readHoffset: cropmarker.hoffset
+                //For showing on the screen
+                //property real displayWidth:  cropmarker.width
+                //property real displayHeight: cropmarker.height
+                //property real displayHoffset: cropmarker.hoffset * bottomImage.width
+                //property real displayVoffset: cropmarker.voffset * bottomImage.height
+                property real displayWidth: cropResizeLeft.oldX
+                property real displayHeight: cropmarker.width
+                property real displayHoffset: cropResizeLeft.clippedWidth
+                property real displayVoffset: cropResizeLeft.unclippedWidth
 
                 function validateCrop() {
                     imageRect.cropHeight = imageRect.readHeight
@@ -424,8 +429,6 @@ SplitView {
 
                 MouseArea {
                     id: cropDrag
-                    //cursorShape: Qt.DragMoveCursor
-                    cursorShape: Qt.WaitCursor
                     acceptedButtons: Qt.LeftButton
                     enabled: false
                     property real cropHeight
@@ -492,6 +495,66 @@ SplitView {
                         preventStealing = false
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
+                    }
+                }
+                //There must be constrained version of the crop offsets specifically for resizing
+                // in case of negative size.
+                //If the size becomes negative, that'll be ignored, but more importantly, the crop doesn't slide over.
+
+                //I also need to have protections against divide-by-zero aspect ratios.
+                MouseArea {
+                    id: cropResizeLeft
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    anchors.top: cropDrag.top
+                    anchors.bottom: cropDrag.bottom
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropDrag.hoffset - cropDrag.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldX
+                    property real oldWidth
+                    property real unclippedWidth
+                    property real clippedWidth
+                    property real unclippedOffset
+                    property real oldOffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldX = mouse.x
+                        oldWidth = cropmarker.width
+                        unclippedWidth = cropmarker.width
+                        clippedWidth = cropmarker.width
+                        oldOffset = cropmarker.hoffset
+                    }
+                    onPositionChanged: {
+                        var deltaX = mouse.x - oldX
+                        oldX = mouse.x
+                        unclippedWidth = unclippedWidth - deltaX//The width of the image after this drag. It may be zero or negative, or impossibly big.
+                        //So obviously we want to clip it at 0 before using it, but we should try to keep track of this value.
+                        //We also need to keep it from getting too wide.
+                        // The full image's width is bottomImage.width
+                        // Add the offset (in pixels) to get to the middle of the image.
+                        // Add half of the width of the crop itself.
+                        clippedWidth = Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth)
+                        imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
+                        //Now we want to remember where the right edge of the image was, and preserve that.
+                        imageRect.cropHoffset = oldOffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                    Rectangle {
+                        anchors.fill: parent
+                        color: orange
                     }
                 }
             }
