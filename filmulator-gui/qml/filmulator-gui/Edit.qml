@@ -553,9 +553,57 @@ SplitView {
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
                     }
-                    Rectangle {
-                        anchors.fill: parent
-                        color: orange
+                }
+                MouseArea {
+                    id: cropResizeRight
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    anchors.top: cropDrag.top
+                    anchors.bottom: cropDrag.bottom
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropDrag.hoffset + cropDrag.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldX
+                    property real oldWidth
+                    property real unclippedWidth
+                    property real clippedWidth
+                    property real unclippedOffset
+                    property real oldOffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldX = mouse.x
+                        oldWidth = cropmarker.width
+                        unclippedWidth = cropmarker.width
+                        clippedWidth = cropmarker.width
+                        oldOffset = cropmarker.hoffset
+                    }
+                    onPositionChanged: {
+                        var deltaX = mouse.x - oldX
+                        oldX = mouse.x
+                        unclippedWidth = unclippedWidth + deltaX//The width of the image after this drag. It may be zero or negative, or impossibly big.
+                        //So obviously we want to clip it at 0 before using it, but we should try to keep track of this value.
+                        //We also need to keep it from getting too wide.
+                        // The full image's width is bottomImage.width
+                        // Add the offset (in pixels) to get to the middle of the image.
+                        // Add half of the width of the crop itself.
+                        //And then we round.
+                        clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
+                        imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
+                        //Now we want to remember where the right edge of the image was, and preserve that.
+                        imageRect.cropHoffset = oldOffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
                     }
                 }
             }
