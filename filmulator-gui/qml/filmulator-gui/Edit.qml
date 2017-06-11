@@ -417,22 +417,16 @@ SplitView {
                     }
                 }
 
-                //Test readouts of the properties for writing back to database.
+                //Readouts of the properties for writing back to database.
                 property real readHeight: cropmarker.height / bottomImage.height
                 property real readAspect: cropmarker.width / cropmarker.height
                 property real readVoffset: cropmarker.voffset
                 property real readHoffset: cropmarker.hoffset
                 //For showing on the screen
-                //property real displayWidth:  cropmarker.width
-                //property real displayHeight: cropmarker.height
-                //property real displayHoffset: cropmarker.hoffset * bottomImage.width
-                //property real displayVoffset: cropmarker.voffset * bottomImage.height
-
-                //property real displayWidth: cropResizeTop.oldY
-                property real displayWidth: imageRect.cropHeight
+                property real displayWidth:  cropmarker.width
                 property real displayHeight: cropmarker.height
-                property real displayHoffset: cropResizeTop.clippedHeight
-                property real displayVoffset: cropResizeTop.unclippedHeight
+                property real displayHoffset: 0.5 * Math.round(2 * cropmarker.hoffset * bottomImage.width)
+                property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
 
                 function validateCrop() {
                     imageRect.cropHeight = imageRect.readHeight
@@ -511,11 +505,6 @@ SplitView {
                         cropDrag.updatePosition()
                     }
                 }
-                //There must be constrained version of the crop offsets specifically for resizing
-                // in case of negative size.
-                //If the size becomes negative, that'll be ignored, but more importantly, the crop doesn't slide over.
-
-                //I also need to have protections against divide-by-zero aspect ratios.
                 MouseArea {
                     id: cropResizeLeft
                     acceptedButtons: Qt.LeftButton
@@ -535,7 +524,6 @@ SplitView {
                     property real oldX
                     property real oldWidth
                     property real unclippedWidth
-                    property real clippedWidth
                     property real oldOffset
                     onPressed: {
                         imageRect.validateCrop()
@@ -543,7 +531,6 @@ SplitView {
                         oldX = mouse.x
                         oldWidth = cropmarker.width
                         unclippedWidth = cropmarker.width
-                        clippedWidth = cropmarker.width
                         oldOffset = cropmarker.hoffset
                     }
                     onPositionChanged: {
@@ -556,7 +543,7 @@ SplitView {
                         // Add the offset (in pixels) to get to the middle of the image.
                         // Add half of the width of the crop itself.
                         //And then we round.
-                        clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
+                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
                         imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
                         //Now we want to remember where the right edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldOffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
@@ -586,7 +573,6 @@ SplitView {
                     property real oldX
                     property real oldWidth
                     property real unclippedWidth
-                    property real clippedWidth
                     property real oldOffset
                     onPressed: {
                         imageRect.validateCrop()
@@ -594,7 +580,6 @@ SplitView {
                         oldX = mouse.x
                         oldWidth = cropmarker.width
                         unclippedWidth = cropmarker.width
-                        clippedWidth = cropmarker.width
                         oldOffset = cropmarker.hoffset
                     }
                     onPositionChanged: {
@@ -607,7 +592,7 @@ SplitView {
                         // Subtract the offset (in pixels) to get to the middle of the image.
                         // Add half of the width of the crop itself.
                         //And then we round.
-                        clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
+                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
                         imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
                         //Now we want to remember where the left edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldOffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
@@ -637,7 +622,6 @@ SplitView {
                     property real oldY
                     property real oldHeight
                     property real unclippedHeight
-                    property real clippedHeight
                     property real oldOffset
                     onPressed: {
                         imageRect.validateCrop()
@@ -645,14 +629,13 @@ SplitView {
                         oldY = mouse.y
                         oldHeight = cropmarker.height
                         unclippedHeight = cropmarker.height
-                        clippedHeight = cropmarker.height
                         oldOffset = cropmarker.voffset
                     }
                     onPositionChanged: {
                         var deltaY = mouse.y - oldY
                         oldY = mouse.y
                         unclippedHeight = unclippedHeight - deltaY
-                        clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
+                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
                         imageRect.cropAspect = cropDrag.width/clippedHeight
                         console.log("clippedHeight:",clippedHeight)
                         imageRect.cropHeight = clippedHeight/bottomImage.height
@@ -684,7 +667,6 @@ SplitView {
                     property real oldY
                     property real oldHeight
                     property real unclippedHeight
-                    property real clippedHeight
                     property real oldOffset
                     onPressed: {
                         imageRect.validateCrop()
@@ -692,18 +674,265 @@ SplitView {
                         oldY = mouse.y
                         oldHeight = cropmarker.height
                         unclippedHeight = cropmarker.height
-                        clippedHeight = cropmarker.height
                         oldOffset = cropmarker.voffset
                     }
                     onPositionChanged: {
                         var deltaY = mouse.y - oldY
                         oldY = mouse.y
                         unclippedHeight = unclippedHeight + deltaY
-                        clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
+                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
                         imageRect.cropAspect = cropDrag.width/clippedHeight
                         imageRect.cropHeight = clippedHeight/bottomImage.height
                         //Remember where the bottom edge is.
                         imageRect.cropVoffset = oldOffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                }
+                MouseArea {
+                    id: cropResizeTopLeft
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropDrag.hoffset - cropDrag.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-2*height)*bottomImage.scale + (cropDrag.voffset - cropDrag.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldX
+                    property real oldY
+                    property real oldWidth
+                    property real oldHeight
+                    property real unclippedWidth
+                    property real unclippedHeight
+                    property real clippedWidth
+                    property real clippedHeight
+                    property real oldHoffset
+                    property real oldVoffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        oldWidth = cropmarker.width
+                        oldHeight = cropmarker.height
+                        unclippedWidth = cropmarker.width
+                        unclippedHeight = cropmarker.height
+                        oldHoffset = cropmarker.hoffset
+                        oldVoffset = cropmarker.voffset
+                    }
+                    onPositionChanged: {
+                        var deltaX = mouse.x - oldX
+                        var deltaY = mouse.y - oldY
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        unclippedWidth = unclippedWidth - deltaX
+                        unclippedHeight = unclippedHeight - deltaY
+                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                        if (mouse.modifiers === Qt.ShiftModifier) {
+                            //
+                        }
+                        imageRect.cropHeight = clippedHeight/bottomImage.height
+                        imageRect.cropAspect = clippedWidth/clippedHeight
+                        //Now we want to remember where the right edge of the image was, and preserve that.
+                        imageRect.cropHoffset = oldHoffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                        imageRect.cropVoffset = oldVoffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                }
+                MouseArea {
+                    id: cropResizeTopRight
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropDrag.hoffset + cropDrag.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height-2*height)*bottomImage.scale + (cropDrag.voffset - cropDrag.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldX
+                    property real oldY
+                    property real oldWidth
+                    property real oldHeight
+                    property real unclippedWidth
+                    property real unclippedHeight
+                    property real clippedWidth
+                    property real clippedHeight
+                    property real oldHoffset
+                    property real oldVoffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        oldWidth = cropmarker.width
+                        oldHeight = cropmarker.height
+                        unclippedWidth = cropmarker.width
+                        unclippedHeight = cropmarker.height
+                        oldHoffset = cropmarker.hoffset
+                        oldVoffset = cropmarker.voffset
+                    }
+                    onPositionChanged: {
+                        var deltaX = mouse.x - oldX
+                        var deltaY = mouse.y - oldY
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        unclippedWidth = unclippedWidth + deltaX
+                        unclippedHeight = unclippedHeight - deltaY
+                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                        if (mouse.modifiers === Qt.ShiftModifier) {
+                            //
+                        }
+                        imageRect.cropHeight = clippedHeight/bottomImage.height
+                        imageRect.cropAspect = clippedWidth/clippedHeight
+                        //Now we want to remember where the right edge of the image was, and preserve that.
+                        imageRect.cropHoffset = oldHoffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                        imageRect.cropVoffset = oldVoffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                }
+                MouseArea {
+                    id: cropResizeBottomLeft
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropDrag.hoffset - cropDrag.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height)*bottomImage.scale + (cropDrag.voffset + cropDrag.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldX
+                    property real oldY
+                    property real oldWidth
+                    property real oldHeight
+                    property real unclippedWidth
+                    property real unclippedHeight
+                    property real clippedWidth
+                    property real clippedHeight
+                    property real oldHoffset
+                    property real oldVoffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        oldWidth = cropmarker.width
+                        oldHeight = cropmarker.height
+                        unclippedWidth = cropmarker.width
+                        unclippedHeight = cropmarker.height
+                        oldHoffset = cropmarker.hoffset
+                        oldVoffset = cropmarker.voffset
+                    }
+                    onPositionChanged: {
+                        var deltaX = mouse.x - oldX
+                        var deltaY = mouse.y - oldY
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        unclippedWidth = unclippedWidth - deltaX
+                        unclippedHeight = unclippedHeight + deltaY
+                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                        if (mouse.modifiers === Qt.ShiftModifier) {
+                            //
+                        }
+                        imageRect.cropHeight = clippedHeight/bottomImage.height
+                        imageRect.cropAspect = clippedWidth/clippedHeight
+                        //Now we want to remember where the right edge of the image was, and preserve that.
+                        imageRect.cropHoffset = oldHoffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                        imageRect.cropVoffset = oldVoffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                    }
+                    onReleased: {
+                        preventStealing = false
+                        imageRect.validateCrop()
+                        cropDrag.updatePosition()
+                    }
+                }
+                MouseArea {
+                    id: cropResizeBottomRight
+                    acceptedButtons: Qt.LeftButton
+                    enabled: cropDrag.enabled
+                    visible: cropDrag.visible
+                    width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
+                    x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropDrag.hoffset + cropDrag.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
+                    y: bottomImage.y + Math.round(0.5*(bottomImage.height)*bottomImage.scale + (cropDrag.voffset + cropDrag.height/(2*bottomImage.height))*bottomImage.height*bottomImage.scale)
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    property real oldX
+                    property real oldY
+                    property real oldWidth
+                    property real oldHeight
+                    property real unclippedWidth
+                    property real unclippedHeight
+                    property real clippedWidth
+                    property real clippedHeight
+                    property real oldHoffset
+                    property real oldVoffset
+                    onPressed: {
+                        imageRect.validateCrop()
+                        preventStealing = true
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        oldWidth = cropmarker.width
+                        oldHeight = cropmarker.height
+                        unclippedWidth = cropmarker.width
+                        unclippedHeight = cropmarker.height
+                        oldHoffset = cropmarker.hoffset
+                        oldVoffset = cropmarker.voffset
+                    }
+                    onPositionChanged: {
+                        var deltaX = mouse.x - oldX
+                        var deltaY = mouse.y - oldY
+                        oldX = mouse.x
+                        oldY = mouse.y
+                        unclippedWidth = unclippedWidth + deltaX
+                        unclippedHeight = unclippedHeight + deltaY
+                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                        if (mouse.modifiers === Qt.ShiftModifier) {
+                            //
+                        }
+                        imageRect.cropHeight = clippedHeight/bottomImage.height
+                        imageRect.cropAspect = clippedWidth/clippedHeight
+                        //Now we want to remember where the right edge of the image was, and preserve that.
+                        imageRect.cropHoffset = oldHoffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                        imageRect.cropVoffset = oldVoffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
                     }
                     onReleased: {
                         preventStealing = false
