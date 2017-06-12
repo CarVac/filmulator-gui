@@ -271,6 +271,82 @@ SplitView {
                         xScale: bottomImage.scale
                         yScale: bottomImage.scale
                     }
+                    Rectangle {
+                        id: aspectBox
+                        anchors.centerIn: parent
+                        width: 80
+                        height: 30
+                        color: "black"
+                        border.color: "gray"
+                        opacity: 0.8
+                        radius: 10
+                        Text {
+                            id: aspectBoxText
+                            anchors.centerIn: parent
+                            width: parent.width
+                            //text: imageRect.aspectText
+                            color: "white"
+                            font.pixelSize: 20
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        state: "notVisible"
+                        states: [
+                            State {
+                                name: "notVisible"
+                                PropertyChanges {
+                                    target: aspectBox
+                                    opacity: 0
+                                }
+                            },
+                            State {
+                                name: "isVisible"
+                                PropertyChanges {
+                                    target: aspectBox
+                                    opacity: 1
+                                }
+                            }
+                        ]
+                        transitions: [
+                            Transition {
+                                from: "isVisible"
+                                to: "notVisible"
+                                PropertyAnimation {
+                                    target: aspectBox
+                                    properties: "opacity"
+                                    duration: 600
+                                }
+                            },
+                            Transition {
+                                from: "notVisible"
+                                to: "isVisible"
+                                PropertyAnimation {
+                                    target: aspectBox
+                                    properties: "opacity"
+                                    duration: 250
+                                }
+                            }
+                        ]
+                        Connections {
+                            target: imageRect
+                            onAspectTextChanged: {
+                                if (imageRect.aspectText == "") {
+                                    aspectBox.state = "notVisible"
+                                } else {
+                                    aspectBoxText.text = imageRect.aspectText
+                                    aspectBox.state = "isVisible"
+                                    aspectTimer.start()
+                                }
+                            }
+                        }
+                        Timer {
+                            id: aspectTimer
+                            interval: 2000
+                            onTriggered: aspectBox.state = "notVisible"
+                        }
+
+                        scale: uiScale/bottomImage.scale
+                    }
                 }
 
                 property real cropHandleWidth: 30
@@ -413,6 +489,8 @@ SplitView {
                 property real displayHeight: cropmarker.height
                 property real displayHoffset: 0.5 * Math.round(2 * cropmarker.hoffset * bottomImage.width)
                 property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
+                //aspect ratio text
+                property string aspectText: ""
 
                 function validateCrop() {
                     imageRect.cropHeight = imageRect.readHeight
@@ -891,6 +969,7 @@ SplitView {
                     property real oldHoffset
                     property real oldVoffset
                     property real oldAspect
+                    property real lockedAspect
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -913,38 +992,51 @@ SplitView {
                         unclippedHeight = unclippedHeight + deltaY
                         var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
                         var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
-                        var aspect = oldAspect
                         var newAspect = clippedWidth/clippedHeight
-                        if (mouse.modifiers & Qt.ShiftModifier) {
+                        if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                             //set aspect to a snapped one
+                            if      (newAspect < 0.379) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                            else if (newAspect < 0.462) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
+                            else if (newAspect < 0.531) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
+                            else if (newAspect < 0.613) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
+                            else if (newAspect < 0.708) {lockedAspect = 2/3;    imageRect.aspectText = "2:3"}
+                            else if (newAspect < 0.775) {lockedAspect = 3/4;    imageRect.aspectText = "3:4"}
+                            else if (newAspect < 0.895) {lockedAspect = 4/5;    imageRect.aspectText = "4:5"}
+                            else if (newAspect < 1.117) {lockedAspect = 1;      imageRect.aspectText = "1:1"}
+                            else if (newAspect < 1.291) {lockedAspect = 5/4;    imageRect.aspectText = "5:4"}
+                            else if (newAspect < 1.413) {lockedAspect = 4/3;    imageRect.aspectText = "4:3"}
+                            else if (newAspect < 1.630) {lockedAspect = 3/2;    imageRect.aspectText = "3:2"}
+                            else if (newAspect < 1.884) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
+                            else if (newAspect < 2.163) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
+                            else if (newAspect < 2.640) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                            else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                         }
+
                         if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
-                            console.log("ctrl held, bottom right")
                             //choose whether to use height or width based on aspect, then clip them
-                            if (aspect < newAspect) {//wider, we adjust the width
-                                clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/aspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
-                                clippedWidth = clippedHeight*aspect
+                            if (lockedAspect < newAspect) {//wider, we adjust the width
+                                //Set both width and height explicitly so that the offsets can be corrected later.
+                                clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                                clippedWidth = clippedHeight*lockedAspect
                                 imageRect.cropHeight = clippedHeight/bottomImage.height
                             } else {
-                                clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*aspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
-                                clippedHeight = clippedWidth/aspect
-                                console.log(clippedHeight)
+                                clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                                clippedHeight = clippedWidth/lockedAspect
                                 imageRect.cropHeight = clippedHeight/bottomImage.height
                             }
-
                             //then set aspect back to the original in case of snapping.
-                            imageRect.cropAspect = aspect
+                            imageRect.cropAspect = lockedAspect
                         } else {
+                            lockedAspect = newAspect
                             imageRect.cropHeight = clippedHeight/bottomImage.height
                             imageRect.cropAspect = newAspect
                         }
-                        //imageRect.cropHeight = clippedHeight/bottomImage.height
-                        //imageRect.cropAspect = clippedWidth/clippedHeight
                         //Now we want to remember where the right edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldHoffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
                         imageRect.cropVoffset = oldVoffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
                     }
                     onReleased: {
+                        imageRect.aspectText = ""
                         preventStealing = false
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
