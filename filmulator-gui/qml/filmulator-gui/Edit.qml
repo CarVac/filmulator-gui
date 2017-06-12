@@ -272,20 +272,6 @@ SplitView {
                         yScale: bottomImage.scale
                     }
                 }
-                onCropAspectChanged: {
-                    console.log("crop aspect changed=============================")
-                    console.log("tempHeight",cropmarker.tempHeight)
-                    console.log("tempAspect",cropmarker.tempAspect)
-                    console.log("width",cropmarker.width)
-                    console.log("height",cropmarker.height)
-                }
-                onCropHeightChanged: {
-                    console.log("crop height changed=============================")
-                    console.log("tempHeight",cropmarker.tempHeight)
-                    console.log("tempAspect",cropmarker.tempAspect)
-                    console.log("width",cropmarker.width)
-                    console.log("height",cropmarker.height)
-                }
 
                 property real cropHandleWidth: 30
                 Rectangle {
@@ -904,6 +890,7 @@ SplitView {
                     property real clippedHeight
                     property real oldHoffset
                     property real oldVoffset
+                    property real oldAspect
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -915,6 +902,7 @@ SplitView {
                         unclippedHeight = cropmarker.height
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
+                        oldAspect = cropmarker.width/cropmarker.height
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
@@ -925,11 +913,33 @@ SplitView {
                         unclippedHeight = unclippedHeight + deltaY
                         var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
                         var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
-                        if (mouse.modifiers === Qt.ShiftModifier) {
-                            //
+                        var aspect = oldAspect
+                        var newAspect = clippedWidth/clippedHeight
+                        if (mouse.modifiers & Qt.ShiftModifier) {
+                            //set aspect to a snapped one
                         }
-                        imageRect.cropHeight = clippedHeight/bottomImage.height
-                        imageRect.cropAspect = clippedWidth/clippedHeight
+                        if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
+                            console.log("ctrl held, bottom right")
+                            //choose whether to use height or width based on aspect, then clip them
+                            if (aspect < newAspect) {//wider, we adjust the width
+                                clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/aspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                                clippedWidth = clippedHeight*aspect
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            } else {
+                                clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*aspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                                clippedHeight = clippedWidth/aspect
+                                console.log(clippedHeight)
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            }
+
+                            //then set aspect back to the original in case of snapping.
+                            imageRect.cropAspect = aspect
+                        } else {
+                            imageRect.cropHeight = clippedHeight/bottomImage.height
+                            imageRect.cropAspect = newAspect
+                        }
+                        //imageRect.cropHeight = clippedHeight/bottomImage.height
+                        //imageRect.cropAspect = clippedWidth/clippedHeight
                         //Now we want to remember where the right edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldHoffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
                         imageRect.cropVoffset = oldVoffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
