@@ -782,6 +782,8 @@ SplitView {
                     property real clippedHeight
                     property real oldHoffset
                     property real oldVoffset
+                    property real oldAspect
+                    property real lockedAspect
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -793,6 +795,7 @@ SplitView {
                         unclippedHeight = cropmarker.height
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
+                        oldAspect = cropmarker.width/cropmarker.height
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
@@ -803,16 +806,53 @@ SplitView {
                         unclippedHeight = unclippedHeight - deltaY
                         var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
                         var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
-                        if (mouse.modifiers === Qt.ShiftModifier) {
-                            //
+                        var newAspect = clippedWidth/clippedHeight
+                        if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
+                            //set aspect to a snapped one
+                            if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                            else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
+                            else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
+                            else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
+                            else if (newAspect < 0.6420) {lockedAspect = 0.61803;imageRect.aspectText = "1:φ"}
+                            else if (newAspect < 0.7075) {lockedAspect = 2/3;    imageRect.aspectText = "2:3"}
+                            else if (newAspect < 0.7747) {lockedAspect = 3/4;    imageRect.aspectText = "3:4"}
+                            else if (newAspect < 0.8950) {lockedAspect = 4/5;    imageRect.aspectText = "4:5"}
+                            else if (newAspect < 1.1173) {lockedAspect = 1;      imageRect.aspectText = "1:1"}
+                            else if (newAspect < 1.2908) {lockedAspect = 5/4;    imageRect.aspectText = "5:4"}
+                            else if (newAspect < 1.4134) {lockedAspect = 4/3;    imageRect.aspectText = "4:3"}
+                            else if (newAspect < 1.5574) {lockedAspect = 3/2;    imageRect.aspectText = "3:2"}
+                            else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
+                            else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
+                            else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
+                            else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                            else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                         }
-                        imageRect.cropHeight = clippedHeight/bottomImage.height
-                        imageRect.cropAspect = clippedWidth/clippedHeight
+
+                        if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
+                            //choose whether to use height or width based on aspect, then clip them
+                            if (lockedAspect < newAspect) {//narrower, we adjust the height
+                                //Set both width and height explicitly so that the offsets can be corrected later.
+                                clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                                clippedWidth = clippedHeight*lockedAspect
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            } else {
+                                clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                                clippedHeight = clippedWidth/lockedAspect
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            }
+                            //then set aspect back to the original in case of snapping.
+                            imageRect.cropAspect = lockedAspect
+                        } else {
+                            lockedAspect = newAspect
+                            imageRect.cropHeight = clippedHeight/bottomImage.height
+                            imageRect.cropAspect = newAspect
+                        }
                         //Now we want to remember where the right edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldHoffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
                         imageRect.cropVoffset = oldVoffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height
                     }
                     onReleased: {
+                        imageRect.aspectText = ""
                         preventStealing = false
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
@@ -844,6 +884,8 @@ SplitView {
                     property real clippedHeight
                     property real oldHoffset
                     property real oldVoffset
+                    property real oldAspect
+                    property real lockedAspect
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -855,6 +897,7 @@ SplitView {
                         unclippedHeight = cropmarker.height
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
+                        oldAspect = cropmarker.width/cropmarker.height
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
@@ -865,16 +908,53 @@ SplitView {
                         unclippedHeight = unclippedHeight - deltaY
                         var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
                         var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
-                        if (mouse.modifiers === Qt.ShiftModifier) {
-                            //
+                        var newAspect = clippedWidth/clippedHeight
+                        if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
+                            //set aspect to a snapped one
+                            if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                            else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
+                            else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
+                            else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
+                            else if (newAspect < 0.6420) {lockedAspect = 0.61803;imageRect.aspectText = "1:φ"}
+                            else if (newAspect < 0.7075) {lockedAspect = 2/3;    imageRect.aspectText = "2:3"}
+                            else if (newAspect < 0.7747) {lockedAspect = 3/4;    imageRect.aspectText = "3:4"}
+                            else if (newAspect < 0.8950) {lockedAspect = 4/5;    imageRect.aspectText = "4:5"}
+                            else if (newAspect < 1.1173) {lockedAspect = 1;      imageRect.aspectText = "1:1"}
+                            else if (newAspect < 1.2908) {lockedAspect = 5/4;    imageRect.aspectText = "5:4"}
+                            else if (newAspect < 1.4134) {lockedAspect = 4/3;    imageRect.aspectText = "4:3"}
+                            else if (newAspect < 1.5574) {lockedAspect = 3/2;    imageRect.aspectText = "3:2"}
+                            else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
+                            else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
+                            else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
+                            else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                            else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                         }
-                        imageRect.cropHeight = clippedHeight/bottomImage.height
-                        imageRect.cropAspect = clippedWidth/clippedHeight
+
+                        if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
+                            //choose whether to use height or width based on aspect, then clip them
+                            if (lockedAspect < newAspect) {//narrower, we adjust the height
+                                //Set both width and height explicitly so that the offsets can be corrected later.
+                                clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                                clippedWidth = clippedHeight*lockedAspect
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            } else {
+                                clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                                clippedHeight = clippedWidth/lockedAspect
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            }
+                            //then set aspect back to the original in case of snapping.
+                            imageRect.cropAspect = lockedAspect
+                        } else {
+                            lockedAspect = newAspect
+                            imageRect.cropHeight = clippedHeight/bottomImage.height
+                            imageRect.cropAspect = newAspect
+                        }
                         //Now we want to remember where the right edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldHoffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
                         imageRect.cropVoffset = oldVoffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height
                     }
                     onReleased: {
+                        imageRect.aspectText = ""
                         preventStealing = false
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
@@ -906,6 +986,8 @@ SplitView {
                     property real clippedHeight
                     property real oldHoffset
                     property real oldVoffset
+                    property real oldAspect
+                    property real lockedAspect
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -917,6 +999,7 @@ SplitView {
                         unclippedHeight = cropmarker.height
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
+                        oldAspect = cropmarker.width/cropmarker.height
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
@@ -927,16 +1010,53 @@ SplitView {
                         unclippedHeight = unclippedHeight + deltaY
                         var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
                         var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
-                        if (mouse.modifiers === Qt.ShiftModifier) {
-                            //
+                        var newAspect = clippedWidth/clippedHeight
+                        if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
+                            //set aspect to a snapped one
+                            if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                            else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
+                            else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
+                            else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
+                            else if (newAspect < 0.6420) {lockedAspect = 0.61803;imageRect.aspectText = "1:φ"}
+                            else if (newAspect < 0.7075) {lockedAspect = 2/3;    imageRect.aspectText = "2:3"}
+                            else if (newAspect < 0.7747) {lockedAspect = 3/4;    imageRect.aspectText = "3:4"}
+                            else if (newAspect < 0.8950) {lockedAspect = 4/5;    imageRect.aspectText = "4:5"}
+                            else if (newAspect < 1.1173) {lockedAspect = 1;      imageRect.aspectText = "1:1"}
+                            else if (newAspect < 1.2908) {lockedAspect = 5/4;    imageRect.aspectText = "5:4"}
+                            else if (newAspect < 1.4134) {lockedAspect = 4/3;    imageRect.aspectText = "4:3"}
+                            else if (newAspect < 1.5574) {lockedAspect = 3/2;    imageRect.aspectText = "3:2"}
+                            else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
+                            else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
+                            else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
+                            else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                            else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                         }
-                        imageRect.cropHeight = clippedHeight/bottomImage.height
-                        imageRect.cropAspect = clippedWidth/clippedHeight
+
+                        if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
+                            //choose whether to use height or width based on aspect, then clip them
+                            if (lockedAspect < newAspect) {//narrower, we adjust the height
+                                //Set both width and height explicitly so that the offsets can be corrected later.
+                                clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                                clippedWidth = clippedHeight*lockedAspect
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            } else {
+                                clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                                clippedHeight = clippedWidth/lockedAspect
+                                imageRect.cropHeight = clippedHeight/bottomImage.height
+                            }
+                            //then set aspect back to the original in case of snapping.
+                            imageRect.cropAspect = lockedAspect
+                        } else {
+                            lockedAspect = newAspect
+                            imageRect.cropHeight = clippedHeight/bottomImage.height
+                            imageRect.cropAspect = newAspect
+                        }
                         //Now we want to remember where the right edge of the image was, and preserve that.
                         imageRect.cropHoffset = oldHoffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
                         imageRect.cropVoffset = oldVoffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
                     }
                     onReleased: {
+                        imageRect.aspectText = ""
                         preventStealing = false
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
@@ -1016,7 +1136,7 @@ SplitView {
 
                         if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
                             //choose whether to use height or width based on aspect, then clip them
-                            if (lockedAspect < newAspect) {//wider, we adjust the width
+                            if (lockedAspect < newAspect) {//narrower, we adjust the height
                                 //Set both width and height explicitly so that the offsets can be corrected later.
                                 clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                                 clippedWidth = clippedHeight*lockedAspect
