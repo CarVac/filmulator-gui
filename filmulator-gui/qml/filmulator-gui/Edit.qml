@@ -995,20 +995,22 @@ SplitView {
                         var newAspect = clippedWidth/clippedHeight
                         if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                             //set aspect to a snapped one
-                            if      (newAspect < 0.379) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
-                            else if (newAspect < 0.462) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
-                            else if (newAspect < 0.531) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
-                            else if (newAspect < 0.613) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
-                            else if (newAspect < 0.708) {lockedAspect = 2/3;    imageRect.aspectText = "2:3"}
-                            else if (newAspect < 0.775) {lockedAspect = 3/4;    imageRect.aspectText = "3:4"}
-                            else if (newAspect < 0.895) {lockedAspect = 4/5;    imageRect.aspectText = "4:5"}
-                            else if (newAspect < 1.117) {lockedAspect = 1;      imageRect.aspectText = "1:1"}
-                            else if (newAspect < 1.291) {lockedAspect = 5/4;    imageRect.aspectText = "5:4"}
-                            else if (newAspect < 1.413) {lockedAspect = 4/3;    imageRect.aspectText = "4:3"}
-                            else if (newAspect < 1.630) {lockedAspect = 3/2;    imageRect.aspectText = "3:2"}
-                            else if (newAspect < 1.884) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
-                            else if (newAspect < 2.163) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
-                            else if (newAspect < 2.640) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                            if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                            else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
+                            else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
+                            else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
+                            else if (newAspect < 0.6420) {lockedAspect = 0.61803;imageRect.aspectText = "1:φ"}
+                            else if (newAspect < 0.7075) {lockedAspect = 2/3;    imageRect.aspectText = "2:3"}
+                            else if (newAspect < 0.7747) {lockedAspect = 3/4;    imageRect.aspectText = "3:4"}
+                            else if (newAspect < 0.8950) {lockedAspect = 4/5;    imageRect.aspectText = "4:5"}
+                            else if (newAspect < 1.1173) {lockedAspect = 1;      imageRect.aspectText = "1:1"}
+                            else if (newAspect < 1.2908) {lockedAspect = 5/4;    imageRect.aspectText = "5:4"}
+                            else if (newAspect < 1.4134) {lockedAspect = 4/3;    imageRect.aspectText = "4:3"}
+                            else if (newAspect < 1.5574) {lockedAspect = 3/2;    imageRect.aspectText = "3:2"}
+                            else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
+                            else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
+                            else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
+                            else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
                             else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                         }
 
