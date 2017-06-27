@@ -20,6 +20,7 @@
 
 int main(int argc, char *argv[])
 {
+    printf("argv[0]: %s\n",argv[0]);
     //It cannot properly fall back to Qt Widgets versions of the dialogs if
     // we use a QGuiApplication, which only supports QML stuff.
     //QGuiApplication app(argc, argv);
@@ -31,7 +32,6 @@ int main(int argc, char *argv[])
         return 1;
     }
     printf("cwd: %s\n",pathbuf);
-    printf("argv[0]: %s\n",argv[0]);
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
