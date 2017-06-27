@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <QtGui/QGuiApplication>
 #include <QtQml>
 #include "qtquick2applicationviewer.h"
@@ -22,6 +24,13 @@ int main(int argc, char *argv[])
     // we use a QGuiApplication, which only supports QML stuff.
     //QGuiApplication app(argc, argv);
     QApplication app(argc, argv);
+
+    char* pathbuf = (char*)malloc(2000);
+    if( !getcwd(pathbuf, 1999) ) {
+        printf("Cannot allocate buffer for current working directory\n");
+        return 1;
+    }
+    printf("cwd: %s\n",pathbuf);
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
