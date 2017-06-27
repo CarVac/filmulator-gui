@@ -18,9 +18,9 @@ script:
   - make INSTALL_ROOT=appdir install ; find appdir/
   - pwd
   - # Dear upstream, please install to more standard locations
-  - mkdir -p appdir/usr/bin ; mv appdir/usr/lib/filmulator-gui/filmulator-gui appdir/usr/bin/filmulator-gui.real
-  - cp -a ./appimage/AppRun ./appdir/usr/bin/filmulator-gui
-  - chmod +x ./appdir/usr/bin/filmulator-gui
+  - mkdir -p appdir/usr/bin ; mv appdir/usr/lib/filmulator-gui/filmulator-gui appdir/usr/bin/filmulator-gui
+  - cp -a ./appimage/AppRun ./appdir/usr/bin/
+  - chmod +x ./appdir/usr/bin/AppRun
   - mkdir -p appdir/usr/qml ; mv appdir/usr/lib/filmulator-gui/qml/filmulator-gui/* appdir/usr/qml/
   - rm -rf appdir/usr/lib/filmulator-gui/
   - mkdir -p appdir/usr/share/applications/ ; cp filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
@@ -33,6 +33,8 @@ script:
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
   - ls -l ./appdir/
+  - mv appdir/usr/bin/filmulator-gui appdir/usr/bin/filmulator-gui.real
+  - mv ./appdir/usr/bin/AppRun ./appdir/usr/bin/filmulator-gui
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
   - curl --upload-file ./Filmulator*.AppImage https://transfer.sh/Filmulator-git.$(git rev-parse --short HEAD)-x86_64.AppImage
