@@ -499,6 +499,9 @@ SplitView {
                     imageRect.cropVoffset = imageRect.readVoffset
                 }
 
+                //Snapping sensitivity in fraction of image height
+                property real snapFrac: 0.05
+
                 MouseArea {
                     id: cropDrag
                     acceptedButtons: Qt.LeftButton
@@ -549,19 +552,39 @@ SplitView {
 
                     property real oldX
                     property real oldY
+                    property real unclippedHoffset
+                    property real unclippedVoffset
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
                         oldX = mouse.x
                         oldY = mouse.y
+                        unclippedHoffset = cropmarker.hoffset
+                        unclippedVoffset = cropmarker.voffset
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
                         var deltaY = mouse.y - oldY
                         oldX = mouse.x
                         oldY = mouse.y
-                        imageRect.cropHoffset = imageRect.cropHoffset + deltaX/bottomImage.width
-                        imageRect.cropVoffset = imageRect.cropVoffset + deltaY/bottomImage.height
+                        unclippedHoffset = unclippedHoffset + deltaX/bottomImage.width
+                        unclippedVoffset = unclippedVoffset + deltaY/bottomImage.height
+                        if (mouse.modifiers & Qt.ShiftModifier) {//shift modifier pressed; snap to center
+                            if (Math.abs(unclippedHoffset) < imageRect.snapFrac) {
+                                imageRect.cropHoffset = 0
+                            } else {
+                                imageRect.cropHoffset = unclippedHoffset
+                            }
+
+                            if (Math.abs(unclippedVoffset) < imageRect.snapFrac) {
+                                imageRect.cropVoffset = 0
+                            } else {
+                                imageRect.cropVoffset = unclippedVoffset
+                            }
+                        } else {
+                            imageRect.cropHoffset = unclippedHoffset
+                            imageRect.cropVoffset = unclippedVoffset
+                        }
                     }
                     onReleased: {
                         preventStealing = false
@@ -589,6 +612,7 @@ SplitView {
                     property real oldWidth
                     property real unclippedWidth
                     property real oldOffset
+                    property real unclippedHoffset
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -596,21 +620,32 @@ SplitView {
                         oldWidth = cropmarker.width
                         unclippedWidth = cropmarker.width
                         oldOffset = cropmarker.hoffset
+                        unclippedHoffset = cropmarker.hoffset
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
                         oldX = mouse.x
-                        unclippedWidth = unclippedWidth - deltaX//The width of the image after this drag. It may be zero or negative, or impossibly big.
-                        //So obviously we want to clip it at 0 before using it, but we should try to keep track of this value.
-                        //We also need to keep it from getting too wide.
-                        // The full image's width is bottomImage.width, divided by two to start at the middle.
-                        // Add the offset (in pixels) to get to the middle of the image.
-                        // Add half of the width of the crop itself.
-                        //And then we round.
-                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
-                        imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
-                        //Now we want to remember where the right edge of the image was, and preserve that.
-                        imageRect.cropHoffset = oldOffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                        if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
+                            unclippedWidth = unclippedWidth - deltaX//The width of the image after this drag. It may be zero or negative, or impossibly big.
+                            //So obviously we want to clip it at 0 before using it, but we should try to keep track of this value.
+                            //We also need to keep it from getting too wide.
+                            // The full image's width is bottomImage.width, divided by two to start at the middle.
+                            // Add the offset (in pixels) to get to the middle of the image.
+                            // Add half of the width of the crop itself.
+                            //And then we round.
+                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
+                            imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
+                            //Now we want to remember where the right edge of the image was, and preserve that.
+                            imageRect.cropHoffset = oldOffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                            unclippedHoffset = imageRect.cropHoffset
+                        } else {//ctrl modifier pressed; drag in one direction
+                            unclippedHoffset = unclippedHoffset + deltaX/bottomImage.width
+                            if (mouse.modifiers & Qt.ShiftModifier && Math.abs(unclippedHoffset) < imageRect.snapFrac) {//shift modifier pressed; snap to middle
+                                imageRect.cropHoffset = 0
+                            } else {
+                                imageRect.cropHoffset = unclippedHoffset
+                            }
+                        }
                     }
                     onReleased: {
                         preventStealing = false
@@ -638,6 +673,7 @@ SplitView {
                     property real oldWidth
                     property real unclippedWidth
                     property real oldOffset
+                    property real unclippedHoffset
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -645,21 +681,26 @@ SplitView {
                         oldWidth = cropmarker.width
                         unclippedWidth = cropmarker.width
                         oldOffset = cropmarker.hoffset
+                        unclippedHoffset = cropmarker.hoffset
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
                         oldX = mouse.x
-                        unclippedWidth = unclippedWidth + deltaX//The width of the image after this drag. It may be zero or negative, or impossibly big.
-                        //So obviously we want to clip it at 0 before using it, but we should try to keep track of this value.
-                        //We also need to keep it from getting too wide.
-                        // The full image's width is bottomImage.width, divided by two to start at the middle.
-                        // Subtract the offset (in pixels) to get to the middle of the image.
-                        // Add half of the width of the crop itself.
-                        //And then we round.
-                        var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
-                        imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
-                        //Now we want to remember where the left edge of the image was, and preserve that.
-                        imageRect.cropHoffset = oldOffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                        if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
+                            unclippedWidth = unclippedWidth + deltaX
+                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
+                            imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
+                            //Now we want to remember where the left edge of the image was, and preserve that.
+                            imageRect.cropHoffset = oldOffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
+                            unclippedHoffset = imageRect.cropHoffset
+                        } else {//ctrl modifier pressed; drag in one direction
+                            unclippedHoffset = unclippedHoffset + deltaX/bottomImage.width
+                            if (mouse.modifiers & Qt.ShiftModifier && Math.abs(unclippedHoffset) < imageRect.snapFrac) {//shift modifier pressed; snap to middle
+                                imageRect.cropHoffset = 0
+                            } else {
+                                imageRect.cropHoffset = unclippedHoffset
+                            }
+                        }
                     }
                     onReleased: {
                         preventStealing = false
@@ -687,6 +728,7 @@ SplitView {
                     property real oldHeight
                     property real unclippedHeight
                     property real oldOffset
+                    property real unclippedVoffset
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -694,17 +736,28 @@ SplitView {
                         oldHeight = cropmarker.height
                         unclippedHeight = cropmarker.height
                         oldOffset = cropmarker.voffset
+                        unclippedVoffset = cropmarker.voffset
                     }
                     onPositionChanged: {
                         var deltaY = mouse.y - oldY
                         oldY = mouse.y
-                        unclippedHeight = unclippedHeight - deltaY
-                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
-                        imageRect.cropAspect = cropDrag.width/clippedHeight
-                        console.log("clippedHeight:",clippedHeight)
-                        imageRect.cropHeight = clippedHeight/bottomImage.height
-                        //Remember where the bottom edge is.
-                        imageRect.cropVoffset = oldOffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                        if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
+                            unclippedHeight = unclippedHeight - deltaY
+                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
+                            imageRect.cropAspect = cropDrag.width/clippedHeight
+                            console.log("clippedHeight:",clippedHeight)
+                            imageRect.cropHeight = clippedHeight/bottomImage.height
+                            //Remember where the bottom edge is.
+                            imageRect.cropVoffset = oldOffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                            unclippedVoffset = imageRect.cropVoffset
+                        } else {//ctrl modifier pressed; drag in one direction
+                            unclippedVoffset = unclippedVoffset + deltaY/bottomImage.height
+                            if (mouse.modifiers & Qt.ShiftModifier && Math.abs(unclippedVoffset) < imageRect.snapFrac) {//shift modifier pressed; snap to middle
+                                imageRect.cropVoffset = 0
+                            } else {
+                                imageRect.cropVoffset = unclippedVoffset
+                            }
+                        }
                     }
                     onReleased: {
                         preventStealing = false
@@ -732,6 +785,7 @@ SplitView {
                     property real oldHeight
                     property real unclippedHeight
                     property real oldOffset
+                    property real unclippedVoffset
                     onPressed: {
                         imageRect.validateCrop()
                         preventStealing = true
@@ -739,16 +793,27 @@ SplitView {
                         oldHeight = cropmarker.height
                         unclippedHeight = cropmarker.height
                         oldOffset = cropmarker.voffset
+                        unclippedVoffset = cropmarker.voffset
                     }
                     onPositionChanged: {
                         var deltaY = mouse.y - oldY
                         oldY = mouse.y
-                        unclippedHeight = unclippedHeight + deltaY
-                        var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
-                        imageRect.cropAspect = cropDrag.width/clippedHeight
-                        imageRect.cropHeight = clippedHeight/bottomImage.height
-                        //Remember where the bottom edge is.
-                        imageRect.cropVoffset = oldOffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                        if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
+                            unclippedHeight = unclippedHeight + deltaY
+                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
+                            imageRect.cropAspect = cropDrag.width/clippedHeight
+                            imageRect.cropHeight = clippedHeight/bottomImage.height
+                            //Remember where the bottom edge is.
+                            imageRect.cropVoffset = oldOffset - 0.5*(oldHeight-clippedHeight)/bottomImage.height
+                            unclippedVoffset = imageRect.cropVoffset
+                        } else {//ctrl modifier pressed; drag in one direction
+                            unclippedVoffset = unclippedVoffset + deltaY/bottomImage.height
+                            if (mouse.modifiers & Qt.ShiftModifier && Math.abs(unclippedVoffset) < imageRect.snapFrac) {//shift modifier pressed; snap to middle
+                                imageRect.cropVoffset = 0
+                            } else {
+                                imageRect.cropVoffset = unclippedVoffset
+                            }
+                        }
                     }
                     onReleased: {
                         preventStealing = false
@@ -796,6 +861,7 @@ SplitView {
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
                         oldAspect = cropmarker.width/cropmarker.height
+                        lockedAspect = oldAspect
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
@@ -898,6 +964,7 @@ SplitView {
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
                         oldAspect = cropmarker.width/cropmarker.height
+                        lockedAspect = oldAspect
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
@@ -1000,6 +1067,7 @@ SplitView {
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
                         oldAspect = cropmarker.width/cropmarker.height
+                        lockedAspect = oldAspect
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
@@ -1102,6 +1170,7 @@ SplitView {
                         oldHoffset = cropmarker.hoffset
                         oldVoffset = cropmarker.voffset
                         oldAspect = cropmarker.width/cropmarker.height
+                        lockedAspect = oldAspect
                     }
                     onPositionChanged: {
                         var deltaX = mouse.x - oldX
