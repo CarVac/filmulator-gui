@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     printf("cwd: %s\n",pathbuf);
+    getchar();
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
