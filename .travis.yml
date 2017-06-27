@@ -30,6 +30,7 @@ script:
   - chmod a+x linuxdeployqt*.AppImage
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
+  - ls -l ./appdir/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
   - curl --upload-file ./Filmulator*.AppImage https://transfer.sh/Filmulator-git.$(git rev-parse --short HEAD)-x86_64.AppImage
