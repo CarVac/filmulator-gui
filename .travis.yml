@@ -18,7 +18,8 @@ script:
   - cd LibRaw
   - patch -p1 < ../patches/libraw-makefile.patch
   - make -j3 -f Makefile.dist
-  - make install -f Makefile.dist
+  - sudo make install -f Makefile.dist
+  - cd ..
   - cd filmulator-gui
   - qmake PREFIX=/usr
   - make -j4
@@ -26,8 +27,6 @@ script:
   - pwd
   - # Dear upstream, please install to more standard locations
   - mkdir -p appdir/usr/bin ; mv appdir/usr/lib/filmulator-gui/filmulator-gui appdir/usr/bin/filmulator-gui
-  - cp -a ./appimage/AppRun ./appdir/usr/bin/
-  - chmod +x ./appdir/usr/bin/AppRun
   - mkdir -p appdir/usr/qml ; mv appdir/usr/lib/filmulator-gui/qml/filmulator-gui/* appdir/usr/qml/
   - rm -rf appdir/usr/lib/filmulator-gui/
   - mkdir -p appdir/usr/share/applications/ ; cp filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
