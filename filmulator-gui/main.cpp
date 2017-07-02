@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     
     char* appdir = getenv("APPDIR");
     printf("APPDIR: %s\n", appdir);
-    getchar();
+    //getchar();
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     if( appdir )
     {
         QString qmlfile = appdir;
-        qmlfile += "/usr/qml/filmulator-gui/main.qml";
+        qmlfile += "/usr/qml/main.qml";
         if (QFile(qmlfile).exists())
         {
             cout << "loading UI from copy in appdir directory" << endl;
