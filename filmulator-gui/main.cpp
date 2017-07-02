@@ -94,10 +94,15 @@ int main(int argc, char *argv[])
         qmlfile += "/usr/qml/filmulator-gui/main.qml";
         if (QFile(qmlfile).exists())
         {
-            cout << "loading UI from copy in directory" << endl;
+            cout << "loading UI from copy in appdir directory" << endl;
             engine.load(qmlfile);
         }
     } 
+    else if (QFile("qml/filmulator-gui/main.qml").exists())
+    {
+        cout << "loading UI from copy in directory" << endl;
+        engine.load("qml/filmulator-gui/main.qml");
+    }
     else if (QFile("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml").exists())
     {
         engine.load("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml");
