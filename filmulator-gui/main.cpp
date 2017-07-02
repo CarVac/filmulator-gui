@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <QtGui/QGuiApplication>
 #include <QtQml>
 #include "qtquick2applicationviewer.h"
@@ -22,6 +23,9 @@ int main(int argc, char *argv[])
     // we use a QGuiApplication, which only supports QML stuff.
     //QGuiApplication app(argc, argv);
     QApplication app(argc, argv);
+    
+    char* appdir = getenv("APPDIR");
+    printf("APPDIR: %s\n", appdir);
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
