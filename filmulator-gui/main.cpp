@@ -88,11 +88,16 @@ int main(int argc, char *argv[])
                      queueModel, SLOT(enQueue(QString)));
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
-    if (QFile("qml/filmulator-gui/main.qml").exists())
+    if( appdir )
     {
-        cout << "loading UI from copy in directory" << endl;
-        engine.load("qml/filmulator-gui/main.qml");
-    }
+        QString qmlfile = appdir;
+        qmlfile += "/usr/qml/filmulator-gui/main.qml";
+        if (QFile(qmlfile).exists())
+        {
+            cout << "loading UI from copy in directory" << endl;
+            engine.load(qmlfile);
+        }
+    } 
     else if (QFile("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml").exists())
     {
         engine.load("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml");
