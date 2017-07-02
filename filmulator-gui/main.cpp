@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     
     char* appdir = getenv("APPDIR");
     printf("APPDIR: %s\n", appdir);
+    getchar();
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
