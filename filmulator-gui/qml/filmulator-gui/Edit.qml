@@ -103,7 +103,6 @@ SplitView {
                     }
 
                     property string state: "p"
-                    property string rootDir: organizeModel.thumbDir()
                     //This connection finds out when the parameters are done changing, and then updates the url to fetch the latest image.
                     Connections {
                         target: paramManager//root
@@ -120,7 +119,7 @@ SplitView {
                                 hiddenImage.source = "image://filmy/" + topImage.indexString
                             }
                             if (topImage.state == "p") {//if we're planning on doing the thumbnail
-                                var thumbPath = topImage.rootDir + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
+                                var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
                                 console.log("thumb path: " + thumbPath)
                                 topImage.source = thumbPath
                             }
