@@ -112,7 +112,8 @@ SplitView {
                                 hiddenImage.source = "image://filmy/" + topImage.indexString
                             }
                             if (topImage.state == "p") {//if we're planning on doing the thumbnail
-                                var thumbPath = topImage.rootDir + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
+                                //var thumbPath = topImage.rootDir + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
+                                var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
                                 console.log("thumb path: " + thumbPath)
                                 topImage.source = thumbPath
                             }
