@@ -132,7 +132,6 @@ QString OrganizeModel::thumbDir()
 {
     QDir homeDir = QDir::home();
     homeDir.cd(".local/share/filmulator/thumbs");
-    cout << "generating thumb path: " << homeDir.absolutePath().toStdString() << endl;
     return homeDir.absolutePath();
 }
 
