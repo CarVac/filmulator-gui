@@ -1,0 +1,4 @@
+#! /bin/bash
+APPDIR=$(pwd)
+echo "APPDIR = $APPDIR"
+usr/bin/filmulator-gui $*
