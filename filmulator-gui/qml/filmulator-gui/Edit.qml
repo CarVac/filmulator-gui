@@ -262,6 +262,8 @@ SplitView {
                     property real voffset: (Math.round(Math.max(Math.min(imageRect.cropVoffset, maxVoffset), -maxVoffset)*bottomImage.height+oddV)-oddV)/bottomImage.height
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width -width)*bottomImage.scale  + hoffset*bottomImage.width*bottomImage.scale)
                     y: bottomImage.y + Math.round(0.5*(bottomImage.height-height)*bottomImage.scale + voffset*bottomImage.height*bottomImage.scale)
+
+                    property bool tooSmall: width*bottomImage.scale/uiScale < parent.cropHandleWidth || height*bottomImage.scale/uiScale < parent.cropHandleWidth
                     transform: Scale {//The scale happens after positioning, about the origin.
                         origin.x: 0
                         origin.y: 0
@@ -490,7 +492,7 @@ SplitView {
                     id: croptopleft
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeTopLeft.handleVisible
+                    visible: root.cropping && (cropResizeTopLeft.handleVisible || cropmarker.tooSmall)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -506,7 +508,7 @@ SplitView {
                     id: croptopright
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeTopRight.handleVisible
+                    visible: root.cropping && (cropResizeTopRight.handleVisible || cropmarker.tooSmall)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -522,7 +524,7 @@ SplitView {
                     id: cropbottomleft
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeBottomLeft.handleVisible
+                    visible: root.cropping && (cropResizeBottomLeft.handleVisible || cropmarker.tooSmall)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -538,7 +540,7 @@ SplitView {
                     id: cropbottomright
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeBottomRight.handleVisible
+                    visible: root.cropping && (cropResizeBottomRight.handleVisible || cropmarker.tooSmall)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
