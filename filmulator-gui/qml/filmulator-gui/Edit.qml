@@ -1454,6 +1454,10 @@ SplitView {
                     bottomImage.scale *= zoomFactor;
                     flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max(0, 0.5*(flicky.width-bottomImage.width*bottomImage.scale))
                     flicky.contentY = oldMouseY*zoomFactor - wheel.y + Math.max(0, 0.5*(flicky.height-bottomImage.height*bottomImage.scale))
+                    //For cropping, we don't want any surprise motions.
+                    if (root.cropping) {
+                        flicky.returnToBounds()
+                    }
                 }
                 else {
                     bottomImage.scale /= zoomFactor;
@@ -1506,6 +1510,7 @@ SplitView {
             tooltipText: qsTr("Click this to begin cropping.")//change to "Hold shift to snap to common aspect ratios" when cropping in progress
             onTriggered: {
                 root.cropping = !root.cropping
+                flicky.returnToBounds()
             }
             Component.onCompleted: {
                 crop.tooltipWanted.connect(root.tooltipWanted)
