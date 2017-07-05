@@ -559,14 +559,10 @@ SplitView {
                 property real readVoffset: cropmarker.voffset
                 property real readHoffset: cropmarker.hoffset
                 //For showing on the screen
-                //property real displayWidth:  cropmarker.width
-                //property real displayHeight: cropmarker.height
-                //property real displayHoffset: 0.5 * Math.round(2 * cropmarker.hoffset * bottomImage.width)
-                //property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
-                property real displayWidth:  bottomImage.x
-                property real displayHeight: bottomImage.width
-                property real displayHoffset: cropmarker.hoffset
-                property real displayVoffset: cropmarker.width
+                property real displayWidth:  cropmarker.width
+                property real displayHeight: cropmarker.height
+                property real displayHoffset: 0.5 * Math.round(2 * cropmarker.hoffset * bottomImage.width)
+                property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
                 //aspect ratio text
                 property string aspectText: ""
 
@@ -1627,7 +1623,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             //text: " f/" + paramManager.aperture
-            text: root.cropping ? imageRect.displayWidth : " f/" + paramManager.aperture
+            text: root.cropping ? qsTr("Width: ") + imageRect.displayWidth : " f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -1637,7 +1633,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             //text: " " + paramManager.exposureTime + " s"
-            text: root.cropping ? imageRect.displayHeight : " " + paramManager.exposureTime + " s"
+            text: root.cropping ? qsTr("Height: ") + imageRect.displayHeight : " " + paramManager.exposureTime + " s"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -1648,7 +1644,7 @@ SplitView {
             y: 0 * uiScale
             color: "white"
             //text: paramManager.filename
-            text: root.cropping ? imageRect.displayHoffset : paramManager.filename
+            text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.filename
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
@@ -1659,7 +1655,7 @@ SplitView {
             y: 15 * uiScale
             color: "white"
             //text: "ISO " + paramManager.sensitivity
-            text: root.cropping ? imageRect.displayVoffset : "ISO " + paramManager.sensitivity
+            text: root.cropping ? qsTr("V offset: ") + imageRect.displayVoffset : "ISO " + paramManager.sensitivity
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
         }
