@@ -357,7 +357,7 @@ SplitView {
                     x: 0
                     y: 0
                     width: bottomImage.x/bottomImage.scale + (0.5 + cropmarker.hoffset)*bottomImage.width - 0.5*cropmarker.width
-                    height: parent.height/bottomImage.scale
+                    height: (1 + parent.height)/bottomImage.scale
                     transform: Scale {//The scale happens after positioning, about the origin.
                         origin.x: 0
                         origin.y: 0
@@ -373,8 +373,8 @@ SplitView {
                     visible: root.cropping
                     x: bottomImage.x + ((0.5 + cropmarker.hoffset)*bottomImage.width + 0.5*cropmarker.width)*bottomImage.scale
                     y: 0
-                    width: (parent.width - bottomImage.x)/bottomImage.scale - (0.5 + cropmarker.hoffset)*bottomImage.width - 0.5*cropmarker.width
-                    height: parent.height/bottomImage.scale
+                    width: (parent.width - bottomImage.x)/bottomImage.scale - (0.5 + cropmarker.hoffset)*bottomImage.width - 0.5*cropmarker.width + bottomImage.scale
+                    height: (1 + parent.height)/bottomImage.scale
                     transform: Scale {//The scale happens after positioning, about the origin.
                         origin.x: 0
                         origin.y: 0
@@ -390,7 +390,7 @@ SplitView {
                     visible: root.cropping
                     x: 0
                     y: 0
-                    width: parent.width/bottomImage.scale
+                    width: (1 + parent.width)/bottomImage.scale
                     height: bottomImage.y/bottomImage.scale + (0.5 + cropmarker.voffset)*bottomImage.height - 0.5*cropmarker.height
                     //width: bottomImage.x/bottomImage.scale + (0.5 + cropmarker.hoffset)*bottomImage.width - 0.5*cropmarker.width
                     //height: parent.height/bottomImage.scale
@@ -411,8 +411,8 @@ SplitView {
                     y: bottomImage.y + ((0.5 + cropmarker.voffset)*bottomImage.height + 0.5*cropmarker.height)*bottomImage.scale
                     //x: bottomImage.x + ((0.5 + cropmarker.hoffset)*bottomImage.width + 0.5*cropmarker.width)*bottomImage.scale
                     //y: 0
-                    width: parent.width/bottomImage.scale
-                    height: (parent.height - bottomImage.y)/bottomImage.scale - (0.5 + cropmarker.voffset)*bottomImage.height - 0.5*cropmarker.height
+                    width: (1 + parent.width)/bottomImage.scale
+                    height: (parent.height - bottomImage.y)/bottomImage.scale - (0.5 + cropmarker.voffset)*bottomImage.height - 0.5*cropmarker.height + bottomImage.scale
                     //width: (parent.width - bottomImage.x)/bottomImage.scale - (0.5 + cropmarker.hoffset)*bottomImage.width - 0.5*cropmarker.width
                     //height: parent.height/bottomImage.scale
                     transform: Scale {//The scale happens after positioning, about the origin.
