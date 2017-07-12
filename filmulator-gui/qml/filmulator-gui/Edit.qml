@@ -628,40 +628,49 @@ SplitView {
                     property real oldY
                     property real unclippedHoffset
                     property real unclippedVoffset
+                    property real ctrlPressed
                     onPressed: {
                         imageRect.validateCrop()
-                        preventStealing = true
+                        if (mouse.modifiers & Qt.ControlModifier) {//ctrl pressed at the beginning initiates drag
+                            preventStealing = true
+                            ctrlPressed = true
+                        } else {
+                            preventStealing = false
+                            ctrlPressed = false
+                        }
                         oldX = mouse.x
                         oldY = mouse.y
                         unclippedHoffset = cropmarker.hoffset
                         unclippedVoffset = cropmarker.voffset
                     }
                     onPositionChanged: {
-                        var deltaX = mouse.x - oldX
-                        var deltaY = mouse.y - oldY
-                        oldX = mouse.x
-                        oldY = mouse.y
-                        unclippedHoffset = unclippedHoffset + deltaX/bottomImage.width
-                        unclippedVoffset = unclippedVoffset + deltaY/bottomImage.height
-                        if (mouse.modifiers & Qt.ShiftModifier) {//shift modifier pressed; snap to center
-                            if (Math.abs(unclippedHoffset) < imageRect.snapFrac) {
-                                imageRect.cropHoffset = 0
+                        if (ctrlPressed) {
+                            var deltaX = mouse.x - oldX
+                            var deltaY = mouse.y - oldY
+                            oldX = mouse.x
+                            oldY = mouse.y
+                            unclippedHoffset = unclippedHoffset + deltaX/bottomImage.width
+                            unclippedVoffset = unclippedVoffset + deltaY/bottomImage.height
+                            if (mouse.modifiers & Qt.ShiftModifier) {//shift modifier pressed; snap to center
+                                if (Math.abs(unclippedHoffset) < imageRect.snapFrac) {
+                                    imageRect.cropHoffset = 0
+                                } else {
+                                    imageRect.cropHoffset = unclippedHoffset
+                                }
+                                if (Math.abs(unclippedVoffset) < imageRect.snapFrac) {
+                                    imageRect.cropVoffset = 0
+                                } else {
+                                    imageRect.cropVoffset = unclippedVoffset
+                                }
                             } else {
                                 imageRect.cropHoffset = unclippedHoffset
-                            }
-
-                            if (Math.abs(unclippedVoffset) < imageRect.snapFrac) {
-                                imageRect.cropVoffset = 0
-                            } else {
                                 imageRect.cropVoffset = unclippedVoffset
                             }
-                        } else {
-                            imageRect.cropHoffset = unclippedHoffset
-                            imageRect.cropVoffset = unclippedVoffset
                         }
                     }
                     onReleased: {
                         preventStealing = false
+                        ctrlPressed = false
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
                     }
