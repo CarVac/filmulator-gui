@@ -740,6 +740,9 @@ SplitView {
                                 } else {
                                     imageRect.cropHoffset = unclippedHoffset
                                 }
+                                oldWidth = cropmarker.width
+                                unclippedWidth = cropmarker.width
+                                oldOffset = imageRect.cropHoffset
                             }
                         }
                     }
@@ -811,6 +814,9 @@ SplitView {
                                 } else {
                                     imageRect.cropHoffset = unclippedHoffset
                                 }
+                                oldWidth = cropmarker.width
+                                unclippedWidth = cropmarker.width
+                                oldOffset = imageRect.cropHoffset
                             }
                         }
                     }
@@ -884,6 +890,9 @@ SplitView {
                                 } else {
                                     imageRect.cropVoffset = unclippedVoffset
                                 }
+                                oldHeight = cropmarker.height
+                                unclippedHeight = cropmarker.height
+                                oldOffset = imageRect.cropVoffset
                             }
                         }
                     }
@@ -956,6 +965,9 @@ SplitView {
                                 } else {
                                     imageRect.cropVoffset = unclippedVoffset
                                 }
+                                oldHeight = cropmarker.height
+                                unclippedHeight = cropmarker.height
+                                oldOffset = imageRect.cropVoffset
                             }
                         }
                     }
