@@ -11,6 +11,10 @@ SplitView {
     property bool imageReady: false
     property bool cropping: false
 
+    onCroppingChanged: {
+        flicky.contentX = flicky.contentX + 2*Math.floor(200*uiScale*cropping) - Math.floor(200*uiScale)
+        flicky.contentY = flicky.contentY + 2*Math.floor(200*uiScale*cropping) - Math.floor(200*uiScale)
+    }
     signal tooltipWanted(string text, int x, int y)
 
     //This is for telling the queue the latest image source so it can show it until the thumb updates.
@@ -37,12 +41,8 @@ SplitView {
             y: Math.ceil(30 * uiScale)
             width: parent.width
             height: Math.floor(parent.height - 30 * uiScale)
-            contentWidth:  Math.max(bottomImage.width *bottomImage.scale, this.width);
-            contentHeight: Math.max(bottomImage.height*bottomImage.scale, this.height);
-            leftMargin: 200*uiScale*cropping
-            rightMargin: 200*uiScale*cropping
-            topMargin: 200*uiScale*cropping
-            bottomMargin: 200*uiScale*cropping
+            contentWidth:  Math.max(bottomImage.width *bottomImage.scale, this.width) +2*Math.floor(200*uiScale*cropping);
+            contentHeight: Math.max(bottomImage.height*bottomImage.scale, this.height)+2*Math.floor(200*uiScale*cropping);
             flickableDirection: Flickable.HorizontalAndVerticalFlick
             clip: true
             pixelAligned: true
@@ -64,8 +64,10 @@ SplitView {
                 //The dimensions here need to be floor because it was yielding non-pixel widths.
                 //That caused the child images to be offset by fractional pixels at 1:1 scale when the
                 // image is smaller than the flickable in one or more directions.
-                width: Math.floor(Math.max(bottomImage.width*bottomImage.scale,parent.width));
-                height: Math.floor(Math.max(bottomImage.height*bottomImage.scale,parent.height));
+                x: -Math.floor(200*uiScale*cropping)
+                y: -Math.floor(200*uiScale*cropping)
+                width: Math.floor(Math.max(bottomImage.width*bottomImage.scale,parent.width)) + 2*Math.floor(200*uiScale*cropping)
+                height: Math.floor(Math.max(bottomImage.height*bottomImage.scale,parent.height)) + 2*Math.floor(200*uiScale*cropping)
                 transformOrigin: Item.TopLeft
                 color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
                 Image {
@@ -203,17 +205,15 @@ SplitView {
                 MouseArea {
                     id: doubleClickCapture
                     anchors.fill: parent
-                    hoverEnabled: true
                     acceptedButtons: Qt.LeftButton
                     onDoubleClicked: {
                         if (bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
                             bottomImage.scale = flicky.fitScale
-                            flicky.contentX = 0
-                            flicky.contentY = 0
-                            //flicky.returnToBounds()
+                            flicky.contentX = 0 + Math.floor(200*uiScale*cropping)
+                            flicky.contentY = 0 + Math.floor(200*uiScale*cropping)
                             flicky.fit = true
                         }
-                        else {//Currently, zooming in works perfectly from fit.
+                        else {
                             var zoomFactor = 1/bottomImage.scale
 
                             var oldContentX = flicky.contentX
