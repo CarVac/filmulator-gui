@@ -10,10 +10,11 @@ SplitView {
     property real uiScale: 1
     property bool imageReady: false
     property bool cropping: false
+    property real cropMargin: 50//200
 
     onCroppingChanged: {
-        flicky.contentX = flicky.contentX + 2*Math.floor(200*uiScale*cropping) - Math.floor(200*uiScale)
-        flicky.contentY = flicky.contentY + 2*Math.floor(200*uiScale*cropping) - Math.floor(200*uiScale)
+        flicky.contentX = flicky.contentX + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
+        flicky.contentY = flicky.contentY + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
     }
     signal tooltipWanted(string text, int x, int y)
 
@@ -41,8 +42,8 @@ SplitView {
             y: Math.ceil(30 * uiScale)
             width: parent.width
             height: Math.floor(parent.height - 30 * uiScale)
-            contentWidth:  Math.max(bottomImage.width *bottomImage.scale, this.width) +2*Math.floor(200*uiScale*cropping);
-            contentHeight: Math.max(bottomImage.height*bottomImage.scale, this.height)+2*Math.floor(200*uiScale*cropping);
+            contentWidth:  Math.max(bottomImage.width *bottomImage.scale, this.width) +2*Math.floor(cropMargin*uiScale*cropping);
+            contentHeight: Math.max(bottomImage.height*bottomImage.scale, this.height)+2*Math.floor(cropMargin*uiScale*cropping);
             flickableDirection: Flickable.HorizontalAndVerticalFlick
             clip: true
             pixelAligned: true
@@ -64,10 +65,10 @@ SplitView {
                 //The dimensions here need to be floor because it was yielding non-pixel widths.
                 //That caused the child images to be offset by fractional pixels at 1:1 scale when the
                 // image is smaller than the flickable in one or more directions.
-                x: -Math.floor(200*uiScale*cropping)
-                y: -Math.floor(200*uiScale*cropping)
-                width: Math.floor(Math.max(bottomImage.width*bottomImage.scale,parent.width)) + 2*Math.floor(200*uiScale*cropping)
-                height: Math.floor(Math.max(bottomImage.height*bottomImage.scale,parent.height)) + 2*Math.floor(200*uiScale*cropping)
+                x: -Math.floor(cropMargin*uiScale*cropping)
+                y: -Math.floor(cropMargin*uiScale*cropping)
+                width: Math.floor(Math.max(bottomImage.width*bottomImage.scale,parent.width)) + 2*Math.floor(cropMargin*uiScale*cropping)
+                height: Math.floor(Math.max(bottomImage.height*bottomImage.scale,parent.height)) + 2*Math.floor(cropMargin*uiScale*cropping)
                 transformOrigin: Item.TopLeft
                 color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
                 Image {
@@ -209,24 +210,26 @@ SplitView {
                     onDoubleClicked: {
                         if (bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
                             bottomImage.scale = flicky.fitScale
-                            flicky.contentX = 0 + Math.floor(200*uiScale*cropping)
-                            flicky.contentY = 0 + Math.floor(200*uiScale*cropping)
+                            flicky.contentX = 0 + Math.floor(cropMargin*uiScale*cropping)
+                            flicky.contentY = 0 + Math.floor(cropMargin*uiScale*cropping)
                             flicky.fit = true
                         }
-                        else {
+                        else {//TODO: WE NEED TO ACCOUNT FOR THE MARGINS FROM CROPPING
                             var zoomFactor = 1/bottomImage.scale
 
-                            var oldContentX = flicky.contentX
-                            var oldContentY = flicky.contentY
+                            var oldContentX = flicky.contentX - Math.floor(cropMargin*uiScale*cropping)
+                            var oldContentY = flicky.contentY - Math.floor(cropMargin*uiScale*cropping)
 
-                            var oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  -  bottomImage.width*bottomImage.scale))
-                            var oldMouseY = mouse.y - Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale))
+                            var oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  - 2*Math.floor(cropMargin*uiScale*cropping)
+                            var oldMouseY = mouse.y - Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) - 2*Math.floor(cropMargin*uiScale*cropping)
 
                             bottomImage.scale = 1
 
                             //for the following, the last bottomImage.scale is now 1, so we just leave it off.
-                            flicky.contentX = oldMouseX*zoomFactor - mouse.x + oldContentX + Math.max(0, 0.5*(flicky.width  - bottomImage.width))
-                            flicky.contentY = oldMouseY*zoomFactor - mouse.y + oldContentY + Math.max(0, 0.5*(flicky.height - bottomImage.height))
+                            flicky.contentX = oldMouseX*zoomFactor - mouse.x + oldContentX*zoomFactor + Math.max(0, 0.5*(flicky.width  - bottomImage.width))  //+ 2*Math.floor(cropMargin*uiScale*cropping)
+                            flicky.contentY = oldMouseY*zoomFactor - mouse.y + oldContentY*zoomFactor + Math.max(0, 0.5*(flicky.height - bottomImage.height)) //+ 2*Math.floor(cropMargin*uiScale*cropping)
+                            console.log("oldcontentX",oldContentX,"oldMouseX",oldMouseX,"contentX",flicky.contentX)
+                            console.log("oldcontentY",oldContentY,"oldMouseY",oldMouseY,"contentY",flicky.contentY)
 
                             flicky.returnToBounds()
                             if (bottomImage.scale == flicky.fitScale) {flicky.fit = true}
@@ -560,7 +563,7 @@ SplitView {
                 property real readHoffset: cropmarker.hoffset
                 //For showing on the screen
                 property real displayWidth:  cropmarker.width
-                property real displayHeight: cropmarker.height
+                property real displayHeight: flicky.contentX//cropmarker.height
                 property real displayHoffset: 0.5 * Math.round(2 * cropmarker.hoffset * bottomImage.width)
                 property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
                 //aspect ratio text
@@ -1463,14 +1466,14 @@ SplitView {
             anchors.fill: flicky
             acceptedButtons: Qt.NoButton//Qt.RightButton
             onWheel: {
-                var oldMouseX = wheel.x + flicky.contentX - Math.max(0, 0.5*(flicky.width-bottomImage.width*bottomImage.scale))
-                var oldMouseY = wheel.y + flicky.contentY - Math.max(0, 0.5*(flicky.height-bottomImage.height*bottomImage.scale))
+                var oldMouseX = wheel.x + flicky.contentX - Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  - Math.floor(cropMargin*uiScale*cropping)
+                var oldMouseY = wheel.y + flicky.contentY - Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) - Math.floor(cropMargin*uiScale*cropping)
                 //1.2 is the zoom factor for a normal wheel click, and 120 units is the 'angle' of a normal wheel click.
                 var zoomFactor = Math.pow(1.2,Math.abs(wheel.angleDelta.y)/120)
                 if (wheel.angleDelta.y > 0) {
                     bottomImage.scale *= zoomFactor;
-                    flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max(0, 0.5*(flicky.width-bottomImage.width*bottomImage.scale))
-                    flicky.contentY = oldMouseY*zoomFactor - wheel.y + Math.max(0, 0.5*(flicky.height-bottomImage.height*bottomImage.scale))
+                    flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  + Math.floor(cropMargin*uiScale*cropping)
+                    flicky.contentY = oldMouseY*zoomFactor - wheel.y + Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) + Math.floor(cropMargin*uiScale*cropping)
                     //For cropping, we don't want any surprise motions.
                     if (root.cropping) {
                         flicky.returnToBounds()
@@ -1478,8 +1481,8 @@ SplitView {
                 }
                 else {
                     bottomImage.scale /= zoomFactor;
-                    flicky.contentX = oldMouseX/zoomFactor - wheel.x + Math.max(0, 0.5*(flicky.width  -  bottomImage.width*bottomImage.scale))
-                    flicky.contentY = oldMouseY/zoomFactor - wheel.y + Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale))
+                    flicky.contentX = oldMouseX/zoomFactor - wheel.x + Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  + Math.floor(cropMargin*uiScale*cropping)
+                    flicky.contentY = oldMouseY/zoomFactor - wheel.y + Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) + Math.floor(cropMargin*uiScale*cropping)
                     flicky.returnToBounds()
                 }
                 if (bottomImage.scale == flicky.fitScale) {flicky.fit = true}
