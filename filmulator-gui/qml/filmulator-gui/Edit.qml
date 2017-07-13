@@ -206,6 +206,7 @@ SplitView {
                 MouseArea {
                     id: doubleClickCapture
                     anchors.fill: parent
+                    hoverEnabled: true
                     acceptedButtons: Qt.LeftButton
                     onDoubleClicked: {
                         if (bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
@@ -214,20 +215,35 @@ SplitView {
                             flicky.contentY = 0 + Math.floor(cropMargin*uiScale*cropping)
                             flicky.fit = true
                         }
-                        else {//TODO: WE NEED TO ACCOUNT FOR THE MARGINS FROM CROPPING
+                        else {
                             var zoomFactor = 1/bottomImage.scale
 
-                            var oldContentX = flicky.contentX - Math.floor(cropMargin*uiScale*cropping)
-                            var oldContentY = flicky.contentY - Math.floor(cropMargin*uiScale*cropping)
+                            //Here's how it worked before the cropmargin was added
+                            //oldContentX = flicky.contentX
 
+                            //            distance from edge of imageRect to mouse cursor, no scaling
+                            //                      space to the left of the image
+                            //basically, the coordinates are relative to the edge of the image.
+                            //oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))
+
+                            //                  changes are relative to the previosu contentX
+                            //                  when you zoom in, the distance between the mouse and the edge of the image must increase by the zoomfactor
+                            //                                         but only by the zoomfactor, so we subtract a recalculation of oldMouseX
+                            //                                                                                                  not multiplied by bottomImage.scale since that's now 1
+                            //flicky.contentX = oldContentX + oldMouseX*zoomFactor - mouse.x + Math.max(0, 0.5*(flicky.width  - bottomImage.width))
+
+                            //The contentX still stays the same. We're just saving it for after the scale changes.
+                            var oldContentX = flicky.contentX
+                            var oldContentY = flicky.contentY
+
+                            //                                                                                                  2 because the imageRect is 1 above and to the left of where it should be
                             var oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  - 2*Math.floor(cropMargin*uiScale*cropping)
                             var oldMouseY = mouse.y - Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) - 2*Math.floor(cropMargin*uiScale*cropping)
 
                             bottomImage.scale = 1
 
-                            //for the following, the last bottomImage.scale is now 1, so we just leave it off.
-                            flicky.contentX = oldMouseX*zoomFactor - mouse.x + oldContentX*zoomFactor + Math.max(0, 0.5*(flicky.width  - bottomImage.width))  //+ 2*Math.floor(cropMargin*uiScale*cropping)
-                            flicky.contentY = oldMouseY*zoomFactor - mouse.y + oldContentY*zoomFactor + Math.max(0, 0.5*(flicky.height - bottomImage.height)) //+ 2*Math.floor(cropMargin*uiScale*cropping)
+                            flicky.contentX = oldContentX + oldMouseX*zoomFactor - mouse.x + Math.max(0, 0.5*(flicky.width  - bottomImage.width))  + 2*Math.floor(cropMargin*uiScale*cropping)
+                            flicky.contentY = oldContentY + oldMouseY*zoomFactor - mouse.y + Math.max(0, 0.5*(flicky.height - bottomImage.height)) + 2*Math.floor(cropMargin*uiScale*cropping)
                             console.log("oldcontentX",oldContentX,"oldMouseX",oldMouseX,"contentX",flicky.contentX)
                             console.log("oldcontentY",oldContentY,"oldMouseY",oldMouseY,"contentY",flicky.contentY)
 
@@ -563,7 +579,7 @@ SplitView {
                 property real readHoffset: cropmarker.hoffset
                 //For showing on the screen
                 property real displayWidth:  cropmarker.width
-                property real displayHeight: flicky.contentX//cropmarker.height
+                property real displayHeight: cropmarker.height
                 property real displayHoffset: 0.5 * Math.round(2 * cropmarker.hoffset * bottomImage.width)
                 property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
                 //aspect ratio text
@@ -1646,7 +1662,6 @@ SplitView {
             x: 200 * uiScale
             y: 0 * uiScale
             color: "white"
-            //text: " f/" + paramManager.aperture
             text: root.cropping ? qsTr("Width: ") + imageRect.displayWidth : " f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
@@ -1656,7 +1671,6 @@ SplitView {
             x: 200 * uiScale
             y: 15 * uiScale
             color: "white"
-            //text: " " + paramManager.exposureTime + " s"
             text: root.cropping ? qsTr("Height: ") + imageRect.displayHeight : " " + paramManager.exposureTime + " s"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
@@ -1667,7 +1681,6 @@ SplitView {
             x: 350 * uiScale
             y: 0 * uiScale
             color: "white"
-            //text: paramManager.filename
             text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.filename
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
@@ -1678,7 +1691,6 @@ SplitView {
             x: 350 * uiScale
             y: 15 * uiScale
             color: "white"
-            //text: "ISO " + paramManager.sensitivity
             text: root.cropping ? qsTr("V offset: ") + imageRect.displayVoffset : "ISO " + paramManager.sensitivity
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
