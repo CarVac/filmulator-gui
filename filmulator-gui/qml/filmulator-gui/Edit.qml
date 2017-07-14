@@ -49,7 +49,7 @@ SplitView {
             pixelAligned: true
             property real fitScaleX: flicky.width/bottomImage.width
             property real fitScaleY: flicky.height/bottomImage.height
-            property real fitScale: Math.min(fitScaleX, fitScaleY)
+            property real fitScale: Math.min(fitScaleX, fitScaleY)*(1 - 0.05*cropping)
             property real sizeRatio: 1
             property bool fit: true
             //Here, if the window size changed, we set it to fitScale. Except that it didn't update in time, so we make it compute it from scratch.
