@@ -211,11 +211,10 @@ SplitView {
                     onDoubleClicked: {
                         if (bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
                             bottomImage.scale = flicky.fitScale
-                            flicky.contentX = 0 + Math.floor(cropMargin*uiScale*cropping)
-                            flicky.contentY = 0 + Math.floor(cropMargin*uiScale*cropping)
+                            flicky.contentX = Math.floor(cropMargin*uiScale*cropping)
+                            flicky.contentY = Math.floor(cropMargin*uiScale*cropping)
                             flicky.fit = true
-                        }
-                        else {
+                        } else {
                             var zoomFactor = 1/bottomImage.scale
 
                             //Here's how it worked before the cropmargin was added
@@ -226,9 +225,9 @@ SplitView {
                             //basically, the coordinates are relative to the edge of the image.
                             //oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))
 
-                            //                  changes are relative to the previosu contentX
-                            //                  when you zoom in, the distance between the mouse and the edge of the image must increase by the zoomfactor
-                            //                                         but only by the zoomfactor, so we subtract a recalculation of oldMouseX
+                            //                  changes are relative to the previous contentX
+                            //                                when you zoom in, the distance between the mouse and the edge of the image must increase by the zoomfactor
+                            //                                                       but only by the zoomfactor, so we subtract a recalculation of oldMouseX; recalculated because the of the margins changing.
                             //                                                                                                  not multiplied by bottomImage.scale since that's now 1
                             //flicky.contentX = oldContentX + oldMouseX*zoomFactor - mouse.x + Math.max(0, 0.5*(flicky.width  - bottomImage.width))
 
@@ -242,10 +241,11 @@ SplitView {
 
                             bottomImage.scale = 1
 
-                            flicky.contentX = oldContentX + oldMouseX*zoomFactor - mouse.x + Math.max(0, 0.5*(flicky.width  - bottomImage.width))  + 2*Math.floor(cropMargin*uiScale*cropping)
-                            flicky.contentY = oldContentY + oldMouseY*zoomFactor - mouse.y + Math.max(0, 0.5*(flicky.height - bottomImage.height)) + 2*Math.floor(cropMargin*uiScale*cropping)
-                            console.log("oldcontentX",oldContentX,"oldMouseX",oldMouseX,"contentX",flicky.contentX)
-                            console.log("oldcontentY",oldContentY,"oldMouseY",oldMouseY,"contentY",flicky.contentY)
+                            var newMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width))  - 2*Math.floor(cropMargin*uiScale*cropping)
+                            var newMouseY = mouse.y - Math.max(0, 0.5*(flicky.height - bottomImage.height)) - 2*Math.floor(cropMargin*uiScale*cropping)
+
+                            flicky.contentX = oldContentX + oldMouseX*zoomFactor - newMouseX
+                            flicky.contentY = oldContentY + oldMouseY*zoomFactor - newMouseY
 
                             flicky.returnToBounds()
                             if (bottomImage.scale == flicky.fitScale) {flicky.fit = true}
@@ -599,6 +599,7 @@ SplitView {
                     id: cropDrag
                     acceptedButtons: Qt.LeftButton
                     enabled: false
+                    hoverEnabled: true
                     property real cropHeight
                     property real cropAspect
                     property real cropVoffset
@@ -692,6 +693,48 @@ SplitView {
                         ctrlPressed = false
                         imageRect.validateCrop()
                         cropDrag.updatePosition()
+                    }
+                    onDoubleClicked: {//we want it to behave like the background when double-clicked if ctrl isn't held
+                        if (!(mouse.modifiers & Qt.ControlModifier)) {
+                            //the following block is taken straight from doubleClickCapture
+                            if (bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
+                                bottomImage.scale = flicky.fitScale
+                                flicky.contentX = Math.floor(cropMargin*uiScale*cropping)
+                                flicky.contentY = Math.floor(cropMargin*uiScale*cropping)
+                                flicky.fit = true
+                            } else {//this is modified from doubleClickCapture
+                                var zoomFactor = 1/bottomImage.scale
+
+                                var oldContentX = flicky.contentX
+                                var oldContentY = flicky.contentY
+
+                                //oldMouseX is the screen-space distance from the left of the image.
+                                //This is what it was in doubleClickCapture
+                                //var oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  - 2*Math.floor(cropMargin*uiScale*cropping)
+
+                                //But here the formula for this is:
+                                var oldMouseX = (mouse.x + (0.5 + imageRect.cropHoffset)*bottomImage.width - 0.5*imageRect.cropHeight*imageRect.cropAspect*bottomImage.height)*bottomImage.scale
+                                var oldMouseY = (mouse.y + (0.5 + imageRect.cropVoffset - 0.5*imageRect.cropHeight)*bottomImage.height)*bottomImage.scale
+
+                                //Now we need to reverse-engineer the doubleClickCapture mouse.x and such, because when we change the scale here our mouse.x goes haywire.
+                                var oldDCCMouseX = oldMouseX + Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  + 2*Math.floor(cropMargin*uiScale*cropping)
+                                var oldDCCMouseY = oldMouseY + Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) + 2*Math.floor(cropMargin*uiScale*cropping)
+
+                                bottomImage.scale = 1
+
+                                //Now we need to compute the new doubleClickCapture mouse.x from the old one
+                                var newDCCMouseX = oldDCCMouseX - Math.max(0, 0.5*(flicky.width  - bottomImage.width))  - 2*Math.floor(cropMargin*uiScale*cropping)
+                                var newDCCMouseY = oldDCCMouseY - Math.max(0, 0.5*(flicky.height - bottomImage.height)) - 2*Math.floor(cropMargin*uiScale*cropping)
+
+                                //The pattern is  oldcontentX + oldMouseX*zoomfactor - recalculated oldMouseX, but we use the doubleClickCapture version
+                                flicky.contentX = oldContentX + oldMouseX*zoomFactor - newDCCMouseX
+                                flicky.contentY = oldContentY + oldMouseY*zoomFactor - newDCCMouseY
+
+                                flicky.returnToBounds()
+                                if (bottomImage.scale == flicky.fitScale) {flicky.fit = true}
+                                else {flicky.fit = false}
+                            }
+                        }
                     }
                 }
                 MouseArea {
