@@ -1108,7 +1108,8 @@ SplitView {
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
-                                if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                if      (newAspect < 0.3478) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                else if (newAspect < 0.3936) {lockedAspect = 1/2.76; imageRect.aspectText = "1:2.76"}
                                 else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
                                 else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
                                 else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
@@ -1123,8 +1124,9 @@ SplitView {
                                 else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
                                 else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
                                 else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
-                                else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
-                                else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
+                                else if (newAspect < 2.5407) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                                else if (newAspect < 2.8755) {lockedAspect = 2.76;   imageRect.aspectText = "2.76:1"}
+                                else                         {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                             }
 
                             if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
@@ -1227,7 +1229,8 @@ SplitView {
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
-                                if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                if      (newAspect < 0.3478) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                else if (newAspect < 0.3936) {lockedAspect = 1/2.76; imageRect.aspectText = "1:2.76"}
                                 else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
                                 else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
                                 else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
@@ -1242,8 +1245,9 @@ SplitView {
                                 else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
                                 else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
                                 else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
-                                else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
-                                else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
+                                else if (newAspect < 2.5407) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                                else if (newAspect < 2.8755) {lockedAspect = 2.76;   imageRect.aspectText = "2.76:1"}
+                                else                         {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                             }
 
                             if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
@@ -1346,7 +1350,8 @@ SplitView {
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
-                                if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                if      (newAspect < 0.3478) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                else if (newAspect < 0.3936) {lockedAspect = 1/2.76; imageRect.aspectText = "1:2.76"}
                                 else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
                                 else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
                                 else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
@@ -1361,8 +1366,9 @@ SplitView {
                                 else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
                                 else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
                                 else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
-                                else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
-                                else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
+                                else if (newAspect < 2.5407) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                                else if (newAspect < 2.8755) {lockedAspect = 2.76;   imageRect.aspectText = "2.76:1"}
+                                else                         {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                             }
 
                             if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
@@ -1465,7 +1471,8 @@ SplitView {
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
-                                if      (newAspect < 0.3787) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                if      (newAspect < 0.3478) {lockedAspect = 1/3;    imageRect.aspectText = "1:3"}
+                                else if (newAspect < 0.3936) {lockedAspect = 1/2.76; imageRect.aspectText = "1:2.76"}
                                 else if (newAspect < 0.4622) {lockedAspect = 1/2.35; imageRect.aspectText = "1:2.35"}
                                 else if (newAspect < 0.5308) {lockedAspect = 1/2;    imageRect.aspectText = "1:2"}
                                 else if (newAspect < 0.5899) {lockedAspect = 9/16;   imageRect.aspectText = "9:16"}
@@ -1480,8 +1487,9 @@ SplitView {
                                 else if (newAspect < 1.6951) {lockedAspect = 1.61803;imageRect.aspectText = "φ:1"}
                                 else if (newAspect < 1.8837) {lockedAspect = 16/9;   imageRect.aspectText = "16:9"}
                                 else if (newAspect < 2.1634) {lockedAspect = 2;      imageRect.aspectText = "2:1"}
-                                else if (newAspect < 2.6404) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
-                                else                        {lockedAspect = 3;      imageRect.aspectText = "3:1"}
+                                else if (newAspect < 2.5407) {lockedAspect = 2.35;   imageRect.aspectText = "2.35:1"}
+                                else if (newAspect < 2.8755) {lockedAspect = 2.76;   imageRect.aspectText = "2.76:1"}
+                                else                         {lockedAspect = 3;      imageRect.aspectText = "3:1"}
                             }
 
                             if (mouse.modifiers & Qt.ControlModifier || mouse.modifiers & Qt.ShiftModifier) {
