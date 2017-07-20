@@ -33,10 +33,10 @@ SplitView {
             }
         } else {//we're done cropping
             //send stuff back to database
-            paramManager.cropHeight = imageRect.cropHeight
-            paramManager.cropAspect = imageRect.cropAspect
-            paramManager.cropVoffset = imageRect.cropVoffset
-            paramManager.cropHoffset = imageRect.cropHoffset
+            paramManager.cropHeight = imageRect.readHeight
+            paramManager.cropAspect = imageRect.readAspect
+            paramManager.cropVoffset = imageRect.readVoffset
+            paramManager.cropHoffset = imageRect.readHoffset
             //paramManager.writeback() we don't actually have any database entry for these YET
         }
     }
@@ -127,7 +127,7 @@ SplitView {
                         asynchronous: true
                         onStatusChanged: {
                             if (hiddenImage.status == Image.Ready) {
-                                console.log("hidden image ready")
+                                //console.log("hidden image ready")
                                 topImage.state = "i"
                                 topImage.source = hiddenImage.source
                                 root.imageReady = true
@@ -978,7 +978,6 @@ SplitView {
                                 unclippedHeight = unclippedHeight - deltaY
                                 var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
                                 imageRect.cropAspect = cropDrag.width/clippedHeight
-                                console.log("clippedHeight:",clippedHeight)
                                 imageRect.cropHeight = clippedHeight/bottomImage.height
                                 //Remember where the bottom edge is.
                                 imageRect.cropVoffset = oldOffset + 0.5*(oldHeight-clippedHeight)/bottomImage.height

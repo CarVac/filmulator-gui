@@ -331,12 +331,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        cout << "filmulated_image.nc()/3: " << filmulated_image.nc() << endl;
-
         const int imWidth  = filmulated_image.nc()/3;
         const int imHeight = filmulated_image.nr();
-        cout << "imWidth: " << imWidth << endl;
-        cout << "imHeight: " << imHeight << endl;
 
         const float tempHeight = imHeight*max(min(1.0f,blackWhiteParam.cropHeight),0.0f);//restrict domain to 0:1
         const float tempAspect = max(min(10000.0f,blackWhiteParam.cropAspect),0.0001f);//restrict aspect ratio
@@ -344,23 +340,14 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         int height = round(min(tempHeight, imWidth/tempAspect));
         const float maxHoffset = (1-(float(width)  / float(imWidth) ))/2.0;
         const float maxVoffset = (1-(float(height) / float(imHeight)))/2.0;
-        const float oddH = (round((imWidth  - width )/2.0)*2 == (imWidth  - width ))*0.5;//it's 0.5 if it's odd, 0 otherwise
-        const float oddV = (round((imHeight - height)/2.0)*2 == (imHeight - height))*0.5;//it's 0.5 if it's odd, 0 otherwise
+        const float oddH = (!(round((imWidth  - width )/2.0)*2 == (imWidth  - width )))*0.5;//it's 0.5 if it's odd, 0 otherwise
+        const float oddV = (!(round((imHeight - height)/2.0)*2 == (imHeight - height)))*0.5;//it's 0.5 if it's odd, 0 otherwise
         const float hoffset = (round(max(min(blackWhiteParam.cropHoffset, maxHoffset), -maxHoffset) * imWidth  + oddH) - oddH)/imWidth;
         const float voffset = (round(max(min(blackWhiteParam.cropVoffset, maxVoffset), -maxVoffset) * imHeight + oddV) - oddV)/imHeight;
-        cout << "floatStartX: " << 0.5*(imWidth  - width ) + hoffset*imWidth  << endl;
-        cout << "floatStartY: " << 0.5*(imHeight - height) + voffset*imHeight << endl;
         int startX = round(0.5*(imWidth  - width ) + hoffset*imWidth);
         int startY = round(0.5*(imHeight - height) + voffset*imHeight);
-        int endX = startX + width  - 1;//Chance of off-by-one error here!  <============================================================
+        int endX = startX + width  - 1;
         int endY = startY + height - 1;
-
-        cout << "width: " << width << endl;
-        cout << "height: " << height << endl;
-        cout << "startX: " << startX << endl;
-        cout << "startY: " << startY << endl;
-        cout << "endX: " << endX << endl;
-        cout << "endY: " << endY << endl;
 
         if (blackWhiteParam.cropHeight <= 0)//it shall be turned off
         {
