@@ -228,7 +228,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             image->readMetadata();
             exifData = image->exifData();
         }
-        cout << "load time: " << timeDiff(imload_time);
+        cout << "load time: " << timeDiff(imload_time) << endl;
 
         cout << "ImagePipeline::processImage: Demosaic complete." << endl;
 

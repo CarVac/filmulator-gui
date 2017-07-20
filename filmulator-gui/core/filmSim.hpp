@@ -230,8 +230,8 @@ void downscale_and_crop(const matrix<float> input,
                         const int inputStartY,
                         const int inputEndX,
                         const int inputEndY,
-                        const int outputXSize,
-                        const int outputYSize);
+                        const int outputXSizeLimit,
+                        const int outputYSizeLimit);
 
 //Converts sRGB with D50 illuminant to XYZ with D50 illuminant.
 void sRGB_to_XYZ(float  r, float  g, float  b,
