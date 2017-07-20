@@ -17,6 +17,7 @@ ApplicationWindow {
 
     signal tooltipWanted(string text, int x, int y)
     signal imageURL(string newURL)
+    property bool cropping: false
 
     Rectangle {
         id: fillRect
@@ -72,6 +73,9 @@ ApplicationWindow {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
                         editItem.imageURL.connect(root.imageURL)
                     }
+                    onRequestingCroppingChanged: {
+                        root.cropping = editItem.requestingCropping
+                    }
                     uiScale: root.uiScale
                 }
             }
@@ -112,8 +116,12 @@ ApplicationWindow {
                     onImageURL: {
                         //This is for telling the queue to grab the same image as the main editor
                         // so that the queue matches what you see in the editor.
-                        console.log("main.qml queueItem update url")
-                        queueItem.url = newURL;
+                        if (!root.cropping) {
+                            console.log("main.qml queueItem update url")
+                            queueItem.url = newURL;
+                        } else {
+                            console.log("REMOVEME queueItem we're cropping now")
+                        }
                     }
                 }
                 Component.onCompleted: {

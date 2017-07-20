@@ -9,10 +9,43 @@ SplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
     property bool imageReady: false
+    property bool requestingCropping: false
     property bool cropping: false
     property real cropMargin: 50//200
 
+    onRequestingCroppingChanged: {
+        if (requestingCropping == true) {
+            if (paramManager.cropHeight <= 0) {//No crop in the database
+                //load default params
+                imageRect.cropHeight = 1
+                imageRect.cropAspect = bottomImage.width/bottomImage.height
+                imageRect.cropVoffset = 0
+                imageRect.cropHoffset = 0
+                //The image probably won't update, so we need to manually turn on cropping.
+                cropping = true
+            } else {//there was already a crop
+                //load from database
+                imageRect.cropHeight = paramManager.cropHeight
+                imageRect.cropAspect = paramManager.cropAspect
+                imageRect.cropVoffset = paramManager.cropVoffset
+                imageRect.cropHoffset = paramManager.cropHoffset
+                paramManager.cropHeight = 0
+            }
+        } else {//we're done cropping
+            //send stuff back to database
+            paramManager.cropHeight = imageRect.cropHeight
+            paramManager.cropAspect = imageRect.cropAspect
+            paramManager.cropVoffset = imageRect.cropVoffset
+            paramManager.cropHoffset = imageRect.cropHoffset
+            //paramManager.writeback() we don't actually have any database entry for these YET
+        }
+    }
+
     onCroppingChanged: {
+        if (flicky.fit) {
+            bottomImage.scale = flicky.fitScale
+        }
+        flicky.returnToBounds()
         flicky.contentX = flicky.contentX + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
         flicky.contentY = flicky.contentY + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
     }
@@ -49,7 +82,7 @@ SplitView {
             pixelAligned: true
             property real fitScaleX: flicky.width/bottomImage.width
             property real fitScaleY: flicky.height/bottomImage.height
-            property real fitScale: Math.min(fitScaleX, fitScaleY)*(1 - 0.05*cropping)
+            property real fitScale: Math.min(fitScaleX, fitScaleY)
             property real sizeRatio: 1
             property bool fit: true
             //Here, if the window size changed, we set it to fitScale. Except that it didn't update in time, so we make it compute it from scratch.
@@ -176,6 +209,11 @@ SplitView {
                                 //topImage.source = "image://filmy/" + topImage.indexString
                                 hiddenImage.source = "image://filmy/" + topImage.indexString
                             }
+                            if (root.requestingCropping) {
+                                root.cropping = true
+                            } else {
+                                root.cropping = false
+                            }
                         }
                     }
                 }
@@ -258,13 +296,13 @@ SplitView {
                 //There are four parameters that get stored.
                 // crop height as % of image height
                 //property real cropHeight: 0.5312353
-                property real cropHeight: 0.5225
+                property real cropHeight: 0//0.5225
                 // width / height (aspect ratio of the crop)
-                property real cropAspect: 1.5
+                property real cropAspect: 0//1.5
                 // voffset as % of image height, center from center
-                property real cropVoffset: 0.0
+                property real cropVoffset: 0//0.0
                 // hoffset as % of image width, center from center
-                property real cropHoffset: 0.5
+                property real cropHoffset: 0//0.5
 
                 Item {
                     id: cropmarker
@@ -1593,11 +1631,17 @@ SplitView {
             anchors.right: rotateLeft.left
             y: 0 * uiScale
             width: 120 * uiScale
-            text: qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
+            notDisabled: root.imageReady
+            text: root.cropping ? qsTr("Finish Crop") : qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
             tooltipText: qsTr("Click this to begin cropping.")//change to "Hold shift to snap to common aspect ratios" when cropping in progress
             onTriggered: {
-                root.cropping = !root.cropping
-                flicky.returnToBounds()
+                if (!root.cropping) {
+                    filmProvider.disableThumbnailWrite()
+                    root.requestingCropping = true
+                } else {
+                    filmProvider.enableThumbnailWrite()
+                    root.requestingCropping = false
+                }
             }
             Component.onCompleted: {
                 crop.tooltipWanted.connect(root.tooltipWanted)

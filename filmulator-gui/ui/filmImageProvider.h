@@ -45,12 +45,16 @@ public:
     Q_INVOKABLE void writeTiff();
     Q_INVOKABLE void writeJpeg();
     Q_INVOKABLE void writeThumbnail(QString searchID);
+    Q_INVOKABLE void disableThumbnailWrite() {thumbnailWriteEnabled = false;}
+    Q_INVOKABLE void enableThumbnailWrite() {thumbnailWriteEnabled = true;}
 
 protected:
     ImagePipeline pipeline = ImagePipeline(WithCache, WithHisto, HighQuality);
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;
+    bool thumbnailWriteEnabled = true;
+    bool writeThisThumbnail = true;
 
     ParameterManager * paramManager;
     QMutex processMutex;//Ensures that output files are only of the currently selected image.

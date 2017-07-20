@@ -401,8 +401,12 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
         validity = Valid::blackwhite;//mark it as started
     }
     BlackWhiteParams params;
-    params.blackpoint = m_blackpoint;
-    params.whitepoint = m_whitepoint;
+    params.blackpoint  = m_blackpoint;
+    params.whitepoint  = m_whitepoint;
+    params.cropHeight  = m_cropHeight;
+    params.cropAspect  = m_cropAspect;
+    params.cropVoffset = m_cropVoffset;
+    params.cropHoffset = m_cropHoffset;
     std::tuple<Valid,AbortStatus,BlackWhiteParams> tup(validity, abort, params);
     return tup;
 }
@@ -427,6 +431,50 @@ void ParameterManager::setWhitepoint(float whitepoint)
     emit whitepointChanged();
     QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setWhitepoint"));
+}
+
+void ParameterManager::setCropHeight(float cropHeight)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropHeight = cropHeight;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropHeight"));
+}
+
+void ParameterManager::setCropAspect(float cropAspect)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropAspect = cropAspect;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropAspect"));
+}
+
+void ParameterManager::setCropVoffset(float cropVoffset)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropVoffset = cropVoffset;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropVoffset"));
+}
+
+void ParameterManager::setCropHoffset(float cropHoffset)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropHoffset = cropHoffset;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropHoffset"));
 }
 
 //We don't have any color curves, so this one short-circuits those
@@ -1200,6 +1248,16 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_whitepoint = temp_whitepoint;
+    }
+
+    //Crop stuff; this stuff always defaults to 0 so that the UI knows to
+    // pick the correct aspect ratio for the full image.
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_cropHeight = 0;
+        m_cropAspect = 0;
+        m_cropVoffset = 0;
+        m_cropHoffset = 0;
     }
 
     //Shadow control point x value

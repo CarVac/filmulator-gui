@@ -76,6 +76,10 @@ struct FilmParams {
 struct BlackWhiteParams {
     float blackpoint;
     float whitepoint;
+    float cropHeight;
+    float cropAspect;
+    float cropVoffset;
+    float cropHoffset;
 };
 
 struct FilmlikeCurvesParams {
@@ -160,11 +164,17 @@ class ParameterManager : public QObject
     Q_PROPERTY(float defRolloffBoundary               READ getDefRolloffBoundary               NOTIFY defRolloffBoundaryChanged)
 
     //Whitepoint & Blackpoint
-    Q_PROPERTY(float blackpoint MEMBER m_blackpoint WRITE setBlackpoint NOTIFY blackpointChanged)
-    Q_PROPERTY(float whitepoint MEMBER m_whitepoint WRITE setWhitepoint NOTIFY whitepointChanged)
+    Q_PROPERTY(float blackpoint  MEMBER m_blackpoint  WRITE setBlackpoint  NOTIFY blackpointChanged)
+    Q_PROPERTY(float whitepoint  MEMBER m_whitepoint  WRITE setWhitepoint  NOTIFY whitepointChanged)
+    Q_PROPERTY(float cropHeight  MEMBER m_cropHeight  WRITE setCropHeight  NOTIFY cropHeightChanged)
+    Q_PROPERTY(float cropAspect  MEMBER m_cropAspect  WRITE setCropAspect  NOTIFY cropAspectChanged)
+    Q_PROPERTY(float cropVoffset MEMBER m_cropVoffset WRITE setCropVoffset NOTIFY cropVoffsetChanged)
+    Q_PROPERTY(float cropHoffset MEMBER m_cropHoffset WRITE setCropHoffset NOTIFY cropHoffsetChanged)
 
     Q_PROPERTY(float defBlackpoint READ getDefBlackpoint NOTIFY defBlackpointChanged)
     Q_PROPERTY(float defWhitepoint READ getDefWhitepoint NOTIFY defWhitepointChanged)
+    //There are no per-image default crop parameters
+    //They're all initialized to 0.
 
     //Global, all-color curves.
     Q_PROPERTY(float shadowsX    MEMBER m_shadowsX     WRITE setShadowsX    NOTIFY shadowsXChanged)
@@ -320,6 +330,10 @@ protected:
     //Whitepoint & Blackpoint
     float m_blackpoint;
     float m_whitepoint;
+    float m_cropHeight = 0;
+    float m_cropAspect = 0;
+    float m_cropVoffset = 0;
+    float m_cropHoffset = 0;
 
     float d_blackpoint;
     float d_whitepoint;
@@ -435,6 +449,11 @@ protected:
     //Whitepoint & Blackpoint
     void setBlackpoint(float);
     void setWhitepoint(float);
+    void setCropHeight(float);
+    void setCropAspect(float);
+    void setCropVoffset(float);
+    void setCropHoffset(float);
+
 
     //Global, all-color curves.
     void setShadowsX(float);
@@ -520,6 +539,10 @@ signals:
     //Whitepoint & Blackpoint
     void blackpointChanged();
     void whitepointChanged();
+    void cropHeightChanged();
+    void cropAspectChanged();
+    void cropVoffsetChanged();
+    void cropHoffsetChanged();
 
     void defBlackpointChanged();
     void defWhitepointChanged();
