@@ -15,7 +15,7 @@ ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityI
     completionTimes[Valid::filmulation] = 50;
     completionTimes[Valid::blackwhite] = 10;
     completionTimes[Valid::colorcurve] = 10;
-    completionTimes[Valid::filmlikecurve] = 10;
+    //completionTimes[Valid::filmlikecurve] = 10;
 
 }
 
@@ -66,7 +66,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     FilmParams filmParam;
     BlackWhiteParams blackWhiteParam;
     FilmlikeCurvesParams curvesParam;
-    OrientationParams orientationParam;
 
     updateProgress(valid, 0.0f);
     switch (valid)
@@ -330,9 +329,24 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             return emptyMatrix();
         }
+        matrix<float> rotated_image;
 
-        const int imWidth  = filmulated_image.nc()/3;
-        const int imHeight = filmulated_image.nr();
+        rotate_image(filmulated_image,
+                     rotated_image,
+                     blackWhiteParam.rotation);
+
+        if (NoCache == cache)// clean up ram that's not needed anymore in order to reduce peak consumption
+        {
+            filmulated_image.set_size(0, 0);
+            cacheEmpty = true;
+        }
+        else
+        {
+            cacheEmpty = false;
+        }
+
+        const int imWidth  = rotated_image.nc()/3;
+        const int imHeight = rotated_image.nr();
 
         const float tempHeight = imHeight*max(min(1.0f,blackWhiteParam.cropHeight),0.0f);//restrict domain to 0:1
         const float tempAspect = max(min(10000.0f,blackWhiteParam.cropAspect),0.0001f);//restrict aspect ratio
@@ -361,7 +375,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         matrix<float> actually_cropped_image;
 
-        downscale_and_crop(filmulated_image,
+        downscale_and_crop(rotated_image,
                            actually_cropped_image,
                            startX,
                            startY,
@@ -370,20 +384,13 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                            width,
                            height);
 
+        rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
+
         whitepoint_blackpoint(actually_cropped_image,//filmulated_image,
                               contrast_image,
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
 
-        if (NoCache == cache)
-        {
-            filmulated_image.set_size(0, 0);
-            cacheEmpty = true;
-        }
-        else
-        {
-            cacheEmpty = false;
-        }
         updateProgress(valid, 0.0f);
     }
     case blackwhite: // Do color_curve
@@ -432,10 +439,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         film_like_curve(color_curve_image,
                         film_curve_image,
                         filmLikeLUT);
-        vibrance_saturation(film_curve_image,
-                            vibrance_saturation_image,
-                            curvesParam.vibrance,
-                            curvesParam.saturation);
 
         if (NoCache == cache)
         {
@@ -448,26 +451,18 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cacheEmpty = false;
         }
 
+        vibrance_saturation(film_curve_image,
+                            vibrance_saturation_image,
+                            curvesParam.vibrance,
+                            curvesParam.saturation);
+
         updateProgress(valid, 0.0f);
     }
     default://output
     {
-        AbortStatus abort;
-        std::tie(valid, abort, orientationParam) = paramManager->claimOrientationParams();
-        //We won't abort now,
-        if (abort == AbortStatus::restart)
-        {
-            cout << "why are we aborting here?" << endl;
-            return emptyMatrix();
-        }
-
-        rotate_image(vibrance_saturation_image,
-                     rotated_image,
-                     orientationParam.rotation);
-
         if (NoCache == cache)
         {
-            vibrance_saturation_image.set_size(0, 0);
+            //vibrance_saturation_image.set_size(0, 0);
             cacheEmpty = true;
         }
         else
@@ -476,12 +471,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
         if (WithHisto == histo)
         {
-            interface->updateHistFinal(rotated_image);
+            interface->updateHistFinal(vibrance_saturation_image);
         }
         updateProgress(valid, 0.0f);
 
         exifOutput = exifData;
-        return rotated_image;
+        return vibrance_saturation_image;
     }
     }//End task switch
 

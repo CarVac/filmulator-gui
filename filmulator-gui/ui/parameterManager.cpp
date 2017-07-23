@@ -407,6 +407,7 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
     params.cropAspect  = m_cropAspect;
     params.cropVoffset = m_cropVoffset;
     params.cropHoffset = m_cropHoffset;
+    params.rotation = m_rotation;
     std::tuple<Valid,AbortStatus,BlackWhiteParams> tup(validity, abort, params);
     return tup;
 }
@@ -475,6 +476,51 @@ void ParameterManager::setCropHoffset(float cropHoffset)
     emit cropHeightChanged();
     QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setCropHoffset"));
+}
+
+void ParameterManager::setRotation(int rotation)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_rotation = rotation;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setRotation"));
+}
+
+void ParameterManager::rotateRight()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    int rotation = m_rotation - 1;
+    if (rotation < 0)
+    {
+        rotation += 4;
+    }
+    m_rotation = rotation;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("rotateRight"));
+    writeback();//Normally the slider has to call this when released, but this isn't a slider.
+}
+
+void ParameterManager::rotateLeft()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    int rotation = m_rotation + 1;
+    if (rotation > 3)
+    {
+        rotation -= 4;
+    }
+    m_rotation = rotation;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("rotateLeft"));
+    writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
 //We don't have any color curves, so this one short-circuits those
@@ -569,70 +615,6 @@ void ParameterManager::setSaturation(float saturation)
     emit saturationChanged();
     QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setSaturation"));
-}
-
-std::tuple<Valid,AbortStatus,OrientationParams> ParameterManager::claimOrientationParams()
-{
-    QMutexLocker paramLocker(&paramMutex);
-    AbortStatus abort;
-    if (validity < Valid::filmlikecurve)
-    {
-        abort = AbortStatus::restart;
-    }
-    else
-    {
-        abort = AbortStatus::proceed;
-        validity = Valid::count;
-    }
-    OrientationParams params;
-    params.rotation = m_rotation;
-    std::tuple<Valid,AbortStatus,OrientationParams> tup(validity, abort, params);
-    return tup;
-}
-
-void ParameterManager::setRotation(int rotation)
-{
-    QMutexLocker paramLocker(&paramMutex);
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmlikecurve);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setRotation"));
-}
-
-void ParameterManager::rotateRight()
-{
-    QMutexLocker paramLocker(&paramMutex);
-    int rotation = m_rotation - 1;
-    if (rotation < 0)
-    {
-        rotation += 4;
-    }
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmlikecurve);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("rotateRight"));
-    writeback();//Normally the slider has to call this when released, but this isn't a slider.
-}
-
-void ParameterManager::rotateLeft()
-{
-    QMutexLocker paramLocker(&paramMutex);
-    int rotation = m_rotation + 1;
-    if (rotation > 3)
-    {
-        rotation -= 4;
-    }
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmlikecurve);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("rotateLeft"));
-    writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
 Valid ParameterManager::getValid()

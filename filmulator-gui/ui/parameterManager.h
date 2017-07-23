@@ -80,6 +80,7 @@ struct BlackWhiteParams {
     float cropAspect;
     float cropVoffset;
     float cropHoffset;
+    int rotation;
 };
 
 struct FilmlikeCurvesParams {
@@ -89,10 +90,6 @@ struct FilmlikeCurvesParams {
     float highlightsY;
     float vibrance;
     float saturation;
-};
-
-struct OrientationParams {
-    int rotation;
 };
 
 class ParameterManager : public QObject
@@ -170,11 +167,13 @@ class ParameterManager : public QObject
     Q_PROPERTY(float cropAspect  MEMBER m_cropAspect  WRITE setCropAspect  NOTIFY cropAspectChanged)
     Q_PROPERTY(float cropVoffset MEMBER m_cropVoffset WRITE setCropVoffset NOTIFY cropVoffsetChanged)
     Q_PROPERTY(float cropHoffset MEMBER m_cropHoffset WRITE setCropHoffset NOTIFY cropHoffsetChanged)
+    Q_PROPERTY(int rotation      MEMBER m_rotation    WRITE setRotation    NOTIFY rotationChanged)
 
     Q_PROPERTY(float defBlackpoint READ getDefBlackpoint NOTIFY defBlackpointChanged)
     Q_PROPERTY(float defWhitepoint READ getDefWhitepoint NOTIFY defWhitepointChanged)
     //There are no per-image default crop parameters
     //They're all initialized to 0.
+    Q_PROPERTY(int defRotation     READ getDefRotation   NOTIFY defRotationChanged)
 
     //Global, all-color curves.
     Q_PROPERTY(float shadowsX    MEMBER m_shadowsX     WRITE setShadowsX    NOTIFY shadowsXChanged)
@@ -190,11 +189,6 @@ class ParameterManager : public QObject
     Q_PROPERTY(float defHighlightsY READ getDefHighlightsY NOTIFY defHighlightsYChanged)
     Q_PROPERTY(float defVibrance    READ getDefVibrance    NOTIFY defVibranceChanged)
     Q_PROPERTY(float defSaturation  READ getDefSaturation  NOTIFY defSaturationChanged)
-
-    //Rotation
-    Q_PROPERTY(int rotation MEMBER m_rotation     WRITE setRotation NOTIFY rotationChanged)
-
-    Q_PROPERTY(int defRotation READ getDefRotation NOTIFY defRotationChanged)
 
     Q_PROPERTY(bool pasteable READ getPasteable NOTIFY pasteableChanged)
 
@@ -230,9 +224,6 @@ public:
 
     //Global, all-color curves.
     std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> claimFilmlikeCurvesParams();
-
-    //90 degree rotation
-    std::tuple<Valid,AbortStatus,OrientationParams> claimOrientationParams();
 
     Valid getValid();
     std::string getFullFilename(){return m_fullFilename;}

@@ -201,7 +201,7 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 LUT<unsigned short> lutR, LUT<unsigned short> lutG, LUT<unsigned short> lutB);
 
-void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
+void rotate_image(matrix<float> &input, matrix<float> &output,
                   int rotation);
 
 //Changes the white balance, assuming sRGB D50 input.
