@@ -9,8 +9,8 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 #pragma omp parallel shared(output, input) firstprivate(nrows,ncols)
     {
 #pragma omp for schedule(dynamic) nowait
-    for(int i = 0; i < input.nr(); i++)
-        for(int j = 0; j < input.nc(); j++)
+    for(int i = 0; i < nrows; i++)
+        for(int j = 0; j < ncols; j++)
         {
             float subtracted = input(i,j)-blackpoint;
             float multiplied = subtracted*(65535/whitepoint);
