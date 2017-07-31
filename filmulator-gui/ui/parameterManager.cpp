@@ -674,9 +674,13 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTtint, "                           //28
                   "ProcTvibrance, "                       //29
                   "ProcTsaturation, "                     //30
-                  "ProcTrotation) "                       //31
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //        0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1
+                  "ProcTrotation, "                       //31
+                  "ProcTcropHeight, "                     //32
+                  "ProcTcropAspect, "                     //33
+                  "ProcTcropVoffset, "                    //34
+                  "ProcTcropHoffset) "                    //35
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //        0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1 2 3 4 5
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -709,6 +713,10 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(29, m_vibrance);
     query.bindValue(30, m_saturation);
     query.bindValue(31, m_rotation);
+    query.bindValue(32, m_cropHeight);
+    query.bindValue(33, m_cropAspect);
+    query.bindValue(34, m_cropVoffset);
+    query.bindValue(35, m_cropHoffset);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -909,13 +917,17 @@ void ParameterManager::selectImage(const QString imageID)
     emit rolloffBoundaryChanged();
     emit blackpointChanged();
     emit whitepointChanged();
+    emit cropHeightChanged();
+    emit cropAspectChanged();
+    emit cropVoffsetChanged();
+    emit cropHoffsetChanged();
+    emit rotationChanged();
     emit shadowsXChanged();
     emit shadowsYChanged();
     emit highlightsXChanged();
     emit highlightsYChanged();
     emit vibranceChanged();
     emit saturationChanged();
-    emit rotationChanged();
 
     emit defCaEnabledChanged();
     emit defHighlightsChanged();
@@ -947,7 +959,6 @@ void ParameterManager::selectImage(const QString imageID)
     emit defHighlightsYChanged();
     emit defVibranceChanged();
     emit defSaturationChanged();
-    emit defRotationChanged();
 
 
     //Mark that it's safe for sliders to move again.
@@ -1612,6 +1623,50 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams whitepoint" << endl;
         m_whitepoint = temp_whitepoint;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Height of the crop WRT image height
+    nameCol = rec.indexOf("ProcTcropHeight");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropHeight" << endl; }
+    const float temp_cropHeight = query.value(nameCol).toFloat();
+    if (temp_cropHeight != m_cropHeight)
+    {
+        cout << "ParameterManager::loadParams cropHeight" << endl;
+        m_cropHeight = temp_cropHeight;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Aspect ratio of the crop
+    nameCol = rec.indexOf("ProcTcropAspect");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropAspect" << endl; }
+    const float temp_cropAspect = query.value(nameCol).toFloat();
+    if (temp_cropAspect != m_cropAspect)
+    {
+        cout << "ParameterManager::loadParams cropAspect" << endl;
+        m_cropAspect = temp_cropAspect;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Vertical position offset relative to center, WRT image height
+    nameCol = rec.indexOf("ProcTcropVoffset");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropVoffset" << endl; }
+    const float temp_cropVoffset = query.value(nameCol).toFloat();
+    if (temp_cropVoffset != m_cropVoffset)
+    {
+        cout << "ParameterManager::loadParams cropVoffset" << endl;
+        m_cropVoffset = temp_cropVoffset;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Horizontal position offset relative to center, WRT image width
+    nameCol = rec.indexOf("ProcTcropHoffset");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropHoffset" << endl; }
+    const float temp_cropHoffset = query.value(nameCol).toFloat();
+    if (temp_cropHoffset != m_cropHoffset)
+    {
+        cout << "ParameterManager::loadParams cropHoffset" << endl;
+        m_cropHoffset = temp_cropHoffset;
         validity = min(validity, Valid::filmulation);
     }
 

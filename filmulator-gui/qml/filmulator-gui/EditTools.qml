@@ -16,6 +16,7 @@ SplitView {
     orientation: Qt.Vertical
 
     property bool imageReady
+    property bool cropping
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -614,11 +615,15 @@ SplitView {
             uiScale: root.uiScale
             x: 0
             y: 0
-            notDisabled: root.imageReady
+            notDisabled: root.imageReady && (!root.cropping)
             text: qsTr("Save TIFF")
+            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : qsTr("Save a TIFF to the directory containing the raw file.")
             onTriggered: {
                 filmProvider.writeTiff()
                 queueModel.markSaved(paramManager.imageIndex)
+            }
+            Component.onCompleted: {
+                saveTIFFButton.tooltipWanted.connect(root.tooltipWanted)
             }
         }
         ToolButton {
@@ -628,11 +633,15 @@ SplitView {
             uiScale: root.uiScale
             x: width
             y: 0
-            notDisabled: root.imageReady
+            notDisabled: root.imageReady && (!root.cropping)
             text: qsTr("Save JPEG")
+            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : qsTr("Save a JPEG to the directory containing the raw file.")
             onTriggered: {
                 filmProvider.writeJpeg()
                 queueModel.markSaved(paramManager.imageIndex)
+            }
+            Component.onCompleted: {
+                saveJPEGButton.tooltipWanted.connect(root.tooltipWanted)
             }
         }
     }

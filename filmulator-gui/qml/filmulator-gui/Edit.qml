@@ -33,13 +33,13 @@ SplitView {
                 paramManager.cropHeight = 0
             }
         } else {//we're done cropping
-            if (!cancelCropping) {
+            if (!cancelCropping) {//accepted the crop
                 //send stuff back to database
                 paramManager.cropHeight = imageRect.readHeight
                 paramManager.cropAspect = imageRect.readAspect
                 paramManager.cropVoffset = imageRect.readVoffset
                 paramManager.cropHoffset = imageRect.readHoffset
-                //paramManager.writeback() we don't actually have any database entry for these YET
+                paramManager.writeback()
             } else {
                 cancelCropping = false
             }
@@ -685,7 +685,6 @@ SplitView {
                                 cropDrag.visible = true
                             }
                             else {
-                                console.log("cropDrag cropping disabled")
                                 cropDrag.enabled = false
                                 cropDrag.visible = false
                             }
@@ -1649,6 +1648,7 @@ SplitView {
                     root.requestingCropping = true
                 } else {
                     filmProvider.enableThumbnailWrite()
+                    root.cancelCropping = false
                     root.requestingCropping = false
                 }
             }
@@ -1804,6 +1804,7 @@ SplitView {
         id: editTools
         uiScale: root.uiScale
         imageReady: root.imageReady
+        cropping: root.requestingCropping || root.cropping
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)
         }
