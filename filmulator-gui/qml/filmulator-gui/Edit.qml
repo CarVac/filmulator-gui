@@ -11,6 +11,7 @@ SplitView {
     property bool imageReady: false
     property bool requestingCropping: false
     property bool cropping: false
+    property bool cancelCropping: false
     property real cropMargin: 50//200
 
     onRequestingCroppingChanged: {
@@ -32,12 +33,16 @@ SplitView {
                 paramManager.cropHeight = 0
             }
         } else {//we're done cropping
-            //send stuff back to database
-            paramManager.cropHeight = imageRect.readHeight
-            paramManager.cropAspect = imageRect.readAspect
-            paramManager.cropVoffset = imageRect.readVoffset
-            paramManager.cropHoffset = imageRect.readHoffset
-            //paramManager.writeback() we don't actually have any database entry for these YET
+            if (!cancelCropping) {
+                //send stuff back to database
+                paramManager.cropHeight = imageRect.readHeight
+                paramManager.cropAspect = imageRect.readAspect
+                paramManager.cropVoffset = imageRect.readVoffset
+                paramManager.cropHoffset = imageRect.readHoffset
+                //paramManager.writeback() we don't actually have any database entry for these YET
+            } else {
+                cancelCropping = false
+            }
         }
     }
 
@@ -158,6 +163,11 @@ SplitView {
                                 var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
                                 console.log("thumb path: " + thumbPath)
                                 topImage.source = thumbPath
+                            }
+                            //if a new image is selected, OR the same image re-selected
+                            if (newImage) {
+                                cancelCropping = true
+                                requestingCropping = false
                             }
                         }
                         onImageIndexChanged: {

@@ -1709,7 +1709,13 @@ void ParameterManager::paramChangeWrapper(QString source)
     if (paramChangeEnabled)
     {
         emit paramChanged(source);
-        emit updateImage();
+        if (QString("selectImage") == source) {
+            emit updateImage(true);// it is a new image
+        }
+        else
+        {
+            emit updateImage(false);
+        }
     }
     copyFromImageIndex = "";
     pasteable = false;
