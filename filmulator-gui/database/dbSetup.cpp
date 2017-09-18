@@ -8,20 +8,26 @@ void setupDB(QSqlDatabase *db)
     QDir dir = QDir::home();
     if (!dir.cd(".local/share/filmulator"))
     {
-        dir.mkpath(".local/share/filmulator");
-        dir.cd(".local/share/filmulator");
+        if (!dir.mkpath(".local/share/filmulator"))
+        {
+            std::cout << "Could not create database directory" << std::endl;
+        }
+        else
+        {
+            dir.cd(".local/share/filmulator");
+        }
     }
     db -> setDatabaseName(dir.absoluteFilePath("filmulatorDB"));
     //this should create the database if it doesn't already exist.
 
     if (db -> open())
     {
-//        std::cout << "Database open!" << std::endl;
+        std::cout << "Database open!" << std::endl;
         //Success
     }
     else
     {
-//        std::cout << "what?!?!?!?" << std::endl;
+        std::cout << "what?!?!?!?" << std::endl;
     }
 
     QSqlQuery query;
