@@ -8,7 +8,7 @@ void setupDB(QSqlDatabase *db)
     QDir dir = QDir::home();
     if (!dir.cd(".local/share/filmulator"))
     {
-        dir.mkdir(".local/share/filmulator");
+        dir.mkpath(".local/share/filmulator");
         dir.cd(".local/share/filmulator");
     }
     db -> setDatabaseName(dir.absoluteFilePath("filmulatorDB"));
