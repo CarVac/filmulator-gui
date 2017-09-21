@@ -43,7 +43,11 @@ int main(int argc, char *argv[])
     //Prepare database connection.
     //This should create a new db file if there was none.
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    setupDB(&db);
+    if(setupDB(&db) == DBSuccess::failure)
+    {
+        qWarning("Database prep failed");
+        return -1;
+    }
 
     //Create the object for communicating between SQL classes.
     SignalSwitchboard *switchboard = new SignalSwitchboard;

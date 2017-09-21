@@ -3,7 +3,7 @@
 #include <QVariant>
 #include <iostream>
 
-void setupDB(QSqlDatabase *db)
+DBSuccess setupDB(QSqlDatabase *db)
 {
     QDir dir = QDir::home();
     if (!dir.cd(".local/share/filmulator"))
@@ -11,6 +11,7 @@ void setupDB(QSqlDatabase *db)
         if (!dir.mkpath(".local/share/filmulator"))
         {
             std::cout << "Could not create database directory" << std::endl;
+            return DBSuccess::failure;
         }
         else
         {
@@ -22,12 +23,13 @@ void setupDB(QSqlDatabase *db)
 
     if (db -> open())
     {
-        std::cout << "Database open!" << std::endl;
+//        std::cout << "Database open!" << std::endl;
         //Success
     }
     else
     {
         std::cout << "what?!?!?!?" << std::endl;
+        return DBSuccess::failure;
     }
 
     QSqlQuery query;
@@ -318,4 +320,6 @@ void setupDB(QSqlDatabase *db)
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.
+
+    return DBSuccess::success;
 }

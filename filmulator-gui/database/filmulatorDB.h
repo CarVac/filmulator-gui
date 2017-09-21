@@ -5,7 +5,9 @@
 #include <QtSql/QSqlQuery>
 #include <QDir>
 
-void setupDB(QSqlDatabase *db);
+enum DBSuccess {success, failure};
+
+DBSuccess setupDB(QSqlDatabase *db);
 
 
 #endif // FILMULATORDB_H
