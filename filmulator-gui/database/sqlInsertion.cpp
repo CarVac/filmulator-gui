@@ -34,8 +34,6 @@ void fileInsert(const QString hash,
     query.exec();
 }
 
-/*This function
-
 /*This function creates a default profile in the profile table, and a search entry in the searchtable.*/
 /*It returns a QString containing the STsearchID.*/
 QString createNewProfile(const QString fileHash,
