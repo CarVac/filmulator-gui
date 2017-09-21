@@ -18,7 +18,7 @@
  */
 #include "filmSim.hpp"
 
-void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
+void rotate_image(matrix<float> &input, matrix<float> &output,
                   int rotation)
 {
     int nrows, ncols;

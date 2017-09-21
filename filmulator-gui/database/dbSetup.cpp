@@ -107,12 +107,16 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTtint real,"                            //28
                "ProcTvibrance real,"                        //29
                "ProcTsaturation real,"                      //30
-               "ProcTrotation integer"                      //31
+               "ProcTrotation integer,"                     //31
+               "ProcTcropHeight real,"                      //32
+               "ProcTcropAspect real,"                      //33
+               "ProcTcropVoffset real,"                     //34
+               "ProcTcropHoffset real"                      //35
                ");"
                );
 
     //Next, we set up a table for default processing parameters.
-    //This will be of the same structure as ProcessingTable except for orientation.
+    //This will be of the same structure as ProcessingTable except for orientation and crop.
     query.exec("create table if not exists ProfileTable ("
                "ProfTprofileId varchar primary key,"        //0
                "ProfTinitialDeveloperConcentration real,"   //1
@@ -317,6 +321,16 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "ADD COLUMN QTsortedIndex;");
         query.exec("UPDATE QueueTable SET QTsortedIndex = QTindex;");
         versionString = "PRAGMA user_version = 8;";
+    case 8:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropHeight;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropAspect;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropVoffset;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropHoffset;");
+        query.exec("UPDATE ProcessingTable SET ProcTcropHeight = 0;");
+        query.exec("UPDATE ProcessingTable SET ProcTcropAspect = 0;");
+        query.exec("UPDATE ProcessingTable SET ProcTcropVoffset = 0;");
+        query.exec("UPDATE ProcessingTable SET ProcTcropHoffset = 0;");
+        versionString = "PRAGMA user_version = 9;";
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

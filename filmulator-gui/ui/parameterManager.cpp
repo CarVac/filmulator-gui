@@ -401,8 +401,13 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
         validity = Valid::blackwhite;//mark it as started
     }
     BlackWhiteParams params;
-    params.blackpoint = m_blackpoint;
-    params.whitepoint = m_whitepoint;
+    params.blackpoint  = m_blackpoint;
+    params.whitepoint  = m_whitepoint;
+    params.cropHeight  = m_cropHeight;
+    params.cropAspect  = m_cropAspect;
+    params.cropVoffset = m_cropVoffset;
+    params.cropHoffset = m_cropHoffset;
+    params.rotation = m_rotation;
     std::tuple<Valid,AbortStatus,BlackWhiteParams> tup(validity, abort, params);
     return tup;
 }
@@ -427,6 +432,95 @@ void ParameterManager::setWhitepoint(float whitepoint)
     emit whitepointChanged();
     QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setWhitepoint"));
+}
+
+void ParameterManager::setCropHeight(float cropHeight)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropHeight = cropHeight;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropHeight"));
+}
+
+void ParameterManager::setCropAspect(float cropAspect)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropAspect = cropAspect;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropAspect"));
+}
+
+void ParameterManager::setCropVoffset(float cropVoffset)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropVoffset = cropVoffset;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropVoffset"));
+}
+
+void ParameterManager::setCropHoffset(float cropHoffset)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_cropHoffset = cropHoffset;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit cropHeightChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setCropHoffset"));
+}
+
+void ParameterManager::setRotation(int rotation)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_rotation = rotation;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setRotation"));
+}
+
+void ParameterManager::rotateRight()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    int rotation = m_rotation - 1;
+    if (rotation < 0)
+    {
+        rotation += 4;
+    }
+    m_rotation = rotation;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("rotateRight"));
+    writeback();//Normally the slider has to call this when released, but this isn't a slider.
+}
+
+void ParameterManager::rotateLeft()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    int rotation = m_rotation + 1;
+    if (rotation > 3)
+    {
+        rotation -= 4;
+    }
+    m_rotation = rotation;
+    validity = min(validity, Valid::filmulation);
+    paramLocker.unlock();
+    emit rotationChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("rotateLeft"));
+    writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
 //We don't have any color curves, so this one short-circuits those
@@ -523,70 +617,6 @@ void ParameterManager::setSaturation(float saturation)
     paramChangeWrapper(QString("setSaturation"));
 }
 
-std::tuple<Valid,AbortStatus,OrientationParams> ParameterManager::claimOrientationParams()
-{
-    QMutexLocker paramLocker(&paramMutex);
-    AbortStatus abort;
-    if (validity < Valid::filmlikecurve)
-    {
-        abort = AbortStatus::restart;
-    }
-    else
-    {
-        abort = AbortStatus::proceed;
-        validity = Valid::count;
-    }
-    OrientationParams params;
-    params.rotation = m_rotation;
-    std::tuple<Valid,AbortStatus,OrientationParams> tup(validity, abort, params);
-    return tup;
-}
-
-void ParameterManager::setRotation(int rotation)
-{
-    QMutexLocker paramLocker(&paramMutex);
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmlikecurve);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setRotation"));
-}
-
-void ParameterManager::rotateRight()
-{
-    QMutexLocker paramLocker(&paramMutex);
-    int rotation = m_rotation - 1;
-    if (rotation < 0)
-    {
-        rotation += 4;
-    }
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmlikecurve);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("rotateRight"));
-    writeback();//Normally the slider has to call this when released, but this isn't a slider.
-}
-
-void ParameterManager::rotateLeft()
-{
-    QMutexLocker paramLocker(&paramMutex);
-    int rotation = m_rotation + 1;
-    if (rotation > 3)
-    {
-        rotation -= 4;
-    }
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmlikecurve);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("rotateLeft"));
-    writeback();//Normally the slider has to call this when released, but this isn't a slider.
-}
-
 Valid ParameterManager::getValid()
 {
     QMutexLocker paramLocker(&paramMutex);
@@ -644,9 +674,13 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTtint, "                           //28
                   "ProcTvibrance, "                       //29
                   "ProcTsaturation, "                     //30
-                  "ProcTrotation) "                       //31
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //        0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1
+                  "ProcTrotation, "                       //31
+                  "ProcTcropHeight, "                     //32
+                  "ProcTcropAspect, "                     //33
+                  "ProcTcropVoffset, "                    //34
+                  "ProcTcropHoffset) "                    //35
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //        0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1 2 3 4 5
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -679,6 +713,10 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(29, m_vibrance);
     query.bindValue(30, m_saturation);
     query.bindValue(31, m_rotation);
+    query.bindValue(32, m_cropHeight);
+    query.bindValue(33, m_cropAspect);
+    query.bindValue(34, m_cropVoffset);
+    query.bindValue(35, m_cropHoffset);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -879,13 +917,17 @@ void ParameterManager::selectImage(const QString imageID)
     emit rolloffBoundaryChanged();
     emit blackpointChanged();
     emit whitepointChanged();
+    emit cropHeightChanged();
+    emit cropAspectChanged();
+    emit cropVoffsetChanged();
+    emit cropHoffsetChanged();
+    emit rotationChanged();
     emit shadowsXChanged();
     emit shadowsYChanged();
     emit highlightsXChanged();
     emit highlightsYChanged();
     emit vibranceChanged();
     emit saturationChanged();
-    emit rotationChanged();
 
     emit defCaEnabledChanged();
     emit defHighlightsChanged();
@@ -917,7 +959,6 @@ void ParameterManager::selectImage(const QString imageID)
     emit defHighlightsYChanged();
     emit defVibranceChanged();
     emit defSaturationChanged();
-    emit defRotationChanged();
 
 
     //Mark that it's safe for sliders to move again.
@@ -1200,6 +1241,16 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_whitepoint = temp_whitepoint;
+    }
+
+    //Crop stuff; this stuff always defaults to 0 so that the UI knows to
+    // pick the correct aspect ratio for the full image.
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_cropHeight = 0;
+        m_cropAspect = 0;
+        m_cropVoffset = 0;
+        m_cropHoffset = 0;
     }
 
     //Shadow control point x value
@@ -1575,6 +1626,50 @@ void ParameterManager::loadParams(QString imageID)
         validity = min(validity, Valid::filmulation);
     }
 
+    //Height of the crop WRT image height
+    nameCol = rec.indexOf("ProcTcropHeight");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropHeight" << endl; }
+    const float temp_cropHeight = query.value(nameCol).toFloat();
+    if (temp_cropHeight != m_cropHeight)
+    {
+        cout << "ParameterManager::loadParams cropHeight" << endl;
+        m_cropHeight = temp_cropHeight;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Aspect ratio of the crop
+    nameCol = rec.indexOf("ProcTcropAspect");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropAspect" << endl; }
+    const float temp_cropAspect = query.value(nameCol).toFloat();
+    if (temp_cropAspect != m_cropAspect)
+    {
+        cout << "ParameterManager::loadParams cropAspect" << endl;
+        m_cropAspect = temp_cropAspect;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Vertical position offset relative to center, WRT image height
+    nameCol = rec.indexOf("ProcTcropVoffset");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropVoffset" << endl; }
+    const float temp_cropVoffset = query.value(nameCol).toFloat();
+    if (temp_cropVoffset != m_cropVoffset)
+    {
+        cout << "ParameterManager::loadParams cropVoffset" << endl;
+        m_cropVoffset = temp_cropVoffset;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Horizontal position offset relative to center, WRT image width
+    nameCol = rec.indexOf("ProcTcropHoffset");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTcropHoffset" << endl; }
+    const float temp_cropHoffset = query.value(nameCol).toFloat();
+    if (temp_cropHoffset != m_cropHoffset)
+    {
+        cout << "ParameterManager::loadParams cropHoffset" << endl;
+        m_cropHoffset = temp_cropHoffset;
+        validity = min(validity, Valid::filmulation);
+    }
+
     //Shadow control point x value
     nameCol = rec.indexOf("ProcTshadowsX");
     if (-1 == nameCol) { std::cout << "paramManager ProcTshadowsX" << endl; }
@@ -1669,7 +1764,13 @@ void ParameterManager::paramChangeWrapper(QString source)
     if (paramChangeEnabled)
     {
         emit paramChanged(source);
-        emit updateImage();
+        if (QString("selectImage") == source) {
+            emit updateImage(true);// it is a new image
+        }
+        else
+        {
+            emit updateImage(false);
+        }
     }
     copyFromImageIndex = "";
     pasteable = false;

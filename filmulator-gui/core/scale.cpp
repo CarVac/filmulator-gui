@@ -24,11 +24,15 @@ void downscale_and_crop(const matrix<float> input,
                         const int inputStartY,
                         const int inputEndX,
                         const int inputEndY,
-                        const int outputXSize,
-                        const int outputYSize)
+                        const int outputXSizeLimit,
+                        const int outputYSizeLimit)
 {
     const int inputXSize = inputEndX - inputStartX + 1;
     const int inputYSize = inputEndY - inputStartY + 1;
+
+    //If the output size limit is bigger than the image, shrink it to fit.
+    const int outputXSize = min(inputXSize, outputXSizeLimit);
+    const int outputYSize = min(inputYSize, outputYSizeLimit);
 
     //Determine the split of the scaling between integer and bilinear scaling.
     //Integer is much faster, but we can only do integer multiples.
@@ -135,11 +139,11 @@ void downscaleBilinear1D(const matrix<T> input,
 
     const int outputNumRows = inputNumRows;
 
-    const int endNumCols = round(double(inputNumCols)/overallScaleFactor);
+    const int endNumCols = max(1.0,round(double(inputNumCols)/overallScaleFactor));
     //We need to make sure that it ends up being a whole multiple of the final size.
     const float newOverallScaleFactor = inputNumCols/double(endNumCols);
     //We assume that floor of newOverallScaleFactor is the same as the original.
-    const int intScaleFactor = floor(newOverallScaleFactor);
+    const int intScaleFactor = max(1.0f,floor(newOverallScaleFactor));
     //This is the scale factor used for bilinear.
     const float scaleFactor = newOverallScaleFactor/intScaleFactor;
 

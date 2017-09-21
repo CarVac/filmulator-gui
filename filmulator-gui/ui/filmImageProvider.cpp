@@ -51,9 +51,13 @@ QImage FilmImageProvider::requestImage(const QString& /*id*/,
     QImage output = emptyImage();
     cout << "FilmImageProvider::requestImage Here?" << endl;
 
-
     //Copy out the filename.
     std::string filename = paramManager->getFullFilename();
+
+    //Record whether to write this thumbnail
+    writeThisThumbnail = thumbnailWriteEnabled;
+
+    //Get a variable that says whether or not to
 
     //Run the pipeline.
     Exiv2::ExifData data;
@@ -115,8 +119,15 @@ void FilmImageProvider::writeJpeg()
 void FilmImageProvider::writeThumbnail(QString searchID)
 {
     writeDataMutex.lock();
-    worker->setImage(last_image, exifData);
-    emit requestThumbnail(searchID);
+    if (writeThisThumbnail)//when we have the crop temporarily disabled, don't write the thumb
+    {
+        worker->setImage(last_image, exifData);
+        emit requestThumbnail(searchID);
+    }
+    else
+    {
+        emit thumbnailDone();//But tell the queue delegate that it was written so it stops waiting
+    }
     writeDataMutex.unlock();
 }
 

@@ -201,7 +201,7 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
                 LUT<unsigned short> lutR, LUT<unsigned short> lutG, LUT<unsigned short> lutB);
 
-void rotate_image(matrix<unsigned short> &input, matrix<unsigned short> &output,
+void rotate_image(matrix<float> &input, matrix<float> &output,
                   int rotation);
 
 //Changes the white balance, assuming sRGB D50 input.
@@ -230,8 +230,8 @@ void downscale_and_crop(const matrix<float> input,
                         const int inputStartY,
                         const int inputEndX,
                         const int inputEndY,
-                        const int outputXSize,
-                        const int outputYSize);
+                        const int outputXSizeLimit,
+                        const int outputYSizeLimit);
 
 //Converts sRGB with D50 illuminant to XYZ with D50 illuminant.
 void sRGB_to_XYZ(float  r, float  g, float  b,

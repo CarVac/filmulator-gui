@@ -55,7 +55,6 @@ protected:
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
     matrix<unsigned short> vibrance_saturation_image;
-    matrix<unsigned short> rotated_image;
 
     //Internal functions for progress and time tracking.
     vector<double> completionTimes;
