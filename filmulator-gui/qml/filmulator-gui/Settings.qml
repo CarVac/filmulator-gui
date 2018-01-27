@@ -75,13 +75,27 @@ Rectangle {
             uiScale: root.uiScale
         }
 
+        ToolSwitch {
+            id: quickPreviewSwitch
+            text: qsTr("Render small preview first")
+            tooltipText: qsTr("Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.")
+            isOn: settings.getQuickPreview()
+            defaultOn: settings.getQuickPreview()
+            changed: false
+            onIsOnChanged: quickPreviewSwitch.changed = true
+            Component.onCompleted: {
+                quickPreviewSwitch.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
         ToolButton {
             id: saveSettings
             text: qsTr("Save Settings")
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed
+            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed
             onTriggered: {
                 settings.uiScale = uiScaleSlider.value
                 uiScaleSlider.defaultValue = uiScaleSlider.value
@@ -92,6 +106,9 @@ Rectangle {
                 settings.lowMemMode = lowMemModeSwitch.isOn
                 lowMemModeSwitch.defaultOn = lowMemModeSwitch.isOn
                 lowMemModeSwitch.changed = false;
+                settings.quickPreview = quickPreviewSwitch.isOn
+                quickPreviewSwitch.defaultOn = quickPreviewSwitch.isOn
+                quickPreviewSwitch.changed = false;
             }
             uiScale: root.uiScale
         }

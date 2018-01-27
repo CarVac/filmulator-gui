@@ -228,3 +228,20 @@ bool Settings::getLowMemMode()
     emit lowMemModeChanged();
     return lowMemMode;
 }
+
+void Settings::setQuickPreview(bool quickPreviewIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    quickPreview = quickPreviewIn;
+    settings.setValue("edit/quickPreview", quickPreviewIn);
+    emit quickPreviewChanged();
+}
+
+bool Settings::getQuickPreview()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    //Default: 1; it should default to being on.
+    quickPreview = settings.value("edit/quickPreview", 1).toBool();
+    emit quickPreviewChanged();
+    return quickPreview;
+}

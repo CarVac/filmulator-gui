@@ -8,7 +8,7 @@ SplitView {
     anchors.fill: parent
     orientation: Qt.Horizontal
     property real uiScale: 1
-    property bool imageReady: false
+    property bool imageReady: false//must only be made ready when the full size image is ready
     property bool requestingCropping: false
     property bool cropping: false
     property bool cancelCropping: false
@@ -132,10 +132,16 @@ SplitView {
                         asynchronous: true
                         onStatusChanged: {
                             if (hiddenImage.status == Image.Ready) {
-                                //console.log("hidden image ready")
-                                topImage.state = "i"
+                                console.log("hidden image ready; state: " + topImage.state)
+                                //topImage.state = "i"//probably unnecessary?
                                 topImage.source = hiddenImage.source
-                                root.imageReady = true
+
+                                if ("i" == topImage.state) {
+                                    root.imageReady = true//only after the full size image is done
+                                }
+                                else {
+                                    root.imageReady = false
+                                }
                             }
                             else {
                                 root.imageReady = false
@@ -149,7 +155,11 @@ SplitView {
                         target: paramManager//root
                         onUpdateImage: {
                             console.log("update image")
-                            if (topImage.state == "i") {//only if we're done with the thumbnail
+                            if (topImage.state == "i" || topImage.state == "q") {//only if we're done with the thumbnail
+                                if (settings.getQuickPreview()) {
+                                    topImage.state = "q"//make it do the quick processed image first
+                                }//otherwise, leave it as whatever it was.
+
                                 var num = (topImage.index + 1) % 1000000//1 in a million
                                 topImage.index = num;
                                 var s = num+"";
@@ -204,12 +214,31 @@ SplitView {
                                 //now we notify the queue that the latest image is ready for display
                                 root.imageURL(topImage.source)
                             }
-                            if (topImage.state == "p") {//if the thumbnail or full size preview is loaded
-                                //now we say that the state is loading the actual image, so as to not load a new preview.
+                            if (topImage.state == "q") {//if the Quick processed image is loaded
                                 topImage.state = "i"
-                                console.log("TopImage state: " + topImage.state)
+                                console.log("TopImage state after quick: " + topImage.state)
 
-                                //begin loading the main image
+                                //begin loading the main, full-size image image
+                                var num = (topImage.index + 1) % 1000000//1 in a million
+                                topImage.index = num;
+                                var s = num+"";
+                                var size = 6 //6 digit number
+                                while (s.length < size) {s = "0" + s}
+                                topImage.indexString = s
+                                //topImage.source = "image://filmy/" + topImage.indexString
+                                hiddenImage.source = "image://filmy/" + topImage.indexString
+                            }
+                            if (topImage.state == "p") {//if the thumbnail Preview is loaded
+                                //now we say that the state is loading the actual image, so as to not load a new preview.
+                                if (settings.getQuickPreview()) {
+                                    topImage.state = "q"
+                                }
+                                else {//skip the quick preview
+                                    topImage.state = "i"
+                                }
+                                console.log("TopImage state after thumb: " + topImage.state)
+
+                                //begin loading the image
                                 var num = (topImage.index + 1) % 1000000//1 in a million
                                 topImage.index = num;
                                 var s = num+"";
