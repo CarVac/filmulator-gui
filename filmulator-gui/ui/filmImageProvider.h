@@ -50,6 +50,7 @@ public:
 
 protected:
     ImagePipeline pipeline = ImagePipeline(WithCache, WithHisto, HighQuality);
+    ImagePipeline quickPipe = ImagePipeline(WithCache, WithHisto, LowQuality);//for now it'll just be the 600 size
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;
@@ -63,14 +64,8 @@ protected:
 
     struct timeval request_start_time;
 
-    matrix<float> input_image;
-    matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
     std::string outputFilename;
-    matrix<float> filmulated_image;
-    matrix<unsigned short> contrast_image;
-    matrix<unsigned short> color_curve_image;
-    matrix<unsigned short> vibrance_saturation_image;
     matrix<unsigned short> last_image;
 
     Histogram finalHist;

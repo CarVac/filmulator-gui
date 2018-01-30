@@ -226,6 +226,7 @@ public:
     std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> claimFilmlikeCurvesParams();
 
     Valid getValid();
+
     std::string getFullFilename(){return m_fullFilename;}
 
 protected:
