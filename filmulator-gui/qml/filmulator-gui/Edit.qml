@@ -137,7 +137,7 @@ SplitView {
                                 topImage.source = hiddenImage.source
 
                                 if ("i" == topImage.state) {
-                                    root.imageReady = false//if true, it activates after the quick preview, which is wrong
+                                    //do nothing
                                 }
                                 else {
                                     root.imageReady = false
