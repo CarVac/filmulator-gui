@@ -166,12 +166,10 @@ SplitView {
                                 var size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
                                 topImage.indexString = s
-                                //topImage.source = "image://filmy/" + topImage.indexString
-                                hiddenImage.source = "image://filmy/" + topImage.indexString
+                                hiddenImage.source = "image://filmy/q" + topImage.indexString
                             }
                             if (topImage.state == "p") {//if we're planning on doing the thumbnail
                                 var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
-                                console.log("thumb path: " + thumbPath)
                                 topImage.source = thumbPath
                             }
                             //if a new image is selected, OR the same image re-selected
@@ -214,7 +212,7 @@ SplitView {
                                 //now we notify the queue that the latest image is ready for display
                                 root.imageURL(topImage.source)
                             }
-                            if (topImage.state == "q") {//if the Quick processed image is loaded
+                            else if (topImage.state == "q") {//if the Quick processed image is loaded
                                 topImage.state = "i"
                                 console.log("TopImage state after quick: " + topImage.state)
 
@@ -225,10 +223,9 @@ SplitView {
                                 var size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
                                 topImage.indexString = s
-                                //topImage.source = "image://filmy/" + topImage.indexString
-                                hiddenImage.source = "image://filmy/" + topImage.indexString
+                                hiddenImage.source = "image://filmy/i" + topImage.indexString
                             }
-                            if (topImage.state == "p") {//if the thumbnail Preview is loaded
+                            else if (topImage.state == "p") {//if the thumbnail Preview is loaded
                                 //now we say that the state is loading the actual image, so as to not load a new preview.
                                 if (settings.getQuickPreview()) {
                                     topImage.state = "q"
@@ -245,8 +242,7 @@ SplitView {
                                 var size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
                                 topImage.indexString = s
-                                //topImage.source = "image://filmy/" + topImage.indexString
-                                hiddenImage.source = "image://filmy/" + topImage.indexString
+                                hiddenImage.source = "image://filmy/q" + topImage.indexString
                             }
                             if (root.requestingCropping) {
                                 root.cropping = true

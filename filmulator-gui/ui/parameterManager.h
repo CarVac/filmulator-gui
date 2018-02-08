@@ -229,6 +229,9 @@ public:
 
     std::string getFullFilename(){return m_fullFilename;}
 
+public slots:
+    void cloneParams(ParameterManager * sourceParams);
+
 protected:
     //This is here for the sql insertion to pull the values from.
     void loadParams(QString imageID);
@@ -405,6 +408,57 @@ protected:
     //Rotation
     int getDefRotation(){return d_rotation;}
 
+    //Getters for the actual params
+    //Loading
+    bool getTiffIn(){return m_tiffIn;}
+    bool getJpegIn(){return m_jpegIn;}
+    //Demosaic
+    bool getCaEnabled(){return m_caEnabled;}
+    int  getHighlights(){return m_highlights;}
+
+    //Prefilmulation
+    float getExposureComp(){return m_exposureComp;}
+    float getTemperature(){return m_temperature;}
+    float getTint(){return m_tint;}
+
+    //Filmulation
+    float getInitialDeveloperConcentration(){return m_initialDeveloperConcentration;}
+    float getReservoirThickness(){return m_reservoirThickness;}
+    float getActiveLayerThickness(){return m_activeLayerThickness;}
+    float getCrystalsPerPixel(){return m_crystalsPerPixel;}
+    float getInitialCrystalRadius(){return m_initialCrystalRadius;}
+    float getInitialSilverSaltDensity(){return m_initialSilverSaltDensity;}
+    float getDeveloperConsumptionConst(){return m_developerConsumptionConst;}
+    float getCrystalGrowthConst(){return m_crystalGrowthConst;}
+    float getSilverSaltConsumptionConst(){return m_silverSaltConsumptionConst;}
+    float getTotalDevelopmentTime(){return m_totalDevelopmentTime;}
+    int   getAgitateCount(){return m_agitateCount;}
+    int   getDevelopmentSteps(){return m_developmentSteps;}
+    float getFilmArea(){return m_filmArea;}
+    float getSigmaConst(){return m_sigmaConst;}
+    float getLayerMixConst(){return m_layerMixConst;}
+    float getLayerTimeDivisor(){return m_layerTimeDivisor;}
+    float getRolloffBoundary(){return m_rolloffBoundary;}
+
+    //Whitepoint & blackpoint
+    float getBlackpoint(){return m_blackpoint;}
+    float getWhitepoint(){return m_whitepoint;}
+    float getCropHeight(){return m_cropHeight;}
+    float getCropAspect(){return m_cropAspect;}
+    float getCropVoffset(){return m_cropVoffset;}
+    float getCropHoffset(){return m_cropHoffset;}
+
+    //Global all-color curves.
+    float getShadowsX(){return m_shadowsX;}
+    float getShadowsY(){return m_shadowsY;}
+    float getHighlightsX(){return m_highlightsX;}
+    float getHighlightsY(){return m_highlightsY;}
+    float getVibrance(){return m_vibrance;}
+    float getSaturation(){return m_saturation;}
+
+    //Rotation
+    int getRotation(){return m_rotation;}
+
     //Setters for the properties.
     //Loading
     void setTiffIn(bool);
@@ -561,6 +615,7 @@ signals:
 
     //General: if any param changes, emit this one as well after the param-specific signal.
     void paramChanged(QString source);
+    void updateClone(ParameterManager * param);
     void updateImage(bool newImage);
     void updateTableOut(QString table, int operation);
 };

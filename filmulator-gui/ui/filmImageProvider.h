@@ -57,7 +57,10 @@ protected:
     bool thumbnailWriteEnabled = true;
     bool writeThisThumbnail = true;
 
+    bool useQuickPipe;
+
     ParameterManager * paramManager;
+    ParameterManager * cloneParam;
     QMutex processMutex;//Ensures that output files are only of the currently selected image.
     QMutex writeDataMutex;//binds together the update of outputFilename and the outputImage.
     float progress;

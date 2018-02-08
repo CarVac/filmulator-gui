@@ -18,6 +18,8 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
                         QQuickImageProvider::ForceAsynchronousImageLoading)
 {
     paramManager = manager;
+    cloneParam = new ParameterManager;
+    connect(paramManager, SIGNAL(updateClone(ParameterManager*)), cloneParam, SLOT(cloneParams(ParameterManager*)));
     zeroHistogram(finalHist);
     zeroHistogram(postFilmHist);
     zeroHistogram(preFilmHist);
@@ -37,31 +39,60 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     {
         pipeline.setCache(WithCache);
     }
+
+    //Check if we want to use dual pipelines
+    if (settingsObject.getQuickPreview())
+    {
+        useQuickPipe = true;
+    }
+    else
+    {
+        useQuickPipe = false;
+    }
 }
 
 FilmImageProvider::~FilmImageProvider()
 {
 }
 
-QImage FilmImageProvider::requestImage(const QString& /*id*/,
+QImage FilmImageProvider::requestImage(const QString& id,
                                        QSize *size,
                                        const QSize& /*requestedSize*/)
 {
     gettimeofday(&request_start_time,NULL);
     QImage output = emptyImage();
     cout << "FilmImageProvider::requestImage Here?" << endl;
+    cout << "FilmImageProvider::requestImage id: " << id.toStdString() << endl;
 
     //Copy out the filename.
-    std::string filename = paramManager->getFullFilename();
+    std::string filename;
 
     //Record whether to write this thumbnail
     writeThisThumbnail = thumbnailWriteEnabled;
 
-    //Get a variable that says whether or not to
-
     //Run the pipeline.
     Exiv2::ExifData data;
-    matrix<unsigned short> image = pipeline.processImage(paramManager, this, data);
+    matrix<unsigned short> image;
+    if (!useQuickPipe)
+    {
+        filename = paramManager->getFullFilename();
+        image = pipeline.processImage(paramManager, this, data);
+    }
+    else
+    {
+        //need to check if we want the small or big image
+        if (id[0] == "q")
+        {
+            filename = paramManager->getFullFilename();
+            image = quickPipe.processImage(paramManager, this, data);
+        }
+        else
+        {
+            filename = cloneParam->getFullFilename();
+            cout << "FilmImageProvider::requestImage filename: " << filename << endl;
+            image = pipeline.processImage(cloneParam, this, data);
+        }
+    }
 
     //Ensure that the tiff and jpeg outputs don't write the previous image.
     processMutex.lock();

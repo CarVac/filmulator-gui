@@ -627,7 +627,8 @@ Valid ParameterManager::getValid()
 //It syncs the main (slider-interfaced) settings with the database.
 void ParameterManager::writeback()
 {
-    //Writeback gets called by setters, which themselves are called by
+    //Writeback gets called by sliders once you let go.
+    //Non-range-type params like orientation have the setters call this.
     if (paramChangeEnabled)
     {
         writeToDB(imageIndex);
@@ -1632,7 +1633,7 @@ void ParameterManager::loadParams(QString imageID)
     const float temp_cropHeight = query.value(nameCol).toFloat();
     if (temp_cropHeight != m_cropHeight)
     {
-        cout << "ParameterManager::loadParams cropHeight" << endl;
+        //cout << "ParameterManager::loadParams cropHeight" << endl;
         m_cropHeight = temp_cropHeight;
         validity = min(validity, Valid::filmulation);
     }
@@ -1643,7 +1644,7 @@ void ParameterManager::loadParams(QString imageID)
     const float temp_cropAspect = query.value(nameCol).toFloat();
     if (temp_cropAspect != m_cropAspect)
     {
-        cout << "ParameterManager::loadParams cropAspect" << endl;
+        //cout << "ParameterManager::loadParams cropAspect" << endl;
         m_cropAspect = temp_cropAspect;
         validity = min(validity, Valid::filmulation);
     }
@@ -1654,7 +1655,7 @@ void ParameterManager::loadParams(QString imageID)
     const float temp_cropVoffset = query.value(nameCol).toFloat();
     if (temp_cropVoffset != m_cropVoffset)
     {
-        cout << "ParameterManager::loadParams cropVoffset" << endl;
+        //cout << "ParameterManager::loadParams cropVoffset" << endl;
         m_cropVoffset = temp_cropVoffset;
         validity = min(validity, Valid::filmulation);
     }
@@ -1665,7 +1666,7 @@ void ParameterManager::loadParams(QString imageID)
     const float temp_cropHoffset = query.value(nameCol).toFloat();
     if (temp_cropHoffset != m_cropHoffset)
     {
-        cout << "ParameterManager::loadParams cropHoffset" << endl;
+        //cout << "ParameterManager::loadParams cropHoffset" << endl;
         m_cropHoffset = temp_cropHoffset;
         validity = min(validity, Valid::filmulation);
     }
@@ -1748,6 +1749,431 @@ void ParameterManager::loadParams(QString imageID)
     }
 }
 
+//This clones parameters from another manager.
+//It's intended to be used for dual pipelines and dual parametermanagers
+//It's a slot that updates stuff when the other param manager gets edited.
+void ParameterManager::cloneParams(ParameterManager * sourceParams)
+{
+    QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
+    disableParamChange();//Prevent aborting of computation.
+
+    //Load the image index
+    const QString temp_imageIndex = sourceParams->getImageIndex();
+    if (temp_imageIndex != imageIndex)
+    {
+        imageIndex = temp_imageIndex;
+        validity = min(validity, Valid::none);
+    }
+
+    //do stuff to load filename and other file info; taken from selectImage
+    QString tempString = imageIndex;
+    tempString.truncate(32);//length of md5
+    QSqlQuery query;
+    query.prepare("SELECT \
+                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength \
+                  FROM FileTable WHERE FTfileID = ?;");
+    query.bindValue(0, QVariant(tempString));
+    query.exec();
+    query.first();
+
+    //This will help us get the column index of the desired column name.
+    int nameCol;
+    QSqlRecord rec = query.record();
+
+    //Filename. First is the full path for the image pipeline.
+    nameCol = rec.indexOf("FTfilePath");
+    if (-1 == nameCol) { std::cout << "paramManager FTfilePath" << endl; }
+    QString name = query.value(nameCol).toString();
+    m_fullFilename = name.toStdString();
+    filename = name.right(name.size() - name.lastIndexOf(QString("/")) - 1);
+    emit filenameChanged();
+
+    nameCol = rec.indexOf("FTsensitivity");
+    if (-1 == nameCol) { std::cout << "paramManager FTsensitivity" << endl; }
+    sensitivity = query.value(nameCol).toInt();
+    emit sensitivityChanged();
+
+    nameCol = rec.indexOf("FTexposureTime");
+    if (-1 == nameCol) { std::cout << "paramManager FTexposureTime" << endl; }
+    QString expTimeTemp = query.value(nameCol).toString();
+    bool okNum;
+    unsigned int numerator = expTimeTemp.left(expTimeTemp.lastIndexOf("/")).toInt(&okNum, 10);
+    bool okDen;
+    unsigned int denominator = expTimeTemp.right(expTimeTemp.size() - expTimeTemp.lastIndexOf("/") - 1).toInt(&okDen, 10);
+    if (okNum && okDen)
+    {
+        unsigned int divisor = gcd(numerator, denominator);
+        numerator /= divisor;
+        denominator /= divisor;
+        double expTime = double(numerator)/double(denominator);
+        if (expTime > 0.5)
+        {
+            exposureTime = QString::number(expTime, 'f', 1);
+        }
+        else
+        {
+            exposureTime = QString("%1/%2").arg(numerator).arg(denominator);
+        }
+    }
+    else
+    {
+        exposureTime = expTimeTemp;
+    }
+    emit exposureTimeChanged();
+
+    nameCol = rec.indexOf("FTaperture");
+    if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
+    float numAperture = query.value(nameCol).toFloat();
+    if (numAperture >= 8)
+    {
+        aperture = QString::number(numAperture,'f',0);
+    }
+    else //numAperture < 8
+    {
+        aperture = QString::number(numAperture,'f',1);
+    }
+    emit apertureChanged();
+
+    nameCol = rec.indexOf("FTfocalLength");
+    if (-1 == nameCol) { std::cout << "paramManager FTfocalLength" << endl; }
+    focalLength = query.value(nameCol).toFloat();
+    emit focalLengthChanged();
+
+    //tiffIn should be false.
+    const bool temp_tiffIn = sourceParams->getTiffIn();
+    if (temp_tiffIn != m_tiffIn)
+    {
+        m_tiffIn = temp_tiffIn;
+        validity = min(validity, Valid::none);
+    }
+
+    //So should jpegIn.
+    const bool temp_jpegIn = sourceParams->getJpegIn();
+    if (temp_jpegIn != m_jpegIn)
+    {
+        m_jpegIn = temp_jpegIn;
+        validity = min(validity, Valid::none);
+    }
+
+    //Then is caEnabled.
+    const bool temp_caEnabled = sourceParams->getCaEnabled();
+    if (temp_caEnabled != m_caEnabled)
+    {
+        //cout << "ParameterManager::cloneParams caEnabled" << endl;
+        m_caEnabled = temp_caEnabled;
+        validity = min(validity, Valid::none);
+    }
+
+    //Highlight recovery
+    const int temp_highlights = sourceParams->getHighlights();
+    if (temp_highlights != m_highlights)
+    {
+        //cout << "ParameterManager::cloneParams highlights" << endl;
+        m_highlights = temp_highlights;
+        validity = min(validity, Valid::none);
+    }
+
+    //Exposure compensation
+    const float temp_exposureComp = sourceParams->getExposureComp();
+    if (temp_exposureComp != m_exposureComp)
+    {
+        //cout << "ParameterManager::cloneParams exposureComp" << endl;
+        m_exposureComp = temp_exposureComp;
+        validity = min(validity, Valid::load);
+    }
+
+    //Temperature
+    const float temp_temperature = sourceParams->getTemperature();
+    if (temp_temperature != m_temperature)
+    {
+        //cout << "ParameterManager::cloneParams temperature" << endl;
+        m_temperature = temp_temperature;
+        validity = min(validity, Valid::load);
+    }
+
+    //Tint
+    const float temp_tint = sourceParams->getTint();
+    if (temp_tint != m_tint)
+    {
+        //cout << "ParameterManager::cloneParams tint" << endl;
+        m_tint = temp_tint;
+        validity = min(validity, Valid::load);
+    }
+
+    //Initial developer concentration
+    const float temp_initialDeveloperConcentration = sourceParams->getInitialDeveloperConcentration();
+    if (temp_initialDeveloperConcentration != m_initialDeveloperConcentration)
+    {
+        //cout << "ParameterManager::cloneParams initialDeveloperConcentration" << endl;
+        m_initialDeveloperConcentration = temp_initialDeveloperConcentration;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Reservoir thickness
+    const float temp_reservoirThickness = sourceParams->getReservoirThickness();
+    if (temp_reservoirThickness != m_reservoirThickness)
+    {
+        //cout << "ParameterManager::cloneParams reservoirThickness" << endl;
+        m_reservoirThickness = temp_reservoirThickness;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Active layer thickness
+    const float temp_activeLayerThickness = sourceParams->getActiveLayerThickness();
+    if (temp_activeLayerThickness != m_activeLayerThickness)
+    {
+        //cout << "ParameterManager::cloneParams activeLayerThickness" << endl;
+        m_activeLayerThickness = temp_activeLayerThickness;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Crystals per pixel
+    const float temp_crystalsPerPixel = sourceParams->getCrystalsPerPixel();
+    if (temp_crystalsPerPixel != m_crystalsPerPixel)
+    {
+        //cout << "ParameterManager::cloneParams crystalsPerPixel" << endl;
+        m_crystalsPerPixel = temp_crystalsPerPixel;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Initial crystal radius
+    const float temp_initialCrystalRadius = sourceParams->getInitialCrystalRadius();
+    if (temp_initialCrystalRadius != m_initialCrystalRadius)
+    {
+        //cout << "ParameterManager::cloneParams initialCrystalRadius" << endl;
+        m_initialCrystalRadius = temp_initialCrystalRadius;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Initial silver salt area density
+    const float temp_initialSilverSaltDensity = sourceParams->getInitialSilverSaltDensity();
+    if (temp_initialSilverSaltDensity != m_initialSilverSaltDensity)
+    {
+        //cout << "ParameterManager::cloneParams initialSilverSaltDensity" << endl;
+        m_initialSilverSaltDensity = temp_initialSilverSaltDensity;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Developer consumption rate constant
+    const float temp_developerConsumptionConst = sourceParams->getDeveloperConsumptionConst();
+    if (temp_developerConsumptionConst != m_developerConsumptionConst)
+    {
+        //cout << "ParameterManager::cloneParams developerConsumptionConst" << endl;
+        m_developerConsumptionConst = temp_developerConsumptionConst;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Crystal growth rate constant
+    const float temp_crystalGrowthConst = sourceParams->getCrystalGrowthConst();
+    if (temp_crystalGrowthConst != m_crystalGrowthConst)
+    {
+        //cout << "ParameterManager::cloneParams crystalGrowthConst" << endl;
+        m_crystalGrowthConst = temp_crystalGrowthConst;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Silver halide consumption rate constant
+    const float temp_silverSaltConsumptionConst = sourceParams->getSilverSaltConsumptionConst();
+    if (temp_silverSaltConsumptionConst != m_silverSaltConsumptionConst)
+    {
+        //cout << "ParameterManager::cloneParams silverSaltConsumptionConst" << endl;
+        m_silverSaltConsumptionConst = temp_silverSaltConsumptionConst;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Total development time
+    const float temp_totalDevelopmentTime = sourceParams->getTotalDevelopmentTime();
+    if (temp_totalDevelopmentTime != m_totalDevelopmentTime)
+    {
+        //cout << "ParameterManager::cloneParams totalDevelopmentTime" << endl;
+        m_totalDevelopmentTime = temp_totalDevelopmentTime;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Number of agitations
+    const int temp_agitateCount = sourceParams->getAgitateCount();
+    if (temp_agitateCount != m_agitateCount)
+    {
+        //cout << "ParameterManager::cloneParams agitateCount" << endl;
+        m_agitateCount = temp_agitateCount;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Number of simulation steps for development
+    const int temp_developmentSteps = sourceParams->getDevelopmentSteps();
+    if (temp_developmentSteps != m_developmentSteps)
+    {
+        //cout << "ParameterManager::cloneParams developmentSteps" << endl;
+        m_developmentSteps = temp_developmentSteps;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Area of film for the simulation
+    const float temp_filmArea = sourceParams->getFilmArea();
+    if (temp_filmArea != m_filmArea)
+    {
+        //cout << "ParameterManager::cloneParams filmArea" << endl;
+        m_filmArea = temp_filmArea;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //A constant for the size of the diffusion. It...affects the same thing as film area.
+    const float temp_sigmaConst = sourceParams->getSigmaConst();
+    if (temp_sigmaConst != m_sigmaConst)
+    {
+        //cout << "ParameterManager::cloneParams sigmaConst" << endl;
+        m_sigmaConst = temp_sigmaConst;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Layer mix constant: the amount of active developer that gets exchanged with the reservoir.
+    const float temp_layerMixConst = sourceParams->getLayerMixConst();
+    if (temp_layerMixConst != m_layerMixConst)
+    {
+        //cout << "ParameterManager::cloneParams layerMixConst" << endl;
+        m_layerMixConst = temp_layerMixConst;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Layer time divisor: Controls the relative intra-layer and inter-layer diffusion.
+    const float temp_layerTimeDivisor = sourceParams->getLayerTimeDivisor();
+    if (temp_layerTimeDivisor != m_layerTimeDivisor)
+    {
+        //cout << "ParameterManager::cloneParams layerTimeDivisor" << endl;
+        m_layerTimeDivisor = temp_layerTimeDivisor;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Rolloff boundary. This is where highlights start to roll off.
+    const float temp_rolloffBoundary = sourceParams->getRolloffBoundary();
+    if (temp_rolloffBoundary != m_rolloffBoundary)
+    {
+        //cout << "ParameterManager::cloneParams rolloffBoundary" << endl;
+        m_rolloffBoundary = temp_rolloffBoundary;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Post-filmulator black clipping point
+    const float temp_blackpoint = sourceParams->getBlackpoint();
+    if (temp_blackpoint != m_blackpoint)
+    {
+        //cout << "ParameterManager::cloneParams blackpoint" << endl;
+        m_blackpoint = temp_blackpoint;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Post-filmulator white clipping point
+    const float temp_whitepoint = sourceParams->getWhitepoint();
+    if (temp_whitepoint != m_whitepoint)
+    {
+        //cout << "ParameterManager::cloneParams whitepoint" << endl;
+        m_whitepoint = temp_whitepoint;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Height of the crop WRT image height
+    const float temp_cropHeight = sourceParams->getCropHeight();
+    if (temp_cropHeight != m_cropHeight)
+    {
+        //cout << "ParameterManager::cloneParams cropHeight" << endl;
+        m_cropHeight = temp_cropHeight;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Aspect ratio of the crop
+    const float temp_cropAspect = sourceParams->getCropAspect();
+    if (temp_cropAspect != m_cropAspect)
+    {
+        //cout << "ParameterManager::cloneParams cropAspect" << endl;
+        m_cropAspect = temp_cropAspect;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Vertical position offset relative to center, WRT image height
+    const float temp_cropVoffset = sourceParams->getCropVoffset();
+    if (temp_cropVoffset != m_cropVoffset)
+    {
+        //cout << "ParameterManager::cloneParams cropVoffset" << endl;
+        m_cropVoffset = temp_cropVoffset;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Horizontal position offset relative to center, WRT image width
+    const float temp_cropHoffset = sourceParams->getCropHoffset();
+    if (temp_cropHoffset != m_cropHoffset)
+    {
+        //cout << "ParameterManager::cloneParams cropHoffset" << endl;
+        m_cropHoffset = temp_cropHoffset;
+        validity = min(validity, Valid::filmulation);
+    }
+
+    //Shadow control point x value
+    const float temp_shadowsX = sourceParams->getShadowsX();
+    if (temp_shadowsX != m_shadowsX)
+    {
+        //cout << "ParameterManager::cloneParams shadowsX" << endl;
+        m_shadowsX = temp_shadowsX;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Shadow control point y value
+    const float temp_shadowsY = sourceParams->getShadowsY();
+    if (temp_shadowsY != m_shadowsY)
+    {
+        //cout << "ParameterManager::cloneParams shadowsY" << endl;
+        m_shadowsY = temp_shadowsY;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Highlight control point x value
+    const float temp_highlightsX = sourceParams->getHighlightsX();
+    if (temp_highlightsX != m_highlightsX)
+    {
+        //cout << "ParameterManager::cloneParams highlightsX" << endl;
+        m_highlightsX = temp_highlightsX;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Highlight control point y value
+    const float temp_highlightsY = sourceParams->getHighlightsY();
+    if (temp_highlightsY != m_highlightsY)
+    {
+        //cout << "ParameterManager::cloneParams highlightsY" << endl;
+        m_highlightsY = temp_highlightsY;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Vibrance (saturation of less-saturated things)
+    const float temp_vibrance = sourceParams->getVibrance();
+    if (temp_vibrance != m_vibrance)
+    {
+        //cout << "ParameterManager::cloneParams vibrance" << endl;
+        m_vibrance = temp_vibrance;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Saturation
+    const float temp_saturation = sourceParams->getSaturation();
+    if (temp_saturation != m_saturation)
+    {
+        //cout << "ParameterManager::cloneParams saturation" << endl;
+        m_saturation = temp_saturation;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Rotation
+    const int temp_rotation = sourceParams->getRotation();
+    if (temp_rotation != m_rotation)
+    {
+        //cout << "ParameterManager::cloneParams rotation" << endl;
+        m_rotation = temp_rotation;
+        validity = min(validity, Valid::filmlikecurve);
+    }
+
+    enableParamChange();//Re-enable updating of the image.
+    paramChangeWrapper(QString("cloneParams"));
+}
+
 //This prevents the back-and-forth between this object and QML from aborting
 // computation, and also prevents the sliders' moving from marking the photo
 // as edited.
@@ -1764,6 +2190,9 @@ void ParameterManager::paramChangeWrapper(QString source)
     if (paramChangeEnabled)
     {
         emit paramChanged(source);
+
+        //update any follower parametermanagers
+        emit updateClone(this);
         if (QString("selectImage") == source) {
             emit updateImage(true);// it is a new image
         }
