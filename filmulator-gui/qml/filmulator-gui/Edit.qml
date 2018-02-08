@@ -137,7 +137,7 @@ SplitView {
                                 topImage.source = hiddenImage.source
 
                                 if ("i" == topImage.state) {
-                                    root.imageReady = true//only after the full size image is done
+                                    root.imageReady = false//if true, it activates after the quick preview, which is wrong
                                 }
                                 else {
                                     root.imageReady = false
@@ -210,6 +210,7 @@ SplitView {
 
                             if (topImage.state == "i") {//if it's the full image
                                 //now we notify the queue that the latest image is ready for display
+                                root.imageReady = true
                                 root.imageURL(topImage.source)
                             }
                             else if (topImage.state == "q") {//if the Quick processed image is loaded

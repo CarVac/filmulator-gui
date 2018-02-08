@@ -53,10 +53,10 @@ Rectangle {
             tooltipText: qsTr("This enables mipmaps for the Filmulate tab's image view. It's recommended for noisy images where not mipmapping may cause patterns to appear at different zoom levels.\n\nIt has slight impact on responsiveness for the last few tools, but it doesn't affect performance when zooming and panning. It also softens the image slightly, which may be undesireable.\n\nThis is applied as soon as you save settings.")
             isOn: settings.getMipmapView()
             defaultOn: settings.getMipmapView()
-            changed: false
             onIsOnChanged: mipmapSwitch.changed = true
             Component.onCompleted: {
                 mipmapSwitch.tooltipWanted.connect(root.tooltipWanted)
+                mipmapSwitch.changed = false
             }
             uiScale: root.uiScale
         }
@@ -67,10 +67,10 @@ Rectangle {
             tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
             isOn: settings.getLowMemMode()
             defaultOn: settings.getLowMemMode()
-            changed: false
             onIsOnChanged: lowMemModeSwitch.changed = true
             Component.onCompleted: {
                 lowMemModeSwitch.tooltipWanted.connect(root.tooltipWanted)
+                lowMemModeSwitch.changed = false
             }
             uiScale: root.uiScale
         }
@@ -81,10 +81,10 @@ Rectangle {
             tooltipText: qsTr("Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.")
             isOn: settings.getQuickPreview()
             defaultOn: settings.getQuickPreview()
-            changed: false
             onIsOnChanged: quickPreviewSwitch.changed = true
             Component.onCompleted: {
                 quickPreviewSwitch.tooltipWanted.connect(root.tooltipWanted)
+                quickPreviewSwitch.changed = false
             }
             uiScale: root.uiScale
         }
