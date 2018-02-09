@@ -707,12 +707,21 @@ SplitView {
                         onCroppingChanged: {
                             if (cropping) {
                                 cropDrag.updatePosition()
-                                cropDrag.enabled = true
+                                if (root.imageReady) {
+                                    cropDrag.enabled = true//case for no quick preview
+                                } else {
+                                    cropDrag.enabled = false//for quick preview
+                                }
                                 cropDrag.visible = true
                             }
                             else {
                                 cropDrag.enabled = false
                                 cropDrag.visible = false
+                            }
+                        }
+                        onImageReadyChanged: {
+                            if (cropping) {
+                                cropDrag.enabled = true//only needed for quick preview
                             }
                         }
                     }
