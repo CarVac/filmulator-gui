@@ -25,17 +25,50 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
     {
         abort = AbortStatus::restart;//not actually possible
     }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        abort = AbortStatus::restart;
+    }
     else
     {
         abort = AbortStatus::proceed;
-        validity = Valid::load;//mark it as started
+        validity = Valid::partload;//mark as being in progress
     }
+    changeMadeSinceCheck = false;
     LoadParams params;
     params.fullFilename = m_fullFilename;
     params.tiffIn = m_tiffIn;
     params.jpegIn = m_jpegIn;
     std::tuple<Valid,AbortStatus,LoadParams> tup(validity, abort, params);
     return tup;
+}
+
+AbortStatus ParameterManager::claimLoadAbort()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    changeMadeSinceCheck = false;
+    if (validity < Valid::partload)//make sure that progress on this step isn't invalid
+    {
+        return AbortStatus::restart;
+    }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        return AbortStatus::restart;
+    }
+    else
+    {
+        return AbortStatus::proceed;
+    }
+}
+
+Valid ParameterManager::markLoadComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (Valid::partload == validity)
+    {
+        validity = Valid::load;//mark step complete (duh)
+    }
+    return validity;
 }
 
 void ParameterManager::setTiffIn(bool tiffIn)
@@ -68,16 +101,49 @@ std::tuple<Valid,AbortStatus,DemosaicParams> ParameterManager::claimDemosaicPara
     {
         abort = AbortStatus::restart;
     }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        abort = AbortStatus::restart;
+    }
     else
     {
         abort = AbortStatus::proceed;
-        validity = Valid::demosaic;//mark it as started
+        validity = Valid::partdemosaic;
     }
+    changeMadeSinceCheck = false;
     DemosaicParams params;
     params.caEnabled = m_caEnabled;
     params.highlights = m_highlights;
     std::tuple<Valid,AbortStatus,DemosaicParams> tup(validity, abort, params);
     return tup;
+}
+
+AbortStatus ParameterManager::claimDemosaicAbort()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    changeMadeSinceCheck = false;
+    if (validity < Valid::partdemosaic)
+    {
+        return AbortStatus::restart;
+    }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        return AbortStatus::restart;
+    }
+    else
+    {
+        return AbortStatus::proceed;
+    }
+}
+
+Valid ParameterManager::markDemosaicComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (Valid::partdemosaic == validity)
+    {
+        validity = Valid::demosaic;
+    }
+    return validity;
 }
 
 void ParameterManager::setCaEnabled(bool caEnabled)
@@ -110,11 +176,16 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     {
         abort = AbortStatus::restart;
     }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        abort = AbortStatus::restart;
+    }
     else
     {
         abort = AbortStatus::proceed;
-        validity = Valid::prefilmulation;//mark it as started
+        validity = Valid::partprefilmulation;
     }
+    changeMadeSinceCheck = false;
     PrefilmParams params;
     params.exposureComp = m_exposureComp;
     params.temperature = m_temperature;
@@ -122,6 +193,34 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     params.fullFilename = m_fullFilename;//it's okay to include previous things in later params if necessary
     std::tuple<Valid,AbortStatus,PrefilmParams> tup(validity, abort, params);
     return tup;
+}
+
+AbortStatus ParameterManager::claimPrefilmAbort()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    changeMadeSinceCheck = false;
+    if (validity < Valid::partprefilmulation)
+    {
+        return AbortStatus::restart;
+    }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        return AbortStatus::restart;
+    }
+    else
+    {
+        return AbortStatus::proceed;
+    }
+}
+
+Valid ParameterManager::markPrefilmComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (Valid::partprefilmulation == validity)
+    {
+        validity = Valid::prefilmulation;
+    }
+    return validity;
 }
 
 void ParameterManager::setExposureComp(float exposureComp)
@@ -157,27 +256,26 @@ void ParameterManager::setTint(float tint)
     paramChangeWrapper(QString("setTint"));
 }
 
-std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams(FilmFetch fetch)
+std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
 
     //If it's the first time, the source data is from prefilmulation.
-    if (fetch == FilmFetch::initial && validity < Valid::prefilmulation)
+    if (validity < Valid::prefilmulation)
     {
         abort = AbortStatus::restart;
     }
-    //If it's not the first time, the source data is from the last filmulation round
-    // and will be invalidated by a filmulation param being modified.
-    else if (fetch == FilmFetch::subsequent && validity < Valid::filmulation)
+    else if (isClone && changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
     else
     {
         abort = AbortStatus::proceed;
-        validity = Valid::filmulation;//mark it as started
+        validity = Valid::partfilmulation;
     }
+    changeMadeSinceCheck = false;
     FilmParams params;
     params.initialDeveloperConcentration = m_initialDeveloperConcentration,
     params.reservoirThickness = m_reservoirThickness,
@@ -198,6 +296,34 @@ std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams(FilmF
     params.rolloffBoundary = m_rolloffBoundary;
     std::tuple<Valid,AbortStatus,FilmParams> tup(validity,abort, params);
     return tup;
+}
+
+AbortStatus ParameterManager::claimFilmAbort()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    changeMadeSinceCheck = false;
+    if (validity < Valid::partfilmulation)
+    {
+        return AbortStatus::restart;
+    }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        return AbortStatus::restart;
+    }
+    else
+    {
+        return AbortStatus::proceed;
+    }
+}
+
+Valid ParameterManager::markFilmComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (Valid::partfilmulation == validity)
+    {
+        validity = Valid::filmulation;
+    }
+    return validity;
 }
 
 void ParameterManager::setInitialDeveloperConcentration(float initialDeveloperConcentration)
@@ -395,11 +521,16 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
     {
         abort = AbortStatus::restart;
     }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        abort = AbortStatus::restart;
+    }
     else
     {
         abort = AbortStatus::proceed;
-        validity = Valid::blackwhite;//mark it as started
+        validity = Valid::partblackwhite;
     }
+    changeMadeSinceCheck = false;
     BlackWhiteParams params;
     params.blackpoint  = m_blackpoint;
     params.whitepoint  = m_whitepoint;
@@ -410,6 +541,34 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
     params.rotation = m_rotation;
     std::tuple<Valid,AbortStatus,BlackWhiteParams> tup(validity, abort, params);
     return tup;
+}
+
+AbortStatus ParameterManager::claimBlackWhiteAbort()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    changeMadeSinceCheck = false;
+    if (validity < Valid::partblackwhite)
+    {
+        return AbortStatus::restart;
+    }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        return AbortStatus::restart;
+    }
+    else
+    {
+        return AbortStatus::proceed;
+    }
+}
+
+Valid ParameterManager::markBlackWhiteComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (Valid::partblackwhite == validity)
+    {
+        validity = Valid::blackwhite;
+    }
+    return validity;
 }
 
 void ParameterManager::setBlackpoint(float blackpoint)
@@ -523,6 +682,16 @@ void ParameterManager::rotateLeft()
     writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
+Valid ParameterManager::markColorCurvesComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (Valid::blackwhite == validity)
+    {
+        validity = Valid::colorcurve;
+    }
+    return validity;
+}
+
 //We don't have any color curves, so this one short-circuits those
 // and checks back to blackwhite validity.
 //If we add color curves in that place, we do need to replace the following
@@ -531,15 +700,20 @@ std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmli
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
-    if (validity < Valid::blackwhite)
+    if (validity < Valid::colorcurve)
+    {
+        abort = AbortStatus::restart;
+    }
+    else if (isClone && changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
     else
     {
         abort = AbortStatus::proceed;
-        validity = Valid::filmlikecurve;//mark it as started
+        validity = Valid::partfilmlikecurve;
     }
+    changeMadeSinceCheck = false;
     FilmlikeCurvesParams params;
     params.shadowsX = m_shadowsX;
     params.shadowsY = m_shadowsY;
@@ -549,6 +723,34 @@ std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmli
     params.saturation = m_saturation;
     std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> tup(validity, abort, params);
     return tup;
+}
+
+AbortStatus ParameterManager::claimFilmLikeCurvesAbort()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    changeMadeSinceCheck = false;
+    if (validity < Valid::partfilmlikecurve)
+    {
+        return AbortStatus::restart;
+    }
+    else if (isClone && changeMadeSinceCheck)
+    {
+        return AbortStatus::restart;
+    }
+    else
+    {
+        return AbortStatus::proceed;
+    }
+}
+
+Valid ParameterManager::markFilmLikeCurvesComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (Valid::partfilmlikecurve == validity)
+    {
+        validity = Valid::filmlikecurve;
+    }
+    return validity;
 }
 
 void ParameterManager::setShadowsX(float shadowsX)
@@ -1371,7 +1573,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams caEnabled" << endl;
         m_caEnabled = temp_caEnabled;
-        validity = min(validity, Valid::none);
+        validity = min(validity, Valid::load);
     }
 
     //Next is highlights (highlight recovery)
@@ -1382,7 +1584,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams highlights" << endl;
         m_highlights = temp_highlights;
-        validity = min(validity, Valid::none);
+        validity = min(validity, Valid::load);
     }
 
     //Exposure compensation
@@ -1393,7 +1595,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams exposureComp" << endl;
         m_exposureComp = temp_exposureComp;
-        validity = min(validity, Valid::load);
+        validity = min(validity, Valid::demosaic);
     }
 
     //Temperature
@@ -1404,7 +1606,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams temperature" << endl;
         m_temperature = temp_temperature;
-        validity = min(validity, Valid::load);
+        validity = min(validity, Valid::demosaic);
     }
 
     //Tint
@@ -1415,7 +1617,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams tint" << endl;
         m_tint = temp_tint;
-        validity = min(validity, Valid::load);
+        validity = min(validity, Valid::demosaic);
     }
 
     //Initial developer concentration
@@ -1861,7 +2063,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams caEnabled" << endl;
         m_caEnabled = temp_caEnabled;
-        validity = min(validity, Valid::none);
+        validity = min(validity, Valid::load);
     }
 
     //Highlight recovery
@@ -1870,7 +2072,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams highlights" << endl;
         m_highlights = temp_highlights;
-        validity = min(validity, Valid::none);
+        validity = min(validity, Valid::load);
     }
 
     //Exposure compensation
@@ -1879,7 +2081,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams exposureComp" << endl;
         m_exposureComp = temp_exposureComp;
-        validity = min(validity, Valid::load);
+        validity = min(validity, Valid::demosaic);
     }
 
     //Temperature
@@ -1888,7 +2090,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams temperature" << endl;
         m_temperature = temp_temperature;
-        validity = min(validity, Valid::load);
+        validity = min(validity, Valid::demosaic);
     }
 
     //Tint
@@ -1897,7 +2099,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams tint" << endl;
         m_tint = temp_tint;
-        validity = min(validity, Valid::load);
+        validity = min(validity, Valid::demosaic);
     }
 
     //Initial developer concentration

@@ -24,15 +24,11 @@ ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityI
 int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
 {
     AbortStatus abort;
-    Valid validity;
 
     //Recover the param_manager from the data
     ParameterManager * pManager = static_cast<ParameterManager*>(data);
     //See whether to abort or not.
-    //Because LibRaw does the demosaicing, we need to use the check that's performed afterwards
-    //That's prefilmulation.
-    //If we ever use LibRaw only for decoding, then change this to do the check for demosaicing.
-    std::tie(validity, abort, std::ignore) = pManager->claimPrefilmParams();
+    abort = pManager->claimDemosaicAbort();
     if (abort == AbortStatus::restart)
     {
         return 1;//cancel processing
@@ -63,7 +59,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     LoadParams loadParam;
     DemosaicParams demosaicParam;
     PrefilmParams prefilmParam;
-    FilmParams filmParam;
+    //FilmParams filmParam;
     BlackWhiteParams blackWhiteParam;
     FilmlikeCurvesParams curvesParam;
 
@@ -80,13 +76,17 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
         //In the future we'll actually perform loading here.
+        valid = paramManager->markLoadComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partdemosaic: [[fallthrough]];
     case load://Do demosaic
     {
         AbortStatus abort;
         //Because the load params are used here
         std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
+        paramManager->markLoadComplete();//otherwise we reset validity back half a step
         std::tie(valid, abort, demosaicParam) = paramManager->claimDemosaicParams();
         if (abort == AbortStatus::restart)
         {
@@ -138,13 +138,13 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             LibRaw image_processor;
 
             //Connect image processor with callback for cancellation
-            image_processor.set_progress_handler(ImagePipeline::libraw_callback, paramManager);
+            //image_processor.set_progress_handler(ImagePipeline::libraw_callback, paramManager);
 
             //Open the file.
             const char *cstr = loadParam.fullFilename.c_str();
             if (0 != image_processor.open_file(cstr))
             {
-                cerr << "processImage: Could not read input file!" << endl;
+                cout << "processImage: Could not read input file!" << endl;
                 return emptyMatrix();
             }
              //Make abbreviations for brevity in accessing data.
@@ -176,7 +176,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             }
 
             AbortStatus abort;
-            std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
+            abort = paramManager->claimDemosaicAbort();
             if (abort == AbortStatus::restart)
             {
                 return emptyMatrix();
@@ -190,7 +190,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 return emptyMatrix();
             }
 
-            std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
+            abort = paramManager->claimDemosaicAbort();
             if (abort == AbortStatus::restart)
             {
                 return emptyMatrix();
@@ -244,8 +244,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cropped_image = input_image;
         }
+
+        valid = paramManager->markDemosaicComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partprefilmulation: [[fallthrough]];
     case demosaic://Do pre-filmulation work.
     {
         AbortStatus abort;
@@ -280,12 +284,15 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
 
+        valid = paramManager->markPrefilmComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partfilmulation: [[fallthrough]];
     case prefilmulation://Do filmulation
     {
         //We don't need to check abort status out here, because
-        //the filmulate function will do so inside its loop multiple times.
+        //the filmulate function will do so inside its loop.
         //We just check for it returning an empty matrix.
 
         //Here we do the film simulation on the image...
@@ -315,12 +322,11 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
 
-        //Now, since we didn't check abort status out here, we do have to at least
-        // increment the validity.
-        AbortStatus abort;
-        std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+        valid = paramManager->markFilmComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partblackwhite: [[fallthrough]];
     case filmulation://Do whitepoint_blackpoint
     {
         AbortStatus abort;
@@ -391,8 +397,11 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
 
+        valid = paramManager->markBlackWhiteComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partcolorcurve: [[fallthrough]];
     case blackwhite: // Do color_curve
     {
         //It's not gonna abort because we have no color curves yet..
@@ -414,8 +423,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cacheEmpty = false;
         }
+
+        valid = paramManager->markColorCurvesComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partfilmlikecurve: [[fallthrough]];
     case colorcurve://Do film-like curve
     {
         AbortStatus abort;
@@ -457,6 +470,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                             curvesParam.saturation);
 
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
     default://output
     {
@@ -473,6 +487,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             interface->updateHistFinal(vibrance_saturation_image);
         }
+        valid = paramManager->markFilmLikeCurvesComplete();
         updateProgress(valid, 0.0f);
 
         exifOutput = exifData;

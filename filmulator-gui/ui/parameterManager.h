@@ -16,12 +16,19 @@
 #include "../database/exifFunctions.h"
 
 enum Valid {none,
+            partload,
             load,
+            partdemosaic,
             demosaic,
+            partprefilmulation,
             prefilmulation,
+            partfilmulation,
             filmulation,
+            partblackwhite,
             blackwhite,
+            partcolorcurve,
             colorcurve,
+            partfilmlikecurve,
             filmlikecurve,
             count};
 
@@ -207,27 +214,46 @@ public:
 
     //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
     //and then returns the struct and the validity.
+    //There's a second validity-check-only method for more frequent cancellation.
+    //And the final marking of complete checks one more time (and doesn't mark complete if invalid)
     //Input
     std::tuple<Valid,AbortStatus,LoadParams> claimLoadParams();
+    AbortStatus claimLoadAbort();
+    Valid markLoadComplete();
 
     //Demosaic
     std::tuple<Valid,AbortStatus,DemosaicParams> claimDemosaicParams();
+    AbortStatus claimDemosaicAbort();
+    Valid markDemosaicComplete();
 
     //Prefilmulation
     std::tuple<Valid,AbortStatus,PrefilmParams> claimPrefilmParams();
+    AbortStatus claimPrefilmAbort();
+    Valid markPrefilmComplete();
 
     //Filmulation
-    std::tuple<Valid,AbortStatus,FilmParams> claimFilmParams(FilmFetch fetch);
+    std::tuple<Valid,AbortStatus,FilmParams> claimFilmParams();
+    AbortStatus claimFilmAbort();
+    Valid markFilmComplete();
 
     //Whitepoint & Blackpoint (and cropping and rotation and distortion)
     std::tuple<Valid,AbortStatus,BlackWhiteParams> claimBlackWhiteParams();
+    AbortStatus claimBlackWhiteAbort();
+    Valid markBlackWhiteComplete();
+
+    //Individual color curves: not implemented, so we just have to mark complete
+    Valid markColorCurvesComplete();
 
     //Global, all-color curves.
     std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> claimFilmlikeCurvesParams();
+    AbortStatus claimFilmLikeCurvesAbort();
+    Valid markFilmLikeCurvesComplete();
 
     Valid getValid();
 
     std::string getFullFilename(){return m_fullFilename;}
+
+    void setClone(){isClone = true;}
 
 public slots:
     void cloneParams(ParameterManager * sourceParams);
@@ -236,6 +262,11 @@ protected:
     //This is here for the sql insertion to pull the values from.
     void loadParams(QString imageID);
     void loadDefaults(const CopyDefaults useDefaults, const std::string absFilePath);
+
+    //If this is true, then this is the clone parameter manager
+    //and we should always abort whenever there's a change made
+    bool isClone = false;
+    bool changeMadeSinceCheck = false;
 
     //The paramMutex exists to prevent race conditions between
     //changes in the parameters and changes in validity.
