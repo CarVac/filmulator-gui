@@ -347,7 +347,6 @@ Item {
         }
 
         onReleased: {
-            updateHandlePosition(mouse)
             if (slider.sliderState !== "fromValue") {
                 slider.sliderState = "fromValue"
             }

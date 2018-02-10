@@ -121,75 +121,57 @@ SplitView {
                     scale: bottomImage.scale
                     transformOrigin: Item.TopLeft
 
-                    //This is a hidden image to do filmImageProvider loading without interrupting thumbnails.
-                    Image {
-                        z: -1
-                        id: hiddenImage
-                        x:0
-                        y:0
-                        mipmap: settings.getMipmapView()
-                        opacity: 0
-                        asynchronous: true
-                        onStatusChanged: {
-                            if (hiddenImage.status == Image.Ready) {
-                                console.log("hidden image ready; state: " + topImage.state)
-                                //topImage.state = "i"//probably unnecessary?
-                                topImage.source = hiddenImage.source
-
-                                if ("i" == topImage.state) {
-                                    //do nothing
-                                }
-                                else {
-                                    root.imageReady = false
-                                }
-                            }
-                            else {
-                                root.imageReady = false
-                            }
-                        }
+                    Connections {
+                        target: settings
+                        onMipmapViewChanged: topImage.mipmap = settings.getMipmapView()
                     }
 
-                    property string state: "p"
-                    //This connection finds out when the parameters are done changing, and then updates the url to fetch the latest image.
-                    Connections {
-                        target: paramManager//root
-                        onUpdateImage: {
-                            console.log("update image")
-                            if (topImage.state == "i" || topImage.state == "q") {//only if we're done with the thumbnail
-                                if (settings.getQuickPreview()) {
-                                    topImage.state = "q"//make it do the quick processed image first
-                                }//otherwise, leave it as whatever it was.
+                    property string state: "nl"//not loaded
 
+                    Connections {
+                        target: paramManager
+                        onImageIndexChanged: {
+                            //this happens when paramManager.selectImage is performed and the selected image changed
+                            topImage.state = "lt"//loading thumbnail
+                            //selectImage still emits update image via paramChargeWrapper so we don't need to do any more
+                        }
+                        onUpdateImage: {
+                            if (newImage) {//If this comes from paramManager.selectImage, then we want to cancel crop.
+                                cancelCropping = true
+                                requestingCropping = false
+                            }
+
+                            //Irrespective of that
+                            if (topImage.state == "lt") {//a NEW image has been selected
+                                //load thumbnail into top image
+                                var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
+                                topImage.source = thumbPath
+                            }
+                            else {//not a new image; probably just a slider move
+                                //Increment the image index
                                 var num = (topImage.index + 1) % 1000000//1 in a million
                                 topImage.index = num;
                                 var s = num+"";
                                 var size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
                                 topImage.indexString = s
-                                hiddenImage.source = "image://filmy/q" + topImage.indexString
-                            }
-                            if (topImage.state == "p") {//if we're planning on doing the thumbnail
-                                var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
-                                topImage.source = thumbPath
-                            }
-                            //if a new image is selected, OR the same image re-selected
-                            if (newImage) {
-                                cancelCropping = true
-                                requestingCropping = false
+
+                                //now actually ask for the image
+                                if (settings.getQuickPreview()) {//load the quick pipe
+                                    topImage.state = "lq"//loading quick pipe
+                                    topImage.source = "image://filmy/q" + topImage.indexString
+                                }
+                                else {//load the full size image
+                                    topImage.state = "lf"// loading full image
+                                    topImage.source = "image://filmy/f" + topImage.indexString
+                                }
                             }
                         }
-                        onImageIndexChanged: {
-                            console.log("image index changed")
-                            topImage.state = "p"
-                            //topImage.source = topImage.thumbPath
-                        }
                     }
-                    Connections {
-                        target: settings
-                        onMipmapViewChanged: topImage.mipmap = settings.getMipmapView()
-                    }
+
                     onStatusChanged: {
-                        if (topImage.status == Image.Ready) {
+                        if (topImage.status == Image.Ready) { //if the image is now ready
+                            // First, we copy to the bottom image, regardless of what else.
                             console.log("top image ready")
                             var topFitScaleX = flicky.width/topImage.width
                             var topFitScaleY = flicky.height/topImage.height
@@ -208,43 +190,34 @@ SplitView {
 
                             console.log("TopImage state: " + topImage.state)
 
-                            if (topImage.state == "i") {//if it's the full image
-                                //now we notify the queue that the latest image is ready for display
+                            if (topImage.state == "lf") {//it was loading the full image
+                                topImage.state = "sf"//showing full image
                                 root.imageReady = true
-                                root.imageURL(topImage.source)
+                                root.imageURL(topImage.source)//replace the thumbnail in the queue with the live image
                             }
-                            else if (topImage.state == "q") {//if the Quick processed image is loaded
-                                topImage.state = "i"
-                                console.log("TopImage state after quick: " + topImage.state)
-
-                                //begin loading the main, full-size image image
+                            else {//it was loading the thumb or the quick image
+                                //Increment the image index
                                 var num = (topImage.index + 1) % 1000000//1 in a million
                                 topImage.index = num;
                                 var s = num+"";
                                 var size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
                                 topImage.indexString = s
-                                hiddenImage.source = "image://filmy/i" + topImage.indexString
-                            }
-                            else if (topImage.state == "p") {//if the thumbnail Preview is loaded
-                                //now we say that the state is loading the actual image, so as to not load a new preview.
-                                if (settings.getQuickPreview()) {
-                                    topImage.state = "q"
-                                }
-                                else {//skip the quick preview
-                                    topImage.state = "i"
-                                }
-                                console.log("TopImage state after thumb: " + topImage.state)
 
-                                //begin loading the image
-                                var num = (topImage.index + 1) % 1000000//1 in a million
-                                topImage.index = num;
-                                var s = num+"";
-                                var size = 6 //6 digit number
-                                while (s.length < size) {s = "0" + s}
-                                topImage.indexString = s
-                                hiddenImage.source = "image://filmy/q" + topImage.indexString
+                                //now actually ask for the image
+                                if (topImage.state == "lt") {//it was loading the thumbnail
+                                    topImage.state = "lq"//loading quick pipe
+                                    topImage.source = "image://filmy/q" + topImage.indexString
+                                }
+                                else if (topImage.state == "lq") {//it was loading the quick image
+                                    topImage.state = "lf"//loading full image
+                                    topImage.source = "image://filmy/f" + topImage.indexString
+                                }
                             }
+
+                            //When the image is ready, we want to process cropping.
+                            //Cropping should only be enabled when the state is 'lq' or 'lf'...
+                            // but if it's 'lt' then it's already not going to be cropping.
                             if (root.requestingCropping) {
                                 root.cropping = true
                             } else {
