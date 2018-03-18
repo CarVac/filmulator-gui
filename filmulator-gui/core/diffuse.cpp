@@ -169,6 +169,8 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
 // in Signal Processing 44 (1995) 139-151
 //Referencing code from here:
 //https://github.com/halide/Halide/blob/e23f83b9bde63ed64f4d9a2fbe1ed29b9cfbf2e6/test/generator/gaussian_blur_generator.cpp
+
+//Don't use this for radii > 70!!!
 void diffuse_short_convolution(matrix<float> &developer_concentration,
                                const float sigma_const,
                                const float pixels_per_millimeter,
@@ -178,7 +180,7 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
     const int width = developer_concentration.nc();
 
     //Compute the standard deviation of the blur we want, in pixels.
-    double sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
+    const double sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
 
     //We set the padding to be 4 standard deviations so as to catch as much as possible.
     const int paddedWidth = width + 4*sigma + 3;
@@ -454,5 +456,36 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                 }
             }
         }
+    }
+}
+
+//Since the aforementioned infinite impulse response doesn't work nicely with large radii,
+//this will downsample it so that the radius ends up at about 30.
+//Then, it'll apply the van Vliet IIR filter.
+//If the radius was already less than 70, then it won't downsample at all.
+void diffuse_resize_iir(matrix<float> &developer_concentration,
+                        const float sigma_const,
+                        const float pixels_per_millimeter,
+                        const float timestep)
+{
+    //set up test sigma
+    const double sigma = sqrt(timestep*pow(sigma_const*pixels_per_millimeter,2));
+
+    std::cout << "sigma: " << sigma << "=======================================================" << std::endl;
+
+    //If it's small enough, we're not going to resize at all.
+    if (sigma < 70)
+    {
+        diffuse_short_convolution(developer_concentration,
+                                  sigma_const,
+                                  pixels_per_millimeter,
+                                  timestep);
+    }
+    else
+    {
+        diffuse(developer_concentration,
+                sigma_const,
+                pixels_per_millimeter,
+                timestep);
     }
 }

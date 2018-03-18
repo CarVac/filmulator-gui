@@ -97,6 +97,11 @@ void diffuse_short_convolution(matrix<float> &developer_concentration,
                                const float pixels_per_millimeter,
                                const float timestep);
 
+void diffuse_resize_iir(matrix<float> &developer_concentration,
+                        const float sigma_const,
+                        const float pixels_per_millimeter,
+                        const float timestep);
+
 //Reading raws with libraw
 //TODO: remove
 //PROBABLY NOT NECESSARY ANYMORE
