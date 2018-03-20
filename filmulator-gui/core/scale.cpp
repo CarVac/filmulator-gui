@@ -186,7 +186,7 @@ void downscaleBilinear1D(const matrix<T> input,
 //TODO: COMPLETE THIS
 template <typename T>
 void upscaleBilinear1D(const matrix<T> input,
-                       matrix<t> &output,
+                       matrix<T> &output,
                        const int outNumCols,
                        const bool interleaved)
 {
