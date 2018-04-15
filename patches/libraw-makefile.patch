@@ -1,45 +1,52 @@
-*** LibRaw/Makefile.dist	Wed Jun 28 14:44:51 2017
---- LibRaw-new/Makefile.dist	Wed Jun 28 15:13:02 2017
+*** Makefile.dist	2018-04-15 11:21:14.849133275 -0400
+--- patch/Makefile.dist	2018-04-15 11:21:38.477269777 -0400
 ***************
 *** 1,11 ****
-  #all: library all_samples
+  all: library all_samples
   
-! #CFLAGS=-arch i386 -arch x86_64 -O3  -I. -w
-  #CC=gcc
-  #CXX=g++
+! CFLAGS=-arch i386 -arch x86_64 -O3  -I. -w
+  CC=gcc
+  CXX=g++
   
   # OpenMP support
 ! #CFLAGS+=-fopenmp
   
   # RawSpeed Support
+  #CFLAGS+=-pthread -DUSE_RAWSPEED -I../RawSpeed -I/usr/local/include/libxml2
 --- 1,11 ----
-  #all: library all_samples
+  all: library all_samples
   
 ! CFLAGS=-march=i386 -march=x86-64 -O3  -I. -w
-  #CC=gcc
-  #CXX=g++
+  CC=gcc
+  CXX=g++
   
   # OpenMP support
 ! CFLAGS+=-fopenmp
   
   # RawSpeed Support
+  #CFLAGS+=-pthread -DUSE_RAWSPEED -I../RawSpeed -I/usr/local/include/libxml2
 ***************
-*** 23,28 ****
+*** 21,28 ****
+  #LDADD+=-L/usr/local/lib -ljasper
   
   # JPEG support for lossy DNG
 ! #CFLAGS+=-DUSE_JPEG -I/usr/local/include
 ! #LDADD+=-L/usr/local/lib -ljpeg
   # LIBJPEG8:
   #CFLAGS+=-DUSE_JPEG8
---- 23,28 ----
+  
+--- 21,28 ----
+  #LDADD+=-L/usr/local/lib -ljasper
   
   # JPEG support for lossy DNG
 ! CFLAGS+=-DUSE_JPEG
 ! LDADD+=-ljpeg
   # LIBJPEG8:
   #CFLAGS+=-DUSE_JPEG8
+  
 ***************
-*** 37,46 ****
+*** 35,46 ****
+  #LDADD+=-L/usr/local/lib -llcms2
   
   # Demosaic Pack GPL2:
 ! #DPCFLAGS+=-I../LibRaw-demosaic-pack-GPL2
@@ -50,7 +57,9 @@
 ! #CFLAGS+=-DLIBRAW_DEMOSAIC_PACK_GPL3
   
   
---- 37,46 ----
+  DCRAW_LIB_OBJECTS=object/dcraw_common.o object/libraw_cxx.o object/libraw_datastream.o object/libraw_c_api.o object/dcraw_fileio.o object/demosaic_packs.o
+--- 35,46 ----
+  #LDADD+=-L/usr/local/lib -llcms2
   
   # Demosaic Pack GPL2:
 ! DPCFLAGS+=-I../LibRaw-demosaic-pack-GPL2
@@ -61,3 +70,4 @@
 ! CFLAGS+=-DLIBRAW_DEMOSAIC_PACK_GPL3
   
   
+  DCRAW_LIB_OBJECTS=object/dcraw_common.o object/libraw_cxx.o object/libraw_datastream.o object/libraw_c_api.o object/dcraw_fileio.o object/demosaic_packs.o
