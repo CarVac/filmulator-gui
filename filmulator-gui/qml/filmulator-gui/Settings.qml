@@ -78,7 +78,7 @@ Rectangle {
         ToolSwitch {
             id: quickPreviewSwitch
             text: qsTr("Render small preview first")
-            tooltipText: qsTr("Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.")
+            tooltipText: qsTr("Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.\n\nThis takes effect after applying settings and restarting Filmulator.")
             isOn: settings.getQuickPreview()
             defaultOn: settings.getQuickPreview()
             onIsOnChanged: quickPreviewSwitch.changed = true
@@ -89,13 +89,38 @@ Rectangle {
             uiScale: root.uiScale
         }
 
+        ToolSlider {
+            id: previewResSlider
+            title: qsTr("Preview render resolution")
+            tooltipText: qsTr("When the small preview is active, the preview image will be processed at an image size with this value as the long dimension. The larger this is, the sharper the preview, but the longer it takes to generate.\n\nThis takes effect after applying settings and restarting Filmulator.")
+            minimumValue: 100
+            maximumValue: 8000
+            stepSize: 100
+            tickmarksEnabled: true
+            tickmarkFactor: 1
+            value: settings.getPreviewResolution()
+            defaultValue: settings.getPreviewResolution()
+            changed: false
+            onValueChanged: {
+                if (Math.abs(value - defaultValue) < 0.5) {
+                    previewResSlider.changed = false
+                } else {
+                    previewResSlider.changed = true
+                }
+            }
+            Component.onCompleted: {
+                previewResSlider.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
         ToolButton {
             id: saveSettings
             text: qsTr("Save Settings")
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed
+            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
             onTriggered: {
                 settings.uiScale = uiScaleSlider.value
                 uiScaleSlider.defaultValue = uiScaleSlider.value
@@ -105,10 +130,13 @@ Rectangle {
                 mipmapSwitch.changed = false
                 settings.lowMemMode = lowMemModeSwitch.isOn
                 lowMemModeSwitch.defaultOn = lowMemModeSwitch.isOn
-                lowMemModeSwitch.changed = false;
+                lowMemModeSwitch.changed = false
                 settings.quickPreview = quickPreviewSwitch.isOn
                 quickPreviewSwitch.defaultOn = quickPreviewSwitch.isOn
-                quickPreviewSwitch.changed = false;
+                quickPreviewSwitch.changed = false
+                settings.previewResolution = previewResSlider.value
+                previewResSlider.defaultValue = previewResSlider.value
+                previewResSlider.changed = false
             }
             uiScale: root.uiScale
         }

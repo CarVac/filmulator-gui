@@ -245,3 +245,20 @@ bool Settings::getQuickPreview()
     emit quickPreviewChanged();
     return quickPreview;
 }
+
+void Settings::setPreviewResolution(int resolutionIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    previewResolution = resolutionIn;
+    settings.setValue("edit/previewResolution", resolutionIn);
+    emit previewResolutionChanged();
+}
+
+int Settings::getPreviewResolution()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    //Default: 1000 pixels wide
+    previewResolution = settings.value("edit/previewResolution", 1500).toInt();
+    emit previewResolutionChanged();
+    return previewResolution;
+}

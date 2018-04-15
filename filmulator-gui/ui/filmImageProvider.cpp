@@ -40,10 +40,14 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
         pipeline.setCache(WithCache);
     }
 
+    quickPipe.resolution = settingsObject.getPreviewResolution();
+
     //Check if we want to use dual pipelines
     if (settingsObject.getQuickPreview())
     {
         useQuickPipe = true;
+        pipeline.stealData = true;
+        pipeline.stealVictim = &quickPipe;
     }
     else
     {

@@ -96,7 +96,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         cout << "imagePipeline.cpp: Opening " << loadParam.fullFilename << endl;
 
-        matrix<float> input_image;
         //Reads in the photo.
         cout << "load start:" << timeDiff (timeRequested) << endl;
         struct timeval imload_time;
@@ -116,7 +115,11 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
         */
-        if (loadParam.tiffIn)
+        if ((HighQuality == quality) && stealData)//only full pipelines may steal data
+        {
+            input_image = stealVictim->input_image;
+        }
+        else if (loadParam.tiffIn)
         {
             if (imread_tiff(loadParam.fullFilename, input_image, exifData))
             {
@@ -236,13 +239,20 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
             gettimeofday( &downscale_time, NULL );
-            downscale_and_crop(input_image,cropped_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, 600, 600);
-            //cropped_image = input_image;
+            downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, 600, 600);
+            cout << "scale end: " << timeDiff( downscale_time ) << endl;
+        }
+        else if (PreviewQuality == quality)
+        {
+            cout << "scale start:" << timeDiff (timeRequested) << endl;
+            struct timeval downscale_time;
+            gettimeofday( &downscale_time, NULL );
+            downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, resolution, resolution);
             cout << "scale end: " << timeDiff( downscale_time ) << endl;
         }
         else
         {
-            cropped_image = input_image;
+            scaled_image = input_image;
         }
 
         valid = paramManager->markDemosaicComplete();
@@ -260,7 +270,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
 
         //Here we apply the exposure compensation and white balance.
-        matrix<float> exposureImage = cropped_image * pow(2, prefilmParam.exposureComp);
+        matrix<float> exposureImage = scaled_image * pow(2, prefilmParam.exposureComp);
         whiteBalance(exposureImage,
                      pre_film_image,
                      prefilmParam.temperature,
@@ -269,7 +279,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         if (NoCache == cache)
         {
-            cropped_image.set_size( 0, 0 );
+            scaled_image.set_size( 0, 0 );
             cacheEmpty = true;
         }
         else
@@ -379,10 +389,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             height = imHeight;
         }
 
-        matrix<float> actually_cropped_image;
+        matrix<float> cropped_image;
 
         downscale_and_crop(rotated_image,
-                           actually_cropped_image,
+                           cropped_image,
                            startX,
                            startY,
                            endX,
@@ -392,7 +402,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
 
-        whitepoint_blackpoint(actually_cropped_image,//filmulated_image,
+        whitepoint_blackpoint(cropped_image,//filmulated_image,
                               contrast_image,
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);

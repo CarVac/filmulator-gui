@@ -22,6 +22,7 @@ class Settings : public QObject
     Q_PROPERTY(bool mipmapView READ getMipmapView WRITE setMipmapView NOTIFY mipmapViewChanged)
     Q_PROPERTY(bool lowMemMode READ getLowMemMode WRITE setLowMemMode NOTIFY lowMemModeChanged)
     Q_PROPERTY(bool quickPreview READ getQuickPreview WRITE setQuickPreview NOTIFY quickPreviewChanged)
+    Q_PROPERTY(int previewResolution READ getPreviewResolution WRITE setPreviewResolution NOTIFY previewResolutionChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
@@ -39,6 +40,7 @@ public:
     void setMipmapView(bool mipmapViewIn);
     void setLowMemMode(bool lowMemModeIn);
     void setQuickPreview(bool quickPreviewIn);
+    void setPreviewResolution(int resolutionIn);
 
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
@@ -54,6 +56,7 @@ public:
     Q_INVOKABLE bool getMipmapView();
     Q_INVOKABLE bool getLowMemMode();
     Q_INVOKABLE bool getQuickPreview();
+    Q_INVOKABLE int getPreviewResolution();
 
 protected:
     QString photoStorageDir;
@@ -70,6 +73,7 @@ protected:
     bool mipmapView;
     bool lowMemMode;
     bool quickPreview;
+    int previewResolution;
 
 signals:
     void photoStorageDirChanged();
@@ -86,6 +90,7 @@ signals:
     void mipmapViewChanged();
     void lowMemModeChanged();
     void quickPreviewChanged();
+    void previewResolutionChanged();
 };
 
 #endif // SETTINGS_H
