@@ -16,6 +16,7 @@ script:
   - git clone https://github.com/LibRaw/LibRaw-demosaic-pack-GPL2.git
   - git clone https://github.com/LibRaw/LibRaw-demosaic-pack-GPL3.git
   - cd LibRaw
+  - git checkout 0.18-stable
   - patch -p1 < ../patches/libraw-makefile.patch
   - make -j3 -f Makefile.dist
   - sudo make install -f Makefile.dist
