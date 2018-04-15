@@ -1,13 +1,23 @@
 *** LibRaw/Makefile.dist	Wed Jun 28 14:44:51 2017
 --- LibRaw-new/Makefile.dist	Wed Jun 28 15:13:02 2017
 ***************
-*** 7,11 ****
+*** 1,11 ****
+  #all: library all_samples
+  
+! #CFLAGS=-arch i386 -arch x86_64 -O3  -I. -w
+  #CC=gcc
+  #CXX=g++
   
   # OpenMP support
 ! #CFLAGS+=-fopenmp
   
   # RawSpeed Support
---- 7,11 ----
+--- 1,11 ----
+  #all: library all_samples
+  
+! CFLAGS=-march=i386 -march=x86-64 -O3  -I. -w
+  #CC=gcc
+  #CXX=g++
   
   # OpenMP support
 ! CFLAGS+=-fopenmp
