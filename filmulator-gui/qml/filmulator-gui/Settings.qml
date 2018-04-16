@@ -96,8 +96,6 @@ Rectangle {
             minimumValue: 100
             maximumValue: 8000
             stepSize: 100
-            tickmarksEnabled: true
-            tickmarkFactor: 1
             value: settings.getPreviewResolution()
             defaultValue: settings.getPreviewResolution()
             changed: false

@@ -117,7 +117,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         */
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
-            input_image = stealVictim->input_image;
+            scaled_image = stealVictim->input_image;
         }
         else if (loadParam.tiffIn)
         {
@@ -252,7 +252,11 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
         else
         {
-            scaled_image = input_image;
+            if (!stealData) //If we had to compute the input image ourselves
+            {
+                scaled_image = input_image;
+                input_image.set_size(0,0);
+            }
         }
 
         valid = paramManager->markDemosaicComplete();
