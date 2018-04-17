@@ -118,6 +118,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
             scaled_image = stealVictim->input_image;
+            exifData = stealVictim->exifData;
         }
         else if (loadParam.tiffIn)
         {
