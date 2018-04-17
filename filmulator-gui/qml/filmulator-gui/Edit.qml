@@ -196,6 +196,7 @@ SplitView {
                                 root.imageURL(topImage.source)//replace the thumbnail in the queue with the live image
                             }
                             else {//it was loading the thumb or the quick image
+                                root.imageReady = false
                                 //Increment the image index
                                 var num = (topImage.index + 1) % 1000000//1 in a million
                                 topImage.index = num;
