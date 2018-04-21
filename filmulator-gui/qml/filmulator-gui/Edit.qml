@@ -225,6 +225,20 @@ SplitView {
                                 root.cropping = false
                             }
                         }
+                        else if (topImage.status == Image.Error) {
+                            root.imageReady = false
+                            //Increment the image index
+                            var num = (topImage.index + 1) % 1000000//1 in a million
+                            topImage.index = num;
+                            var s = num+"";
+                            var size = 6 //6 digit number
+                            while (s.length < size) {s = "0" + s}
+                            topImage.indexString = s
+
+                            //now actually ask for the image
+                            topImage.state = "lq"//loading quick pipe
+                            topImage.source = "image://filmy/q" + topImage.indexString
+                        }
                     }
                 }
                 Image {
@@ -1675,7 +1689,6 @@ SplitView {
             text: qsTr("Rotate Left")
             onTriggered: {
                 paramManager.rotateLeft()
-                root.updateImage()
             }
             uiScale: root.uiScale
         }
@@ -1688,7 +1701,6 @@ SplitView {
             text: qsTr("Rotate Right")
             onTriggered: {
                 paramManager.rotateRight()
-                root.updateImage()
             }
             uiScale: root.uiScale
         }

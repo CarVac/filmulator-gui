@@ -19,6 +19,7 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
 {
     paramManager = manager;
     cloneParam = new ParameterManager;
+    cloneParam->setClone();
     connect(paramManager, SIGNAL(updateClone(ParameterManager*)), cloneParam, SLOT(cloneParams(ParameterManager*)));
     zeroHistogram(finalHist);
     zeroHistogram(postFilmHist);

@@ -21,6 +21,7 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
+    changeMadeSinceCheck = false;//We can't have it abort first thing in the pipeline.
     if (validity < Valid::none)//If something earlier than this has changed
     {
         abort = AbortStatus::restart;//not actually possible
@@ -34,7 +35,7 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
         abort = AbortStatus::proceed;
         validity = Valid::partload;//mark as being in progress
     }
-    changeMadeSinceCheck = false;
+    //changeMadeSinceCheck = false;
     LoadParams params;
     params.fullFilename = m_fullFilename;
     params.tiffIn = m_tiffIn;
@@ -46,17 +47,19 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
 AbortStatus ParameterManager::claimLoadAbort()
 {
     QMutexLocker paramLocker(&paramMutex);
-    changeMadeSinceCheck = false;
     if (validity < Valid::partload)//make sure that progress on this step isn't invalid
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else if (isClone && changeMadeSinceCheck)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::proceed;
     }
 }
@@ -121,17 +124,19 @@ std::tuple<Valid,AbortStatus,DemosaicParams> ParameterManager::claimDemosaicPara
 AbortStatus ParameterManager::claimDemosaicAbort()
 {
     QMutexLocker paramLocker(&paramMutex);
-    changeMadeSinceCheck = false;
     if (validity < Valid::partdemosaic)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else if (isClone && changeMadeSinceCheck)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::proceed;
     }
 }
@@ -198,17 +203,19 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
 AbortStatus ParameterManager::claimPrefilmAbort()
 {
     QMutexLocker paramLocker(&paramMutex);
-    changeMadeSinceCheck = false;
     if (validity < Valid::partprefilmulation)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else if (isClone && changeMadeSinceCheck)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::proceed;
     }
 }
@@ -301,17 +308,19 @@ std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
 AbortStatus ParameterManager::claimFilmAbort()
 {
     QMutexLocker paramLocker(&paramMutex);
-    changeMadeSinceCheck = false;
     if (validity < Valid::partfilmulation)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else if (isClone && changeMadeSinceCheck)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::proceed;
     }
 }
@@ -546,17 +555,19 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
 AbortStatus ParameterManager::claimBlackWhiteAbort()
 {
     QMutexLocker paramLocker(&paramMutex);
-    changeMadeSinceCheck = false;
     if (validity < Valid::partblackwhite)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else if (isClone && changeMadeSinceCheck)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::proceed;
     }
 }
@@ -728,17 +739,19 @@ std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmli
 AbortStatus ParameterManager::claimFilmLikeCurvesAbort()
 {
     QMutexLocker paramLocker(&paramMutex);
-    changeMadeSinceCheck = false;
     if (validity < Valid::partfilmlikecurve)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else if (isClone && changeMadeSinceCheck)
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
     else
     {
+        changeMadeSinceCheck = false;
         return AbortStatus::proceed;
     }
 }
@@ -1947,7 +1960,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams rotation" << endl;
         m_rotation = temp_rotation;
-        validity = min(validity, Valid::filmlikecurve);
+        validity = min(validity, Valid::filmulation);
     }
 }
 
@@ -1958,6 +1971,11 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
     disableParamChange();//Prevent aborting of computation.
+
+    //Make sure that we always abort after any change while executing,
+    //even if it's later in the pipeline,
+    //Because we want to redo the small preview immediately.
+    changeMadeSinceCheck = true;
 
     //Load the image index
     const QString temp_imageIndex = sourceParams->getImageIndex();
@@ -2369,7 +2387,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams rotation" << endl;
         m_rotation = temp_rotation;
-        validity = min(validity, Valid::filmlikecurve);
+        validity = min(validity, Valid::filmulation);
     }
 
     enableParamChange();//Re-enable updating of the image.
