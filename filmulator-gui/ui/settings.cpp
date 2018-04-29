@@ -203,12 +203,7 @@ bool Settings::getMipmapView()
 {
     const bool oldMipmapView = mipmapView;
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
-    mipmapView = settings.value("edit/mipmapView", 1).toBool();
-    if (oldMipmapView == mipmapView)
-    {
-        //This loops like crazy.
-        //emit mipmapViewChanged();
-    }
+    mipmapView = settings.value("edit/mipmapView", 0).toBool();
     return mipmapView;
 }
 
