@@ -243,10 +243,16 @@ Rectangle {
             title: qsTr("Destination Directory")
             tooltipText: qsTr("Select or type in the root directory of your photo file structure. If it doesn\'t exist, then it will be created.")
             dirDialogTitle: qsTr("Select the destination root directory")
+            warningTooltipText: empty ? qsTr("Choose a directory to move files to.") : qsTr("You do not have permissions to write in this directory. Please select another directory.")
+            erroneous: (empty || notWritable)
+            property bool notWritable: false
+            property bool empty: false
             enteredText: settings.getPhotoStorageDir()
             onEnteredTextChanged: {
                 importModel.photoDir = enteredText
                 settings.photoStorageDir = enteredText
+                notWritable = !importModel.pathWritable(enteredText)
+                empty = (enteredText == "")
             }
             Component.onCompleted: {
                 importModel.photoDir = enteredText
@@ -362,9 +368,10 @@ Rectangle {
             x: 0 * uiScale
             y: 0 * uiScale
             text: qsTr("Import")
-            tooltipText: qsTr("Start importing the selected file or folder. If importing is currently in progress, then the current file or folder will be imported after all current imports are complete.")
+            tooltipText: notDisabled ? qsTr("Start importing the selected file or folder. If importing is currently in progress, then the current file or folder will be imported after all current imports are complete.") : qsTr("Correct the errors that are highlighted above before importing.")
             width: parent.width
             height: 40 * uiScale
+            notDisabled: (!photoDirEntry.erroneous && (root.sourceIsFolder ? !sourceDirEntry.erroneous : !sourceFileEntry.erroneous))
             onTriggered: {
                 if (root.sourceIsFolder) {
                     importModel.importDirectory_r(root.folderPath, root.importInPlace, root.replace)

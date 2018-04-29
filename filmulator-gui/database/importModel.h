@@ -55,6 +55,7 @@ class ImportModel : public SqlModel
 public:
     explicit ImportModel(QObject *parent = 0);
     Q_INVOKABLE bool pathContainsDCIM(const QString dir, const bool notDirectory);
+    Q_INVOKABLE bool pathWritable(const QString dir);
     Q_INVOKABLE void importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation);
     Q_INVOKABLE Validity importFile(const QString name, const bool importInPlace, const bool replaceLocation, const bool onlyCheck);
     Q_INVOKABLE void importFileList(const QString name, const bool importInPlace, const bool replaceLocation);

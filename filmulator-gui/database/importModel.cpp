@@ -1,9 +1,11 @@
 
 #include "importModel.h"
 #include <iostream>
+#include <math.h>
 
 using std::cout;
 using std::endl;
+using std::max;
 
 ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
 {
@@ -74,6 +76,32 @@ bool ImportModel::pathContainsDCIM(const QString dir, const bool notDirectory)
             {
                 return true;
             }
+        }
+    }
+    return false;
+}
+
+//Check for whether a directory can be created.
+//Apparently this might fail on Windows because you might have write permissions
+// *in* a directory but not *to* the directory itself.
+bool ImportModel::pathWritable(const QString dir)
+{
+    QString parentDir = dir;
+    while (parentDir.length() > 0)
+    {
+        QFileInfo fileInfo(parentDir);
+        if (fileInfo.isWritable())
+        {
+            return true;
+        }
+        else //the dir hasn't been created yet
+        {
+            int lastIndex = max(parentDir.lastIndexOf("/"),parentDir.lastIndexOf("\\"));
+            if (lastIndex < 0)
+            {
+                return false;
+            }
+            parentDir.truncate(lastIndex);
         }
     }
     return false;
