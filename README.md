@@ -22,11 +22,11 @@ libtiff
 libgomp
 libexiv2
 libjpeg
-libraw
+libraw v0.18 or older
 
 Some libraw package maintainers don't include the GPL demosaic packs, so we highly encourage you to compile it yourself.
 
-It also requires Qt 5.4: open the .pro file from Qt Creator and select Build in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the -j# flag to the Make build parameters to speed compilation.
+It also requires Qt 5.4 or newer: open the .pro file from Qt Creator and select Build in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the -j# flag to the Make build parameters to speed compilation.
 
 A note: Use a standalone git client to clone the repository initially, and then you can use Qt Creator's built-in git tools.
 
@@ -55,7 +55,7 @@ If you want the UI to appear larger on a high-pixel density display, use the Use
 
 # Status
 
-If told to make a version number for it right now, I'd put it as 0.6.3.
+If told to make a version number for it right now, I'd put it as 0.7.0.
 
 Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the Import and Organize tabs need some UI massaging, as does the queue. Finally, the Output tab hasn't even been started yet.
 
