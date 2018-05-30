@@ -15,6 +15,11 @@ void downscaleBilinear1D(const matrix<T> input,
                          const double scaleFactor,
                          const bool interleaved);
 
+template <typename T>
+void upscaleBilinear1D(const matrix<T> input,
+                       matrix<T> &output,
+                       const int outNumCols,
+                       const bool interleaved);
 
 
 //Scales the input to the output to fit within the output sizes.
@@ -174,5 +179,34 @@ void downscaleBilinear1D(const matrix<T> input,
                 output(i,j) = startWeight*double(input(i,inputStart)) + endWeight*double(input(i,inputEnd));
         }
     }
+}
+
+//Scales the image up so that the number of columns is increased to the desired number.
+//outputNumCols should be for the un-interleaved image.
+//TODO: COMPLETE THIS
+template <typename T>
+void upscaleBilinear1D(const matrix<T> input,
+                       matrix<T> &output,
+                       const int outNumCols,
+                       const bool interleaved)
+{
+    const int inputNumRows = input.nr();
+    const int inputNumCols = input.nc();
+
+    if (outNumCols <= inputNumCols)
+    {
+        output.set_size(0,0);
+        return;
+    }
+
+    if (interleaved)
+    {
+        output.set_size(inputNumRows, outNumCols*3);
+    }
+    else
+    {
+        output.set_size(inputNumRows, outNumCols);
+    }
+
 
 }

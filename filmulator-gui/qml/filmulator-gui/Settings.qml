@@ -53,10 +53,10 @@ Rectangle {
             tooltipText: qsTr("This enables mipmaps for the Filmulate tab's image view. It's recommended for noisy images where not mipmapping may cause patterns to appear at different zoom levels.\n\nIt has slight impact on responsiveness for the last few tools, but it doesn't affect performance when zooming and panning. It also softens the image slightly, which may be undesireable.\n\nThis is applied as soon as you save settings.")
             isOn: settings.getMipmapView()
             defaultOn: settings.getMipmapView()
-            changed: false
             onIsOnChanged: mipmapSwitch.changed = true
             Component.onCompleted: {
                 mipmapSwitch.tooltipWanted.connect(root.tooltipWanted)
+                mipmapSwitch.changed = false
             }
             uiScale: root.uiScale
         }
@@ -67,10 +67,47 @@ Rectangle {
             tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
             isOn: settings.getLowMemMode()
             defaultOn: settings.getLowMemMode()
-            changed: false
             onIsOnChanged: lowMemModeSwitch.changed = true
             Component.onCompleted: {
                 lowMemModeSwitch.tooltipWanted.connect(root.tooltipWanted)
+                lowMemModeSwitch.changed = false
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolSwitch {
+            id: quickPreviewSwitch
+            text: qsTr("Render small preview first")
+            tooltipText: qsTr("Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.\n\nThis takes effect after applying settings and restarting Filmulator.")
+            isOn: settings.getQuickPreview()
+            defaultOn: settings.getQuickPreview()
+            onIsOnChanged: quickPreviewSwitch.changed = true
+            Component.onCompleted: {
+                quickPreviewSwitch.tooltipWanted.connect(root.tooltipWanted)
+                quickPreviewSwitch.changed = false
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolSlider {
+            id: previewResSlider
+            title: qsTr("Preview render resolution")
+            tooltipText: qsTr("When the small preview is active, the preview image will be processed at an image size with this value as the long dimension. The larger this is, the sharper the preview, but the longer it takes to generate.\n\nThis takes effect after applying settings and restarting Filmulator.")
+            minimumValue: 100
+            maximumValue: 8000
+            stepSize: 100
+            value: settings.getPreviewResolution()
+            defaultValue: settings.getPreviewResolution()
+            changed: false
+            onValueChanged: {
+                if (Math.abs(value - defaultValue) < 0.5) {
+                    previewResSlider.changed = false
+                } else {
+                    previewResSlider.changed = true
+                }
+            }
+            Component.onCompleted: {
+                previewResSlider.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
         }
@@ -81,7 +118,7 @@ Rectangle {
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed
+            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
             onTriggered: {
                 settings.uiScale = uiScaleSlider.value
                 uiScaleSlider.defaultValue = uiScaleSlider.value
@@ -91,7 +128,13 @@ Rectangle {
                 mipmapSwitch.changed = false
                 settings.lowMemMode = lowMemModeSwitch.isOn
                 lowMemModeSwitch.defaultOn = lowMemModeSwitch.isOn
-                lowMemModeSwitch.changed = false;
+                lowMemModeSwitch.changed = false
+                settings.quickPreview = quickPreviewSwitch.isOn
+                quickPreviewSwitch.defaultOn = quickPreviewSwitch.isOn
+                quickPreviewSwitch.changed = false
+                settings.previewResolution = previewResSlider.value
+                previewResSlider.defaultValue = previewResSlider.value
+                previewResSlider.changed = false
             }
             uiScale: root.uiScale
         }

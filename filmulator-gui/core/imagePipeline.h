@@ -8,7 +8,7 @@
 
 enum Cache {WithCache, NoCache};
 enum Histo {WithHisto, NoHisto};
-enum QuickQuality { LowQuality, HighQuality };
+enum QuickQuality { LowQuality, PreviewQuality, HighQuality };
 
 class ImagePipeline
 {
@@ -30,6 +30,13 @@ public:
     //Lets the consumer turn cache on and off
     void setCache(Cache cacheIn);
 
+    //Variable relating to stealing the demosaiced data from another imagepipeline
+    bool stealData = false;
+    ImagePipeline * stealVictim;
+
+    //The resolution of a quick preview
+    int resolution;
+
 protected:
     matrix<unsigned short> emptyMatrix(){matrix<unsigned short> mat; return mat;}
 
@@ -48,7 +55,8 @@ protected:
 
     struct timeval timeRequested;
 
-    matrix<float> cropped_image;
+    matrix<float> input_image;
+    matrix<float> scaled_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
     matrix<float> filmulated_image;
@@ -61,7 +69,7 @@ protected:
     void updateProgress(Valid valid, float CurrFractionCompleted);
 
     //The core filmulation. It needs to access ProcessingParameters, so it's here.
-    bool filmulate(matrix<float> &cropped_image,
+    bool filmulate(matrix<float> &scaled_image,
                    matrix<float> &output_density,
                    ParameterManager * paramManager,
                    ImagePipeline * pipeline);

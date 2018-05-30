@@ -50,27 +50,25 @@ public:
 
 protected:
     ImagePipeline pipeline = ImagePipeline(WithCache, WithHisto, HighQuality);
+    ImagePipeline quickPipe = ImagePipeline(WithCache, WithHisto, PreviewQuality);//for now it'll just be the 600 size
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;
     bool thumbnailWriteEnabled = true;
     bool writeThisThumbnail = true;
 
+    bool useQuickPipe;
+
     ParameterManager * paramManager;
+    ParameterManager * cloneParam;
     QMutex processMutex;//Ensures that output files are only of the currently selected image.
     QMutex writeDataMutex;//binds together the update of outputFilename and the outputImage.
     float progress;
 
     struct timeval request_start_time;
 
-    matrix<float> input_image;
-    matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
     std::string outputFilename;
-    matrix<float> filmulated_image;
-    matrix<unsigned short> contrast_image;
-    matrix<unsigned short> color_curve_image;
-    matrix<unsigned short> vibrance_saturation_image;
     matrix<unsigned short> last_image;
 
     Histogram finalHist;

@@ -201,14 +201,8 @@ void Settings::setMipmapView(bool mipmapViewIn)
 
 bool Settings::getMipmapView()
 {
-    const bool oldMipmapView = mipmapView;
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
-    mipmapView = settings.value("edit/mipmapView", 1).toBool();
-    if (oldMipmapView == mipmapView)
-    {
-        //This loops like crazy.
-        //emit mipmapViewChanged();
-    }
+    mipmapView = settings.value("edit/mipmapView", 0).toBool();
     return mipmapView;
 }
 
@@ -227,4 +221,38 @@ bool Settings::getLowMemMode()
     lowMemMode = settings.value("edit/lowMemMode", 0).toBool();
     emit lowMemModeChanged();
     return lowMemMode;
+}
+
+void Settings::setQuickPreview(bool quickPreviewIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    quickPreview = quickPreviewIn;
+    settings.setValue("edit/quickPreview", quickPreviewIn);
+    emit quickPreviewChanged();
+}
+
+bool Settings::getQuickPreview()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    //Default: 1; it should default to being on.
+    quickPreview = settings.value("edit/quickPreview", 1).toBool();
+    emit quickPreviewChanged();
+    return quickPreview;
+}
+
+void Settings::setPreviewResolution(int resolutionIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    previewResolution = resolutionIn;
+    settings.setValue("edit/previewResolution", resolutionIn);
+    emit previewResolutionChanged();
+}
+
+int Settings::getPreviewResolution()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    //Default: 1000 pixels wide
+    previewResolution = settings.value("edit/previewResolution", 1500).toInt();
+    emit previewResolutionChanged();
+    return previewResolution;
 }

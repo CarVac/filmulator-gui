@@ -24,15 +24,11 @@ ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityI
 int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
 {
     AbortStatus abort;
-    Valid validity;
 
     //Recover the param_manager from the data
     ParameterManager * pManager = static_cast<ParameterManager*>(data);
     //See whether to abort or not.
-    //Because LibRaw does the demosaicing, we need to use the check that's performed afterwards
-    //That's prefilmulation.
-    //If we ever use LibRaw only for decoding, then change this to do the check for demosaicing.
-    std::tie(validity, abort, std::ignore) = pManager->claimPrefilmParams();
+    abort = pManager->claimDemosaicAbort();
     if (abort == AbortStatus::restart)
     {
         return 1;//cancel processing
@@ -63,7 +59,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     LoadParams loadParam;
     DemosaicParams demosaicParam;
     PrefilmParams prefilmParam;
-    FilmParams filmParam;
+    //FilmParams filmParam;
     BlackWhiteParams blackWhiteParam;
     FilmlikeCurvesParams curvesParam;
 
@@ -80,13 +76,17 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
         //In the future we'll actually perform loading here.
+        valid = paramManager->markLoadComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partdemosaic: [[fallthrough]];
     case load://Do demosaic
     {
         AbortStatus abort;
         //Because the load params are used here
         std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
+        paramManager->markLoadComplete();//otherwise we reset validity back half a step
         std::tie(valid, abort, demosaicParam) = paramManager->claimDemosaicParams();
         if (abort == AbortStatus::restart)
         {
@@ -96,7 +96,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         cout << "imagePipeline.cpp: Opening " << loadParam.fullFilename << endl;
 
-        matrix<float> input_image;
         //Reads in the photo.
         cout << "load start:" << timeDiff (timeRequested) << endl;
         struct timeval imload_time;
@@ -116,7 +115,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
         */
-        if (loadParam.tiffIn)
+        if ((HighQuality == quality) && stealData)//only full pipelines may steal data
+        {
+            scaled_image = stealVictim->input_image;
+            exifData = stealVictim->exifData;
+        }
+        else if (loadParam.tiffIn)
         {
             if (imread_tiff(loadParam.fullFilename, input_image, exifData))
             {
@@ -138,13 +142,13 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             LibRaw image_processor;
 
             //Connect image processor with callback for cancellation
-            image_processor.set_progress_handler(ImagePipeline::libraw_callback, paramManager);
+            //image_processor.set_progress_handler(ImagePipeline::libraw_callback, paramManager);
 
             //Open the file.
             const char *cstr = loadParam.fullFilename.c_str();
             if (0 != image_processor.open_file(cstr))
             {
-                cerr << "processImage: Could not read input file!" << endl;
+                cout << "processImage: Could not read input file!" << endl;
                 return emptyMatrix();
             }
              //Make abbreviations for brevity in accessing data.
@@ -176,7 +180,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             }
 
             AbortStatus abort;
-            std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
+            abort = paramManager->claimDemosaicAbort();
             if (abort == AbortStatus::restart)
             {
                 return emptyMatrix();
@@ -190,7 +194,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 return emptyMatrix();
             }
 
-            std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
+            abort = paramManager->claimDemosaicAbort();
             if (abort == AbortStatus::restart)
             {
                 return emptyMatrix();
@@ -236,16 +240,31 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
             gettimeofday( &downscale_time, NULL );
-            downscale_and_crop(input_image,cropped_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, 600, 600);
-            //cropped_image = input_image;
+            downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, 600, 600);
+            cout << "scale end: " << timeDiff( downscale_time ) << endl;
+        }
+        else if (PreviewQuality == quality)
+        {
+            cout << "scale start:" << timeDiff (timeRequested) << endl;
+            struct timeval downscale_time;
+            gettimeofday( &downscale_time, NULL );
+            downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, resolution, resolution);
             cout << "scale end: " << timeDiff( downscale_time ) << endl;
         }
         else
         {
-            cropped_image = input_image;
+            if (!stealData) //If we had to compute the input image ourselves
+            {
+                scaled_image = input_image;
+                input_image.set_size(0,0);
+            }
         }
+
+        valid = paramManager->markDemosaicComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partprefilmulation: [[fallthrough]];
     case demosaic://Do pre-filmulation work.
     {
         AbortStatus abort;
@@ -256,7 +275,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
 
         //Here we apply the exposure compensation and white balance.
-        matrix<float> exposureImage = cropped_image * pow(2, prefilmParam.exposureComp);
+        matrix<float> exposureImage = scaled_image * pow(2, prefilmParam.exposureComp);
         whiteBalance(exposureImage,
                      pre_film_image,
                      prefilmParam.temperature,
@@ -265,7 +284,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         if (NoCache == cache)
         {
-            cropped_image.set_size( 0, 0 );
+            scaled_image.set_size( 0, 0 );
             cacheEmpty = true;
         }
         else
@@ -280,12 +299,15 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
 
+        valid = paramManager->markPrefilmComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partfilmulation: [[fallthrough]];
     case prefilmulation://Do filmulation
     {
         //We don't need to check abort status out here, because
-        //the filmulate function will do so inside its loop multiple times.
+        //the filmulate function will do so inside its loop.
         //We just check for it returning an empty matrix.
 
         //Here we do the film simulation on the image...
@@ -315,12 +337,11 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
 
-        //Now, since we didn't check abort status out here, we do have to at least
-        // increment the validity.
-        AbortStatus abort;
-        std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+        valid = paramManager->markFilmComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partblackwhite: [[fallthrough]];
     case filmulation://Do whitepoint_blackpoint
     {
         AbortStatus abort;
@@ -373,10 +394,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             height = imHeight;
         }
 
-        matrix<float> actually_cropped_image;
+        matrix<float> cropped_image;
 
         downscale_and_crop(rotated_image,
-                           actually_cropped_image,
+                           cropped_image,
                            startX,
                            startY,
                            endX,
@@ -386,13 +407,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
 
-        whitepoint_blackpoint(actually_cropped_image,//filmulated_image,
+        whitepoint_blackpoint(cropped_image,//filmulated_image,
                               contrast_image,
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
 
+        valid = paramManager->markBlackWhiteComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partcolorcurve: [[fallthrough]];
     case blackwhite: // Do color_curve
     {
         //It's not gonna abort because we have no color curves yet..
@@ -414,8 +438,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cacheEmpty = false;
         }
+
+        valid = paramManager->markColorCurvesComplete();
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
+    case partfilmlikecurve: [[fallthrough]];
     case colorcurve://Do film-like curve
     {
         AbortStatus abort;
@@ -457,6 +485,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                             curvesParam.saturation);
 
         updateProgress(valid, 0.0f);
+        [[fallthrough]];
     }
     default://output
     {
@@ -473,6 +502,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             interface->updateHistFinal(vibrance_saturation_image);
         }
+        valid = paramManager->markFilmLikeCurvesComplete();
         updateProgress(valid, 0.0f);
 
         exifOutput = exifData;

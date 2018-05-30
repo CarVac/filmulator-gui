@@ -31,7 +31,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     FilmParams filmParam;
     AbortStatus abort;
     Valid valid;
-    std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::initial);
+    std::tie(valid, abort, filmParam) = paramManager->claimFilmParams();
     if(abort == AbortStatus::restart)
     {
         return true;
@@ -120,14 +120,14 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     for(int i = 0; i <= development_steps; i++)
     {
         //Check for cancellation
-        std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+        abort = paramManager->claimFilmAbort();
         if(abort == AbortStatus::restart)
         {
             return true;
         }
 
         //Updating for starting the development simulation. Valid is one too high here.
-        pipeline->updateProgress(Valid::prefilmulation, float(i)/float(development_steps));
+        pipeline->updateProgress(Valid::partfilmulation, float(i)/float(development_steps));
 
         gettimeofday(&develop_start,NULL);
 
@@ -148,26 +148,30 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
         gettimeofday(&diffuse_start,NULL);
 
         //Check for cancellation
-        std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+        abort = paramManager->claimFilmAbort();
         if(abort == AbortStatus::restart)
         {
             return true;
         }
 
         //Updating for starting the diffusion simulation. Valid is one too high here.
-        pipeline->updateProgress(Valid::prefilmulation, float(i)/float(development_steps));
+        pipeline->updateProgress(Valid::partfilmulation, float(i)/float(development_steps));
 
         //Now, we are going to perform the diffusion part.
         //Here we mix the layer among itself, which grants us the
         // local contrast increases.
-//        diffuse(developer_concentration,
-//                sigma_const,
-//                pixels_per_millimeter,
-//                timestep);
-        diffuse_short_convolution(developer_concentration,
-                                  sigma_const,
-                                  pixels_per_millimeter,
-                                  timestep);
+        diffuse(developer_concentration,
+                sigma_const,
+                pixels_per_millimeter,
+                timestep);
+//        diffuse_short_convolution(developer_concentration,
+//                                  sigma_const,
+//                                  pixels_per_millimeter,
+//                                  timestep);
+//        diffuse_resize_iir(developer_concentration,
+//                           sigma_const,
+//                           pixels_per_millimeter,
+//                           timestep);
 
         diffuse_dif += timeDiff(diffuse_start);
 
@@ -216,7 +220,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     struct timeval mult_start;
     gettimeofday(&mult_start,NULL);
 
-    std::tie(valid, abort, filmParam) = paramManager->claimFilmParams(FilmFetch::subsequent);
+    abort = paramManager->claimFilmAbort();
     if(abort == AbortStatus::restart)
     {
         return true;
