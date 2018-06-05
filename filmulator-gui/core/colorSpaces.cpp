@@ -188,11 +188,11 @@ void sRGB_to_Lab_s(matrix<unsigned short> &RGB,
 }
 
 //Converts gamma-curved sRGB D50 to linear, short int to float.
-void sRGB_linearize(matrix<unsigned short> &RGB,
+void sRGB_linearize(matrix<unsigned short> &in,
                     matrix<float> &out)
 {
-    int nRows = RGB.nr();
-    int nCols = RGB.nc();
+    int nRows = in.nr();
+    int nCols = in.nc();
 
     out.set_size(nRows, nCols);
 
@@ -203,9 +203,9 @@ void sRGB_linearize(matrix<unsigned short> &RGB,
         {
             for (int j = 0; j < nCols; j += 3)
             {
-                out(i, j  ) = sRGB_inverse_gamma(float(RGB(i, j  ))/65535.0);
-                out(i, j+1) = sRGB_inverse_gamma(float(RGB(i, j+1))/65535.0);
-                out(i, j+2) = sRGB_inverse_gamma(float(RGB(i, j+2))/65535.0);
+                out(i, j  ) = sRGB_inverse_gamma(float(in(i, j  ))/65535.0);
+                out(i, j+1) = sRGB_inverse_gamma(float(in(i, j+1))/65535.0);
+                out(i, j+2) = sRGB_inverse_gamma(float(in(i, j+2))/65535.0);
             }
         }
     }
@@ -213,11 +213,11 @@ void sRGB_linearize(matrix<unsigned short> &RGB,
 
 //Converts linear float sRGB D50 to gamma-curved, float to short int.
 //Reference: http://www.brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-void sRGB_gammacurve(matrix<float> &RGB,
+void sRGB_gammacurve(matrix<float> &in,
                      matrix<unsigned short> &out)
 {
-    int nRows = RGB.nr();
-    int nCols = RGB.nc();
+    int nRows = in.nr();
+    int nCols = in.nc();
 
     out.set_size(nRows,nCols);
 
@@ -229,9 +229,9 @@ void sRGB_gammacurve(matrix<float> &RGB,
             for (int j = 0; j < nCols; j += 3)
             {
                 //First, linearize the sRGB.
-                out(i, j  ) = (unsigned short)(65535*sRGB_forward_gamma(RGB(i, j  )));
-                out(i, j+1) = (unsigned short)(65535*sRGB_forward_gamma(RGB(i, j+1)));
-                out(i, j+2) = (unsigned short)(65535*sRGB_forward_gamma(RGB(i, j+2)));
+                out(i, j  ) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j  )));
+                out(i, j+1) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j+1)));
+                out(i, j+2) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j+2)));
             }
         }
     }
