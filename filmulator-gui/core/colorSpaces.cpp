@@ -196,7 +196,7 @@ void sRGB_linearize(matrix<unsigned short> &in,
 
     out.set_size(nRows, nCols);
 
-#pragma omp parallel shared(RGB, out) firstprivate(nRows, nCols)
+#pragma omp parallel shared(in, out) firstprivate(nRows, nCols)
     {
 #pragma omp for schedule(dynamic) nowait
         for (int i = 0; i < nRows; i++)
@@ -221,7 +221,7 @@ void sRGB_gammacurve(matrix<float> &in,
 
     out.set_size(nRows,nCols);
 
-#pragma omp parallel shared(RGB, out) firstprivate(nRows, nCols)
+#pragma omp parallel shared(in, out) firstprivate(nRows, nCols)
     {
 #pragma omp for schedule(dynamic) nowait
         for (int i = 0; i < nRows; i++)
