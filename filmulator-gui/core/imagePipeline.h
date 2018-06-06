@@ -17,7 +17,7 @@ public:
 
     //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
     matrix<unsigned short> processImage(ParameterManager * paramManager,
-                                        Interface * interface,
+                                        Interface * histoInterface,
                                         Exiv2::ExifData &exifOutput);
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
@@ -45,7 +45,7 @@ protected:
     bool hasStartedProcessing = false;
     Histo histo;
     QuickQuality quality;
-    Interface * interface;
+    Interface * histoInterface;
 
     Valid valid;
     float progress;

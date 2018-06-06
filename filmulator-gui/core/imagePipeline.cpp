@@ -48,7 +48,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
     gettimeofday(&timeRequested, NULL);
-    interface = interface_in;
+    histoInterface = interface_in;
 
     valid = paramManager->getValid();
     if (NoCache == cache || true == cacheEmpty)
@@ -294,7 +294,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         if (WithHisto == histo)
         {
             //Histogram work
-            interface->updateHistPreFilm(pre_film_image, 65535);
+            histoInterface->updateHistPreFilm(pre_film_image, 65535);
         }
 
         cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
@@ -332,7 +332,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         if (WithHisto == histo)
         {
             //Histogram work
-            interface->updateHistPostFilm(filmulated_image, .0025);//TODO connect this magic number to the qml
+            histoInterface->updateHistPostFilm(filmulated_image, .0025);//TODO connect this magic number to the qml
         }
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
@@ -500,7 +500,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
         if (WithHisto == histo)
         {
-            interface->updateHistFinal(vibrance_saturation_image);
+            histoInterface->updateHistFinal(vibrance_saturation_image);
         }
         valid = paramManager->markFilmLikeCurvesComplete();
         updateProgress(valid, 0.0f);
@@ -543,7 +543,7 @@ void ImagePipeline::updateProgress(Valid valid, float stepProgress)
         //if greater -> 0
         totalCompletedTime += completionTimes[i]*fractionCompleted;
     }
-    interface->setProgress(totalCompletedTime/totalTime);
+    histoInterface->setProgress(totalCompletedTime/totalTime);
 }
 
 //Do not call this on something that's already been used!
