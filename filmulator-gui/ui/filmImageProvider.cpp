@@ -1,10 +1,5 @@
 #include "filmImageProvider.h"
 #include "../database/exifFunctions.h"
-#include <pwd.h>
-#include <unistd.h>
-#include <QTimer>
-#include <cmath>
-#include <QDebug>
 #include <iostream>
 
 using std::cout;
