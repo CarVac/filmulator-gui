@@ -126,13 +126,13 @@ QString createNewProfile(const QString fileHash,
     Exiv2::ExifData exif;
 
     //Next, we create a dummy interface.
-    Interface interface;
+    Interface dummyInterface;
 
     //Create a pipeline of the appropriate type.
     ImagePipeline pipeline = ImagePipeline(NoCache, NoHisto, LowQuality);
 
     //Process an image.
-    matrix<unsigned short> image = pipeline.processImage(&paramManager, &interface, exif);
+    matrix<unsigned short> image = pipeline.processImage(&paramManager, &dummyInterface, exif);
 
     //Write the thumbnail.
     ThumbWriteWorker worker;
