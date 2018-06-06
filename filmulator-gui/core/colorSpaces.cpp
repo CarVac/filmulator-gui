@@ -143,15 +143,15 @@ void Lab_to_XYZ(float   L, float   a, float   b,
 //The L* is 0 = 0, 1 = 65535.
 //a* and b* are -1 = 1, 0 = 32768, +1 = 65535.
 //Reference: http://www.brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-void sRGB_to_Lab_s(matrix<unsigned short> &RGB,
+void sRGB_to_Lab_s(matrix<unsigned short> &in,
                    matrix<unsigned short> &Lab)
 {
-    int nRows = RGB.nr();
-    int nCols = RGB.nc();
+    int nRows = in.nr();
+    int nCols = in.nc();
 
     Lab.set_size(nRows, nCols);
 
-#pragma omp parallel shared(RGB, Lab) firstprivate(nRows, nCols)
+#pragma omp parallel shared(in, Lab) firstprivate(nRows, nCols)
     {
 #pragma omp for schedule(dynamic) nowait
         for (int i = 0; i < nRows; i++)
@@ -159,9 +159,9 @@ void sRGB_to_Lab_s(matrix<unsigned short> &RGB,
             for (int j = 0; j < nCols; j += 3)
             {
                 //First, linearize the sRGB.
-                float r = sRGB_inverse_gamma(float(RGB(i, j  ))/65535.0);
-                float g = sRGB_inverse_gamma(float(RGB(i, j+1))/65535.0);
-                float b = sRGB_inverse_gamma(float(RGB(i, j+2))/65535.0);
+                float r = sRGB_inverse_gamma(float(in(i, j  ))/65535.0);
+                float g = sRGB_inverse_gamma(float(in(i, j+1))/65535.0);
+                float b = sRGB_inverse_gamma(float(in(i, j+2))/65535.0);
 
                 //Next, convert to XYZ.
                 float x, y, z;
