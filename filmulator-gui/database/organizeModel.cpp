@@ -3,6 +3,7 @@
 #include <QStringList>
 #include <QDateTime>
 #include <QString>
+#include <QStandardPaths>
 
 using std::cout;
 using std::endl;
@@ -131,7 +132,9 @@ void OrganizeModel::setDateHistoQuery()
 QString OrganizeModel::thumbDir()
 {
     QDir homeDir = QDir::home();
-    homeDir.cd(".local/share/filmulator/thumbs");
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator/thumbs");
+    homeDir.cd(dirstr);
     return homeDir.absolutePath();
 }
 

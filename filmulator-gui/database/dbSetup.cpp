@@ -2,20 +2,23 @@
 #include <QString>
 #include <QVariant>
 #include <iostream>
+#include <QStandardPaths>
 
 DBSuccess setupDB(QSqlDatabase *db)
 {
     QDir dir = QDir::home();
-    if (!dir.cd(".local/share/filmulator"))
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator");
+    if (!dir.cd(dirstr))
     {
-        if (!dir.mkpath(".local/share/filmulator"))
+        if (!dir.mkpath(dirstr))
         {
             std::cout << "Could not create database directory" << std::endl;
             return DBSuccess::failure;
         }
         else
         {
-            dir.cd(".local/share/filmulator");
+            dir.cd(dirstr);
         }
     }
     db -> setDatabaseName(dir.absoluteFilePath("filmulatorDB"));
