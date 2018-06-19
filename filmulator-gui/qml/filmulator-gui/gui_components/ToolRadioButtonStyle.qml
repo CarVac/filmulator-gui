@@ -23,6 +23,7 @@ RadioButtonStyle {
     label: Text {
         color: control.checked ? Colors.whiteOrange : Colors.brightGrayH//"white"
         width: control.width
+        height: control.height
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         text: control.text
