@@ -23,7 +23,6 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     worker->moveToThread(&workerThread);
     connect(this, SIGNAL(requestThumbnail(QString)), worker, SLOT(writeThumb(QString)));
     connect(worker, SIGNAL(doneWritingThumb()), this, SLOT(thumbDoneWriting()));
-    workerThread.start(QThread::LowPriority);
 
     //Check if we want the pipeline to cache.
     Settings settingsObject;
@@ -152,6 +151,7 @@ void FilmImageProvider::writeThumbnail(QString searchID)
     writeDataMutex.lock();
     if (writeThisThumbnail)//when we have the crop temporarily disabled, don't write the thumb
     {
+        workerThread.start(QThread::LowPriority);
         worker->setImage(last_image, exifData);
         emit requestThumbnail(searchID);
     }
@@ -164,6 +164,8 @@ void FilmImageProvider::writeThumbnail(QString searchID)
 
 void FilmImageProvider::thumbDoneWriting()
 {
+    //clean up thread
+    exitWorker();
     emit thumbnailDone();
 }
 

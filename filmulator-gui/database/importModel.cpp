@@ -42,7 +42,6 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                     const bool)));
     connect(worker, SIGNAL(doneProcessing(bool)), this, SLOT(workerFinished(bool)));
     connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
-    workerThread.start(QThread::LowPriority);
 }
 
 QSqlQuery ImportModel::modelQuery()
@@ -292,6 +291,7 @@ void ImportModel::workerFinished(bool changedST)
     if (queue.size() <= 0)
     {
         //cout << "ImportModel no more work; empty queue" << endl;
+        exitWorker();
         return;
     }
 
@@ -326,6 +326,10 @@ void ImportModel::enqueueRequested(const QString STsearchID)
 
 void ImportModel::startWorker(const importParams params)
 {
+    if (!workerThread.isRunning())
+    {
+        workerThread.start(QThread::LowPriority);
+    }
     const QFileInfo info = params.fileInfoParam;
     const int iTZ = params.importTZParam;
     const int cTZ = params.cameraTZParam;

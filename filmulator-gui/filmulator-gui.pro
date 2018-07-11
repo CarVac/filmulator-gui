@@ -64,10 +64,14 @@ unix:desktop.path = /usr/share/applications
 
 unix:desktop.files += ./filmulator_gui.desktop
 
+# win32 {
+# target.path = ???
+# desktop.path = ???
+# }
+
 unix {
 script.extra = move_script; install -m 755 -p filmulator
 extra.path = /usr/bin
-extra.
 }
 
 # Please do not modify the following two lines. Required for deployment.

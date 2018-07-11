@@ -19,6 +19,14 @@ ApplicationWindow {
     signal imageURL(string newURL)
     property bool cropping: false
 
+
+    onClosing: {
+        close.accepted = false
+        importModel.exitWorker()
+        filmProvider.exitWorker()
+        close.accepted = true
+    }
+
     Rectangle {
         id: fillRect
         anchors.fill: parent

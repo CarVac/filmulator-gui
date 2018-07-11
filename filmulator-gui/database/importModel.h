@@ -61,6 +61,15 @@ public:
     Q_INVOKABLE void importFileList(const QString name, const bool importInPlace, const bool replaceLocation);
     Q_INVOKABLE QStringList getNameFilters();
 
+    //clean up threads before exiting
+    Q_INVOKABLE void exitWorker()
+    {
+        if (workerThread.isRunning())
+        {
+            workerThread.exit();
+        }
+    }
+
     void setImportTZ(const int offsetIn);
     void setCameraTZ(const int offsetIn);
 

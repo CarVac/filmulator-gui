@@ -48,6 +48,15 @@ public:
     Q_INVOKABLE void disableThumbnailWrite() {thumbnailWriteEnabled = false;}
     Q_INVOKABLE void enableThumbnailWrite() {thumbnailWriteEnabled = true;}
 
+    //clean up threads before exiting
+    Q_INVOKABLE void exitWorker()
+    {
+        if (workerThread.isRunning())
+        {
+            workerThread.exit();
+        }
+    }
+
 protected:
     ImagePipeline pipeline = ImagePipeline(WithCache, WithHisto, HighQuality);
     ImagePipeline quickPipe = ImagePipeline(WithCache, WithHisto, PreviewQuality);//for now it'll just be the 600 size
