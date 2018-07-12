@@ -20,14 +20,17 @@ RadioButtonStyle {
             GradientStop {color: control.checked ? "#272217" : "#000000"; position: 1.0}
         }
     }
-    label: Text {
-        color: control.checked ? Colors.whiteOrange : Colors.brightGrayH//"white"
+    label: Item {
         width: control.width
         height: control.height
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        text: control.text
-        font.pixelSize: 12.0 * uiScale
+        Text {
+            color: control.checked ? Colors.whiteOrange : Colors.brightGrayH//"white"
+            anchors.centerIn: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: control.text
+            font.pixelSize: 12.0 * uiScale
+        }
     }
     indicator: Item{}
 }
