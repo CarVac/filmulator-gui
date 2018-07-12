@@ -1,4 +1,5 @@
 #include "parameterManager.h"
+#include "../database/database.hpp"
 
 using std::min;
 using std::cout;
@@ -855,8 +856,10 @@ void ParameterManager::writeback()
 //or else it won't populate the field; it deletes and then re-inserts.
 void ParameterManager::writeToDB(QString imageID)
 {
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
     //Write back the slider to the database.
-    QSqlQuery query;
+    QSqlQuery query(db);
     query.exec("BEGIN;");//Stick these all into one db action for speed.
     query.prepare("REPLACE INTO ProcessingTable ("
                   "ProcTprocID, "                         // 0
@@ -1013,7 +1016,11 @@ void ParameterManager::selectImage(const QString imageID)
 
     QString tempString = imageID;
     tempString.truncate(32);//length of md5
-    QSqlQuery query;
+
+
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.prepare("SELECT \
                   FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength \
                   FROM FileTable WHERE FTfileID = ?;");
@@ -1193,7 +1200,10 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
 {
     QSqlRecord rec;
     int nameCol;
-    QSqlQuery query;
+
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
 
     //This query will be shared.
     query.prepare("SELECT * FROM ProfileTable WHERE ProfTprofileID = ?;");
@@ -1560,7 +1570,10 @@ void ParameterManager::loadParams(QString imageID)
 {
     QSqlRecord rec;
     int nameCol;
-    QSqlQuery query;
+
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
 
     //tiffIn should be false.
     //For now. When we add tiff input, then it'll need to be different.
@@ -1988,7 +2001,10 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     //do stuff to load filename and other file info; taken from selectImage
     QString tempString = imageIndex;
     tempString.truncate(32);//length of md5
-    QSqlQuery query;
+
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.prepare("SELECT \
                   FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength \
                   FROM FileTable WHERE FTfileID = ?;");

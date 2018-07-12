@@ -1,4 +1,5 @@
 #include "organizeModel.h"
+#include "../database/database.hpp"
 #include <iostream>
 #include <QStringList>
 #include <QDateTime>
@@ -110,7 +111,9 @@ QSqlQuery OrganizeModel::modelQuery()
         queryString.append("SearchTable.STfilename DESC;");
     }
 
-    return QSqlQuery(QString::fromStdString(queryString));
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    return QSqlQuery(QString::fromStdString(queryString), db);
 }
 
 void OrganizeModel::setOrganizeQuery()
@@ -140,7 +143,10 @@ QString OrganizeModel::thumbDir()
 
 void OrganizeModel::setRating(QString searchID, int rating)
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    QSqlQuery query(db);
     query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
     query.bindValue(0, QVariant(max(min(rating,5),0)));
     query.bindValue(1, searchID);

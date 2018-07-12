@@ -3,13 +3,16 @@
 #include "exifFunctions.h"
 #include "../ui/parameterManager.h"
 #include "../ui/thumbWriteWorker.h"
+#include "../database/database.hpp"
 
 /*This function inserts info on a raw file into the database.*/
 void fileInsert(const QString hash,
                 const QString filePathName,
                 Exiv2::ExifData exifData)
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.prepare("REPLACE INTO FileTable values (?,?,?,?,?,?,?,?,?);");
                                                  //0 1 2 3 4 5 6 7 8
     //Hash of the file:
@@ -43,7 +46,9 @@ QString createNewProfile(const QString fileHash,
                          Exiv2::ExifData exifData,
                          Exiv2::XmpData xmpData)
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     //Retrieve the usage count from the file table, and increment it by one.
     query.prepare("SELECT FTusageIncrement FROM FileTable WHERE (FTfileID = ?);");
     query.bindValue(0, fileHash);

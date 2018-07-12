@@ -1,5 +1,6 @@
 
 #include "importModel.h"
+#include "../database/database.hpp"
 #include <iostream>
 #include <math.h>
 
@@ -46,7 +47,10 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
 
 QSqlQuery ImportModel::modelQuery()
 {
-    return QSqlQuery(QString(""));
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    return QSqlQuery(QString(""), db);
 }
 
 //We want to scan for DCIM to warn people not to import in place from a memory card.

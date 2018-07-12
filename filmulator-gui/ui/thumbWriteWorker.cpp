@@ -1,4 +1,5 @@
 #include "thumbWriteWorker.h"
+#include "../database/database.hpp"
 #include <QDir>
 #include <iostream>
 using namespace std;
@@ -22,7 +23,9 @@ bool ThumbWriteWorker::writeThumb(QString searchID)
     int rows = image.nr();
     int cols = image.nc();
 
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     //If there was an error in the pipeline, the picture will be 0x0.
     if ((rows == 0) || (cols == 0))
     {

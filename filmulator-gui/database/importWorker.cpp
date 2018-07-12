@@ -1,6 +1,8 @@
 #include "importWorker.h"
+#include "../database/database.hpp"
 #include <iostream>
 #include "queueModel.h"
+#include "QThread"
 using std::cout;
 using std::endl;
 
@@ -103,12 +105,15 @@ void ImportWorker::importFile(const QFileInfo infoIn,
 
 
     //Check to see if it's already present in the database.
-    QSqlQuery query;
+    //Open a new database connection for the thread
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.prepare("SELECT FTfilepath FROM FileTable WHERE (FTfileID = ?);");
     query.bindValue(0, hashString);
     query.exec();
     query.next();
     const QString dbRecordedPath = query.value(0).toString();
+    db.close();
     //If it's not in the database yet,
     //And we're not updating locations
     //  (if we are updating locations, we don't want it to add new things to the db)

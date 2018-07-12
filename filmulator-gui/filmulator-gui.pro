@@ -49,7 +49,8 @@ SOURCES += main.cpp \
     ui/parameterManager.cpp \
     ui/settings.cpp \
     ui/thumbWriteWorker.cpp \
-    ui/updateHistograms.cpp
+    ui/updateHistograms.cpp \
+    database/database.cpp
 
 lupdate_only {
 SOURCES += qml/filmulator-gui/*.qml \
@@ -105,7 +106,8 @@ HEADERS += \
     ui/filmImageProvider.h \
     ui/parameterManager.h \
     ui/settings.h \
-    ui/thumbWriteWorker.h
+    ui/thumbWriteWorker.h \
+    database/database.hpp
 
 
 QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math

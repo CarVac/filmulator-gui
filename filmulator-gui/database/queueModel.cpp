@@ -1,4 +1,5 @@
 #include "queueModel.h"
+#include "../database/database.hpp"
 #include <iostream>
 #include <string>
 
@@ -11,8 +12,12 @@ QueueModel::QueueModel(QObject *parent) : SqlModel(parent)
     //The queue needs to have a separate sorting index.
     //When the queue is reordered, the original indices must remain, because
     // the associated delegates move around otherwise when the data is updated.
-    //Thus, we simply track the sorted index and
-    QSqlQuery query;
+    //Thus, we simply track the sorted index and on fresh initialization copy it to the
+    //main index.
+
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.exec("UPDATE QueueTable SET QTindex = QTsortedIndex;");
     maxIndex = 0;
     tableName = "QueueTable";
@@ -34,7 +39,9 @@ QSqlQuery QueueModel::modelQuery()
     queryString.append("ORDER BY ");
     queryString.append("QueueTable.QTindex ASC;");
 
-    QSqlQuery tempQuery(queryString);
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery tempQuery(queryString, db);
     return tempQuery;
 }
 
@@ -46,7 +53,9 @@ void QueueModel::setQueueQuery()
 
 void QueueModel::resetIndex()
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.exec("SELECT COUNT(QTindex) FROM QueueTable;");
     query.next();
     maxIndex = query.value(0).toInt();
@@ -54,7 +63,9 @@ void QueueModel::resetIndex()
 
 void QueueModel::deQueue(const QString searchID)
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.exec("BEGIN TRANSACTION;");
     // We need to update all the indices.
     // We grab the index of the removed item, then decrement all the greater ones.
@@ -109,8 +120,10 @@ void QueueModel::deQueue(const QString searchID)
 
 void QueueModel::enQueue(const QString searchID)
 {
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
     //First check to see if it's already in the queue.
-    QSqlQuery query;
+    QSqlQuery query(db);
     query.prepare("SELECT COUNT(*) FROM QueueTable WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
@@ -163,7 +176,9 @@ void QueueModel::enQueue(const QString searchID)
 
 void QueueModel::clearQueue()
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     beginRemoveRows(QModelIndex(),0,maxIndex-1);
     query.exec("DELETE FROM QueueTable");
     resetIndex();
@@ -175,7 +190,9 @@ void QueueModel::clearQueue()
 //It determines the source index from the database.
 void QueueModel::move(const QString searchID, const int destIndex)
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
 
     query.exec("BEGIN TRANSACTION;");
 
@@ -231,7 +248,9 @@ void QueueModel::move(const QString searchID, const int destIndex)
 
 void QueueModel::markSaved(const QString searchID)
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     query.prepare("UPDATE QueueTable "
                   "SET QTexported = 1 "
                   "WHERE QTsearchID = ?;");

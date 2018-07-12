@@ -1,5 +1,6 @@
 
 #include "dateHistogramModel.h"
+#include "../database/database.hpp"
 #include <QDate>
 #include <math.h>
 #include <QString>
@@ -40,6 +41,9 @@ void DateHistogramModel::setQuery(const int timezone,
 {
     beginResetModel();
 
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
     //Set up the query.
     std::string dateHistoString =
                            "SELECT";
@@ -73,9 +77,9 @@ void DateHistogramModel::setQuery(const int timezone,
     dateHistoString.append("        thedate)");
     dateHistoString.append("ORDER BY");
     dateHistoString.append("    thedate ASC;");
-    m_modelQuery = QSqlQuery(QString::fromStdString(dateHistoString));
+    m_modelQuery = QSqlQuery(QString::fromStdString(dateHistoString), db);
 
-    QSqlQuery todayQuery;
+    QSqlQuery todayQuery(db);
     //Today
     string queryString = "SELECT julianday('NOW', '";
     queryString.append(std::to_string(int(timezone)));
@@ -109,7 +113,7 @@ void DateHistogramModel::setQuery(const int timezone,
     dateHistoString2.append("        thedate)");
     dateHistoString2.append("ORDER BY");
     dateHistoString2.append("    thedate ASC;");
-    QSqlQuery dateQuery = QSqlQuery(QString::fromStdString(dateHistoString2));
+    QSqlQuery dateQuery = QSqlQuery(QString::fromStdString(dateHistoString2), db);
 
     //Oldest day in the database
     double firstDay;
@@ -150,7 +154,7 @@ void DateHistogramModel::setQuery(const int timezone,
     dateHistoString3.append("        thedate)");
     dateHistoString3.append("ORDER BY");
     dateHistoString3.append("    thedate DESC;");
-    QSqlQuery dateQuery2 = QSqlQuery(QString::fromStdString(dateHistoString3));
+    QSqlQuery dateQuery2 = QSqlQuery(QString::fromStdString(dateHistoString3), db);
 
     //Oldest day in the database
     double lastDay;
