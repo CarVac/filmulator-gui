@@ -105,13 +105,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
             image_processor.raw2image();
 
-            //get color filter array
-            //bayer only for now
-            cfa[0][0] = unsigned(image_processor.COLOR(0,1));
-            cfa[0][1] = unsigned(image_processor.COLOR(0,0));
-            cfa[1][0] = unsigned(image_processor.COLOR(1,1));
-            cfa[1][1] = unsigned(image_processor.COLOR(1,0));
-
             //get dimensions
             raw_width  = RSIZE.width;
             raw_height = RSIZE.height;
@@ -121,7 +114,14 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             int full_width = RSIZE.raw_width;
             //int full_height = RSIZE.raw_height;
 
-            cout << "Left margin: " << leftmargin << " Top margin: " << topmargin << endl;
+
+            //get color filter array
+            //bayer only for now
+            cfa[0][0] = unsigned(image_processor.COLOR(0 + topmargin, 1 + leftmargin));
+            cfa[0][1] = unsigned(image_processor.COLOR(0 + topmargin, 0 + leftmargin));
+            cfa[1][0] = unsigned(image_processor.COLOR(1 + topmargin, 1 + leftmargin));
+            cfa[1][1] = unsigned(image_processor.COLOR(1 + topmargin, 0 + leftmargin));
+
 
 
             raw_image(raw_width, raw_height);
@@ -200,7 +200,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             std::function<bool(double)> setProg = [](double) -> bool {return false;};
             librtprocess::amaze_demosaic(0, 0, raw_width-1, raw_height-1, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
 
-            long rSum = 0, gSum = 0, bSum = 0;
             input_image.set_size(raw_height, raw_width*3);
             for (int row = 0; row < raw_height; row++)
             {
@@ -209,9 +208,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     input_image(row, col*3    ) =   red[row][col];
                     input_image(row, col*3 + 1) = green[row][col];
                     input_image(row, col*3 + 2) =  blue[row][col];
-                    //input_image(row, col*3    ) = raw_image[row][col];
-                    //input_image(row, col*3 + 1) = raw_image[row][col];
-                    //input_image(row, col*3 + 2) = raw_image[row][col];
                 }
             }
             Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
