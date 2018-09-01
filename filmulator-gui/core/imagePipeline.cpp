@@ -66,6 +66,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     updateProgress(valid, 0.0f);
     switch (valid)
     {
+    case partload: [[fallthrough]];
     case none://Load image into buffer
     {
         AbortStatus abort;
@@ -75,18 +76,81 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             return emptyMatrix();
         }
+
+        if (!loadParam.tiffIn && !loadParam.jpegIn)
+        {
+            LibRaw image_processor;
+
+            //Open the file.
+            const char *cstr = loadParam.fullFilename.c_str();
+            if (0 != image_processor.open_file(cstr))
+            {
+                cout << "processImage: Could not read input file!" << endl;
+                return emptyMatrix();
+            }
+             //Make abbreviations for brevity in accessing data.
+#define RSIZE image_processor.imgdata.sizes
+#define PARAM image_processor.imgdata.params
+#define IMAGE image_processor.imgdata.image
+#define RAW   image_processor.imgdata.rawdata.raw_image
+//#define COLOR image_processor.imgdata.color
+
+            //This makes IMAGE contains the sensel value and 3 blank values at every
+            //location.
+            if (0 != image_processor.unpack())
+            {
+                cerr << "processImage: Could not read input file, or was canceled" << endl;
+                return emptyMatrix();
+            }
+
+            image_processor.raw2image();
+
+            //get color filter array
+            //bayer only for now
+            cfa[0][0] = unsigned(image_processor.COLOR(0,1));
+            cfa[0][1] = unsigned(image_processor.COLOR(0,0));
+            cfa[1][0] = unsigned(image_processor.COLOR(1,1));
+            cfa[1][1] = unsigned(image_processor.COLOR(1,0));
+
+            //get dimensions
+            raw_width  = RSIZE.width;
+            raw_height = RSIZE.height;
+
+            int topmargin = RSIZE.top_margin;
+            int leftmargin = RSIZE.left_margin;
+            int full_width = RSIZE.raw_width;
+            //int full_height = RSIZE.raw_height;
+
+            cout << "Left margin: " << leftmargin << " Top margin: " << topmargin << endl;
+
+
+            raw_image(raw_width, raw_height);
+
+            matrix<float> tempraw;
+            tempraw.set_size(raw_width, raw_height);
+            //copy raw data
+            for (int row = 0; row < raw_height; row++)
+            {
+                //IMAGE is an (width*height) by 4 array, not width by height by 4.
+                int rowoffset = (row + topmargin)*full_width;
+                for (int col = 0; col < raw_width; col++)
+                {
+                    raw_image[row][col] = RAW[rowoffset + col + leftmargin];
+                    tempraw(row, col) = RAW[rowoffset + col + leftmargin];
+                }
+            }
+
+            cout << "max of tempraw" << tempraw.max() << endl;
+        }
         //In the future we'll actually perform loading here.
         valid = paramManager->markLoadComplete();
         updateProgress(valid, 0.0f);
         [[fallthrough]];
     }
     case partdemosaic: [[fallthrough]];
-    case load://Do demosaic
+    case load://Do demosaic, or load non-raw images
     {
         AbortStatus abort;
-        //Because the load params are used here
-        std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
-        paramManager->markLoadComplete();//otherwise we reset validity back half a step
         std::tie(valid, abort, demosaicParam) = paramManager->claimDemosaicParams();
         if (abort == AbortStatus::restart)
         {
@@ -100,21 +164,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         cout << "load start:" << timeDiff (timeRequested) << endl;
         struct timeval imload_time;
         gettimeofday( &imload_time, NULL );
-        /*
-        if (imload(loadParam.fullFilename,
-                  input_image,
-                  loadParam.tiffIn,
-                  loadParam.jpegIn,
-                  exifData,
-                  demosaicParam.highlights,
-                  demosaicParam.caEnabled,
-                  (LowQuality == quality)))
-        {
-            //Tell the param manager to abort back for some reason? maybe?
-            //It was setting valid back to none.
-            return emptyMatrix();
-        }
-        */
+
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
             scaled_image = stealVictim->input_image;
@@ -138,94 +188,32 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
         else //raw
         {
-            //Create image processor for reading raws.
-            LibRaw image_processor;
+            array2D<float> red, green, blue;
+            red(raw_width, raw_height);
+            green(raw_width, raw_height);
+            blue(raw_width, raw_height);
 
-            //Connect image processor with callback for cancellation
-            //image_processor.set_progress_handler(ImagePipeline::libraw_callback, paramManager);
-
-            //Open the file.
-            const char *cstr = loadParam.fullFilename.c_str();
-            if (0 != image_processor.open_file(cstr))
-            {
-                cout << "processImage: Could not read input file!" << endl;
-                return emptyMatrix();
-            }
-             //Make abbreviations for brevity in accessing data.
-#define SIZES image_processor.imgdata.sizes
-#define PARAM image_processor.imgdata.params
-#define IMAGE image_processor.imgdata.image
-#define COLOR image_processor.imgdata.color
-
-            //Now we'll set demosaic and other processing settings.
-            PARAM.user_qual = 10;//9;//10 is AMaZE; -q[#] in dcraw
-            PARAM.no_auto_bright = 1;//Don't autoadjust brightness (-W)
-            PARAM.output_bps = 16;//16 bits per channel (-6)
-            PARAM.gamm[0] = 1;
-            PARAM.gamm[1] = 1;//Linear gamma (-g 1 1)
-            PARAM.ca_correc = demosaicParam.caEnabled;//Turn on CA auto correction
-            PARAM.cared = 0;
-            PARAM.cablue = 0;
-            PARAM.output_color = 1;//1: Use sRGB regardless.
-            PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
-            PARAM.highlight = demosaicParam.highlights;//Set highlight recovery (-H #)
-            PARAM.med_passes = 1;//median filter
-
-            if (LowQuality == quality)
-            {
-                //PARAM.half_size = 1;//half-size output, should dummy down demosaic.
-                /* The above sometimes read out a dng thumbnail instead of the image itself. */
-                PARAM.user_qual = 0;//nearest-neighbor demosaic
-                PARAM.ca_correc = 0;//turn off auto CA correction.
-            }
-
-            AbortStatus abort;
-            abort = paramManager->claimDemosaicAbort();
-            if (abort == AbortStatus::restart)
-            {
-                return emptyMatrix();
-            }
-
-            //This makes IMAGE contains the sensel value and 3 blank values at every
-            //location.
-            if (0 != image_processor.unpack())
-            {
-                cerr << "processImage: Could not read input file, or was canceled" << endl;
-                return emptyMatrix();
-            }
-
-            abort = paramManager->claimDemosaicAbort();
-            if (abort == AbortStatus::restart)
-            {
-                return emptyMatrix();
-            }
-
-            //This calls the dcraw processing on the raw sensel data.
-            //Now, it contains 3 color values and one blank value at every location.
-            //We will ignore the last blank value.
-            if (0 != image_processor.dcraw_process())
-            {
-                cerr << "processImage: Processing was canceled during dcraw_process" << endl;
-                return emptyMatrix();
-            }
+            double initialGain = 1.0;
+            float inputscale = 16383.0;
+            float outputscale = 65535.0;
+            int border = 4;
+            std::function<bool(double)> setProg = [](double) -> bool {return false;};
+            librtprocess::amaze_demosaic(0, 0, raw_width-1, raw_height-1, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
 
             long rSum = 0, gSum = 0, bSum = 0;
-            input_image.set_size(SIZES.iheight, SIZES.iwidth*3);
-            for (int row = 0; row < SIZES.iheight; row++)
+            input_image.set_size(raw_height, raw_width*3);
+            for (int row = 0; row < raw_height; row++)
             {
-                //IMAGE is an (width*height) by 4 array, not width by height by 4.
-                int rowoffset = row*SIZES.iwidth;
-                for (int col = 0; col < SIZES.iwidth; col++)
+                for (int col = 0; col < raw_width; col++)
                 {
-                    input_image(row, col*3    ) = IMAGE[rowoffset + col][0];//R
-                    input_image(row, col*3 + 1) = IMAGE[rowoffset + col][1];//G
-                    input_image(row, col*3 + 2) = IMAGE[rowoffset + col][2];//B
-                    rSum += IMAGE[rowoffset + col][0];
-                    gSum += IMAGE[rowoffset + col][1];
-                    bSum += IMAGE[rowoffset + col][2];
+                    input_image(row, col*3    ) =   red[row][col];
+                    input_image(row, col*3 + 1) = green[row][col];
+                    input_image(row, col*3 + 2) =  blue[row][col];
+                    //input_image(row, col*3    ) = raw_image[row][col];
+                    //input_image(row, col*3 + 1) = raw_image[row][col];
+                    //input_image(row, col*3 + 2) = raw_image[row][col];
                 }
             }
-            image_processor.recycle();
             Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
             assert(image.get() != 0);
             image->readMetadata();

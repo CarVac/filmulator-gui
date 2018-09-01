@@ -58,8 +58,8 @@ public:
     }
 
 protected:
-    ImagePipeline pipeline = ImagePipeline(WithCache, WithHisto, HighQuality);
-    ImagePipeline quickPipe = ImagePipeline(WithCache, WithHisto, PreviewQuality);//for now it'll just be the 600 size
+    ImagePipeline pipeline;
+    ImagePipeline quickPipe;
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;

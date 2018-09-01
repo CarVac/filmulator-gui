@@ -5,6 +5,7 @@
 #include "../ui/parameterManager.h"
 #include <QMutex>
 #include <QMutexLocker>
+#include <rtprocess/librtprocess.h>
 
 enum Cache {WithCache, NoCache};
 enum Histo {WithHisto, NoHisto};
@@ -54,6 +55,11 @@ protected:
     LUT<unsigned short> filmLikeLUT;
 
     struct timeval timeRequested;
+
+    //raw stuff
+    array2D<float> raw_image;
+    ColorFilterArray cfa;
+    int raw_width, raw_height;
 
     matrix<float> input_image;
     matrix<float> scaled_image;
