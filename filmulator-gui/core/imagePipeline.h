@@ -60,6 +60,9 @@ protected:
     array2D<float> raw_image;
     ColorFilterArray cfa;
     int raw_width, raw_height;
+    float camToRGB[3][3];
+    float rBlack, gBlack, bBlack;
+    float rMult, gMult, bMult;
 
     matrix<float> input_image;
     matrix<float> scaled_image;

@@ -1,9 +1,15 @@
 #include "filmSim.hpp"
 #include <utility>
 #include <iostream>
+#include <omp.h>
 
 using std::cout;
 using std::endl;
+
+/*
+ * cam_to_rgb, if right-multiplied by the column vector of a camera-space color, yields the sRGB colors
+ *
+ */
 
 //Generates the illuminant in XYZ for the given temperature temp.
 void temp_to_XYZ(float const temp, float &X, float &Y, float &Z)
@@ -107,11 +113,11 @@ void matrixMatrixMult(float left[3][3], float right[3][3], float (&output)[3][3]
     }
 }
 
-//Computes the white balance multipliers, given that libraw has already applied the camera's set WB.
+//Computes the sRGB white balance multipliers, given that libraw has already applied the camera's set WB.
 //If we match the camera's WB, then the multipliers should be 1,1,1.
 //We don't actually know what that is, so later on this function gets optimized with the goal of 1,1,1
 // as the default value on importing an image.
-void whiteBalanceMults(float temperature, float tint, std::string inputFilename,
+void whiteBalancePostMults(float temperature, float tint, std::string inputFilename,
                        float &rMult, float &gMult, float &bMult)
 {
     //To compute the white balance, we have to reference the undo what the thingy did.
@@ -122,8 +128,8 @@ void whiteBalanceMults(float temperature, float tint, std::string inputFilename,
     //
     //The following values are our baseline estimate of what this temperature
     // and tint is.
-    float BASE_TEMP = 6594.9982;
-    float BASE_TINT = 0.9864318;
+    float BASE_TEMP = 6594.9982f;
+    float BASE_TINT = 0.9864318f;
 
     float rBaseMult, gBaseMult, bBaseMult;
     //Grab the existing white balance data from the raw file.
@@ -235,7 +241,142 @@ void whiteBalanceMults(float temperature, float tint, std::string inputFilename,
     bMult *= bBaseMult;
 
     //Normalize so that no component shrinks ever. (It should never go to below zero.)
-    float multMin = min(min(rMult, gMult), bMult)+0.00001;
+    float multMin = min(min(rMult, gMult), bMult)+0.00001f;
+    rMult /= multMin;
+    gMult /= multMin;
+    bMult /= multMin;
+}
+
+//Computes the sRGB white balance multipliers.
+//If we match the camera's WB, then the multipliers should be cam_mul transformed by camToRGB.
+void whiteBalanceMults(float temperature, float tint, std::string inputFilename,
+                       float &rMult, float &gMult, float &bMult)
+{
+    //To compute the white balance, we have to reference the undo what the thingy did.
+    //In order to get physically relevant temperatures, we trust dcraw
+    // and by proxy libraw to give consistent WB in the
+    // "daylight multipliers" (dcraw) and "pre_mul" (libraw)
+    // fields.
+    //
+    //The following values are our baseline estimate of what this temperature
+    // and tint is.
+    float BASE_TEMP = 6594.9982f;
+    float BASE_TINT = 0.9864318f;
+
+    float rBaseMult, gBaseMult, bBaseMult;
+    //Grab the existing white balance data from the raw file.
+    LibRaw imageProcessor;
+#define COLOR imageProcessor.imgdata.color
+#define PARAM imageProcessor.imgdata.params
+
+    const char *cstr = inputFilename.c_str();
+    if (0 == imageProcessor.open_file(cstr))
+    {
+        //Set the white balance arguments based on what libraw did.
+
+        //First we need to set up the transformation from the camera's
+        // raw color space to sRGB.
+
+        //Grab the xyz2cam matrix.
+//        float xyzToCam[3][3];
+        float camToRgb[3][3];
+//        cout << "white_balance: camToRgb" << endl;//===========================
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+//                xyzToCam[i][j] = COLOR.cam_xyz[i][j];
+                camToRgb[i][j] = COLOR.rgb_cam[i][j];
+//                cout << COLOR.rgb_cam[i][j] << " ";//===========================
+            }
+//            cout << endl;//===========================
+        }
+        //Now we divide the daylight multipliers by the camera multipliers.
+        float rrBaseMult = COLOR.pre_mul[0] / COLOR.cam_mul[0];
+        float grBaseMult = COLOR.pre_mul[1] / COLOR.cam_mul[1];
+        float brBaseMult = COLOR.pre_mul[2] / COLOR.cam_mul[2];
+        float rawMultMin = min(min(rrBaseMult, grBaseMult), brBaseMult);
+        rrBaseMult /= rawMultMin;
+        grBaseMult /= rawMultMin;
+        brBaseMult /= rawMultMin;
+//        cout << "white_balance raw pre_muls" << endl;//===========================
+//        cout << rrBaseMult << " ";//===========================
+//        cout << grBaseMult << " ";//===========================
+//        cout << brBaseMult << endl;//===========================
+        //And then we convert them from camera space to sRGB.
+        matrixVectorMult(rrBaseMult, grBaseMult, brBaseMult,
+                          rBaseMult,  gBaseMult,  bBaseMult,
+                          camToRgb);
+//        cout << "white_balance sRGB base_mults" << endl;//===========================
+//        cout << rBaseMult << " ";//===========================
+//        cout << gBaseMult << " ";//===========================
+//        cout << bBaseMult << endl;//===========================
+        if ((1.0f == camToRgb[0][0] && 1.0f == camToRgb[1][1] && 1.0f == camToRgb[2][2])
+             || (1.0f == COLOR.pre_mul[0] && 1.0f == COLOR.pre_mul[1] && 1.0f == COLOR.pre_mul[2]))
+        {
+//            cout << "Unity camera matrix or base multipliers. BORK" << endl;
+            rBaseMult = 1;
+            gBaseMult = 1;
+            bBaseMult = 1;
+            BASE_TEMP = 5200;
+            BASE_TINT = 1;
+        }
+    }
+    else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
+    {
+        rBaseMult = 1;
+        gBaseMult = 1;
+        bBaseMult = 1;
+        BASE_TEMP = 5200;
+        BASE_TINT = 1;
+    }
+    //The result of this is the BaseMultipliers in sRGB, which we use later.
+    rBaseMult = 1;
+    gBaseMult = 1;
+    bBaseMult = 1;
+
+
+    //Here we compute the ratio of the desired to the reference (kinda daylight) illuminant.
+    //Value of the desired illuminant in XYZ coordinates.
+    float XIllum, YIllum, ZIllum;
+    //Value of the base illuminant in XYZ coordinates.
+    float XBase, YBase, ZBase;
+
+    //Now we compute the coordinates.
+    temp_to_XYZ(temperature, XIllum, YIllum, ZIllum);
+    temp_to_XYZ(BASE_TEMP, XBase, YBase, ZBase);
+
+    //Next, we convert them to sRGB.
+    float rIllum, gIllum, bIllum;
+    float rBase, gBase, bBase;
+    XYZ_to_sRGB(XIllum, YIllum, ZIllum,
+                rIllum, gIllum, bIllum);
+    XYZ_to_sRGB(XBase, YBase, ZBase,
+                rBase, gBase, bBase);
+
+    //Calculate the multipliers needed to convert from one illuminant to the base.
+    gIllum /= tint;
+    gBase /= BASE_TINT;
+    rMult = rBase / rIllum;
+    gMult = gBase / gIllum;
+    bMult = bBase / bIllum;
+
+    //cout << "white_balance: non-offset multipliers" << endl;//===========================
+    //cout << rMult << endl << gMult << endl << bMult << endl;//===========================
+
+    //Clip negative values.
+    rMult = max(rMult, 0.0f);
+    gMult = max(gMult, 0.0f);
+    bMult = max(bMult, 0.0f);
+
+    //Multiply our desired WB by the base offsets to compensate for
+    // libraw already having applied them.
+    rMult *= rBaseMult;
+    gMult *= gBaseMult;
+    bMult *= bBaseMult;
+
+    //Normalize so that no component shrinks ever. (It should never go to below zero.)
+    float multMin = min(min(rMult, gMult), bMult)+0.00001f;
     rMult /= multMin;
     gMult /= multMin;
     bMult /= multMin;
@@ -245,8 +386,8 @@ void whiteBalanceMults(float temperature, float tint, std::string inputFilename,
 float wbDistance(std::string inputFilename, array<float,2> tempTint)
 {
     float rMult, gMult, bMult;
-    whiteBalanceMults(tempTint[0], tempTint[1], inputFilename,
-                      rMult, gMult, bMult);
+    whiteBalancePostMults(tempTint[0], tempTint[1], inputFilename,
+                          rMult, gMult, bMult);
     rMult -= 1;
     gMult -= 1;
     bMult -= 1;
@@ -386,12 +527,25 @@ void optimizeWBMults(std::string file,
 //It takes in the input and output matrices, the desired temperature and tint,
 // and the filename where it looks up the camera matrix and daylight multipliers.
 void whiteBalance(matrix<float> &input, matrix<float> &output,
-                   float temperature, float tint,
-                   std::string inputFilename)
+                   float temperature, float tint, std::string inputFilename, float cam2rgb[3][3])
 {
     float rMult, gMult, bMult;
-    whiteBalanceMults(temperature, tint, inputFilename,
-                       rMult, gMult, bMult);
+    whiteBalancePostMults(temperature, tint, inputFilename,
+                      rMult, gMult, bMult);
+    cout << "rmult: " << rMult << endl;
+    cout << "gmult: " << gMult << endl;
+    cout << "bmult: " << bMult << endl;
+
+    float transform[3][3];
+    for (int i = 0; i < 3; i++)
+    {
+        transform[0][i] = 0*rMult * cam2rgb[0][i];
+        transform[1][i] = 0*gMult * cam2rgb[1][i];
+        transform[2][i] = 0*bMult * cam2rgb[2][i];
+    }
+    transform[0][0] = 1.0f;
+    transform[1][1] = 1.0f;
+    transform[2][2] = 1.0f;
 
     int nRows = input.nr();
     int nCols = input.nc();
@@ -405,9 +559,9 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
         {
             for (int j = 0; j < nCols; j += 3)
             {
-                output(i, j  ) = rMult*input(i, j  );
-                output(i, j+1) = gMult*input(i, j+1);
-                output(i, j+2) = bMult*input(i, j+2);
+                output(i, j  ) = transform[0][0]*input(i, j) + transform[0][1]*input(i, j+1) + transform[0][2]*input(i, j+2);
+                output(i, j+1) = transform[1][0]*input(i, j) + transform[1][1]*input(i, j+1) + transform[1][2]*input(i, j+2);
+                output(i, j+2) = transform[2][0]*input(i, j) + transform[2][1]*input(i, j+1) + transform[2][2]*input(i, j+2);
             }
         }
     }

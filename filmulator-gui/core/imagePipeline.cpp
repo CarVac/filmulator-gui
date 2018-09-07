@@ -103,8 +103,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 return emptyMatrix();
             }
 
-            image_processor.raw2image();
-
             //get dimensions
             raw_width  = RSIZE.width;
             raw_height = RSIZE.height;
@@ -114,6 +112,32 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             int full_width = RSIZE.raw_width;
             //int full_height = RSIZE.raw_height;
 
+            //get color matrix
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    camToRGB[i][j] = image_processor.imgdata.color.rgb_cam[i][j];
+                    cout << camToRGB[i][j] << " ";
+                }
+                cout << endl;
+            }
+            rMult = image_processor.imgdata.color.cam_mul[0]/1024.0f;
+            gMult = image_processor.imgdata.color.cam_mul[1]/1024.0f;
+            bMult = image_processor.imgdata.color.cam_mul[2]/1024.0f;
+            cout << "rmult: " << image_processor.imgdata.color.cam_mul[0] << endl;
+            cout << "gmult: " << image_processor.imgdata.color.cam_mul[1] << endl;
+            cout << "bmult: " << image_processor.imgdata.color.cam_mul[2] << endl;
+            cout << "rpremult: " << image_processor.imgdata.color.pre_mul[0] << endl;
+            cout << "gpremult: " << image_processor.imgdata.color.pre_mul[1] << endl;
+            cout << "bpremult: " << image_processor.imgdata.color.pre_mul[2] << endl;
+
+            //get black subtraction values
+            rBlack = image_processor.imgdata.color.cblack[0];
+            gBlack = image_processor.imgdata.color.cblack[1];
+            bBlack = image_processor.imgdata.color.cblack[2];
+            float blackpoint = image_processor.imgdata.color.black;
+            cout << "blackpoint: " << blackpoint << endl;
 
             //get color filter array
             //bayer only for now
@@ -135,8 +159,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 int rowoffset = (row + topmargin)*full_width;
                 for (int col = 0; col < raw_width; col++)
                 {
-                    raw_image[row][col] = RAW[rowoffset + col + leftmargin];
-                    tempraw(row, col) = RAW[rowoffset + col + leftmargin];
+                    raw_image[row][col] = RAW[rowoffset + col + leftmargin] - blackpoint;
+                    tempraw(row, col) = RAW[rowoffset + col + leftmargin] - blackpoint;
                 }
             }
 
@@ -169,6 +193,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             scaled_image = stealVictim->input_image;
             exifData = stealVictim->exifData;
+            rMult = stealVictim->rMult;
+            gMult = stealVictim->gMult;
+            bMult = stealVictim->bMult;
         }
         else if (loadParam.tiffIn)
         {
@@ -201,15 +228,32 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             librtprocess::amaze_demosaic(0, 0, raw_width-1, raw_height-1, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
 
             input_image.set_size(raw_height, raw_width*3);
+            matrix<float> rmat, gmat, bmat;
+            rmat.set_size(raw_height, raw_width);
+            gmat.set_size(raw_height, raw_width);
+            bmat.set_size(raw_height, raw_width);
             for (int row = 0; row < raw_height; row++)
             {
                 for (int col = 0; col < raw_width; col++)
                 {
-                    input_image(row, col*3    ) =   red[row][col];
-                    input_image(row, col*3 + 1) = green[row][col];
-                    input_image(row, col*3 + 2) =  blue[row][col];
+                    input_image(row, col*3    ) = camToRGB[0][0] * red[row][col] + camToRGB[1][0] * green[row][col] + camToRGB[2][0] * blue[row][col];
+                    input_image(row, col*3 + 1) = camToRGB[0][1] * red[row][col] + camToRGB[1][1] * green[row][col] + camToRGB[2][1] * blue[row][col];
+                    input_image(row, col*3 + 2) = camToRGB[0][2] * red[row][col] + camToRGB[1][2] * green[row][col] + camToRGB[2][2] * blue[row][col];
+//                    rmat(row, col) =              camToRGB[0][0] * red[row][col] + camToRGB[1][0] * green[row][col] + camToRGB[2][0] * blue[row][col];
+//                    gmat(row, col) =              camToRGB[0][1] * red[row][col] + camToRGB[1][1] * green[row][col] + camToRGB[2][1] * blue[row][col];
+//                    bmat(row, col) =              camToRGB[0][2] * red[row][col] + camToRGB[1][2] * green[row][col] + camToRGB[2][2] * blue[row][col];
+                    rmat(row, col) = red[row][col];
+                    gmat(row, col) = green[row][col];
+                    bmat(row, col) = blue[row][col];
                 }
             }
+            cout << "mean rmat: " << rmat.mean() << endl;
+            cout << "mean gmat: " << gmat.mean() << endl;
+            cout << "mean bmat: " << bmat.mean() << endl;
+            cout << "=========================================" << endl;
+            cout << "rmult * mean rmat: " << rmat.mean()*rMult << endl;
+            cout << "gmult * mean gmat: " << gmat.mean()*gMult << endl;
+            cout << "bmult * mean bmat: " << bmat.mean()*bMult << endl;
             Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
             assert(image.get() != 0);
             image->readMetadata();
@@ -264,7 +308,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      pre_film_image,
                      prefilmParam.temperature,
                      prefilmParam.tint,
-                     prefilmParam.fullFilename);
+                     prefilmParam.fullFilename,
+                     camToRGB);
 
         if (NoCache == cache)
         {
