@@ -115,10 +115,21 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             //get color matrix
             for (int i = 0; i < 3; i++)
             {
+                cout << "camToRGB: ";
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = image_processor.imgdata.color.rgb_cam[i][j];
                     cout << camToRGB[i][j] << " ";
+                }
+                cout << endl;
+            }
+            //get color matrix
+            for (int i = 0; i < 4; i++)
+            {
+                cout << "camToXYZ: ";
+                for (int j = 0; j < 3; j++)
+                {
+                    cout << image_processor.imgdata.color.cam_xyz[i][j] << " ";
                 }
                 cout << endl;
             }
