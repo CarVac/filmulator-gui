@@ -1,14 +1,14 @@
-From caa15c502b6b3388eba732f6785bdf8abac6e416 Mon Sep 17 00:00:00 2001
+From 1b160c66aca3d8192c483835d5aeb7928a5f048e Mon Sep 17 00:00:00 2001
 From: CarVac <c.lo.to.da.down.lo@gmail.com>
-Date: Wed, 12 Sep 2018 21:31:15 -0400
-Subject: [PATCH] change makefile
+Date: Wed, 12 Sep 2018 21:45:07 -0400
+Subject: [PATCH] patch makefile
 
 ---
  Makefile.dist | 10 +++++-----
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.dist b/Makefile.dist
-index cb2f159..36b2c97 100644
+index cb2f159..793cfe0 100644
 --- a/Makefile.dist
 +++ b/Makefile.dist
 @@ -1,12 +1,12 @@
@@ -16,7 +16,7 @@ index cb2f159..36b2c97 100644
  
 -#CFLAGS=-arch i386 -arch x86_64 -O3  -I. -w
 -CFLAGS=-O3  -I. -w
-+CFLAGS=-march=i386 -march=x86_64 -O3  -I. -w
++CFLAGS=-march=i386 -march=x86-64 -O3  -I. -w
 +#CFLAGS=-O3  -I. -w
  CC=gcc
  CXX=g++
