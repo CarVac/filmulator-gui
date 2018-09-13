@@ -215,7 +215,8 @@ void optimizeWBMults( std::string inputFilename,
 
 //Applies the desired temperature and tint adjustments to the image.
 void whiteBalance(matrix<float> &input, matrix<float> &output,
-                  float temperature, float tint, std::string filename, float cam2rgb[3][3]);
+                  float temperature, float tint, std::string filename, float cam2rgb[3][3],
+                  float rPreMult, float gPreMult, float bPreMult);
 
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
