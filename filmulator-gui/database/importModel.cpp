@@ -43,6 +43,9 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                     const bool)));
     connect(worker, SIGNAL(doneProcessing(bool)), this, SLOT(workerFinished(bool)));
     connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
+
+    //set stack size to prevent stack overflow on macos
+    workerThread.setStackSize(2048);
 }
 
 QSqlQuery ImportModel::modelQuery()
