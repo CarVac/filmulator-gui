@@ -1,5 +1,7 @@
 #include "imagePipeline.h"
 
+using librtprocess::array2D;
+
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
     cache = cacheIn;
