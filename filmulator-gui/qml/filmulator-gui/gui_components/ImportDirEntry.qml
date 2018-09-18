@@ -38,9 +38,36 @@ Rectangle {
             font.pixelSize: 12.0 * uiScale
         }
     }
+
+    onErroneousChanged: {
+        if (erroneous) {
+            pulseColor.start
+        } else {
+            pulseColor.complete()
+        }
+    }
+
     Rectangle {
         id: textEntryRect
-        color: root.erroneous ? Colors.lightOrange : "black"
+        color: "black"
+        SequentialAnimation on color {
+            id: pulseColor
+            running: root.erroneous
+            loops: Animation.Infinite
+            ColorAnimation {
+                from: "black"
+                to: Colors.darkOrange
+                duration: 1000
+                easing: easing.InQuart
+            }
+            ColorAnimation {
+                from: Colors.darkOrange
+                to: "black"
+                duration: 1000
+                easing: easing.OutQuart
+            }
+        }
+
         width: parent.width - 2*__padding
         height: 25 * uiScale
         x: __padding
@@ -51,7 +78,7 @@ Rectangle {
             y: __padding * 1.25
             width: parent.width - x
             height: parent.height - y
-            color: root.erroneous ? "black" : "white"
+            color: "white"
             selectByMouse: true
             cursorVisible: focus
             font.pixelSize: 12.0 * uiScale

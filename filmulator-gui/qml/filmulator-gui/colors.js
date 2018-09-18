@@ -17,6 +17,7 @@ var brighterOrange = "#FFCCAA" //good for slight oranging of white things to ind
 var brightOrange = "#FFBB66" //good for subtle highlights on orange things
 var lightOrange = "#FF9922" //good for thin lines
 var medOrange = "#FF8800" //perfect middle orange
+var darkOrange = "#664422"
 var darkOrangeH = "#584C40" //dark orange for highlighting darkGrayH
 var darkOrangeL = "#403020" //dark orange for highlighting darkGrayL
 var weakOrange = "#A87848" //Low saturation for orange bleeding around gray

@@ -111,16 +111,10 @@ Rectangle {
             warningTooltipText: empty ? qsTr("Choose a directory to import from.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
             erroneous: (empty || (importInPlace && containsDCIM))
             property bool containsDCIM: false
-            property bool empty: false
+            property bool empty: enteredText === ""
             onEnteredTextChanged: {
                 root.folderPath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, false)
-            }
-            Connections {
-                target: importModel
-                onEmptyDirChanged: {
-                    sourceDirEntry.empty = importModel.emptyDir
-                }
             }
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
@@ -135,8 +129,8 @@ Rectangle {
             title: qsTr("Source Files")
             tooltipText: qsTr("Select one or more files to import.")
             fileDialogTitle: qsTr("Select the file(s) to import.")
-            warningTooltipText: invalid ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
-            erroneous: (invalid || (importInPlace && containsDCIM))
+            warningTooltipText: !(importInPlace && containsDCIM) ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
+            erroneous: (invalid || (importInPlace && containsDCIM) || enteredText == "")
             property bool containsDCIM: false
             property bool invalid: false
             nameFilters: importModel.getNameFilters();
@@ -246,13 +240,12 @@ Rectangle {
             warningTooltipText: empty ? qsTr("Choose a directory to move files to.") : qsTr("You do not have permissions to write in this directory. Please select another directory.")
             erroneous: (empty || notWritable)
             property bool notWritable: false
-            property bool empty: false
+            property bool empty: enteredText === ""
             enteredText: settings.getPhotoStorageDir()
             onEnteredTextChanged: {
                 importModel.photoDir = enteredText
                 settings.photoStorageDir = enteredText
                 notWritable = !importModel.pathWritable(enteredText)
-                empty = (enteredText == "")
             }
             Component.onCompleted: {
                 importModel.photoDir = enteredText
