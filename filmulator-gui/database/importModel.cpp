@@ -13,10 +13,10 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
     tableName = "SearchTable";
 
     //Set up the files that it accepts as raw files on directory import
-    rawNameFilters << "*.CR2" << "*.cr2" << "*.NEF" << "*.nef" << "*.DNG" << "*.dng" << "*.RW2" << "*.rw2" << "*.IIQ" << "*.iiq" << "*.ARW" << "*.arw" << "*.PEF" << "*.pef" << "*.RAF" << "*.raf" << "*.ORF" << "*.orf";
+    rawNameFilters << "*.CR2" << "*.cr2" << "*.NEF" << "*.nef" << "*.DNG" << "*.dng" << "*.RW2" << "*.rw2" << "*.IIQ" << "*.iiq" << "*.ARW" << "*.arw" << "*.PEF" << "*.pef" << "*.RAF" << "*.raf" << "*.ORF" << "*.orf" << "*.SRW" << "*.srw";
 
     //Set up the files that it'll show in the file picker
-    dirNameFilters << "Raw image files (*.CR2 *.cr2 *.NEF *.nef *.DNG *.dng *.RW2 *.rw2 *.IIQ *.iiq *.ARW *.arw *.PEF *.pef *.RAF *.raf *.ORF *.orf)";// << "All files (*)";
+    dirNameFilters << "Raw image files (*.CR2 *.cr2 *.NEF *.nef *.DNG *.dng *.RW2 *.rw2 *.IIQ *.iiq *.ARW *.arw *.PEF *.pef *.RAF *.raf *.ORF *.orf *.SRW *.srw)";// << "All files (*)";
 
     //Set up the import worker thread
     ImportWorker *worker = new ImportWorker;
@@ -63,6 +63,10 @@ bool ImportModel::pathContainsDCIM(const QString dir, const bool notDirectory)
         return true;
     }
     else if (notDirectory)
+    {
+        return false;
+    }
+    else if (dir.length() < 4) // so that / itself doesn't lead to reading the whole filesystem
     {
         return false;
     }
@@ -115,14 +119,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     //This function reads in a directory and puts the raws into the database.
     if (dir.length() == 0)
     {
-        emptyDir = true;
-        emit emptyDirChanged();
         return;
-    }
-    else
-    {
-        emptyDir = false;
-        emit emptyDirChanged();
     }
 
     //First, we call itself recursively on the folders within.

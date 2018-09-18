@@ -49,7 +49,6 @@ class ImportModel : public SqlModel
 
     Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
     Q_PROPERTY(QString progressFrac READ getProgressFrac NOTIFY progressFracChanged)
-    Q_PROPERTY(bool emptyDir READ getEmptyDir NOTIFY emptyDirChanged)
     Q_PROPERTY(bool invalidFile READ getInvalidFile NOTIFY invalidFileChanged)
 
 public:
@@ -92,7 +91,6 @@ public:
 
     float getProgress() {return progress;}
     QString getProgressFrac() {return progressFrac;}
-    bool getEmptyDir() {return emptyDir;}
     bool getInvalidFile() {return invalidFile;}
 
 public slots:
@@ -112,7 +110,6 @@ signals:
 
     void progressChanged();
     void progressFracChanged();
-    void emptyDirChanged();
     void invalidFileChanged();
 
     void searchTableChanged();
@@ -154,7 +151,6 @@ protected:
     int maxQueue;
     float progress = 1;
     QString progressFrac = "Progress: 0/0";
-    bool emptyDir = false;
     bool invalidFile = false;
 
     QThread workerThread;
