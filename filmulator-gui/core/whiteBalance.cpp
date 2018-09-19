@@ -403,28 +403,6 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
     cout << "gmult: " << gMult << endl;
     cout << "bmult: " << bMult << endl;
 
-    float rPreMultS, gPreMultS, bPreMultS;//sRGB conversion
-    matrixVectorMult(rPreMult,  gPreMult,  bPreMult,
-                     rPreMultS, gPreMultS, bPreMultS,
-                     cam2rgb);
-    cout << "rpremult: " << rPreMultS << endl;
-    cout << "gpremult: " << gPreMultS << endl;
-    cout << "bpremult: " << bPreMultS << endl;
-
-    //rMult *= rPreMultS;
-    //gMult *= gPreMultS;
-    //bMult *= bPreMultS;
-
-    float minMult = min(min(rMult, gMult), bMult);
-
-    rMult /= minMult;
-    gMult /= minMult;
-    bMult /= minMult;
-
-    rMult = 1.0f;
-    gMult = 1.0f;
-    bMult = 1.0f;
-
     float transform[3][3];
     for (int i = 0; i < 3; i++)
     {
