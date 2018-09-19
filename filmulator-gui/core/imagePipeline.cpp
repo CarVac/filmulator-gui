@@ -1,7 +1,5 @@
 #include "imagePipeline.h"
 
-using librtprocess::array2D;
-
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
     cache = cacheIn;
@@ -153,10 +151,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cfa[1][0] = unsigned(image_processor.COLOR(1, 0));
             cfa[1][1] = unsigned(image_processor.COLOR(1, 1));
 
-            raw_image(raw_width, raw_height);
+            raw_image.set_size(raw_height, raw_width);
 
-            matrix<float> tempraw;
-            tempraw.set_size(raw_width, raw_height);
             //copy raw data
             for (int row = 0; row < raw_height; row++)
             {
@@ -165,11 +161,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 for (int col = 0; col < raw_width; col++)
                 {
                     raw_image[row][col] = max(0.0f,RAW[rowoffset + col + leftmargin] - blackpoint);
-//                    tempraw(row, col) = RAW[rowoffset + col + leftmargin] - blackpoint;
                 }
             }
 
-//            cout << "max of tempraw" << tempraw.max() << endl;
+//            cout << "max of raw_image" << raw_image.max() << endl;
         }
         //In the future we'll actually perform loading here.
         valid = paramManager->markLoadComplete();
@@ -234,26 +229,25 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
         else //raw
         {
-            array2D<float> red, green, blue;
-            red(raw_width, raw_height);
-            green(raw_width, raw_height);
-            blue(raw_width, raw_height);
+            matrix<float>   red(raw_height, raw_width);
+            matrix<float> green(raw_height, raw_width);
+            matrix<float>  blue(raw_height, raw_width);
 
             double initialGain = 1.0;
             float inputscale = maxValue;
             float outputscale = 65535.0;
             int border = 4;
             std::function<bool(double)> setProg = [](double) -> bool {return false;};
-            librtprocess::amaze_demosaic(0, 0, raw_width-1, raw_height-1, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+            librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
 
             input_image.set_size(raw_height, raw_width*3);
             for (int row = 0; row < raw_height; row++)
             {
                 for (int col = 0; col < raw_width; col++)
                 {
-                    input_image(row, col*3    ) = red[row][col];
-                    input_image(row, col*3 + 1) = green[row][col];
-                    input_image(row, col*3 + 2) = blue[row][col];
+                    input_image(row, col*3    ) =   red(row, col);
+                    input_image(row, col*3 + 1) = green(row, col);
+                    input_image(row, col*3 + 2) =  blue(row, col);
                 }
             }
             Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);

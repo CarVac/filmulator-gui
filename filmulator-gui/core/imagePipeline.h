@@ -57,7 +57,7 @@ protected:
     struct timeval timeRequested;
 
     //raw stuff
-    librtprocess::array2D<float> raw_image;
+    matrix<float> raw_image;
     ColorFilterArray cfa;
     int raw_width, raw_height;
     float camToRGB[3][3];
