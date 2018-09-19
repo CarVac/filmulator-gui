@@ -63,6 +63,7 @@ protected:
     float camToRGB[3][3];
     float rBlack, gBlack, bBlack;
     float rMult, gMult, bMult;
+    float maxValue;
 
     matrix<float> input_image;
     matrix<float> scaled_image;

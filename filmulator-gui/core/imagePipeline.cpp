@@ -125,15 +125,26 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 }
                 cout << endl;
             }
-            rMult = image_processor.imgdata.color.cam_mul[0]/1024.0f;
-            gMult = image_processor.imgdata.color.cam_mul[1]/1024.0f;
-            bMult = image_processor.imgdata.color.cam_mul[2]/1024.0f;
+            rMult = image_processor.imgdata.color.cam_mul[0];
+            gMult = image_processor.imgdata.color.cam_mul[1];
+            bMult = image_processor.imgdata.color.cam_mul[2];
+            float minMult = min(min(rMult, gMult), bMult);
+            rMult /= minMult;
+            gMult /= minMult;
+            bMult /= minMult;
 
             //get black subtraction values
             rBlack = image_processor.imgdata.color.cblack[0];
             gBlack = image_processor.imgdata.color.cblack[1];
             bBlack = image_processor.imgdata.color.cblack[2];
             float blackpoint = image_processor.imgdata.color.black;
+
+            //get white saturation values
+            cout << "data_maximum: " << image_processor.imgdata.color.data_maximum << endl;
+            cout << "maximum: " << image_processor.imgdata.color.maximum << endl;
+            maxValue = image_processor.imgdata.color.maximum;
+            cout << "fmaximum: " << image_processor.imgdata.color.fmaximum << endl;
+            cout << "fnorm: " << image_processor.imgdata.color.fnorm << endl;
 
             //get color filter array
             //bayer only for now
@@ -190,6 +201,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             rMult = stealVictim->rMult;
             gMult = stealVictim->gMult;
             bMult = stealVictim->bMult;
+            maxValue = stealVictim->maxValue;
             raw_width = stealVictim->raw_width;
             raw_height = stealVictim->raw_height;
             //copy color matrix
@@ -228,7 +240,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             blue(raw_width, raw_height);
 
             double initialGain = 1.0;
-            float inputscale = 16383.0;
+            float inputscale = maxValue;
             float outputscale = 65535.0;
             int border = 4;
             std::function<bool(double)> setProg = [](double) -> bool {return false;};
