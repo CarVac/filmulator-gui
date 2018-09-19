@@ -69,6 +69,10 @@ bool ImportModel::pathContainsDCIM(const QString dir, const bool notDirectory)
     {
         return false;
     }
+    else if (dir.length() < 4) // so that / itself doesn't lead to reading the whole filesystem
+    {
+        return false;
+    }
     else
     {
         //Next, we call this function recursively on the folders within.
@@ -118,14 +122,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     //This function reads in a directory and puts the raws into the database.
     if (dir.length() == 0)
     {
-        emptyDir = true;
-        emit emptyDirChanged();
         return;
-    }
-    else
-    {
-        emptyDir = false;
-        emit emptyDirChanged();
     }
 
     //First, we call itself recursively on the folders within.
