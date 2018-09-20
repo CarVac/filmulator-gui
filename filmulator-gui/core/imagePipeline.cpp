@@ -47,7 +47,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     hasStartedProcessing = true;
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
-    gettimeofday(&timeRequested, NULL);
+    gettimeofday(&timeRequested, nullptr);
     histoInterface = interface_in;
 
     valid = paramManager->getValid();
@@ -146,10 +146,23 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
             //get color filter array
             //bayer only for now
-            cfa[0][0] = unsigned(image_processor.COLOR(0, 0));
-            cfa[0][1] = unsigned(image_processor.COLOR(0, 1));
-            cfa[1][0] = unsigned(image_processor.COLOR(1, 0));
-            cfa[1][1] = unsigned(image_processor.COLOR(1, 1));
+            for (unsigned int i=0; i<2; i++)
+            {
+                for (unsigned int j=0; j<2; j++)
+                {
+                    cfa[i][j] = unsigned(image_processor.COLOR(int(i), int(j)));
+                    if (cfa[i][j] == 3) //Auto CA correct doesn't like 0123 for RGBG; we change it to 0121.
+                    {
+                        cfa[i][j] = 1;
+                    }
+                }
+            }
+
+            Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
+            assert(image.get() != 0);
+            image->readMetadata();
+            exifData = image->exifData();
+
 
             raw_image.set_size(raw_height, raw_width);
 
@@ -187,7 +200,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         //Reads in the photo.
         cout << "load start:" << timeDiff (timeRequested) << endl;
         struct timeval imload_time;
-        gettimeofday( &imload_time, NULL );
+        gettimeofday( &imload_time, nullptr );
 
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
@@ -199,6 +212,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             maxValue = stealVictim->maxValue;
             raw_width = stealVictim->raw_width;
             raw_height = stealVictim->raw_height;
+            exifData = stealVictim->exifData;
             //copy color matrix
             //get color matrix
             for (int i = 0; i < 3; i++)
@@ -238,7 +252,15 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             float outputscale = 65535.0;
             int border = 4;
             std::function<bool(double)> setProg = [](double) -> bool {return false;};
-            librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+            if (demosaicParam.caEnabled)
+            {
+                matrix<float> raw_fixed(raw_height, raw_width);
+                CaFitParams fitparams;
+                librtprocess::CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
+                librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_fixed, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+            } else {
+                librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+            }
 
             input_image.set_size(raw_height, raw_width*3);
             for (int row = 0; row < raw_height; row++)
@@ -250,10 +272,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     input_image(row, col*3 + 2) =  blue(row, col);
                 }
             }
-            Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
-            assert(image.get() != 0);
-            image->readMetadata();
-            exifData = image->exifData();
         }
         cout << "load time: " << timeDiff(imload_time) << endl;
 
@@ -263,7 +281,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
-            gettimeofday( &downscale_time, NULL );
+            gettimeofday( &downscale_time, nullptr );
             downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, 600, 600);
             cout << "scale end: " << timeDiff( downscale_time ) << endl;
         }
@@ -271,7 +289,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
-            gettimeofday( &downscale_time, NULL );
+            gettimeofday( &downscale_time, nullptr );
             downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, resolution, resolution);
             cout << "scale end: " << timeDiff( downscale_time ) << endl;
         }
