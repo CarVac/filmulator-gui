@@ -123,13 +123,20 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 }
                 cout << endl;
             }
-            rMult = image_processor.imgdata.color.cam_mul[0];
-            gMult = image_processor.imgdata.color.cam_mul[1];
-            bMult = image_processor.imgdata.color.cam_mul[2];
-            float minMult = min(min(rMult, gMult), bMult);
-            rMult /= minMult;
-            gMult /= minMult;
-            bMult /= minMult;
+            rCamMul = image_processor.imgdata.color.cam_mul[0];
+            gCamMul = image_processor.imgdata.color.cam_mul[1];
+            bCamMul = image_processor.imgdata.color.cam_mul[2];
+            float minMult = min(min(rCamMul, gCamMul), bCamMul);
+            rCamMul /= minMult;
+            gCamMul /= minMult;
+            bCamMul /= minMult;
+            rPreMul = image_processor.imgdata.color.pre_mul[0];
+            gPreMul = image_processor.imgdata.color.pre_mul[1];
+            bPreMul = image_processor.imgdata.color.pre_mul[2];
+            minMult = min(min(rPreMul, gPreMul), bPreMul);
+            rPreMul /= minMult;
+            gPreMul /= minMult;
+            bPreMul /= minMult;
 
             //get black subtraction values
             rBlack = image_processor.imgdata.color.cblack[0];
@@ -206,9 +213,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             scaled_image = stealVictim->input_image;
             exifData = stealVictim->exifData;
-            rMult = stealVictim->rMult;
-            gMult = stealVictim->gMult;
-            bMult = stealVictim->bMult;
+            rCamMul = stealVictim->rCamMul;
+            gCamMul = stealVictim->gCamMul;
+            bCamMul = stealVictim->bCamMul;
+            rPreMul = stealVictim->rPreMul;
+            gPreMul = stealVictim->gPreMul;
+            bPreMul = stealVictim->bPreMul;
             maxValue = stealVictim->maxValue;
             raw_width = stealVictim->raw_width;
             raw_height = stealVictim->raw_height;
@@ -322,9 +332,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      pre_film_image,
                      prefilmParam.temperature,
                      prefilmParam.tint,
-                     prefilmParam.fullFilename,
                      camToRGB,
-                     rMult, gMult, bMult);
+                     rCamMul, gCamMul, bCamMul,
+                     rPreMul, gPreMul, bPreMul);
 
         if (NoCache == cache)
         {

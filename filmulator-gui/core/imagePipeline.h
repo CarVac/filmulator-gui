@@ -62,7 +62,8 @@ protected:
     int raw_width, raw_height;
     float camToRGB[3][3];
     float rBlack, gBlack, bBlack;
-    float rMult, gMult, bMult;
+    float rCamMul, gCamMul, bCamMul;//wb used on the image
+    float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
     float maxValue;
 
     matrix<float> input_image;

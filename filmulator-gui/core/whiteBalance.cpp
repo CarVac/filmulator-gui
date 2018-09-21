@@ -21,39 +21,39 @@ void temp_to_XYZ(float const temp, float &X, float &Y, float &Z)
 
     if(temp < 4000)
     {
-        temp_x = -0.2661239 * pow(10,9) * pow(temp,-3) +
-                 -0.2343589 * pow(10,6) * pow(temp,-2) +
-                  0.8776956 * pow(10,3) * pow(temp,-1) +
-                  0.179910;
+        temp_x = -0.2661239f * pow(10.0f,9.0f) * pow(temp,-3.0f) +
+                 -0.2343589f * pow(10.0f,6.0f) * pow(temp,-2.0f) +
+                  0.8776956f * pow(10.0f,3.0f) * pow(temp,-1.0f) +
+                  0.179910f;
     }
     else
     {
-        temp_x = -3.0258469 * pow(10,9) * pow(temp,-3) +
-                  2.1070379 * pow(10,6) * pow(temp,-2) +
-                  0.2226347 * pow(10,3) * pow(temp,-1) +
-                  0.24039;
+        temp_x = -3.0258469f * pow(10.0f,9.0f) * pow(temp,-3.0f) +
+                  2.1070379f * pow(10.0f,6.0f) * pow(temp,-2.0f) +
+                  0.2226347f * pow(10.0f,3.0f) * pow(temp,-1.0f) +
+                  0.24039f;
     }
 
     if(temp < 2222)
     {
-        temp_y = -1.1063814  * pow(temp_x,3) +
-                 -1.34811020 * pow(temp_x,2) +
-                  2.18555832 * temp_x +
-                 -0.20219683;
+        temp_y = -1.10638140f * pow(temp_x,3.0f) +
+                 -1.34811020f * pow(temp_x,2.0f) +
+                  2.18555832f * temp_x +
+                 -0.20219683f;
     }
     else if(temp < 4000)
     {
-        temp_y = -0.9549476  * pow(temp_x,3) +
-                 -1.37418593 * pow(temp_x,2) +
-                  2.09137015 * temp_x +
-                 -0.16748867;
+        temp_y = -0.95494760f * pow(temp_x,3.0f) +
+                 -1.37418593f * pow(temp_x,2.0f) +
+                  2.09137015f * temp_x +
+                 -0.16748867f;
     }
     else
     {
-        temp_y =  3.0817580  * pow(temp_x,3) +
-                 -5.8733867 * pow(temp_x,2) +
-                  3.75112997 * temp_x +
-                 -0.37001483;
+        temp_y =  3.08175800f * pow(temp_x,3.0f) +
+                 -5.87338670f * pow(temp_x,2.0f) +
+                  3.75112997f * temp_x +
+                 -0.37001483f;
     }
 
     //Then we convert from xyY to XYZ.
@@ -117,8 +117,10 @@ void matrixMatrixMult(float left[3][3], float right[3][3], float (&output)[3][3]
 //If we match the camera's WB, then the multipliers should be 1,1,1.
 //We don't actually know what that is, so later on this function gets optimized with the goal of 1,1,1
 // as the default value on importing an image.
-void whiteBalancePostMults(float temperature, float tint, std::string inputFilename,
-                       float &rMult, float &gMult, float &bMult)
+void whiteBalancePostMults(float temperature, float tint, float camToRgb[3][3],
+                           float rCamMul, float gCamMul, float bCamMul,
+                           float rPreMul, float gPreMul, float bPreMul,
+                           float &rMult, float &gMult, float &bMult)
 {
     //To compute the white balance, we have to reference the undo what the thingy did.
     //In order to get physically relevant temperatures, we trust dcraw
@@ -132,65 +134,22 @@ void whiteBalancePostMults(float temperature, float tint, std::string inputFilen
     float BASE_TINT = 0.9864318f;
 
     float rBaseMult, gBaseMult, bBaseMult;
-    //Grab the existing white balance data from the raw file.
-    LibRaw imageProcessor;
-#define COLOR imageProcessor.imgdata.color
-#define PARAM imageProcessor.imgdata.params
+    //Set the white balance arguments based on what libraw did.
 
-    const char *cstr = inputFilename.c_str();
-    if (0 == imageProcessor.open_file(cstr))
-    {
-        //Set the white balance arguments based on what libraw did.
-
-        //First we need to set up the transformation from the camera's
-        // raw color space to sRGB.
-
-        //Grab the xyz2cam matrix.
-//        float xyzToCam[3][3];
-        float camToRgb[3][3];
-//        cout << "white_balance: camToRgb" << endl;//===========================
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-//                xyzToCam[i][j] = COLOR.cam_xyz[i][j];
-                camToRgb[i][j] = COLOR.rgb_cam[i][j];
-//                cout << COLOR.rgb_cam[i][j] << " ";//===========================
-            }
-//            cout << endl;//===========================
-        }
-        //Now we divide the daylight multipliers by the camera multipliers.
-        float rrBaseMult = COLOR.pre_mul[0] / COLOR.cam_mul[0];
-        float grBaseMult = COLOR.pre_mul[1] / COLOR.cam_mul[1];
-        float brBaseMult = COLOR.pre_mul[2] / COLOR.cam_mul[2];
-        float rawMultMin = min(min(rrBaseMult, grBaseMult), brBaseMult);
-        rrBaseMult /= rawMultMin;
-        grBaseMult /= rawMultMin;
-        brBaseMult /= rawMultMin;
-//        cout << "white_balance raw pre_muls" << endl;//===========================
-//        cout << rrBaseMult << " ";//===========================
-//        cout << grBaseMult << " ";//===========================
-//        cout << brBaseMult << endl;//===========================
-        //And then we convert them from camera space to sRGB.
-        matrixVectorMult(rrBaseMult, grBaseMult, brBaseMult,
-                          rBaseMult,  gBaseMult,  bBaseMult,
-                          camToRgb);
-//        cout << "white_balance sRGB base_mults" << endl;//===========================
-//        cout << rBaseMult << " ";//===========================
-//        cout << gBaseMult << " ";//===========================
-//        cout << bBaseMult << endl;//===========================
-        if ((1.0f == camToRgb[0][0] && 1.0f == camToRgb[1][1] && 1.0f == camToRgb[2][2])
-             || (1.0f == COLOR.pre_mul[0] && 1.0f == COLOR.pre_mul[1] && 1.0f == COLOR.pre_mul[2]))
-        {
-//            cout << "Unity camera matrix or base multipliers. BORK" << endl;
-            rBaseMult = 1;
-            gBaseMult = 1;
-            bBaseMult = 1;
-            BASE_TEMP = 5200;
-            BASE_TINT = 1;
-        }
-    }
-    else //it couldn't read the file, or it wasn't raw. Either way, fallback to 1
+    //First we divide the daylight multipliers by the camera multipliers.
+    float rrBaseMult = rPreMul / rCamMul;
+    float grBaseMult = gPreMul / gCamMul;
+    float brBaseMult = bPreMul / bCamMul;
+    float rawMultMin = min(min(rrBaseMult, grBaseMult), brBaseMult);
+    rrBaseMult /= rawMultMin;
+    grBaseMult /= rawMultMin;
+    brBaseMult /= rawMultMin;
+    //And then we convert them from camera space to sRGB.
+    matrixVectorMult(rrBaseMult, grBaseMult, brBaseMult,
+                      rBaseMult,  gBaseMult,  bBaseMult,
+                      camToRgb);
+    if ((1.0f == camToRgb[0][0] && 1.0f == camToRgb[1][1] && 1.0f == camToRgb[2][2])
+         || (1.0f == rPreMul && 1.0f == gPreMul && 1.0f == bPreMul))
     {
         rBaseMult = 1;
         gBaseMult = 1;
@@ -248,10 +207,14 @@ void whiteBalancePostMults(float temperature, float tint, std::string inputFilen
 }
 
 //Computes the Eulerian distance from the WB coefficients to (1,1,1). Also adds the temp to it.
-float wbDistance(std::string inputFilename, array<float,2> tempTint)
+float wbDistance(array<float,2> tempTint, float camToRgb[3][3],
+                 float rCamMul, float gCamMul, float bCamMul,
+                 float rPreMul, float gPreMul, float bPreMul)
 {
     float rMult, gMult, bMult;
-    whiteBalancePostMults(tempTint[0], tempTint[1], inputFilename,
+    whiteBalancePostMults(tempTint[0], tempTint[1], camToRgb,
+                          rCamMul, gCamMul, bCamMul,
+                          rPreMul, gPreMul, bPreMul,
                           rMult, gMult, bMult);
     rMult -= 1;
     gMult -= 1;
@@ -266,26 +229,71 @@ float wbDistance(std::string inputFilename, array<float,2> tempTint)
 void optimizeWBMults(std::string file,
                      float &temperature, float &tint)
 {
+    //Load wb params from the raw file
+
+            LibRaw image_processor;
+
+            //Open the file.
+            const char *cstr = file.c_str();
+            if (0 != image_processor.open_file(cstr))
+            {
+                cout << "processImage: Could not read input file!" << endl;
+            }
+
+            //This makes IMAGE contains the sensel value and 3 blank values at every
+            //location.
+            //if (0 != image_processor.unpack())
+            //{
+            //    cerr << "processImage: Could not read input file, or was canceled" << endl;
+            //}
+            float camToRGB[3][3];
+
+            //get color matrix
+            for (int i = 0; i < 3; i++)
+            {
+                cout << "camToRGB: ";
+                for (int j = 0; j < 3; j++)
+                {
+                    camToRGB[i][j] = image_processor.imgdata.color.rgb_cam[i][j];
+                    cout << camToRGB[i][j] << " ";
+                }
+                cout << endl;
+            }
+            float rCamMul = image_processor.imgdata.color.cam_mul[0];
+            float gCamMul = image_processor.imgdata.color.cam_mul[1];
+            float bCamMul = image_processor.imgdata.color.cam_mul[2];
+            float minMult = min(min(rCamMul, gCamMul), bCamMul);
+            rCamMul /= minMult;
+            gCamMul /= minMult;
+            bCamMul /= minMult;
+            float rPreMul = image_processor.imgdata.color.pre_mul[0];
+            float gPreMul = image_processor.imgdata.color.pre_mul[1];
+            float bPreMul = image_processor.imgdata.color.pre_mul[2];
+            minMult = min(min(rPreMul, gPreMul), bPreMul);
+            rPreMul /= minMult;
+            gPreMul /= minMult;
+            bPreMul /= minMult;
+
     //This is nelder-mead in 2d, so we have 3 points.
     array<float,2> lowCoord, midCoord, hiCoord;
     //Some temporary coordinates for use in optimizing.
     array<float,2> meanCoord, reflCoord, expCoord, contCoord;
     //Temperature
-    lowCoord[0] = 4000.0;
-    midCoord[0] = 5200.0;
-    hiCoord[0]  = 6300.0;
+    lowCoord[0] = 4000.0f;
+    midCoord[0] = 5200.0f;
+    hiCoord[0]  = 6300.0f;
     //Tint
-    lowCoord[1] = 1.0;
-    midCoord[1] = 1.05;
-    hiCoord[1]  = 1.0;
+    lowCoord[1] = 1.0f;
+    midCoord[1] = 1.05f;
+    hiCoord[1]  = 1.0f;
 
     float low, mid, hi, oldLow;
-    low = wbDistance(file, lowCoord);
-    mid = wbDistance(file, midCoord);
-    hi  = wbDistance(file, hiCoord);
+    low = wbDistance(lowCoord, camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
+    mid = wbDistance(midCoord, camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
+    hi  = wbDistance(hiCoord,  camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
     float refl, exp, cont;
 
-#define TOLERANCE 0.000000001
+#define TOLERANCE 0.000000001f
 #define ITER_LIMIT 10000
 #define REPEAT_LIMIT 30
 
@@ -299,7 +307,7 @@ void optimizeWBMults(std::string file,
         if (iterations > ITER_LIMIT)
         {
             cout << "Hit iteration limit" << endl;
-            temperature = 5200.0;
+            temperature = 5200.0f;
             tint = 1;
             return;
         }
@@ -332,13 +340,13 @@ void optimizeWBMults(std::string file,
         }
 
         //Centroid of all but the worst point.
-        meanCoord[0] = 0.5 * (lowCoord[0]  + midCoord[0]);
-        meanCoord[1] = 0.5 * (lowCoord[1]  + midCoord[1]);
+        meanCoord[0] = 0.5f * (lowCoord[0]  + midCoord[0]);
+        meanCoord[1] = 0.5f * (lowCoord[1]  + midCoord[1]);
 
         //Reflect the worst point about the centroid.
         reflCoord[0] = meanCoord[0] + 1 * (meanCoord[0] - hiCoord[0]);
         reflCoord[1] = meanCoord[1] + 1 * (meanCoord[1] - hiCoord[1]);
-        refl = wbDistance(file, reflCoord);
+        refl = wbDistance(reflCoord, camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
         if (refl < mid) //Better than the second-worst point
         {
             if (refl > low) //but not better than the old best point
@@ -350,7 +358,7 @@ void optimizeWBMults(std::string file,
             { //Try a point expanded farther away in the same direction.
                 expCoord[0] = meanCoord[0] + 2 * (meanCoord[0] - hiCoord[0]);
                 expCoord[1] = meanCoord[1] + 2 * (meanCoord[1] - hiCoord[1]);
-                exp = wbDistance(file, expCoord);
+                exp = wbDistance(expCoord, camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
                 if (exp < refl) //It is the best so far
                 { //Swap this with the worst point
                     hiCoord.swap(expCoord);
@@ -365,9 +373,9 @@ void optimizeWBMults(std::string file,
         }
         else //The reflected point was not better than the second-worst point
         { //Compute a point contracted from the worst towards the centroid.
-            contCoord[0] = meanCoord[0] - 0.5 * (meanCoord[0] - hiCoord[0]);
-            contCoord[1] = meanCoord[1] - 0.5 * (meanCoord[1] - hiCoord[1]);
-            cont = wbDistance(file, contCoord);
+            contCoord[0] = meanCoord[0] - 0.5f * (meanCoord[0] - hiCoord[0]);
+            contCoord[1] = meanCoord[1] - 0.5f * (meanCoord[1] - hiCoord[1]);
+            cont = wbDistance(contCoord, camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
             if (cont < hi) //Better than the worst point
             { //Replace the worst point with this.
                 hiCoord.swap(contCoord);
@@ -375,12 +383,12 @@ void optimizeWBMults(std::string file,
             } //and go back.
             else //Everything we tried was terrible
             { //Contract everything towards the best point, not the centroid.
-                hiCoord[0] = lowCoord[0] + 0.5 * (lowCoord[0] - hiCoord[0]);
-                hiCoord[1] = lowCoord[1] + 0.5 * (lowCoord[1] - hiCoord[1]);
-                hi = wbDistance(file, hiCoord);
-                midCoord[0] = lowCoord[0] + 0.5 * (lowCoord[0] - midCoord[0]);
-                midCoord[1] = lowCoord[1] + 0.5 * (lowCoord[1] - midCoord[1]);
-                mid = wbDistance(file, midCoord);
+                hiCoord[0] = lowCoord[0] + 0.5f * (lowCoord[0] - hiCoord[0]);
+                hiCoord[1] = lowCoord[1] + 0.5f * (lowCoord[1] - hiCoord[1]);
+                hi = wbDistance(hiCoord, camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
+                midCoord[0] = lowCoord[0] + 0.5f * (lowCoord[0] - midCoord[0]);
+                midCoord[1] = lowCoord[1] + 0.5f * (lowCoord[1] - midCoord[1]);
+                mid = wbDistance(midCoord, camToRGB, rCamMul, gCamMul, bCamMul, rPreMul, gPreMul, bPreMul);
             }
         }
     }
@@ -393,12 +401,15 @@ void optimizeWBMults(std::string file,
 // and the filename where it looks up the camera matrix and daylight multipliers.
 //It also takes in the camera matrix and the raw color space WB multipliers.
 void whiteBalance(matrix<float> &input, matrix<float> &output,
-                  float temperature, float tint, std::string inputFilename, float cam2rgb[3][3],
-                  float rPreMult, float gPreMult, float bPreMult)
+                  float temperature, float tint, float cam2rgb[3][3],
+                  float rCamMul, float gCamMul, float bCamMul,
+                  float rPreMul, float gPreMul, float bPreMul)
 {
     float rMult, gMult, bMult;
-    whiteBalancePostMults(temperature, tint, inputFilename,
-                      rMult, gMult, bMult);
+    whiteBalancePostMults(temperature, tint, cam2rgb,
+                          rCamMul, gCamMul, bCamMul,
+                          rPreMul, gPreMul, bPreMul,
+                          rMult, gMult, bMult);
     cout << "rmult: " << rMult << endl;
     cout << "gmult: " << gMult << endl;
     cout << "bmult: " << bMult << endl;
@@ -426,9 +437,9 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
         {
             for (int j = 0; j < nCols; j += 3)
             {
-                output(i, j  ) = transform[0][0]*rPreMult*input(i, j) + transform[0][1]*gPreMult*input(i, j+1) + transform[0][2]*bPreMult*input(i, j+2);
-                output(i, j+1) = transform[1][0]*rPreMult*input(i, j) + transform[1][1]*gPreMult*input(i, j+1) + transform[1][2]*bPreMult*input(i, j+2);
-                output(i, j+2) = transform[2][0]*rPreMult*input(i, j) + transform[2][1]*gPreMult*input(i, j+1) + transform[2][2]*bPreMult*input(i, j+2);
+                output(i, j  ) = transform[0][0]*rCamMul*input(i, j) + transform[0][1]*gCamMul*input(i, j+1) + transform[0][2]*bCamMul*input(i, j+2);
+                output(i, j+1) = transform[1][0]*rCamMul*input(i, j) + transform[1][1]*gCamMul*input(i, j+1) + transform[1][2]*bCamMul*input(i, j+2);
+                output(i, j+2) = transform[2][0]*rCamMul*input(i, j) + transform[2][1]*gCamMul*input(i, j+1) + transform[2][2]*bCamMul*input(i, j+2);
             }
         }
     }
