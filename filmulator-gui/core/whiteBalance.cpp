@@ -240,12 +240,6 @@ void optimizeWBMults(std::string file,
                 cout << "processImage: Could not read input file!" << endl;
             }
 
-            //This makes IMAGE contains the sensel value and 3 blank values at every
-            //location.
-            //if (0 != image_processor.unpack())
-            //{
-            //    cerr << "processImage: Could not read input file, or was canceled" << endl;
-            //}
             float camToRGB[3][3];
 
             //get color matrix
