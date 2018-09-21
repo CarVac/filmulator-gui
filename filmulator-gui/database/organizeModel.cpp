@@ -138,6 +138,7 @@ QString OrganizeModel::thumbDir()
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/thumbs");
     homeDir.cd(dirstr);
+    cout << "OrganizeModel::thumbDir: " << homeDir.absolutePath().toStdString() << endl;
     return homeDir.absolutePath();
 }
 
