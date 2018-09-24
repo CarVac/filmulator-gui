@@ -140,6 +140,7 @@ QString OrganizeModel::thumbDir()
     cout << "OrganizeModel dirstr " << dirstr.toStdString() << endl;
     dirstr.append("/filmulator/thumbs");
     cout << "OrganizeModel dirstr extended " << dirstr.toStdString() << endl;
+    cout << "OrganizeMOdel dirstr2: " << QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation).toStdString() << endl;
     if (homeDir.cd(dirstr))
     {
         cout << "OrganizeModel::thumbDir: cd success" << endl;
