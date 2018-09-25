@@ -135,28 +135,18 @@ void OrganizeModel::setDateHistoQuery()
 QString OrganizeModel::thumbDir()
 {
     QDir homeDir = QDir::home();
-    cout << "OrganizeModel homedir: " << homeDir.absolutePath().toStdString() << endl;
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    cout << "OrganizeModel dirstr " << dirstr.toStdString() << endl;
     dirstr.append("/filmulator/thumbs");
-    cout << "OrganizeModel dirstr extended " << dirstr.toStdString() << endl;
-    cout << "OrganizeMOdel dirstr2: " << QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation).toStdString() << endl;
     if (homeDir.cd(dirstr))
     {
-        cout << "OrganizeModel::thumbDir: cd success" << endl;
-        cout << "OrganizeModel::thumbDir: " << homeDir.absolutePath().toStdString() << endl;
     } else {
         if (homeDir.mkpath(dirstr))
         {
-            cout << "OrganizeModel::thumbDir: succeeded at making path" << endl;
             if (homeDir.cd(dirstr))
             {
-                cout << "OrganizeModel::thumbDir: cd success after making path" << endl;
             } else {
-                cout << "OrganizeModel::thumbDir: cd failure after making path" << endl;
             }
         } else {
-            cout << "OrganizeModel::thumbDir: failed to make path" << endl;
         }
     }
     return homeDir.absolutePath();

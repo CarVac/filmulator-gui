@@ -30,7 +30,7 @@ public:
     explicit OrganizeModel(QObject *parent = 0);
     Q_INVOKABLE void setOrganizeQuery();
     Q_INVOKABLE void setDateHistoQuery();
-    Q_INVOKABLE QString thumbDir();
+    Q_INVOKABLE static QString thumbDir();
     Q_INVOKABLE void setRating(QString searchID, int rating);
     Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
     Q_INVOKABLE QDate getSelectedDate();
