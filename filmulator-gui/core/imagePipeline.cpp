@@ -79,25 +79,25 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         if (!loadParam.tiffIn && !loadParam.jpegIn && !((HighQuality == quality) && stealData))
         {
-            LibRaw image_processor;
+            std::unique_ptr<LibRaw> image_processor(new LibRaw);
 
             //Open the file.
             const char *cstr = loadParam.fullFilename.c_str();
-            if (0 != image_processor.open_file(cstr))
+            if (0 != image_processor->open_file(cstr))
             {
                 cout << "processImage: Could not read input file!" << endl;
                 return emptyMatrix();
             }
              //Make abbreviations for brevity in accessing data.
-#define RSIZE image_processor.imgdata.sizes
-#define PARAM image_processor.imgdata.params
-#define IMAGE image_processor.imgdata.image
-#define RAW   image_processor.imgdata.rawdata.raw_image
+#define RSIZE image_processor->imgdata.sizes
+#define PARAM image_processor->imgdata.params
+#define IMAGE image_processor->imgdata.image
+#define RAW   image_processor->imgdata.rawdata.raw_image
 //#define COLOR image_processor.imgdata.color
 
             //This makes IMAGE contains the sensel value and 3 blank values at every
             //location.
-            if (0 != image_processor.unpack())
+            if (0 != image_processor->unpack())
             {
                 cerr << "processImage: Could not read input file, or was canceled" << endl;
                 return emptyMatrix();
@@ -118,38 +118,38 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 cout << "camToRGB: ";
                 for (int j = 0; j < 3; j++)
                 {
-                    camToRGB[i][j] = image_processor.imgdata.color.rgb_cam[i][j];
+                    camToRGB[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
                     cout << camToRGB[i][j] << " ";
                 }
                 cout << endl;
             }
-            rCamMul = image_processor.imgdata.color.cam_mul[0];
-            gCamMul = image_processor.imgdata.color.cam_mul[1];
-            bCamMul = image_processor.imgdata.color.cam_mul[2];
+            rCamMul = image_processor->imgdata.color.cam_mul[0];
+            gCamMul = image_processor->imgdata.color.cam_mul[1];
+            bCamMul = image_processor->imgdata.color.cam_mul[2];
             float minMult = min(min(rCamMul, gCamMul), bCamMul);
             rCamMul /= minMult;
             gCamMul /= minMult;
             bCamMul /= minMult;
-            rPreMul = image_processor.imgdata.color.pre_mul[0];
-            gPreMul = image_processor.imgdata.color.pre_mul[1];
-            bPreMul = image_processor.imgdata.color.pre_mul[2];
+            rPreMul = image_processor->imgdata.color.pre_mul[0];
+            gPreMul = image_processor->imgdata.color.pre_mul[1];
+            bPreMul = image_processor->imgdata.color.pre_mul[2];
             minMult = min(min(rPreMul, gPreMul), bPreMul);
             rPreMul /= minMult;
             gPreMul /= minMult;
             bPreMul /= minMult;
 
             //get black subtraction values
-            rBlack = image_processor.imgdata.color.cblack[0];
-            gBlack = image_processor.imgdata.color.cblack[1];
-            bBlack = image_processor.imgdata.color.cblack[2];
-            float blackpoint = image_processor.imgdata.color.black;
+            rBlack = image_processor->imgdata.color.cblack[0];
+            gBlack = image_processor->imgdata.color.cblack[1];
+            bBlack = image_processor->imgdata.color.cblack[2];
+            float blackpoint = image_processor->imgdata.color.black;
 
             //get white saturation values
-            cout << "data_maximum: " << image_processor.imgdata.color.data_maximum << endl;
-            cout << "maximum: " << image_processor.imgdata.color.maximum << endl;
-            maxValue = image_processor.imgdata.color.maximum;
-            cout << "fmaximum: " << image_processor.imgdata.color.fmaximum << endl;
-            cout << "fnorm: " << image_processor.imgdata.color.fnorm << endl;
+            cout << "data_maximum: " << image_processor->imgdata.color.data_maximum << endl;
+            cout << "maximum: " << image_processor->imgdata.color.maximum << endl;
+            maxValue = image_processor->imgdata.color.maximum;
+            cout << "fmaximum: " << image_processor->imgdata.color.fmaximum << endl;
+            cout << "fnorm: " << image_processor->imgdata.color.fnorm << endl;
 
             //get color filter array
             //bayer only for now
@@ -157,7 +157,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             {
                 for (unsigned int j=0; j<2; j++)
                 {
-                    cfa[i][j] = unsigned(image_processor.COLOR(int(i), int(j)));
+                    cfa[i][j] = unsigned(image_processor->COLOR(int(i), int(j)));
                     if (cfa[i][j] == 3) //Auto CA correct doesn't like 0123 for RGBG; we change it to 0121.
                     {
                         cfa[i][j] = 1;
@@ -165,7 +165,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 }
             }
 
-            Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
+            auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
             assert(image.get() != 0);
             image->readMetadata();
             exifData = image->exifData();

@@ -230,43 +230,43 @@ void optimizeWBMults(std::string file,
                      float &temperature, float &tint)
 {
     //Load wb params from the raw file
+    //LibRaw image_processor;
+    std::unique_ptr<LibRaw> image_processor(new LibRaw);
 
-            LibRaw image_processor;
+    //Open the file.
+    const char *cstr = file.c_str();
+    if (0 != image_processor->open_file(cstr))
+    {
+        cout << "processImage: Could not read input file!" << endl;
+    }
 
-            //Open the file.
-            const char *cstr = file.c_str();
-            if (0 != image_processor.open_file(cstr))
-            {
-                cout << "processImage: Could not read input file!" << endl;
-            }
+    float camToRGB[3][3];
 
-            float camToRGB[3][3];
-
-            //get color matrix
-            for (int i = 0; i < 3; i++)
-            {
-                cout << "camToRGB: ";
-                for (int j = 0; j < 3; j++)
-                {
-                    camToRGB[i][j] = image_processor.imgdata.color.rgb_cam[i][j];
-                    cout << camToRGB[i][j] << " ";
-                }
-                cout << endl;
-            }
-            float rCamMul = image_processor.imgdata.color.cam_mul[0];
-            float gCamMul = image_processor.imgdata.color.cam_mul[1];
-            float bCamMul = image_processor.imgdata.color.cam_mul[2];
-            float minMult = min(min(rCamMul, gCamMul), bCamMul);
-            rCamMul /= minMult;
-            gCamMul /= minMult;
-            bCamMul /= minMult;
-            float rPreMul = image_processor.imgdata.color.pre_mul[0];
-            float gPreMul = image_processor.imgdata.color.pre_mul[1];
-            float bPreMul = image_processor.imgdata.color.pre_mul[2];
-            minMult = min(min(rPreMul, gPreMul), bPreMul);
-            rPreMul /= minMult;
-            gPreMul /= minMult;
-            bPreMul /= minMult;
+    //get color matrix
+    for (int i = 0; i < 3; i++)
+    {
+        cout << "camToRGB: ";
+        for (int j = 0; j < 3; j++)
+        {
+            camToRGB[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
+            cout << camToRGB[i][j] << " ";
+        }
+        cout << endl;
+    }
+    float rCamMul = image_processor->imgdata.color.cam_mul[0];
+    float gCamMul = image_processor->imgdata.color.cam_mul[1];
+    float bCamMul = image_processor->imgdata.color.cam_mul[2];
+    float minMult = min(min(rCamMul, gCamMul), bCamMul);
+    rCamMul /= minMult;
+    gCamMul /= minMult;
+    bCamMul /= minMult;
+    float rPreMul = image_processor->imgdata.color.pre_mul[0];
+    float gPreMul = image_processor->imgdata.color.pre_mul[1];
+    float bPreMul = image_processor->imgdata.color.pre_mul[2];
+    minMult = min(min(rPreMul, gPreMul), bPreMul);
+    rPreMul /= minMult;
+    gPreMul /= minMult;
+    bPreMul /= minMult;
 
     //This is nelder-mead in 2d, so we have 3 points.
     array<float,2> lowCoord, midCoord, hiCoord;
