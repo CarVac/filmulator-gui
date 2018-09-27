@@ -24,7 +24,7 @@
 #include "filmSim.hpp"
 
 bool imread(std::string input_image_filename, matrix<float> &returnmatrix,
-            Exiv2::ExifData &exifData, int highlights, bool caEnabled, bool lowQuality)
+            Exiv2::ExifData &exifData, int highlights, bool /*caEnabled*/, bool lowQuality)
 {
     //Create image processor for reading raws.
     LibRaw image_processor;

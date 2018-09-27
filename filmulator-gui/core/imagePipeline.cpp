@@ -79,7 +79,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         if (!loadParam.tiffIn && !loadParam.jpegIn && !((HighQuality == quality) && stealData))
         {
-            std::unique_ptr<LibRaw> image_processor(new LibRaw);
+            std::unique_ptr<LibRaw> image_processor = std::make_unique<LibRaw>();
 
             //Open the file.
             const char *cstr = loadParam.fullFilename.c_str();
