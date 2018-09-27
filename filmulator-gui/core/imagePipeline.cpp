@@ -491,6 +491,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         lutR.setUnity();
         lutG.setUnity();
         lutB.setUnity();
+        cout << "after colorcurve luts before colorcurve" << endl;
         colorCurves(contrast_image,
                     color_curve_image,
                     lutR,
