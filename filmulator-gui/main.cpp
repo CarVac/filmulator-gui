@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     // we use a QGuiApplication, which only supports QML stuff.
     //QGuiApplication app(argc, argv);
     QApplication app(argc, argv);
-    
+
     char* appdir = getenv("APPDIR");
     printf("APPDIR: %s\n", appdir);
     //getchar();

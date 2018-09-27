@@ -1,6 +1,7 @@
-import QtQuick 2.3
+import QtQuick 2.11
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
+import QtQuick.Window 2.11
 import "gui_components"
 
 SplitView {
@@ -271,13 +272,14 @@ SplitView {
                     hoverEnabled: true
                     acceptedButtons: Qt.LeftButton
                     onDoubleClicked: {
-                        if (bottomImage.scale < flicky.fitScale || bottomImage.scale == 1) {
+                        if (bottomImage.scale < flicky.fitScale || bottomImage.scale === 1/Screen.devicePixelRatio) {
                             bottomImage.scale = flicky.fitScale
                             flicky.contentX = Math.floor(cropMargin*uiScale*cropping)
                             flicky.contentY = Math.floor(cropMargin*uiScale*cropping)
                             flicky.fit = true
                         } else {
-                            var zoomFactor = 1/bottomImage.scale
+                            var nativeZoom = 1/Screen.devicePixelRatio
+                            var zoomFactor = nativeZoom/bottomImage.scale
 
                             //Here's how it worked before the cropmargin was added
                             //oldContentX = flicky.contentX
@@ -301,7 +303,7 @@ SplitView {
                             var oldMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  - 2*Math.floor(cropMargin*uiScale*cropping)
                             var oldMouseY = mouse.y - Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) - 2*Math.floor(cropMargin*uiScale*cropping)
 
-                            bottomImage.scale = 1
+                            bottomImage.scale = nativeZoom
 
                             var newMouseX = mouse.x - Math.max(0, 0.5*(flicky.width  - bottomImage.width))  - 2*Math.floor(cropMargin*uiScale*cropping)
                             var newMouseY = mouse.y - Math.max(0, 0.5*(flicky.height - bottomImage.height)) - 2*Math.floor(cropMargin*uiScale*cropping)
