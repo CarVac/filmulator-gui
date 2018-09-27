@@ -1,7 +1,7 @@
 #include "filmSim.hpp"
 
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
-                 LUT<unsigned short> lutR, LUT<unsigned short> lutG, LUT<unsigned short> lutB)
+                 LUT<unsigned short> &lutR, LUT<unsigned short> &lutG, LUT<unsigned short> &lutB)
 {
 
     //Check for null inputs

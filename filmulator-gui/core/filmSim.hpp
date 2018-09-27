@@ -204,7 +204,7 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 
 //Applies LUTs individually to each color.
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
-                LUT<unsigned short> lutR, LUT<unsigned short> lutG, LUT<unsigned short> lutB);
+                LUT<unsigned short> &lutR, LUT<unsigned short> &lutG, LUT<unsigned short> &lutB);
 
 void rotate_image(matrix<float> &input, matrix<float> &output,
                   int rotation);
