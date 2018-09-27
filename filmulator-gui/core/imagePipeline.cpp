@@ -405,10 +405,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
         matrix<float> rotated_image;
+        cout << "before rotation" << endl;
 
         rotate_image(filmulated_image,
                      rotated_image,
                      blackWhiteParam.rotation);
+        cout << "after rotation" << endl;
 
         if (NoCache == cache)// clean up ram that's not needed anymore in order to reduce peak consumption
         {
@@ -419,6 +421,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cacheEmpty = false;
         }
+
+        cout << "before crop calculations" << endl;
 
         const int imWidth  = rotated_image.nc()/3;
         const int imHeight = rotated_image.nr();
@@ -448,6 +452,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             height = imHeight;
         }
 
+        cout << "before crop" << endl;
+
         matrix<float> cropped_image;
 
         downscale_and_crop(rotated_image,
@@ -459,12 +465,18 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                            width,
                            height);
 
+        cout << "after crop" << endl;
+
         rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
+
+        cout << "before whitepoint blackpoint" << endl;
 
         whitepoint_blackpoint(cropped_image,//filmulated_image,
                               contrast_image,
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
+
+        cout << "after whitepoint blackpoint" << endl;
 
         valid = paramManager->markBlackWhiteComplete();
         updateProgress(valid, 0.0f);
@@ -473,6 +485,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     case partcolorcurve: [[fallthrough]];
     case blackwhite: // Do color_curve
     {
+        cout << "before colorcurve" << endl;
         //It's not gonna abort because we have no color curves yet..
         //Prepare LUT's for individual color processin.g
         lutR.setUnity();
@@ -483,6 +496,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     lutR,
                     lutG,
                     lutB);
+
+        cout << "after colorcurve" << endl;
 
         if (NoCache == cache)
         {
@@ -507,6 +522,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
+        cout << "before curve LUT" << endl;
+
         filmLikeLUT.fill( [=](unsigned short in) -> unsigned short
             {
                 float shResult = shadows_highlights(float(in)/65535.0,
@@ -517,10 +534,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 return 65535*default_tonecurve(shResult);
             }
         );
+        cout << "before filmlikecurve" << endl;
         matrix<unsigned short> film_curve_image;
         film_like_curve(color_curve_image,
                         film_curve_image,
                         filmLikeLUT);
+        cout << "after filmlikecurve" << endl;
 
         if (NoCache == cache)
         {
@@ -533,10 +552,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cacheEmpty = false;
         }
 
+        cout << "before vibrancesaturation" << endl;
         vibrance_saturation(film_curve_image,
                             vibrance_saturation_image,
                             curvesParam.vibrance,
                             curvesParam.saturation);
+        cout << "after vibrancesaturation" << endl;
 
         updateProgress(valid, 0.0f);
         [[fallthrough]];
