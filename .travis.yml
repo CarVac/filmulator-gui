@@ -12,7 +12,7 @@ before_install:
     
 install: 
     # C++14
-    - sudo apt-get -y g++-7
+    - sudo apt-get -y install g++-7
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
     # Qt 5.9
     - sudo apt-get -y install qt59base qt59declarative qt59quickcontrols libtiff-dev libgomp1 libexiv2-dev libjpeg-dev
