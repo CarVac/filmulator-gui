@@ -195,7 +195,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     case load://Do demosaic, or load non-raw images
     {
         AbortStatus abort;
-        std::tie(valid, abort, demosaicParam) = paramManager->claimDemosaicParams();
+        std::tie(valid, abort, loadParam, demosaicParam) = paramManager->claimDemosaicParams();
         if (abort == AbortStatus::restart)
         {
             cout << "imagePipeline.cpp: aborted at demosaic" << endl;

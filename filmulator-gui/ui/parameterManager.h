@@ -222,7 +222,7 @@ public:
     Valid markLoadComplete();
 
     //Demosaic
-    std::tuple<Valid,AbortStatus,DemosaicParams> claimDemosaicParams();
+    std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> claimDemosaicParams();
     AbortStatus claimDemosaicAbort();
     Valid markDemosaicComplete();
 

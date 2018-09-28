@@ -97,7 +97,7 @@ void ParameterManager::setJpegIn(bool jpegIn)
     paramChangeWrapper(QString("setJpeg"));
 }
 
-std::tuple<Valid,AbortStatus,DemosaicParams> ParameterManager::claimDemosaicParams()
+std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimDemosaicParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -115,10 +115,15 @@ std::tuple<Valid,AbortStatus,DemosaicParams> ParameterManager::claimDemosaicPara
         validity = Valid::partdemosaic;
     }
     changeMadeSinceCheck = false;
-    DemosaicParams params;
-    params.caEnabled = m_caEnabled;
-    params.highlights = m_highlights;
-    std::tuple<Valid,AbortStatus,DemosaicParams> tup(validity, abort, params);
+    LoadParams loadParams;
+    loadParams.fullFilename = m_fullFilename;
+    loadParams.jpegIn = m_jpegIn;
+    loadParams.tiffIn = m_tiffIn;
+
+    DemosaicParams demParams;
+    demParams.caEnabled = m_caEnabled;
+    demParams.highlights = m_highlights;
+    std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
 
