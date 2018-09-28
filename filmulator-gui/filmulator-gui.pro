@@ -110,9 +110,9 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math
+QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -std=c++17 -O3 -fopenmp
+QMAKE_LFLAGS += -std=c++14 -O3 -fopenmp
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp -lrtprocess
 
