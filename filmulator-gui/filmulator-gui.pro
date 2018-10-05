@@ -69,7 +69,7 @@ unix:desktop.files += ./filmulator_gui.desktop
 # target.path = ???
 # desktop.path = ???
 # }
-win32:INCULDEPATH += /usr/include
+win32:INCLUDEPATH += /usr/include
 
 unix {
 script.extra = move_script; install -m 755 -p filmulator
