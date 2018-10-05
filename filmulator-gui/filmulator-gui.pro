@@ -3,7 +3,7 @@ folder_01.source = qml/filmulator-gui
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
-# Additional import path used to resolve QML modules in Creator's code model
+# Additional import path used to resolve QML modules in Creator\'s code model
 QML_IMPORT_PATH =
 
 # The .cpp file which was generated for your project. Feel free to hack it.
@@ -69,6 +69,7 @@ unix:desktop.files += ./filmulator_gui.desktop
 # target.path = ???
 # desktop.path = ???
 # }
+win32:INCULDEPATH += /usr/include
 
 unix {
 script.extra = move_script; install -m 755 -p filmulator
