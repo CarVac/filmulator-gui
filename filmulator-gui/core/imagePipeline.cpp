@@ -123,6 +123,26 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 }
                 cout << endl;
             }
+            for (int i = 0; i < 3; i++)
+            {
+                cout << "camToRGB4: ";
+                for (int j = 0; j < 4; j++)
+                {
+                    camToRGB4[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
+                    if (i==j)
+                    {
+                        camToRGB4[i][j] = 1;
+                    } else {
+                        camToRGB4[i][j] = 0;
+                    }
+                    if (j==3)
+                    {
+                        camToRGB4[i][j] = camToRGB4[i][1];
+                    }
+                    cout << camToRGB4[i][j] << " ";
+                }
+                cout << endl;
+            }
             rCamMul = image_processor->imgdata.color.cam_mul[0];
             gCamMul = image_processor->imgdata.color.cam_mul[1];
             bCamMul = image_processor->imgdata.color.cam_mul[2];
@@ -139,10 +159,39 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             bPreMul /= minMult;
 
             //get black subtraction values
-            rBlack = image_processor->imgdata.color.cblack[0];
-            gBlack = image_processor->imgdata.color.cblack[1];
-            bBlack = image_processor->imgdata.color.cblack[2];
+            //for everything
             float blackpoint = image_processor->imgdata.color.black;
+            //some cameras have individual color channel subtraction. This hasn't been implemented yet.
+            float rBlack = image_processor->imgdata.color.cblack[0];
+            float gBlack = image_processor->imgdata.color.cblack[1];
+            float bBlack = image_processor->imgdata.color.cblack[2];
+            float g2Black = image_processor->imgdata.color.cblack[3];
+            //Still others have a matrix to subtract.
+            int blackRow = image_processor->imgdata.color.cblack[4];
+            int blackCol = image_processor->imgdata.color.cblack[5];
+
+            cout << "BLACKPOINT ======================================================" << endl;
+            cout << blackpoint << endl;
+            cout << "color channel blackpoints" << endl;
+            cout << rBlack << endl;
+            cout << gBlack << endl;
+            cout << bBlack << endl;
+            cout << g2Black << endl;
+            cout << "block-based blackpoint dimensions:" << endl;
+            cout << image_processor->imgdata.color.cblack[4] << endl;
+            cout << image_processor->imgdata.color.cblack[5] << endl;
+            cout << "block-based blackpoint: " << endl;
+            if (blackRow > 0 && blackCol > 0)
+            {
+                for (int i = 0; i < blackRow; i++)
+                {
+                    for (int j = 0; j < blackCol; j++)
+                    {
+                        cout << image_processor->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
+                    }
+                    cout << endl;
+                }
+            }
 
             //get white saturation values
             cout << "data_maximum: " << image_processor->imgdata.color.data_maximum << endl;
@@ -152,6 +201,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cout << "fnorm: " << image_processor->imgdata.color.fnorm << endl;
 
             //get color filter array
+            //if all the image_processor.imgdata.idata.xtrans values are 0, it's bayer.
             //bayer only for now
             for (unsigned int i=0; i<2; i++)
             {
@@ -163,6 +213,20 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                         cfa[i][j] = 1;
                     }
                 }
+            }
+
+            //get xtrans color filter array
+            maxXtrans = 0;
+            for (int i=0; i<6; i++)
+            {
+                cout << "xtrans: ";
+                for (int j=0; j<6; j++)
+                {
+                    xtrans[i][j] = image_processor->imgdata.idata.xtrans[i][j];
+                    maxXtrans = max(maxXtrans,int(image_processor->imgdata.idata.xtrans[i][j]));
+                    cout << xtrans[i][j];
+                }
+                cout << endl;
             }
 
             auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
@@ -180,7 +244,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 int rowoffset = (row + topmargin)*full_width;
                 for (int col = 0; col < raw_width; col++)
                 {
-                    raw_image[row][col] = max(0.0f,RAW[rowoffset + col + leftmargin] - blackpoint);
+                    float tempBlackpoint = blackpoint;
+                    if (blackRow > 0 && blackCol > 0)
+                    {
+                        tempBlackpoint = tempBlackpoint + image_processor->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                    }
+                    raw_image[row][col] = RAW[rowoffset + col + leftmargin] - tempBlackpoint;
                 }
             }
 
@@ -262,14 +331,25 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             float outputscale = 65535.0;
             int border = 4;
             std::function<bool(double)> setProg = [](double) -> bool {return false;};
-            if (demosaicParam.caEnabled)
+
+            cout << "raw width:  " << raw_width << endl;
+            cout << "raw height: " << raw_height << endl;
+
+            if (maxXtrans > 0)
             {
-                matrix<float> raw_fixed(raw_height, raw_width);
-                CaFitParams fitparams;
-                librtprocess::CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
-                librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_fixed, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-            } else {
-                librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                librtprocess::markesteijn_demosaic(raw_width, raw_height, raw_image, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+            }
+            else
+            {
+                if (demosaicParam.caEnabled)
+                {
+                    matrix<float> raw_fixed(raw_height, raw_width);
+                    CaFitParams fitparams;
+                    librtprocess::CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
+                    librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_fixed, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                } else {
+                    librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                }
             }
 
             input_image.set_size(raw_height, raw_width*3);
@@ -326,7 +406,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        //Here we apply the exposure compensation and white balance.
+        //Here we apply the exposure compensation and white balance and color conversion matrix.
         matrix<float> exposureImage = scaled_image * pow(2, prefilmParam.exposureComp);
         whiteBalance(exposureImage,
                      pre_film_image,

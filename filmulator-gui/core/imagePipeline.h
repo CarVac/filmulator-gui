@@ -59,9 +59,11 @@ protected:
     //raw stuff
     matrix<float> raw_image;
     ColorFilterArray cfa;
+    int xtrans[6][6];
+    int maxXtrans;
     int raw_width, raw_height;
     float camToRGB[3][3];
-    float rBlack, gBlack, bBlack;
+    float camToRGB4[3][4];
     float rCamMul, gCamMul, bCamMul;//wb used on the image
     float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
     float maxValue;
