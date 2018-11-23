@@ -407,14 +407,17 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
 
         //Here we apply the exposure compensation and white balance and color conversion matrix.
-        matrix<float> exposureImage = scaled_image * pow(2, prefilmParam.exposureComp);
-        whiteBalance(exposureImage,
-                     pre_film_image,
+        matrix<float> wbImage;
+        whiteBalance(scaled_image,
+                     wbImage,
                      prefilmParam.temperature,
                      prefilmParam.tint,
                      camToRGB,
                      rCamMul, gCamMul, bCamMul,
                      rPreMul, gPreMul, bPreMul);
+
+
+        pre_film_image = wbImage * pow(2, prefilmParam.exposureComp);
 
         if (NoCache == cache)
         {
