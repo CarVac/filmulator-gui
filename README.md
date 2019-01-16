@@ -23,7 +23,7 @@ libgomp
 libexiv2
 libjpeg
 libraw
-librtprocess
+librtprocess 0.5
 
 It also requires Qt 5.4 or newer: open the .pro file from Qt Creator and select Build in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the -j# flag to the Make build parameters to speed compilation.
 
