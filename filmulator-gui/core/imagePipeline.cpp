@@ -170,7 +170,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             int blackRow = image_processor->imgdata.color.cblack[4];
             int blackCol = image_processor->imgdata.color.cblack[5];
 
-            cout << "BLACKPOINT ======================================================" << endl;
+            cout << "BLACKPOINT" << endl;
             cout << blackpoint << endl;
             cout << "color channel blackpoints" << endl;
             cout << rBlack << endl;
@@ -194,6 +194,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             }
 
             //get white saturation values
+            cout << "WHITE SATURATION ========================================================" << endl;
             cout << "data_maximum: " << image_processor->imgdata.color.data_maximum << endl;
             cout << "maximum: " << image_processor->imgdata.color.maximum << endl;
             maxValue = image_processor->imgdata.color.maximum;
@@ -253,9 +254,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 }
             }
 
-//            cout << "max of raw_image" << raw_image.max() << endl;
+            cout << "max of raw_image: " << raw_image.max() << " ===============================================" << endl;
+            cout << "min of raw_image: " << raw_image.min() << endl;
         }
-        //In the future we'll actually perform loading here.
         valid = paramManager->markLoadComplete();
         updateProgress(valid, 0.0f);
         [[fallthrough]];
@@ -337,18 +338,18 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
             if (maxXtrans > 0)
             {
-                librtprocess::markesteijn_demosaic(raw_width, raw_height, raw_image, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+                markesteijn_demosaic(raw_width, raw_height, raw_image, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
             }
             else
             {
                 if (demosaicParam.caEnabled)
                 {
                     matrix<float> raw_fixed(raw_height, raw_width);
-                    CaFitParams fitparams;
-                    librtprocess::CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
-                    librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_fixed, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                    double fitparams[2][2][16];
+                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
+                    amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_fixed, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
                 } else {
-                    librtprocess::amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                    amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
                 }
             }
 
@@ -414,7 +415,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      prefilmParam.tint,
                      camToRGB,
                      rCamMul, gCamMul, bCamMul,
-                     rPreMul, gPreMul, bPreMul);
+                     rPreMul, gPreMul, bPreMul,
+                     55535.0f);
 
 
         pre_film_image = wbImage * pow(2, prefilmParam.exposureComp);
@@ -488,12 +490,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
         matrix<float> rotated_image;
-        cout << "before rotation" << endl;
 
         rotate_image(filmulated_image,
                      rotated_image,
                      blackWhiteParam.rotation);
-        cout << "after rotation" << endl;
 
         if (NoCache == cache)// clean up ram that's not needed anymore in order to reduce peak consumption
         {
@@ -505,7 +505,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cacheEmpty = false;
         }
 
-        cout << "before crop calculations" << endl;
 
         const int imWidth  = rotated_image.nc()/3;
         const int imHeight = rotated_image.nr();
@@ -535,7 +534,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             height = imHeight;
         }
 
-        cout << "before crop" << endl;
 
         matrix<float> cropped_image;
 
@@ -548,18 +546,15 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                            width,
                            height);
 
-        cout << "after crop" << endl;
 
         rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
 
-        cout << "before whitepoint blackpoint" << endl;
 
         whitepoint_blackpoint(cropped_image,//filmulated_image,
                               contrast_image,
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
 
-        cout << "after whitepoint blackpoint" << endl;
 
         valid = paramManager->markBlackWhiteComplete();
         updateProgress(valid, 0.0f);
@@ -568,20 +563,17 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     case partcolorcurve: [[fallthrough]];
     case blackwhite: // Do color_curve
     {
-        cout << "before colorcurve" << endl;
         //It's not gonna abort because we have no color curves yet..
         //Prepare LUT's for individual color processin.g
         lutR.setUnity();
         lutG.setUnity();
         lutB.setUnity();
-        cout << "after colorcurve luts before colorcurve" << endl;
         colorCurves(contrast_image,
                     color_curve_image,
                     lutR,
                     lutG,
                     lutB);
 
-        cout << "after colorcurve" << endl;
 
         if (NoCache == cache)
         {
@@ -606,7 +598,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        cout << "before curve LUT" << endl;
 
         filmLikeLUT.fill( [=](unsigned short in) -> unsigned short
             {
@@ -618,12 +609,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 return 65535*default_tonecurve(shResult);
             }
         );
-        cout << "before filmlikecurve" << endl;
         matrix<unsigned short> film_curve_image;
         film_like_curve(color_curve_image,
                         film_curve_image,
                         filmLikeLUT);
-        cout << "after filmlikecurve" << endl;
 
         if (NoCache == cache)
         {
@@ -636,12 +625,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cacheEmpty = false;
         }
 
-        cout << "before vibrancesaturation" << endl;
         vibrance_saturation(film_curve_image,
                             vibrance_saturation_image,
                             curvesParam.vibrance,
                             curvesParam.saturation);
-        cout << "after vibrancesaturation" << endl;
 
         updateProgress(valid, 0.0f);
         [[fallthrough]];

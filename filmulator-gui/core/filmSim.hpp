@@ -217,7 +217,8 @@ void optimizeWBMults( std::string inputFilename,
 void whiteBalance(matrix<float> &input, matrix<float> &output,
                   float temperature, float tint, float cam2rgb[3][3],
                   float rCamMul, float gCamMul, float bCamMul,
-                  float rPreMul, float gPreMul, float bPreMul);
+                  float rPreMul, float gPreMul, float bPreMul,
+                  float maxValue);
 
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,

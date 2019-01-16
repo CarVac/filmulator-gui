@@ -396,7 +396,8 @@ void optimizeWBMults(std::string file,
 void whiteBalance(matrix<float> &input, matrix<float> &output,
                   float temperature, float tint, float cam2rgb[3][3],
                   float rCamMul, float gCamMul, float bCamMul,
-                  float rPreMul, float gPreMul, float bPreMul)
+                  float rPreMul, float gPreMul, float bPreMul,
+                  float maxValue)
 {
     float rMult, gMult, bMult;
     whiteBalancePostMults(temperature, tint, cam2rgb,
@@ -406,6 +407,9 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
     cout << "rmult: " << rMult << endl;
     cout << "gmult: " << gMult << endl;
     cout << "bmult: " << bMult << endl;
+    cout << "rCamMul: " << rCamMul << endl;
+    cout << "gCamMul: " << gCamMul << endl;
+    cout << "bCamMul: " << bCamMul << endl;
 
     float transform[3][3];
     for (int i = 0; i < 3; i++)
@@ -423,17 +427,105 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
 
     output.set_size(nRows, nCols);
 
-#pragma omp parallel shared(output, input) firstprivate(nRows, nCols, rMult, gMult, bMult)
+    /*
+    int case1 = 0;
+    int case2 = 0;
+    int case3 = 0;
+    int case4 = 0;
+    int case5 = 0;
+    int case6 = 0;
+    int case7 = 0;
+    */
+
+#pragma omp parallel shared(output, input) firstprivate(nRows, nCols)
     {
 #pragma omp for schedule(dynamic) nowait
         for (int i = 0; i < nRows; i++)
         {
             for (int j = 0; j < nCols; j += 3)
             {
+                //highlight handling
+                //If the channel with the lowest camera multipliers is clipped, then clip the other channels in that pixel so as to not drag down the brightness
+                /*
+                bool rClipped = (input(i,j  ) > maxValue);
+                bool gClipped = (input(i,j+1) > maxValue);
+                bool bClipped = (input(i,j+2) > maxValue);
+
+                if (rClipped && !gClipped && !bClipped) //only red is clipped
+                {
+                    case1++;
+                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*rCamMul/gCamMul); //reduce green if necessary
+                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*rCamMul/bCamMul); //reduce blue if necessary
+                }
+                if (!rClipped && gClipped && !bClipped)
+                {
+                    case2++;
+                    input(i,j  ) = min(input(i,j  ),input(i,j  )*gCamMul/rCamMul);
+                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*gCamMul/bCamMul);
+                }
+                if (!rClipped && !gClipped && bClipped)
+                {
+                    case3++;
+                    input(i,j  ) = min(input(i,j  ),input(i,j  )*bCamMul/rCamMul);
+                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*bCamMul/gCamMul);
+                }
+
+                if (rClipped && gClipped && !bClipped) //red and green are both clipped;
+                {
+                    case4++;
+                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(rCamMul,gCamMul)/rCamMul);//reduce relative to the clipped channel with the lowest multpilier
+                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(rCamMul,gCamMul)/gCamMul);
+                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(rCamMul,gCamMul)/bCamMul);
+                }
+                if (rClipped && !gClipped && bClipped)
+                {
+                    case5++;
+                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(rCamMul,bCamMul)/rCamMul);
+                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(rCamMul,bCamMul)/gCamMul);
+                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(rCamMul,bCamMul)/bCamMul);
+                }
+                if (!rClipped && gClipped && bClipped)
+                {
+                    case6++;
+                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(gCamMul,bCamMul)/rCamMul);
+                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(gCamMul,bCamMul)/gCamMul);
+                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(gCamMul,bCamMul)/bCamMul);
+                }
+                if (rClipped && gClipped && bClipped) //all channels are clipped
+                {
+                    case7++;
+                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(min(rCamMul,gCamMul),bCamMul)/rCamMul);
+                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(min(rCamMul,gCamMul),bCamMul)/gCamMul);
+                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(min(rCamMul,gCamMul),bCamMul)/bCamMul);
+                }
+                */
+
+                //Actually set output according to camera matrix and pre and post multipliers
                 output(i, j  ) = max(0.0f, transform[0][0]*rCamMul*input(i, j) + transform[0][1]*gCamMul*input(i, j+1) + transform[0][2]*bCamMul*input(i, j+2));
                 output(i, j+1) = max(0.0f, transform[1][0]*rCamMul*input(i, j) + transform[1][1]*gCamMul*input(i, j+1) + transform[1][2]*bCamMul*input(i, j+2));
                 output(i, j+2) = max(0.0f, transform[2][0]*rCamMul*input(i, j) + transform[2][1]*gCamMul*input(i, j+1) + transform[2][2]*bCamMul*input(i, j+2));
+
+                /*
+                if (rClipped || gClipped || bClipped)
+                {
+                    if (i%2 == 0)
+                    {
+                        output(i,j+0) = 0.0f;
+                        output(i,j+1) = 0.0f;
+                        output(i,j+2) = 0.0f;
+                    }
+                }*/
             }
         }
     }
+
+    /*
+    cout << "case1: " << case1 << endl;
+    cout << "case2: " << case2 << endl;
+    cout << "case3: " << case3 << endl;
+    cout << "case4: " << case4 << endl;
+    cout << "case5: " << case5 << endl;
+    cout << "case6: " << case6 << endl;
+    cout << "case7: " << case7 << endl;
+    */
 }

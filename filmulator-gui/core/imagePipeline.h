@@ -58,8 +58,8 @@ protected:
 
     //raw stuff
     matrix<float> raw_image;
-    ColorFilterArray cfa;
-    int xtrans[6][6];
+    unsigned cfa[2][2];
+    unsigned xtrans[6][6];
     int maxXtrans;
     int raw_width, raw_height;
     float camToRGB[3][3];
