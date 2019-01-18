@@ -230,7 +230,7 @@ void optimizeWBMults(std::string file,
                      float &temperature, float &tint)
 {
     //Load wb params from the raw file
-    std::unique_ptr<LibRaw> image_processor = std::make_unique<LibRaw>();
+    std::unique_ptr<LibRaw> image_processor = std::unique_ptr<LibRaw>(new LibRaw());
 
     //Open the file.
     const char *cstr = file.c_str();
