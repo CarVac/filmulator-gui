@@ -79,7 +79,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         if (!loadParam.tiffIn && !loadParam.jpegIn && !((HighQuality == quality) && stealData))
         {
-            std::unique_ptr<LibRaw> image_processor = std::make_unique<LibRaw>();
+            std::unique_ptr<LibRaw> image_processor = unique_ptr<LibRaw>(new LibRaw());
 
             //Open the file.
             const char *cstr = loadParam.fullFilename.c_str();
@@ -347,10 +347,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     matrix<float> raw_fixed(raw_height, raw_width);
                     double fitparams[2][2][16];
                     CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
-                    amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_fixed, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-                } else {
-                    amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
                 }
+                amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                //lmmse_demosaic(raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
             }
 
             input_image.set_size(raw_height, raw_width*3);

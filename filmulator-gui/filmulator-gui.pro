@@ -112,11 +112,24 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math
-#QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -std=c++14 -O3 -fopenmp
+QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math
+macx: {
+QMAKE_CXXFLAGS += -lomp -I/opt/local/include
+}
+unix:!macx {
+QMAKE_CXXFLAGS += -fopenmp
+}
 
-LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp -lrtprocess
+#QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
+QMAKE_LFLAGS += -std=c++14 -O3
+unix:!macx {
+QMAKE_LFLAGS += -fopenmp
+}
+
+LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess
+macx: {
+LIBS += -L /opt/local/lib /opt/local/lib/libiomp5.dylib
+}
 
 QT += sql core quick qml widgets
 
@@ -124,3 +137,5 @@ INSTALLS += desktop extra
 
 RESOURCES += \
     resources/pixmaps.qrc
+    
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
