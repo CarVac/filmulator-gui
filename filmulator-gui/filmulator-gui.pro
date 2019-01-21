@@ -112,11 +112,24 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -lomp -fno-strict-aliasing -ffast-math -I/opt/local/include
+QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math
+macx: {
+QMAKE_CXXFLAGS += -lomp -I/opt/local/include
+}
+unix:!macx {
+QMAKE_CXXFLAGS += -fopenmp
+}
+
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
 QMAKE_LFLAGS += -std=c++14 -O3
+unix:!macx {
+QMAKE_LFLAGS += -fopenmp
+}
 
-LIBS += -L /opt/local/lib -lpthread -ltiff -lexiv2 -ljpeg -lraw_r /opt/local/lib/libiomp5.dylib -lrtprocess
+LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess
+macx: {
+LIBS += -L /opt/local/lib /opt/local/lib/libiomp5.dylib
+}
 
 QT += sql core quick qml widgets
 
