@@ -349,7 +349,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
                 }
                 amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-                //lmmse_demosaic(raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+                //matrix<float> normalized_image(raw_height, raw_width);
+                //normalized_image = raw_image * (outputscale/inputscale);
+                //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
             }
 
             input_image.set_size(raw_height, raw_width*3);
