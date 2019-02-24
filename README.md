@@ -17,29 +17,32 @@ The program's design ideology is to have the best tool for any job, and only tha
 # Building Filmulator
 
 This program depends on:
-
+```
 libtiff
 libgomp
 libexiv2
 libjpeg
 libraw
 librtprocess 0.5
+```
+Some libraw package maintainers don't include the GPL demosaic packs, so we highly encourage you to compile it yourself.
+>>>>>>> dev
 
-It also requires Qt 5.4 or newer: open the .pro file from Qt Creator and select Build in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the -j# flag to the Make build parameters to speed compilation.
+It also requires Qt 5.4 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
 
 A note: Use a standalone git client to clone the repository initially, and then you can use Qt Creator's built-in git tools.
 
 # Using Filmulator
 
-First, import your photos. You can select directories to import, or individual files. You can also select whether to leave the photos where they are, or to copy them into a directory structure based upon the date captured, in both the Destination Directory and the Backup Directory. These can be sorted correctly by setting the Camera UTC Offset to the timezone you set the camera's clock in, and the Local UTC Offset to the timezone where the photo was captured. Select the source directory (your card, or a directory containing your photos), and pressing the Import button will begin pulling the photos into the database and writing out the source directory.
+First, import your photos. You can select directories to import, or individual files. You can also select whether to leave the photos where they are, or to copy them into a directory structure based upon the date captured, in both the Destination Directory and the Backup Directory. These can be sorted correctly by setting the Camera UTC Offset to the timezone you set the camera's clock in, and the Local UTC Offset to the timezone where the photo was captured. Select the source directory (your card, or a directory containing your photos), and pressing the `Import` button will begin pulling the photos into the database and writing out the source directory.
 
-If you choose to enqueue imported photos before you import, you can skip the Organize tab, but you should check it out anyway.
+If you choose to enqueue imported photos before you import, you can skip the `Organize` tab, but you should check it out anyway.
 
-Next, go to the Organize tab, where you can select photos to enqueue. The calendar and the date histogram let you select photos from a given day, while the timezone slider lets you adjust how to 'slice' the day: it always displays from midnight to midnight.
+Next, go to the `Organize` tab, where you can select photos to enqueue. The calendar and the date histogram let you select photos from a given day, while the timezone slider lets you adjust how to 'slice' the day: it always displays from midnight to midnight.
 
-To enqueue photos, double-click on them in the grid view in the organize tab. To remove them from the queue, right-click on the queue entry and select 'Remove from queue'. From either the Organize tab or from the queue, you can rate images from zero through five, and you can filter the organize tab to show only photos above a certain rating.
+To enqueue photos, double-click on them in the grid view in the `Organize` tab. To remove them from the queue, right-click on the queue entry and select `Remove from queue`. From either the `Organize` tab or from the queue, you can rate images from zero through five, and you can filter the organize tab to show only photos above a certain rating.
 
-At this point, go to the Filmulate tab, which lets you process your photos. Double-click on a photo in the queue to load it through the Filmulation process, and set the sliders to your taste.
+At this point, go to the `Filmulate` tab, which lets you process your photos. Double-click on a photo in the queue to load it through the Filmulation process, and set the sliders to your taste.
 
 The tools are arranged in pipeline order: the processing they control occurs from top to bottom. Thus, we advise you mostly work top-down through the tools.
 
@@ -49,13 +52,13 @@ Tools and features of interest:
 * Film Area: Here's where it gets good. The program defaults to an approximate equivalent of 36x24 film. If you reduce the film size, the algorithm accentuates brightness in larger regions. If you increase the film size, the whole image becomes slightly flatter (reduced dynamic range), but it emphasizes smaller details.
 * Drama: This is effectively the strength of the 'filminess'. Higher values reduce the dynamic range of the output; you'll see the "post-filmulator" histogram shrink towards the left. With the default film area, feel free to turn this all the way up to 100 if you need to bright down the highlights, but with large-format equivalent film area it starts to get too flat-looking past 50.
 
-If you want the UI to appear larger on a high-pixel density display, use the User Interface Scale slider in the Settings tab to set a desired scale, save the setting, and then restart the program. While it cannot automatically read your display pixel density, this setting enables otherwise full HiDPI support.
+If you want the UI to appear larger on a high-pixel density display, use the User Interface Scale slider in the `Settings` tab to set a desired scale, save the setting, and then restart the program. While it cannot automatically read your display pixel density, this setting enables otherwise full HiDPI support.
 
 
 # Status
 
 If told to make a version number for it right now, I'd put it as 1.0.0.
 
-Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the Import and Organize tabs need some UI massaging, as does the queue. Finally, the Output tab hasn't even been started yet.
+Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the `Import` and `Organize` tabs need some UI massaging, as does the queue. Finally, the `Output` tab hasn't even been started yet.
 
 But in the meantime, feel free to play around. Report any new bugs or suggestions you may have either on the [subreddit](https://www.reddit.com/r/Filmulator/) or on [the pixls.us forum](https://discuss.pixls.us/c/software/filmulator)!
