@@ -1,7 +1,8 @@
 #include "thumbWriteWorker.h"
-#include "../database/database.hpp"
 #include <QDir>
 #include <iostream>
+#include "../database/database.hpp"
+#include <../database/organizeModel.h>
 using namespace std;
 
 ThumbWriteWorker::ThumbWriteWorker(QObject *parent) : QObject(parent)
@@ -51,12 +52,7 @@ bool ThumbWriteWorker::writeThumb(QString searchID)
 
     //Set up the thumbnail directory.
     QDir dir = QDir::home();
-    dir.cd(".local/share/filmulator");
-    if (!dir.cd("thumbs"))
-    {
-        dir.mkdir("thumbs");
-        dir.cd("thumbs");
-    }
+    dir.cd(OrganizeModel::thumbDir());
     QString thumbDir = searchID;
     thumbDir.truncate(4);
     if (!dir.cd(thumbDir))

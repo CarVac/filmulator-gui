@@ -364,7 +364,8 @@ Rectangle {
             tooltipText: notDisabled ? qsTr("Start importing the selected file or folder. If importing is currently in progress, then the current file or folder will be imported after all current imports are complete.") : qsTr("Correct the errors that are highlighted above before importing.")
             width: parent.width
             height: 40 * uiScale
-            notDisabled: (!photoDirEntry.erroneous && (root.sourceIsFolder ? !sourceDirEntry.erroneous : !sourceFileEntry.erroneous))
+            // not disabled if dest is not erroneous, or if we're importing in place. It also needs to be not disabled if the appropriate source is not erroneous.
+            notDisabled: ((!photoDirEntry.erroneous || root.importInPlace) && (root.sourceIsFolder ? !sourceDirEntry.erroneous : !sourceFileEntry.erroneous))
             onTriggered: {
                 if (root.sourceIsFolder) {
                     importModel.importDirectory_r(root.folderPath, root.importInPlace, root.replace)

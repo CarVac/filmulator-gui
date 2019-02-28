@@ -24,7 +24,7 @@
 #include "filmSim.hpp"
 
 bool imread(std::string input_image_filename, matrix<float> &returnmatrix,
-            Exiv2::ExifData &exifData, int highlights, bool caEnabled, bool lowQuality)
+            Exiv2::ExifData &exifData, int highlights, bool /*caEnabled*/, bool lowQuality)
 {
     //Create image processor for reading raws.
     LibRaw image_processor;
@@ -43,14 +43,10 @@ bool imread(std::string input_image_filename, matrix<float> &returnmatrix,
 #define COLOR image_processor.imgdata.color
 
     //Now we'll set demosaic and other processing settings.
-    PARAM.user_qual = 9;//10 is AMaZE; -q[#] in dcraw
     PARAM.no_auto_bright = 1;//Don't autoadjust brightness (-W)
     PARAM.output_bps = 16;//16 bits per channel (-6)
     PARAM.gamm[0] = 1;
     PARAM.gamm[1] = 1;//Linear gamma (-g 1 1)
-    PARAM.ca_correc = caEnabled;//Turn on CA auto correction
-    PARAM.cared = 0;
-    PARAM.cablue = 0;
     PARAM.output_color = 1;//1: Use sRGB regardless.
     PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
     PARAM.highlight = highlights;//Set highlight recovery (-H #)
@@ -61,7 +57,6 @@ bool imread(std::string input_image_filename, matrix<float> &returnmatrix,
         //PARAM.half_size = 1;//half-size output, should dummy down demosaic.
         /* The above sometimes read out a dng thumbnail instead of the image itself. */
         PARAM.user_qual = 0;//nearest-neighbor demosaic
-        PARAM.ca_correc = 0;//turn off auto CA correction.
     }
 
     //This makes IMAGE contains the sensel value and 3 blank values at every

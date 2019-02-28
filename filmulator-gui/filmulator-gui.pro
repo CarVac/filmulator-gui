@@ -3,7 +3,7 @@ folder_01.source = qml/filmulator-gui
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
-# Additional import path used to resolve QML modules in Creator's code model
+# Additional import path used to resolve QML modules in Creator\'s code model
 QML_IMPORT_PATH =
 
 # The .cpp file which was generated for your project. Feel free to hack it.
@@ -69,6 +69,8 @@ unix:desktop.files += ./filmulator_gui.desktop
 # target.path = ???
 # desktop.path = ???
 # }
+win32:INCLUDEPATH += /usr/include
+win32:LIBS += -L/usr/lib
 
 unix {
 script.extra = move_script; install -m 755 -p filmulator
@@ -110,11 +112,24 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math
-#QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp
+QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math
+macx: {
+QMAKE_CXXFLAGS += -lomp -I/opt/local/include
+}
+unix:!macx {
+QMAKE_CXXFLAGS += -fopenmp
+}
 
-LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp
+#QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
+QMAKE_LFLAGS += -std=c++14 -O3
+unix:!macx {
+QMAKE_LFLAGS += -fopenmp
+}
+
+LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess
+macx: {
+LIBS += -L /opt/local/lib /opt/local/lib/libiomp5.dylib
+}
 
 QT += sql core quick qml widgets
 
@@ -122,3 +137,5 @@ INSTALLS += desktop extra
 
 RESOURCES += \
     resources/pixmaps.qrc
+    
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9

@@ -47,7 +47,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     hasStartedProcessing = true;
     //Record when the function was requested. This is so that the function will not give up
     // until a given short time has elapsed.
-    gettimeofday(&timeRequested, NULL);
+    gettimeofday(&timeRequested, nullptr);
     histoInterface = interface_in;
 
     valid = paramManager->getValid();
@@ -66,6 +66,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
     updateProgress(valid, 0.0f);
     switch (valid)
     {
+    case partload: [[fallthrough]];
     case none://Load image into buffer
     {
         AbortStatus abort;
@@ -75,19 +76,196 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             return emptyMatrix();
         }
-        //In the future we'll actually perform loading here.
+
+        if (!loadParam.tiffIn && !loadParam.jpegIn && !((HighQuality == quality) && stealData))
+        {
+            std::unique_ptr<LibRaw> image_processor = unique_ptr<LibRaw>(new LibRaw());
+
+            //Open the file.
+            const char *cstr = loadParam.fullFilename.c_str();
+            if (0 != image_processor->open_file(cstr))
+            {
+                cout << "processImage: Could not read input file!" << endl;
+                return emptyMatrix();
+            }
+             //Make abbreviations for brevity in accessing data.
+#define RSIZE image_processor->imgdata.sizes
+#define PARAM image_processor->imgdata.params
+#define IMAGE image_processor->imgdata.image
+#define RAW   image_processor->imgdata.rawdata.raw_image
+//#define COLOR image_processor.imgdata.color
+
+            //This makes IMAGE contains the sensel value and 3 blank values at every
+            //location.
+            if (0 != image_processor->unpack())
+            {
+                cerr << "processImage: Could not read input file, or was canceled" << endl;
+                return emptyMatrix();
+            }
+
+            //get dimensions
+            raw_width  = RSIZE.width;
+            raw_height = RSIZE.height;
+
+            int topmargin = RSIZE.top_margin;
+            int leftmargin = RSIZE.left_margin;
+            int full_width = RSIZE.raw_width;
+            //int full_height = RSIZE.raw_height;
+
+            //get color matrix
+            for (int i = 0; i < 3; i++)
+            {
+                cout << "camToRGB: ";
+                for (int j = 0; j < 3; j++)
+                {
+                    camToRGB[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
+                    cout << camToRGB[i][j] << " ";
+                }
+                cout << endl;
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                cout << "camToRGB4: ";
+                for (int j = 0; j < 4; j++)
+                {
+                    camToRGB4[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
+                    if (i==j)
+                    {
+                        camToRGB4[i][j] = 1;
+                    } else {
+                        camToRGB4[i][j] = 0;
+                    }
+                    if (j==3)
+                    {
+                        camToRGB4[i][j] = camToRGB4[i][1];
+                    }
+                    cout << camToRGB4[i][j] << " ";
+                }
+                cout << endl;
+            }
+            rCamMul = image_processor->imgdata.color.cam_mul[0];
+            gCamMul = image_processor->imgdata.color.cam_mul[1];
+            bCamMul = image_processor->imgdata.color.cam_mul[2];
+            float minMult = min(min(rCamMul, gCamMul), bCamMul);
+            rCamMul /= minMult;
+            gCamMul /= minMult;
+            bCamMul /= minMult;
+            rPreMul = image_processor->imgdata.color.pre_mul[0];
+            gPreMul = image_processor->imgdata.color.pre_mul[1];
+            bPreMul = image_processor->imgdata.color.pre_mul[2];
+            minMult = min(min(rPreMul, gPreMul), bPreMul);
+            rPreMul /= minMult;
+            gPreMul /= minMult;
+            bPreMul /= minMult;
+
+            //get black subtraction values
+            //for everything
+            float blackpoint = image_processor->imgdata.color.black;
+            //some cameras have individual color channel subtraction. This hasn't been implemented yet.
+            float rBlack = image_processor->imgdata.color.cblack[0];
+            float gBlack = image_processor->imgdata.color.cblack[1];
+            float bBlack = image_processor->imgdata.color.cblack[2];
+            float g2Black = image_processor->imgdata.color.cblack[3];
+            //Still others have a matrix to subtract.
+            int blackRow = image_processor->imgdata.color.cblack[4];
+            int blackCol = image_processor->imgdata.color.cblack[5];
+
+            cout << "BLACKPOINT" << endl;
+            cout << blackpoint << endl;
+            cout << "color channel blackpoints" << endl;
+            cout << rBlack << endl;
+            cout << gBlack << endl;
+            cout << bBlack << endl;
+            cout << g2Black << endl;
+            cout << "block-based blackpoint dimensions:" << endl;
+            cout << image_processor->imgdata.color.cblack[4] << endl;
+            cout << image_processor->imgdata.color.cblack[5] << endl;
+            cout << "block-based blackpoint: " << endl;
+            if (blackRow > 0 && blackCol > 0)
+            {
+                for (int i = 0; i < blackRow; i++)
+                {
+                    for (int j = 0; j < blackCol; j++)
+                    {
+                        cout << image_processor->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
+                    }
+                    cout << endl;
+                }
+            }
+
+            //get white saturation values
+            cout << "WHITE SATURATION ========================================================" << endl;
+            cout << "data_maximum: " << image_processor->imgdata.color.data_maximum << endl;
+            cout << "maximum: " << image_processor->imgdata.color.maximum << endl;
+            maxValue = image_processor->imgdata.color.maximum;
+            cout << "fmaximum: " << image_processor->imgdata.color.fmaximum << endl;
+            cout << "fnorm: " << image_processor->imgdata.color.fnorm << endl;
+
+            //get color filter array
+            //if all the image_processor.imgdata.idata.xtrans values are 0, it's bayer.
+            //bayer only for now
+            for (unsigned int i=0; i<2; i++)
+            {
+                for (unsigned int j=0; j<2; j++)
+                {
+                    cfa[i][j] = unsigned(image_processor->COLOR(int(i), int(j)));
+                    if (cfa[i][j] == 3) //Auto CA correct doesn't like 0123 for RGBG; we change it to 0121.
+                    {
+                        cfa[i][j] = 1;
+                    }
+                }
+            }
+
+            //get xtrans color filter array
+            maxXtrans = 0;
+            for (int i=0; i<6; i++)
+            {
+                cout << "xtrans: ";
+                for (int j=0; j<6; j++)
+                {
+                    xtrans[i][j] = image_processor->imgdata.idata.xtrans[i][j];
+                    maxXtrans = max(maxXtrans,int(image_processor->imgdata.idata.xtrans[i][j]));
+                    cout << xtrans[i][j];
+                }
+                cout << endl;
+            }
+
+            auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
+            assert(image.get() != 0);
+            image->readMetadata();
+            exifData = image->exifData();
+
+
+            raw_image.set_size(raw_height, raw_width);
+
+            //copy raw data
+            for (int row = 0; row < raw_height; row++)
+            {
+                //IMAGE is an (width*height) by 4 array, not width by height by 4.
+                int rowoffset = (row + topmargin)*full_width;
+                for (int col = 0; col < raw_width; col++)
+                {
+                    float tempBlackpoint = blackpoint;
+                    if (blackRow > 0 && blackCol > 0)
+                    {
+                        tempBlackpoint = tempBlackpoint + image_processor->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                    }
+                    raw_image[row][col] = RAW[rowoffset + col + leftmargin] - tempBlackpoint;
+                }
+            }
+
+            cout << "max of raw_image: " << raw_image.max() << " ===============================================" << endl;
+            cout << "min of raw_image: " << raw_image.min() << endl;
+        }
         valid = paramManager->markLoadComplete();
         updateProgress(valid, 0.0f);
         [[fallthrough]];
     }
     case partdemosaic: [[fallthrough]];
-    case load://Do demosaic
+    case load://Do demosaic, or load non-raw images
     {
         AbortStatus abort;
-        //Because the load params are used here
-        std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
-        paramManager->markLoadComplete();//otherwise we reset validity back half a step
-        std::tie(valid, abort, demosaicParam) = paramManager->claimDemosaicParams();
+        std::tie(valid, abort, loadParam, demosaicParam) = paramManager->claimDemosaicParams();
         if (abort == AbortStatus::restart)
         {
             cout << "imagePipeline.cpp: aborted at demosaic" << endl;
@@ -99,26 +277,33 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         //Reads in the photo.
         cout << "load start:" << timeDiff (timeRequested) << endl;
         struct timeval imload_time;
-        gettimeofday( &imload_time, NULL );
-        /*
-        if (imload(loadParam.fullFilename,
-                  input_image,
-                  loadParam.tiffIn,
-                  loadParam.jpegIn,
-                  exifData,
-                  demosaicParam.highlights,
-                  demosaicParam.caEnabled,
-                  (LowQuality == quality)))
-        {
-            //Tell the param manager to abort back for some reason? maybe?
-            //It was setting valid back to none.
-            return emptyMatrix();
-        }
-        */
+        gettimeofday( &imload_time, nullptr );
+
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
             scaled_image = stealVictim->input_image;
             exifData = stealVictim->exifData;
+            rCamMul = stealVictim->rCamMul;
+            gCamMul = stealVictim->gCamMul;
+            bCamMul = stealVictim->bCamMul;
+            rPreMul = stealVictim->rPreMul;
+            gPreMul = stealVictim->gPreMul;
+            bPreMul = stealVictim->bPreMul;
+            maxValue = stealVictim->maxValue;
+            raw_width = stealVictim->raw_width;
+            raw_height = stealVictim->raw_height;
+            exifData = stealVictim->exifData;
+            //copy color matrix
+            //get color matrix
+            for (int i = 0; i < 3; i++)
+            {
+                cout << "camToRGB: ";
+                for (int j = 0; j < 3; j++)
+                {
+                    camToRGB[i][j] = stealVictim->camToRGB[i][j];
+                }
+                cout << endl;
+            }
         }
         else if (loadParam.tiffIn)
         {
@@ -138,98 +323,47 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         }
         else //raw
         {
-            //Create image processor for reading raws.
-            LibRaw image_processor;
+            matrix<float>   red(raw_height, raw_width);
+            matrix<float> green(raw_height, raw_width);
+            matrix<float>  blue(raw_height, raw_width);
 
-            //Connect image processor with callback for cancellation
-            //image_processor.set_progress_handler(ImagePipeline::libraw_callback, paramManager);
+            double initialGain = 1.0;
+            float inputscale = maxValue;
+            float outputscale = 65535.0;
+            int border = 4;
+            std::function<bool(double)> setProg = [](double) -> bool {return false;};
 
-            //Open the file.
-            const char *cstr = loadParam.fullFilename.c_str();
-            if (0 != image_processor.open_file(cstr))
+            cout << "raw width:  " << raw_width << endl;
+            cout << "raw height: " << raw_height << endl;
+
+            if (maxXtrans > 0)
             {
-                cout << "processImage: Could not read input file!" << endl;
-                return emptyMatrix();
+                markesteijn_demosaic(raw_width, raw_height, raw_image, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
             }
-             //Make abbreviations for brevity in accessing data.
-#define SIZES image_processor.imgdata.sizes
-#define PARAM image_processor.imgdata.params
-#define IMAGE image_processor.imgdata.image
-#define COLOR image_processor.imgdata.color
-
-            //Now we'll set demosaic and other processing settings.
-            PARAM.user_qual = 10;//9;//10 is AMaZE; -q[#] in dcraw
-            PARAM.no_auto_bright = 1;//Don't autoadjust brightness (-W)
-            PARAM.output_bps = 16;//16 bits per channel (-6)
-            PARAM.gamm[0] = 1;
-            PARAM.gamm[1] = 1;//Linear gamma (-g 1 1)
-            PARAM.ca_correc = demosaicParam.caEnabled;//Turn on CA auto correction
-            PARAM.cared = 0;
-            PARAM.cablue = 0;
-            PARAM.output_color = 1;//1: Use sRGB regardless.
-            PARAM.use_camera_wb = 1;//1: Use camera WB setting (-w)
-            PARAM.highlight = demosaicParam.highlights;//Set highlight recovery (-H #)
-            PARAM.med_passes = 1;//median filter
-
-            if (LowQuality == quality)
+            else
             {
-                //PARAM.half_size = 1;//half-size output, should dummy down demosaic.
-                /* The above sometimes read out a dng thumbnail instead of the image itself. */
-                PARAM.user_qual = 0;//nearest-neighbor demosaic
-                PARAM.ca_correc = 0;//turn off auto CA correction.
-            }
-
-            AbortStatus abort;
-            abort = paramManager->claimDemosaicAbort();
-            if (abort == AbortStatus::restart)
-            {
-                return emptyMatrix();
-            }
-
-            //This makes IMAGE contains the sensel value and 3 blank values at every
-            //location.
-            if (0 != image_processor.unpack())
-            {
-                cerr << "processImage: Could not read input file, or was canceled" << endl;
-                return emptyMatrix();
-            }
-
-            abort = paramManager->claimDemosaicAbort();
-            if (abort == AbortStatus::restart)
-            {
-                return emptyMatrix();
-            }
-
-            //This calls the dcraw processing on the raw sensel data.
-            //Now, it contains 3 color values and one blank value at every location.
-            //We will ignore the last blank value.
-            if (0 != image_processor.dcraw_process())
-            {
-                cerr << "processImage: Processing was canceled during dcraw_process" << endl;
-                return emptyMatrix();
-            }
-
-            long rSum = 0, gSum = 0, bSum = 0;
-            input_image.set_size(SIZES.iheight, SIZES.iwidth*3);
-            for (int row = 0; row < SIZES.iheight; row++)
-            {
-                //IMAGE is an (width*height) by 4 array, not width by height by 4.
-                int rowoffset = row*SIZES.iwidth;
-                for (int col = 0; col < SIZES.iwidth; col++)
+                if (demosaicParam.caEnabled)
                 {
-                    input_image(row, col*3    ) = IMAGE[rowoffset + col][0];//R
-                    input_image(row, col*3 + 1) = IMAGE[rowoffset + col][1];//G
-                    input_image(row, col*3 + 2) = IMAGE[rowoffset + col][2];//B
-                    rSum += IMAGE[rowoffset + col][0];
-                    gSum += IMAGE[rowoffset + col][1];
-                    bSum += IMAGE[rowoffset + col][2];
+                    matrix<float> raw_fixed(raw_height, raw_width);
+                    double fitparams[2][2][16];
+                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
+                }
+                amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                //matrix<float> normalized_image(raw_height, raw_width);
+                //normalized_image = raw_image * (outputscale/inputscale);
+                //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+            }
+
+            input_image.set_size(raw_height, raw_width*3);
+            for (int row = 0; row < raw_height; row++)
+            {
+                for (int col = 0; col < raw_width; col++)
+                {
+                    input_image(row, col*3    ) =   red(row, col);
+                    input_image(row, col*3 + 1) = green(row, col);
+                    input_image(row, col*3 + 2) =  blue(row, col);
                 }
             }
-            image_processor.recycle();
-            Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(loadParam.fullFilename);
-            assert(image.get() != 0);
-            image->readMetadata();
-            exifData = image->exifData();
         }
         cout << "load time: " << timeDiff(imload_time) << endl;
 
@@ -239,7 +373,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
-            gettimeofday( &downscale_time, NULL );
+            gettimeofday( &downscale_time, nullptr );
             downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, 600, 600);
             cout << "scale end: " << timeDiff( downscale_time ) << endl;
         }
@@ -247,7 +381,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cout << "scale start:" << timeDiff (timeRequested) << endl;
             struct timeval downscale_time;
-            gettimeofday( &downscale_time, NULL );
+            gettimeofday( &downscale_time, nullptr );
             downscale_and_crop(input_image,scaled_image, 0, 0, (input_image.nc()/3)-1,input_image.nr()-1, resolution, resolution);
             cout << "scale end: " << timeDiff( downscale_time ) << endl;
         }
@@ -274,13 +408,19 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             return emptyMatrix();
         }
 
-        //Here we apply the exposure compensation and white balance.
-        matrix<float> exposureImage = scaled_image * pow(2, prefilmParam.exposureComp);
-        whiteBalance(exposureImage,
-                     pre_film_image,
+        //Here we apply the exposure compensation and white balance and color conversion matrix.
+        matrix<float> wbImage;
+        whiteBalance(scaled_image,
+                     wbImage,
                      prefilmParam.temperature,
                      prefilmParam.tint,
-                     prefilmParam.fullFilename);
+                     camToRGB,
+                     rCamMul, gCamMul, bCamMul,
+                     rPreMul, gPreMul, bPreMul,
+                     55535.0f);
+
+
+        pre_film_image = wbImage * pow(2, prefilmParam.exposureComp);
 
         if (NoCache == cache)
         {
@@ -366,6 +506,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cacheEmpty = false;
         }
 
+
         const int imWidth  = rotated_image.nc()/3;
         const int imHeight = rotated_image.nr();
 
@@ -394,6 +535,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             height = imHeight;
         }
 
+
         matrix<float> cropped_image;
 
         downscale_and_crop(rotated_image,
@@ -405,12 +547,15 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                            width,
                            height);
 
+
         rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
+
 
         whitepoint_blackpoint(cropped_image,//filmulated_image,
                               contrast_image,
                               blackWhiteParam.whitepoint,
                               blackWhiteParam.blackpoint);
+
 
         valid = paramManager->markBlackWhiteComplete();
         updateProgress(valid, 0.0f);
@@ -429,6 +574,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     lutR,
                     lutG,
                     lutB);
+
 
         if (NoCache == cache)
         {
@@ -452,6 +598,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             return emptyMatrix();
         }
+
 
         filmLikeLUT.fill( [=](unsigned short in) -> unsigned short
             {

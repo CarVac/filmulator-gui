@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     // we use a QGuiApplication, which only supports QML stuff.
     //QGuiApplication app(argc, argv);
     QApplication app(argc, argv);
-    
+
     char* appdir = getenv("APPDIR");
     printf("APPDIR: %s\n", appdir);
     //getchar();
@@ -93,17 +93,25 @@ int main(int argc, char *argv[])
                      queueModel, SLOT(enQueue(QString)));
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
-    if( appdir )
+    if (appdir)
     {
         QString qmlfile = appdir;
+#if defined(Q_OS_MACX)
+        qmlfile += "/Contents/Resources/qml/filmulator-gui/main.qml";
+#else
         qmlfile += "/usr/qml/main.qml";
+#endif
         if (QFile(qmlfile).exists())
         {
             cout << "loading UI from copy in appdir directory" << endl;
             engine.load(qmlfile);
         }
     } 
+#if defined(Q_OS_MACX)
+    else if (QFile("$HOME/filmulator-gui/filmulator-gui/Filmulator.app/Contents/Resources/qml/filmulator-gui/main.qml").exists())
+#else
     else if (QFile("qml/filmulator-gui/main.qml").exists())
+#endif
     {
         cout << "loading UI from copy in directory" << endl;
         engine.load("qml/filmulator-gui/main.qml");

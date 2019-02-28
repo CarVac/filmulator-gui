@@ -5,6 +5,7 @@
 #include "../ui/parameterManager.h"
 #include <QMutex>
 #include <QMutexLocker>
+#include <rtprocess/librtprocess.h>
 
 enum Cache {WithCache, NoCache};
 enum Histo {WithHisto, NoHisto};
@@ -54,6 +55,18 @@ protected:
     LUT<unsigned short> filmLikeLUT;
 
     struct timeval timeRequested;
+
+    //raw stuff
+    matrix<float> raw_image;
+    unsigned cfa[2][2];
+    unsigned xtrans[6][6];
+    int maxXtrans;
+    int raw_width, raw_height;
+    float camToRGB[3][3];
+    float camToRGB4[3][4];
+    float rCamMul, gCamMul, bCamMul;//wb used on the image
+    float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
+    float maxValue;
 
     matrix<float> input_image;
     matrix<float> scaled_image;

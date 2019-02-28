@@ -272,6 +272,7 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers f;");
                    */
         versionString = "PRAGMA user_version = 1;";
+        [[fallthrough]];
     case 1:
         /*
         query.exec("CREATE VIEW integers5 as "
@@ -289,6 +290,7 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers d;");
                    */
         versionString = "PRAGMA user_version = 2;";
+        [[fallthrough]];
     case 2:
         query.exec("DROP TABLE QueueTable;");
         query.exec("CREATE TABLE QueueTable ("
@@ -298,19 +300,23 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "QToutput bool,"
                    "QTsearchID varchar unique);");
         versionString = "PRAGMA user_version = 3;";
+        [[fallthrough]];
     case 3:
         query.exec("DROP VIEW integers9;");
         query.exec("DROP VIEW integers4;");
         query.exec("DROP VIEW integers3;");
         versionString = "PRAGMA user_version = 4;";
+        [[fallthrough]];
     case 4:
         query.exec("ALTER TABLE SearchTable "
                    "ADD COLUMN STimportStartTime integer;");
         query.exec("UPDATE SearchTable SET STimportStartTime = STimportTime;");
         versionString = "PRAGMA user_version = 5;";
+        [[fallthrough]];
     case 5:
         query.exec("UPDATE SearchTable SET STrating = min(5,max(0,STrating));");
         versionString = "PRAGMA user_version = 6;";
+        [[fallthrough]];
     case 6:
         query.exec("ALTER TABLE SearchTable "
                    "ADD COLUMN STthumbWritten bool;");
@@ -319,11 +325,13 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE SearchTable SET STthumbWritten = 1;");
         query.exec("UPDATE SearchTable SET STbigThumbWritten = 0;");
         versionString = "PRAGMA user_version = 7;";
+        [[fallthrough]];
     case 7:
         query.exec("ALTER TABLE QueueTable "
                    "ADD COLUMN QTsortedIndex;");
         query.exec("UPDATE QueueTable SET QTsortedIndex = QTindex;");
         versionString = "PRAGMA user_version = 8;";
+        [[fallthrough]];
     case 8:
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropHeight;");
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropAspect;");

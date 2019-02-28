@@ -10,7 +10,9 @@ using std::endl;
 FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     QObject(0),
     QQuickImageProvider(QQuickImageProvider::Image,
-                        QQuickImageProvider::ForceAsynchronousImageLoading)
+                        QQuickImageProvider::ForceAsynchronousImageLoading),
+    pipeline(WithCache, WithHisto, HighQuality),
+    quickPipe(WithCache, WithHisto, PreviewQuality)
 {
     paramManager = manager;
     cloneParam = new ParameterManager;

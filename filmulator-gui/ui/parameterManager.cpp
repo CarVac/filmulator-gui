@@ -97,7 +97,7 @@ void ParameterManager::setJpegIn(bool jpegIn)
     paramChangeWrapper(QString("setJpeg"));
 }
 
-std::tuple<Valid,AbortStatus,DemosaicParams> ParameterManager::claimDemosaicParams()
+std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimDemosaicParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -115,10 +115,14 @@ std::tuple<Valid,AbortStatus,DemosaicParams> ParameterManager::claimDemosaicPara
         validity = Valid::partdemosaic;
     }
     changeMadeSinceCheck = false;
-    DemosaicParams params;
-    params.caEnabled = m_caEnabled;
-    params.highlights = m_highlights;
-    std::tuple<Valid,AbortStatus,DemosaicParams> tup(validity, abort, params);
+    LoadParams loadParams;
+    loadParams.fullFilename = m_fullFilename;
+    loadParams.jpegIn = m_jpegIn;
+    loadParams.tiffIn = m_tiffIn;
+
+    DemosaicParams demParams;
+    demParams.caEnabled = m_caEnabled;
+    std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
 
@@ -163,17 +167,6 @@ void ParameterManager::setCaEnabled(bool caEnabled)
     paramChangeWrapper(QString("setCaEnabled"));
 }
 
-void ParameterManager::setHighlights(int highlights)
-{
-    QMutexLocker paramLocker(&paramMutex);
-    m_highlights = highlights;
-    validity = min(validity, Valid::load);
-    paramLocker.unlock();
-    emit highlightsChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setHighlights"));
-}
-
 std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
 {
     QMutexLocker paramLocker(&paramMutex);
@@ -197,6 +190,7 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     params.temperature = m_temperature;
     params.tint = m_tint;
     params.fullFilename = m_fullFilename;//it's okay to include previous things in later params if necessary
+    params.highlights = m_highlights;
     std::tuple<Valid,AbortStatus,PrefilmParams> tup(validity, abort, params);
     return tup;
 }
@@ -264,6 +258,17 @@ void ParameterManager::setTint(float tint)
     paramChangeWrapper(QString("setTint"));
 }
 
+void ParameterManager::setHighlights(int highlights)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_highlights = highlights;
+    validity = min(validity, Valid::demosaic);
+    paramLocker.unlock();
+    emit highlightsChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setHighlights"));
+}
+
 std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
 {
     QMutexLocker paramLocker(&paramMutex);
@@ -285,22 +290,22 @@ std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
     }
     changeMadeSinceCheck = false;
     FilmParams params;
-    params.initialDeveloperConcentration = m_initialDeveloperConcentration,
-    params.reservoirThickness = m_reservoirThickness,
-    params.activeLayerThickness = m_activeLayerThickness,
-    params.crystalsPerPixel = m_crystalsPerPixel,
-    params.initialCrystalRadius = m_initialCrystalRadius,
-    params.initialSilverSaltDensity = m_initialSilverSaltDensity,
-    params.developerConsumptionConst = m_developerConsumptionConst,
-    params.crystalGrowthConst = m_crystalGrowthConst,
-    params.silverSaltConsumptionConst = m_silverSaltConsumptionConst,
-    params.totalDevelopmentTime = m_totalDevelopmentTime,
-    params.agitateCount = m_agitateCount,
-    params.developmentSteps = m_developmentSteps,
-    params.filmArea = m_filmArea,
-    params.sigmaConst = m_sigmaConst,
-    params.layerMixConst = m_layerMixConst,
-    params.layerTimeDivisor = m_layerTimeDivisor,
+    params.initialDeveloperConcentration = m_initialDeveloperConcentration;
+    params.reservoirThickness = m_reservoirThickness;
+    params.activeLayerThickness = m_activeLayerThickness;
+    params.crystalsPerPixel = m_crystalsPerPixel;
+    params.initialCrystalRadius = m_initialCrystalRadius;
+    params.initialSilverSaltDensity = m_initialSilverSaltDensity;
+    params.developerConsumptionConst = m_developerConsumptionConst;
+    params.crystalGrowthConst = m_crystalGrowthConst;
+    params.silverSaltConsumptionConst = m_silverSaltConsumptionConst;
+    params.totalDevelopmentTime = m_totalDevelopmentTime;
+    params.agitateCount = m_agitateCount;
+    params.developmentSteps = m_developmentSteps;
+    params.filmArea = m_filmArea;
+    params.sigmaConst = m_sigmaConst;
+    params.layerMixConst = m_layerMixConst;
+    params.layerTimeDivisor = m_layerTimeDivisor;
     params.rolloffBoundary = m_rolloffBoundary;
     std::tuple<Valid,AbortStatus,FilmParams> tup(validity,abort, params);
     return tup;
@@ -1602,17 +1607,6 @@ void ParameterManager::loadParams(QString imageID)
         validity = min(validity, Valid::load);
     }
 
-    //Next is highlights (highlight recovery)
-    nameCol = rec.indexOf("ProcThighlightRecovery");
-    if (-1 == nameCol) { std::cout << "paramManager ProcThighlightRecovery" << endl; }
-    const int temp_highlights = query.value(nameCol).toInt();
-    if (temp_highlights != m_highlights)
-    {
-        //cout << "ParameterManager::loadParams highlights" << endl;
-        m_highlights = temp_highlights;
-        validity = min(validity, Valid::load);
-    }
-
     //Exposure compensation
     nameCol = rec.indexOf("ProcTexposureComp");
     if (-1 == nameCol) { std::cout << "paramManager ProcTexposureComp" << endl; }
@@ -1643,6 +1637,17 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams tint" << endl;
         m_tint = temp_tint;
+        validity = min(validity, Valid::demosaic);
+    }
+
+    //highlights (highlight recovery)
+    nameCol = rec.indexOf("ProcThighlightRecovery");
+    if (-1 == nameCol) { std::cout << "paramManager ProcThighlightRecovery" << endl; }
+    const int temp_highlights = query.value(nameCol).toInt();
+    if (temp_highlights != m_highlights)
+    {
+        //cout << "ParameterManager::loadParams highlights" << endl;
+        m_highlights = temp_highlights;
         validity = min(validity, Valid::demosaic);
     }
 

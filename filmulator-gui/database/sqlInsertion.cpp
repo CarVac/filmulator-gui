@@ -134,7 +134,7 @@ QString createNewProfile(const QString fileHash,
     Interface dummyInterface;
 
     //Create a pipeline of the appropriate type.
-    ImagePipeline pipeline = ImagePipeline(NoCache, NoHisto, LowQuality);
+    ImagePipeline pipeline(NoCache, NoHisto, LowQuality);
 
     //Process an image.
     matrix<unsigned short> image = pipeline.processImage(&paramManager, &dummyInterface, exif);

@@ -204,26 +204,21 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 
 //Applies LUTs individually to each color.
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
-                LUT<unsigned short> lutR, LUT<unsigned short> lutG, LUT<unsigned short> lutB);
+                LUT<unsigned short> &lutR, LUT<unsigned short> &lutG, LUT<unsigned short> &lutB);
 
 void rotate_image(matrix<float> &input, matrix<float> &output,
                   int rotation);
-
-//Changes the white balance, assuming sRGB D50 input.
-//void white_balance (matrix<float> &input, matrix<float> &output,
-//                    float temp, float tone);
-
-//Computes the multipliers for the white balance.
-void whiteBalanceMults( float temperature, float tint, std::string inputFilename,
-                        float &rMult, float &gMult, float &bMult );
 
 //Uses Nelder-Mead method to find the WB parameters that yield (1,1,1) RGB multipliers.
 void optimizeWBMults( std::string inputFilename,
                       float &temperature, float &tint );
 
 //Applies the desired temperature and tint adjustments to the image.
-void whiteBalance( matrix<float> &input, matrix<float> &output,
-                   float temperature, float tint, std::string inputFilename );
+void whiteBalance(matrix<float> &input, matrix<float> &output,
+                  float temperature, float tint, float cam2rgb[3][3],
+                  float rCamMul, float gCamMul, float bCamMul,
+                  float rPreMul, float gPreMul, float bPreMul,
+                  float maxValue);
 
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
