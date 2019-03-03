@@ -55,5 +55,4 @@ script:
   - ls -l ./appdir/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
-  - mv ./Filmulator*.AppImage ./Filmulator-Git-x86_64.AppImage
-  - curl -F "file=@./Filmulator-Git-x86_64.AppImage" https://file.io
+  - curl --upload-file ./Filmulator*.AppImage https://transfer.sh/Filmulator-git.$(git rev-parse --short HEAD)-x86_64.AppImage
