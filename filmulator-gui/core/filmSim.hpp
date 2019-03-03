@@ -224,6 +224,11 @@ void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
                          double vibrance, double saturation);
 
+void monochrome_convert(matrix<unsigned short> &input,
+                        matrix<unsigned short> &output,
+                        bool monochrome,
+                        float rmult, float gmult, float bmult);
+
 void downscale_and_crop(const matrix<float> input,
                         matrix<float> &output,
                         const int inputStartX,

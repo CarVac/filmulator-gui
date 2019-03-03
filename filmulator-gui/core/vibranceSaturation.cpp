@@ -1,5 +1,9 @@
 #include "filmSim.hpp"
 #include <algorithm>
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 // r,g,b values are from 0 to 1
 // h = [0,360], s = [0,1], v = [0,1]
@@ -150,9 +154,9 @@ void vibrance_saturation(matrix<unsigned short> &input,
     for(int i = 0; i < nrows; i++)
         for(int j = 0; j < ncols; j += 3)
         {
-            float r = float(input(i,j  ))/65535.0;
-            float g = float(input(i,j+1))/65535.0;
-            float b = float(input(i,j+2))/65535.0;
+            float r = float(input(i,j  ))/65535.0f;
+            float g = float(input(i,j+1))/65535.0f;
+            float b = float(input(i,j+2))/65535.0f;
             float h,s,v;
             RGBtoHSV(r,g,b,h,s,v);
             s = max(min( sat*myPow(s,gamma), 1.0),0.0);
@@ -161,5 +165,34 @@ void vibrance_saturation(matrix<unsigned short> &input,
             output(i,j+1) = g*65535;
             output(i,j+2) = b*65535;
         }
+    }
+}
+
+void monochrome_convert(matrix<unsigned short> &input,
+                        matrix<unsigned short> &output,
+                        bool monochrome,
+                        float rmult, float gmult, float bmult)
+{
+    int nrows = input.nr();
+    int ncols = input.nc();
+    output.set_size(nrows, ncols);
+    if(monochrome)
+    {
+        cout << "monochrome" << endl;
+        for(int i = 0; i < nrows; i++)
+        {
+            for (int j = 0; j < ncols; j += 3)
+            {
+                int gray = input(i,j)*rmult + input(i,j+1)*gmult + input(i,j+2)*bmult;
+                gray = max(0,min(gray, 65535));
+                output(i, j  ) = gray;
+                output(i, j+1) = gray;
+                output(i, j+2) = gray;
+            }
+        }
+    }
+    else
+    {
+        output = input;
     }
 }

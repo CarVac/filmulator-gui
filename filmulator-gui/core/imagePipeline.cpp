@@ -626,10 +626,14 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cacheEmpty = false;
         }
 
-        vibrance_saturation(film_curve_image,
-                            vibrance_saturation_image,
-                            curvesParam.vibrance,
-                            curvesParam.saturation);
+//        vibrance_saturation(film_curve_image,
+//                            vibrance_saturation_image,
+//                            curvesParam.vibrance,
+//                            curvesParam.saturation);
+
+        monochrome_convert(film_curve_image,
+                           vibrance_saturation_image,
+                           true, 0.21f, 0.72f, 0.07f);
 
         updateProgress(valid, 0.0f);
         [[fallthrough]];
