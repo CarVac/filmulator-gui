@@ -366,6 +366,14 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProcessingTable SET ProcTbwRmult = 0.21");
         query.exec("UPDATE ProcessingTable SET ProcTbwGmult = 0.78");
         query.exec("UPDATE ProcessingTable SET ProcTbwBmult = 0.07");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTmonochrome;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTbwRmult;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTbwGmult;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTbwBmult;");
+        query.exec("UPDATE ProfileTable SET ProfTmonochrome = 0;");
+        query.exec("UPDATE ProfileTable SET ProfTbwRmult = 0.21");
+        query.exec("UPDATE ProfileTable SET ProfTbwGmult = 0.78");
+        query.exec("UPDATE ProfileTable SET ProfTbwBmult = 0.07");
         versionString = "PRAGMA user_version = 10;";
     }
     query.exec(versionString);
