@@ -114,7 +114,11 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTcropHeight real,"                      //32
                "ProcTcropAspect real,"                      //33
                "ProcTcropVoffset real,"                     //34
-               "ProcTcropHoffset real"                      //35
+               "ProcTcropHoffset real,"                     //35
+               "ProcTmonochrome integer,"                   //36
+               "ProcTbwRmult real,"                         //37
+               "ProcTbwGmult real,"                         //38
+               "ProcTbwBmult real"                          //39
                ");"
                );
 
@@ -151,7 +155,11 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProfTtemperature real,"                     //27
                "ProfTtint real,"                            //28
                "ProfTvibrance real,"                        //29
-               "ProfTsaturation real"                       //30
+               "ProfTsaturation real,"                      //30
+               "ProfTmonochrome integer,"                   //31
+               "ProfTbwRmult real,"                         //32
+               "ProfTbwGmult real,"                         //33
+               "ProfTbwBmult real"                          //34
                ");"
                );
 
@@ -169,9 +177,9 @@ DBSuccess setupDB(QSqlDatabase *db)
 
     //Now we set the default Default profile.
     query.prepare("REPLACE INTO ProfileTable values "
-                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
-                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3
+                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3
+                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
     //Name of profile; must be unique.
     query.bindValue(0, "Default");
     //Initial Developer Concentration
@@ -234,6 +242,12 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.bindValue(29, 0.0f); //vibrance
     //Saturation of whole image
     query.bindValue(30, 0.0f); //saturation
+    //Whether the image is monochrome
+    query.bindValue(31, 0); //monochrome
+    //weighting for black and white conversion
+    query.bindValue(32, 0.21f); //bwRmult
+    query.bindValue(33, 0.78f); //bwGmult
+    query.bindValue(34, 0.07f); //bwBmult
 
     //Well, orientation obviously doesn't get a preset.
     query.exec();
@@ -342,6 +356,17 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProcessingTable SET ProcTcropVoffset = 0;");
         query.exec("UPDATE ProcessingTable SET ProcTcropHoffset = 0;");
         versionString = "PRAGMA user_version = 9;";
+        [[fallthrough]];
+    case 9:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTmonochrome;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTbwRmult;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTbwGmult;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTbwBmult;");
+        query.exec("UPDATE ProcessingTable SET ProcTmonochrome = 0;");
+        query.exec("UPDATE ProcessingTable SET ProcTbwRmult = 0.21");
+        query.exec("UPDATE ProcessingTable SET ProcTbwGmult = 0.78");
+        query.exec("UPDATE ProcessingTable SET ProcTbwBmult = 0.07");
+        versionString = "PRAGMA user_version = 10;";
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

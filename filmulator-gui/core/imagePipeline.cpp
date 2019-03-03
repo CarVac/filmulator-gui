@@ -626,14 +626,19 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cacheEmpty = false;
         }
 
-//        vibrance_saturation(film_curve_image,
-//                            vibrance_saturation_image,
-//                            curvesParam.vibrance,
-//                            curvesParam.saturation);
-
-        monochrome_convert(film_curve_image,
-                           vibrance_saturation_image,
-                           true, 0.21f, 0.72f, 0.07f);
+        if (!curvesParam.monochrome)
+        {
+            vibrance_saturation(film_curve_image,
+                                vibrance_saturation_image,
+                                curvesParam.vibrance,
+                                curvesParam.saturation);
+        } else {
+            monochrome_convert(film_curve_image,
+                               vibrance_saturation_image,
+                               curvesParam.bwRmult,
+                               curvesParam.bwGmult,
+                               curvesParam.bwBmult);
+        }
 
         updateProgress(valid, 0.0f);
         [[fallthrough]];

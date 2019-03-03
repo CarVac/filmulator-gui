@@ -135,7 +135,7 @@ float myPow(float a, float b)
 
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
-                         double vibrance, double saturation)
+                         float vibrance, float saturation)
 {
     int nrows = input.nr();
     int ncols = input.nc();
@@ -170,29 +170,21 @@ void vibrance_saturation(matrix<unsigned short> &input,
 
 void monochrome_convert(matrix<unsigned short> &input,
                         matrix<unsigned short> &output,
-                        bool monochrome,
                         float rmult, float gmult, float bmult)
 {
     int nrows = input.nr();
     int ncols = input.nc();
     output.set_size(nrows, ncols);
-    if(monochrome)
+
+    for(int i = 0; i < nrows; i++)
     {
-        cout << "monochrome" << endl;
-        for(int i = 0; i < nrows; i++)
+        for (int j = 0; j < ncols; j += 3)
         {
-            for (int j = 0; j < ncols; j += 3)
-            {
-                int gray = input(i,j)*rmult + input(i,j+1)*gmult + input(i,j+2)*bmult;
-                gray = max(0,min(gray, 65535));
-                output(i, j  ) = gray;
-                output(i, j+1) = gray;
-                output(i, j+2) = gray;
-            }
+            int gray = input(i,j)*rmult + input(i,j+1)*gmult + input(i,j+2)*bmult;
+            gray = max(0,min(gray, 65535));
+            output(i, j  ) = gray;
+            output(i, j+1) = gray;
+            output(i, j+2) = gray;
         }
-    }
-    else
-    {
-        output = input;
     }
 }

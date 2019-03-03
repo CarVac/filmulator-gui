@@ -738,6 +738,10 @@ std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmli
     params.highlightsY = m_highlightsY;
     params.vibrance = m_vibrance;
     params.saturation = m_saturation;
+    params.monochrome = m_monochrome;
+    params.bwRmult = m_bwRmult;
+    params.bwGmult = m_bwGmult;
+    params.bwBmult = m_bwBmult;
     std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> tup(validity, abort, params);
     return tup;
 }
@@ -838,6 +842,50 @@ void ParameterManager::setSaturation(float saturation)
     paramChangeWrapper(QString("setSaturation"));
 }
 
+void ParameterManager::setMonochrome(bool monochrome)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_monochrome = monochrome;
+    validity = min(validity, Valid::blackwhite);
+    paramLocker.unlock();
+    emit monochromeChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setMonochrome"));
+}
+
+void ParameterManager::setBwRmult(float Rmult)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_bwRmult = Rmult;
+    validity = min(validity, Valid::blackwhite);
+    paramLocker.unlock();
+    emit bwRmultChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setBwRmult"));
+}
+
+void ParameterManager::setBwGmult(float Gmult)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_bwGmult = Gmult;
+    validity = min(validity, Valid::blackwhite);
+    paramLocker.unlock();
+    emit bwGmultChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setBwGmult"));
+}
+
+void ParameterManager::setBwBmult(float Bmult)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_bwBmult = Bmult;
+    validity = min(validity, Valid::blackwhite);
+    paramLocker.unlock();
+    emit bwBmultChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setBwBmult"));
+}
+
 Valid ParameterManager::getValid()
 {
     QMutexLocker paramLocker(&paramMutex);
@@ -902,9 +950,14 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTcropHeight, "                     //32
                   "ProcTcropAspect, "                     //33
                   "ProcTcropVoffset, "                    //34
-                  "ProcTcropHoffset) "                    //35
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //        0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1 2 3 4 5
+                  "ProcTcropHoffset, "                    //35
+                  "ProcTmonochrome, "                     //36
+                  "ProcTbwRmult, "                        //37
+                  "ProcTbwGmult, "                        //38
+                  "ProcTbwBmult) "                        //39
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3
+                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -941,6 +994,10 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(33, m_cropAspect);
     query.bindValue(34, m_cropVoffset);
     query.bindValue(35, m_cropHoffset);
+    query.bindValue(36, m_monochrome);
+    query.bindValue(37, m_bwRmult);
+    query.bindValue(38, m_bwGmult);
+    query.bindValue(39, m_bwBmult);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -1156,6 +1213,10 @@ void ParameterManager::selectImage(const QString imageID)
     emit highlightsYChanged();
     emit vibranceChanged();
     emit saturationChanged();
+    emit monochromeChanged();
+    emit bwRmultChanged();
+    emit bwGmultChanged();
+    emit bwBmultChanged();
 
     emit defCaEnabledChanged();
     emit defHighlightsChanged();
@@ -1187,6 +1248,10 @@ void ParameterManager::selectImage(const QString imageID)
     emit defHighlightsYChanged();
     emit defVibranceChanged();
     emit defSaturationChanged();
+    emit defMonochromeChanged();
+    emit defBwRmultChanged();
+    emit defBwGmultChanged();
+    emit defBwBmultChanged();
 
 
     //Mark that it's safe for sliders to move again.
@@ -1542,6 +1607,46 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_saturation = temp_saturation;
+    }
+
+    //Whether to convert to monochrome
+    nameCol = rec.indexOf("ProfTmonochrome");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTmonochrome" << endl; }
+    const bool temp_monochrome = query.value(nameCol).toBool();
+    d_monochrome = temp_monochrome;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_monochrome = temp_monochrome;
+    }
+
+    //Red weight multiplier for b&w conversion
+    nameCol = rec.indexOf("ProfTbwRmult");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTbwRmult" << endl; }
+    const float temp_bwRmult = query.value(nameCol).toFloat();
+    d_bwRmult = temp_bwRmult;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_bwRmult = temp_bwRmult;
+    }
+
+    //Green weight multiplier for b&w conversion
+    nameCol = rec.indexOf("ProfTbwGmult");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTbwGmult" << endl; }
+    const float temp_bwGmult = query.value(nameCol).toFloat();
+    d_bwGmult = temp_bwGmult;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_bwGmult = temp_bwGmult;
+    }
+
+    //Blue weight multiplier for b&w conversion
+    nameCol = rec.indexOf("ProfTbwBmult");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTbwBmult" << endl; }
+    const float temp_bwBmult = query.value(nameCol).toFloat();
+    d_bwBmult = temp_bwBmult;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_bwBmult = temp_bwBmult;
     }
 
     //Rotation
@@ -1967,6 +2072,50 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams saturation" << endl;
         m_saturation = temp_saturation;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Whether to convert to monochrome
+    nameCol = rec.indexOf("ProcTmonochrome");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTmonochrome" << endl; }
+    const bool temp_monochrome = query.value(nameCol).toBool();
+    if (temp_monochrome != m_monochrome)
+    {
+        //cout << "ParameterManager::loadParams monochrome" << endl;
+        m_monochrome = temp_monochrome;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Red weight multiplier for b&w conversion
+    nameCol = rec.indexOf("ProcTbwRmult");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTbwRmult" << endl; }
+    const float temp_bwRmult = query.value(nameCol).toFloat();
+    if (temp_bwRmult != m_bwRmult)
+    {
+        //cout << "ParameterManager::loadParams bwRmult" << endl;
+        m_bwRmult = temp_bwRmult;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Green weight multiplier for b&w conversion
+    nameCol = rec.indexOf("ProcTbwGmult");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTbwGmult" << endl; }
+    const float temp_bwGmult = query.value(nameCol).toFloat();
+    if (temp_bwGmult != m_bwGmult)
+    {
+        //cout << "ParameterManager::loadParams bwGmult" << endl;
+        m_bwGmult = temp_bwGmult;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Blue weight multiplier for b&w conversion
+    nameCol = rec.indexOf("ProcTbwBmult");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTbwBmult" << endl; }
+    const float temp_bwBmult = query.value(nameCol).toFloat();
+    if (temp_bwBmult != m_bwBmult)
+    {
+        //cout << "ParameterManager::loadParams bwBmult" << endl;
+        m_bwBmult = temp_bwBmult;
         validity = min(validity, Valid::blackwhite);
     }
 
@@ -2399,6 +2548,42 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams saturation" << endl;
         m_saturation = temp_saturation;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Whether to convert to monochrome
+    const bool temp_monochrome = sourceParams->getMonochrome();
+    if (temp_monochrome != m_monochrome)
+    {
+        //cout << "ParameterManager::cloneParams monochrome" << endl;
+        m_monochrome = temp_monochrome;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Red weight multiplier for b&w conversion
+    const float temp_bwRmult = sourceParams->getBwRmult();
+    if (temp_bwRmult != m_bwRmult)
+    {
+        //cout << "ParameterManager::cloneParams bwRmult" << endl;
+        m_bwRmult = temp_bwRmult;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Green weight multiplier for b&w conversion
+    const float temp_bwGmult = sourceParams->getBwGmult();
+    if (temp_bwGmult != m_bwGmult)
+    {
+        //cout << "ParameterManager::cloneParams bwGmult" << endl;
+        m_bwGmult = temp_bwGmult;
+        validity = min(validity, Valid::blackwhite);
+    }
+
+    //Blue weight multiplier for b&w conversion
+    const float temp_bwBmult = sourceParams->getBwBmult();
+    if (temp_bwBmult != m_bwBmult)
+    {
+        //cout << "ParameterManager::cloneParams bwBmult" << endl;
+        m_bwBmult = temp_bwBmult;
         validity = min(validity, Valid::blackwhite);
     }
 
