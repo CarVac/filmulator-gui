@@ -97,6 +97,10 @@ struct FilmlikeCurvesParams {
     float highlightsY;
     float vibrance;
     float saturation;
+    bool monochrome;
+    float bwRmult;
+    float bwGmult;
+    float bwBmult;
 };
 
 class ParameterManager : public QObject
@@ -189,6 +193,10 @@ class ParameterManager : public QObject
     Q_PROPERTY(float highlightsY MEMBER m_highlightsY  WRITE setHighlightsY NOTIFY highlightsYChanged)
     Q_PROPERTY(float vibrance    MEMBER m_vibrance     WRITE setVibrance    NOTIFY vibranceChanged)
     Q_PROPERTY(float saturation  MEMBER m_saturation   WRITE setSaturation  NOTIFY saturationChanged)
+    Q_PROPERTY(bool  monochrome  MEMBER m_monochrome   WRITE setMonochrome  NOTIFY monochromeChanged)
+    Q_PROPERTY(float bwRmult     MEMBER m_bwRmult      WRITE setBwRmult     NOTIFY bwRmultChanged)
+    Q_PROPERTY(float bwGmult     MEMBER m_bwGmult      WRITE setBwGmult     NOTIFY bwGmultChanged)
+    Q_PROPERTY(float bwBmult     MEMBER m_bwBmult      WRITE setBwBmult     NOTIFY bwBmultChanged)
 
     Q_PROPERTY(float defShadowsX    READ getDefShadowsX    NOTIFY defShadowsXChanged)
     Q_PROPERTY(float defShadowsY    READ getDefShadowsY    NOTIFY defShadowsYChanged)
@@ -196,6 +204,10 @@ class ParameterManager : public QObject
     Q_PROPERTY(float defHighlightsY READ getDefHighlightsY NOTIFY defHighlightsYChanged)
     Q_PROPERTY(float defVibrance    READ getDefVibrance    NOTIFY defVibranceChanged)
     Q_PROPERTY(float defSaturation  READ getDefSaturation  NOTIFY defSaturationChanged)
+    Q_PROPERTY(bool  defMonochrome  READ getDefMonochrome  NOTIFY defMonochromeChanged)
+    Q_PROPERTY(float defBwRmult     READ getDefBwRmult     NOTIFY defBwRmultChanged)
+    Q_PROPERTY(float defBwGmult     READ getDefBwGmult     NOTIFY defBwGmultChanged)
+    Q_PROPERTY(float defBwBmult     READ getDefBwBmult     NOTIFY defBwBmultChanged)
 
     Q_PROPERTY(bool pasteable READ getPasteable NOTIFY pasteableChanged)
 
@@ -371,6 +383,10 @@ protected:
     float m_highlightsY;
     float m_vibrance;
     float m_saturation;
+    bool  m_monochrome;
+    float m_bwRmult;
+    float m_bwGmult;
+    float m_bwBmult;
 
     float d_shadowsX;
     float d_shadowsY;
@@ -378,6 +394,10 @@ protected:
     float d_highlightsY;
     float d_vibrance;
     float d_saturation;
+    bool  d_monochrome;
+    float d_bwRmult;
+    float d_bwGmult;
+    float d_bwBmult;
 
     //Rotation
     int m_rotation;
@@ -435,9 +455,14 @@ protected:
     float getDefHighlightsY(){return d_highlightsY;}
     float getDefVibrance(){return d_vibrance;}
     float getDefSaturation(){return d_saturation;}
+    bool  getDefMonochrome(){return d_monochrome;}
+    float getDefBwRmult(){return d_bwRmult;}
+    float getDefBwGmult(){return d_bwGmult;}
+    float getDefBwBmult(){return d_bwBmult;}
 
     //Rotation
     int getDefRotation(){return d_rotation;}
+
 
     //Getters for the actual params
     //Loading
@@ -486,6 +511,10 @@ protected:
     float getHighlightsY(){return m_highlightsY;}
     float getVibrance(){return m_vibrance;}
     float getSaturation(){return m_saturation;}
+    bool  getMonochrome(){return m_monochrome;}
+    float getBwRmult(){return m_bwRmult;}
+    float getBwGmult(){return m_bwGmult;}
+    float getBwBmult(){return m_bwBmult;}
 
     //Rotation
     int getRotation(){return m_rotation;}
@@ -539,6 +568,10 @@ protected:
     void setHighlightsY(float);
     void setVibrance(float);
     void setSaturation(float);
+    void setMonochrome(bool);
+    void setBwRmult(float);
+    void setBwGmult(float);
+    void setBwBmult(float);
 
     //Rotation
     void setRotation(int);
@@ -631,6 +664,10 @@ signals:
     void highlightsYChanged();
     void vibranceChanged();
     void saturationChanged();
+    void monochromeChanged();
+    void bwRmultChanged();
+    void bwGmultChanged();
+    void bwBmultChanged();
 
     void defShadowsXChanged();
     void defShadowsYChanged();
@@ -638,6 +675,10 @@ signals:
     void defHighlightsYChanged();
     void defVibranceChanged();
     void defSaturationChanged();
+    void defMonochromeChanged();
+    void defBwRmultChanged();
+    void defBwGmultChanged();
+    void defBwBmultChanged();
 
     //Rotation
     void rotationChanged();

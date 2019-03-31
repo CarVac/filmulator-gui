@@ -521,8 +521,39 @@ SplitView {
                     uiScale: root.uiScale
                 }
 
+                ToolSwitch {
+                    id: monochromeSwitch
+                    text: qsTr("Monochrome")
+                    tooltipText: qsTr("Turn this on to convert to black-and-white.")
+                    isOn: paramManager.monochrome
+                    defaultOn: paramManager.defMonochrome
+                    onIsOnChanged: {
+                        paramManager.monochrome = isOn
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.monochrome = isOn
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        onMonochromeChanged: {
+                            monochromeSwitch.isOn = paramManager.monochrome
+                        }
+                        onDefMonochromeChanged: {
+                            monochromeSwitch.defaultOn = paramManager.defMonochrome
+                        }
+                    }
+                    Component.onCompleted: {
+                        monochromeSwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
                 ToolSlider {
                     id: vibranceSlider
+                    visible: !monochromeSwitch.isOn
+                    highlight: monochromeSwitch.hovered
                     title: qsTr("Vibrance")
                     tooltipText: qsTr("This adjusts the vividness of the less-saturated colors in the image.")
                     minimumValue: -0.5
@@ -551,6 +582,8 @@ SplitView {
 
                 ToolSlider {
                     id: saturationSlider
+                    visible: !monochromeSwitch.isOn
+                    highlight: monochromeSwitch.hovered
                     title: qsTr("Saturation")
                     tooltipText: qsTr("This adjusts the vividness of the entire image.")
                     minimumValue: -0.5
@@ -573,6 +606,93 @@ SplitView {
                     }
                     Component.onCompleted: {
                         saturationSlider.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: bwRmultSlider
+                    visible: monochromeSwitch.isOn
+                    highlight: monochromeSwitch.hovered
+                    title: qsTr("Red Weight")
+                    tooltipText: qsTr("How much to weight the red channel when converting to monochrome.")
+                    minimumValue: -2.0
+                    maximumValue: 2.0
+                    value: paramManager.bwRmult
+                    defaultValue: paramManager.defBwRmult
+                    onValueChanged: {
+                        paramManager.bwRmult = value
+                    }
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        onBwRmultChanged: {
+                            bwRmultSlider.value = paramManager.bwRmult
+                        }
+                        onDefBwRmultChanged: {
+                            bwRmultSlider.defaultValue = paramManager.defBwRmult
+                        }
+                    }
+                    Component.onCompleted: {
+                        bwRmultSlider.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: bwGmultSlider
+                    visible: monochromeSwitch.isOn
+                    highlight: monochromeSwitch.hovered
+                    title: qsTr("Green Weight")
+                    tooltipText: qsTr("How much to weight the green channel when converting to monochrome.")
+                    minimumValue: -2.0
+                    maximumValue: 2.0
+                    value: paramManager.bwGmult
+                    defaultValue: paramManager.defBwGmult
+                    onValueChanged: {
+                        paramManager.bwGmult = value
+                    }
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        onBwGmultChanged: {
+                            bwGmultSlider.value = paramManager.bwGmult
+                        }
+                        onDefBwGmultChanged: {
+                            bwGmultSlider.defaultValue = paramManager.defBwGmult
+                        }
+                    }
+                    Component.onCompleted: {
+                        bwGmultSlider.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: bwBmultSlider
+                    visible: monochromeSwitch.isOn
+                    highlight: monochromeSwitch.hovered
+                    title: qsTr("Blue Weight")
+                    tooltipText: qsTr("How much to weight the blue channel when converting to monochrome.")
+                    minimumValue: -2.0
+                    maximumValue: 2.0
+                    value: paramManager.bwBmult
+                    defaultValue: paramManager.defBwBmult
+                    onValueChanged: {
+                        paramManager.bwBmult = value
+                    }
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        onBwBmultChanged: {
+                            bwBmultSlider.value = paramManager.bwBmult
+                        }
+                        onDefBwBmultChanged: {
+                            bwBmultSlider.defaultValue = paramManager.defBwBmult
+                        }
+                    }
+                    Component.onCompleted: {
+                        bwBmultSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }

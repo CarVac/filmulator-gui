@@ -222,7 +222,11 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
 
 void vibrance_saturation(matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
-                         double vibrance, double saturation);
+                         float vibrance, float saturation);
+
+void monochrome_convert(matrix<unsigned short> &input,
+                        matrix<unsigned short> &output,
+                        float rmult, float gmult, float bmult);
 
 void downscale_and_crop(const matrix<float> input,
                         matrix<float> &output,

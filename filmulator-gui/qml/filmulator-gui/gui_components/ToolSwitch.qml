@@ -15,6 +15,7 @@ Rectangle {
     property bool defaultOn: false
     property bool changed: true
     property bool highlight: false
+    property alias hovered: hoverStealer.containsMouse
 
     property real __padding: 4 * uiScale
 
@@ -58,6 +59,12 @@ Rectangle {
                 border.width: 1 * uiScale
                 border.color: control.checked ? Colors.weakOrange : Colors.middleGray
             }
+        }
+        MouseArea {
+            id: hoverStealer
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton
+            hoverEnabled: true
         }
     }
 
