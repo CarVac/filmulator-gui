@@ -15,7 +15,7 @@ install:
     - sudo apt-get -y install g++-7
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
     # Qt 5.10.1
-    - sudo apt-get -y install qt510base qt510declarative qt510quickcontrols libtiff-dev libgomp1 libexiv2-dev libjpeg-dev
+    - sudo apt-get -y install qt510base qt510declarative qt510quickcontrols libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev
     - source /opt/qt510/bin/qt510-env.sh
 
 script:
@@ -51,6 +51,7 @@ script:
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+  - export LD_LIBRARY_PATH=/usr/local/lib
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
   - ls -l ./appdir/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
