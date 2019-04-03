@@ -31,7 +31,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
 
     //Grab EXIF data from the file.
     const std::string abspath = infoIn.absoluteFilePath().toStdString();
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(abspath);
+    auto image = Exiv2::ImageFactory::open(abspath);
     image->readMetadata();
     Exiv2::ExifData exifData = image->exifData();
     Exiv2::XmpData xmpData = image->xmpData();
@@ -59,7 +59,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         for (int i = 0; i < 7; i++)
         {
             //Convert the byte to an integer.
-            int value = carry + ((uint8_t) hashArray.at(i));
+            int value = carry + uint8_t(hashArray.at(i));
             //Carry it so that it affects the next one.
             carry = value / 62;
             int val = value % 62;
@@ -94,9 +94,70 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     {
         QDir backupDirectory(backupPath);
         backupDirectory.mkpath(backupPath);
-        if (!QFile::exists(backupPathName))
+
+        //We need to verify that this copy happens successfully
+        //And that the file integrity was maintained.
+        //I will have it retry up to five times upon failure;
+        //In my own experience, this copy has failed
+        // while the main copy that occurs later copies successfully...
+        //Is this a caching thing? I dunno.
+        bool success = false;
+        int attempts = 0;
+        if (QFile::exists(backupPathName)) //check the integrity of any file that already exists
         {
-            QFile::copy(infoIn.absoluteFilePath(), backupPathName);
+            QFile backupFile(backupPathName);
+            QCryptographicHash backupHash(QCryptographicHash::Md5);
+            if (!backupFile.open(QIODevice::ReadOnly))
+            {
+                qDebug("backup file existed but could not be opened.");
+            } else {
+                while (!backupFile.atEnd())
+                {
+                    backupHash.addData(backupFile.read(8192));
+                }
+            }
+            QString backupHashString = QString(hash.result().toHex());
+            if (backupHashString != hashString)
+            {
+                cout << "Backup hash check failed" << endl;
+                cout << "Original hash: " << hashString.toStdString() << endl;
+                cout << "Backup hash:   " << backupHashString.toStdString() << endl;
+                success = false;
+                backupFile.remove(backupPathName);
+            } else {
+                cout << "Backup hash verified" << endl;
+                success = true;
+            }
+        }
+        while (!success)
+        {
+            attempts += 1;
+            success = QFile::copy(infoIn.absoluteFilePath(), backupPathName);
+            QFile backupFile(backupPathName);
+            QCryptographicHash backupHash(QCryptographicHash::Md5);
+            if (!backupFile.open(QIODevice::ReadOnly))
+            {
+                qDebug("backup file could not be opened.");
+            } else {
+                while (!backupFile.atEnd())
+                {
+                    backupHash.addData(backupFile.read(8192));
+                }
+            }
+            QString backupHashString = QString(hash.result().toHex());
+            if (backupHashString != hashString)
+            {
+                cout << "Backup attempt number " << attempts << " hash failed" << endl;
+                cout << "Original hash: " << hashString.toStdString() << endl;
+                cout << "Backup hash:   " << backupHashString.toStdString() << endl;
+                success = false;
+                backupFile.remove(backupPathName);
+            }
+            if (attempts > 6)
+            {
+                cout << "Giving up on backup." << endl;
+                success = true;
+            }
         }
     }
 
@@ -124,9 +185,48 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         //Record the file location in the database.
         if (!importInPlace)
         {
-            //Copy the file into our main directory. We assume it's not in here yet.
-            QFile::copy(infoIn.absoluteFilePath(), outputPathName);
-            fileInsert(hashString, outputPathName, exifData);
+            //Copy the file into our main directory.
+            //We need to verify that this copy happens successfully
+            //And that the file integrity was maintained.
+            //I will have it retry up to five times upon failure;
+            //In my own experience, the main copy has succeeded
+            // while the earlier backup failed...
+            //Is this a caching thing? I dunno.
+            bool success = false;
+            int attempts = 0;
+            while (!success)
+            {
+                attempts += 1;
+                success = QFile::copy(infoIn.absoluteFilePath(), outputPathName);
+                QFile outputFile(outputPathName);
+                QCryptographicHash outputHash(QCryptographicHash::Md5);
+                if (!outputFile.open(QIODevice::ReadOnly))
+                {
+                    qDebug("output file could not be opened.");
+                } else {
+                    while (!outputFile.atEnd())
+                    {
+                        outputHash.addData(outputFile.read(8192));
+                    }
+                }
+                QString outputHashString = QString(hash.result().toHex());
+                if (outputHashString != hashString)
+                {
+                    cout << "output attempt number " << attempts << " hash failed" << endl;
+                    cout << "Original hash: " << hashString.toStdString() << endl;
+                    cout << "Output hash:   " << outputHashString.toStdString() << endl;
+                    success = false;
+                    outputFile.remove(outputPathName);
+                } else {
+                    //success
+                    fileInsert(hashString, outputPathName, exifData);
+                }
+                if (attempts > 6)
+                {
+                    cout << "Giving up on output." << endl;
+                    success = true;
+                }
+            }
         }
         else
         {
@@ -160,7 +260,48 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         //DON'T do this if we're updating the location.
         if (!QFile::exists(dbRecordedPath) && !importInPlace && !replaceLocation)
         {
-            QFile::copy(infoIn.absoluteFilePath(), outputPathName);
+            //Copy the file into our main directory.
+            //We need to verify that this copy happens successfully
+            //And that the file integrity was maintained.
+            //I will have it retry up to five times upon failure;
+            //In my own experience, the main copy has succeeded
+            // while the earlier backup failed...
+            //Is this a caching thing? I dunno.
+            bool success = false;
+            int attempts = 0;
+            while (!success)
+            {
+                attempts += 1;
+                success = QFile::copy(infoIn.absoluteFilePath(), outputPathName);
+                QFile outputFile(outputPathName);
+                QCryptographicHash outputHash(QCryptographicHash::Md5);
+                if (!outputFile.open(QIODevice::ReadOnly))
+                {
+                    qDebug("output file could not be opened.");
+                } else {
+                    while (!outputFile.atEnd())
+                    {
+                        outputHash.addData(outputFile.read(8192));
+                    }
+                }
+                QString outputHashString = QString(hash.result().toHex());
+                if (outputHashString != hashString)
+                {
+                    cout << "output attempt number " << attempts << " hash failed" << endl;
+                    cout << "Original hash: " << hashString.toStdString() << endl;
+                    cout << "Output hash:   " << outputHashString.toStdString() << endl;
+                    success = false;
+                    outputFile.remove(outputPathName);
+                } else {
+                    //success
+                    fileInsert(hashString, outputPathName, exifData);
+                }
+                if (attempts > 6)
+                {
+                    cout << "Giving up on output." << endl;
+                    success = true;
+                }
+            }
         }
 
         //If we want to update the location of the file.
