@@ -167,8 +167,8 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             float bBlack = image_processor->imgdata.color.cblack[2];
             float g2Black = image_processor->imgdata.color.cblack[3];
             //Still others have a matrix to subtract.
-            int blackRow = image_processor->imgdata.color.cblack[4];
-            int blackCol = image_processor->imgdata.color.cblack[5];
+            int blackRow = int(image_processor->imgdata.color.cblack[4]);
+            int blackCol = int(image_processor->imgdata.color.cblack[5]);
 
             cout << "BLACKPOINT" << endl;
             cout << blackpoint << endl;
@@ -223,7 +223,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 cout << "xtrans: ";
                 for (int j=0; j<6; j++)
                 {
-                    xtrans[i][j] = image_processor->imgdata.idata.xtrans[i][j];
+                    xtrans[i][j] = uint(image_processor->imgdata.idata.xtrans[i][j]);
                     maxXtrans = max(maxXtrans,int(image_processor->imgdata.idata.xtrans[i][j]));
                     cout << xtrans[i][j];
                 }
@@ -417,7 +417,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                      camToRGB,
                      rCamMul, gCamMul, bCamMul,
                      rPreMul, gPreMul, bPreMul,
-                     55535.0f);
+                     65535.0f);
 
 
         pre_film_image = wbImage * pow(2, prefilmParam.exposureComp);
@@ -512,16 +512,16 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         const float tempHeight = imHeight*max(min(1.0f,blackWhiteParam.cropHeight),0.0f);//restrict domain to 0:1
         const float tempAspect = max(min(10000.0f,blackWhiteParam.cropAspect),0.0001f);//restrict aspect ratio
-        int width  = round(min(tempHeight*tempAspect,float(imWidth)));
-        int height = round(min(tempHeight, imWidth/tempAspect));
-        const float maxHoffset = (1-(float(width)  / float(imWidth) ))/2.0;
-        const float maxVoffset = (1-(float(height) / float(imHeight)))/2.0;
-        const float oddH = (!(round((imWidth  - width )/2.0)*2 == (imWidth  - width )))*0.5;//it's 0.5 if it's odd, 0 otherwise
-        const float oddV = (!(round((imHeight - height)/2.0)*2 == (imHeight - height)))*0.5;//it's 0.5 if it's odd, 0 otherwise
+        int width  = int(round(min(tempHeight*tempAspect,float(imWidth))));
+        int height = int(round(min(tempHeight, imWidth/tempAspect)));
+        const float maxHoffset = (1.0f-(float(width)  / float(imWidth) ))/2.0f;
+        const float maxVoffset = (1.0f-(float(height) / float(imHeight)))/2.0f;
+        const float oddH = (!(int(round((imWidth  - width )/2.0))*2 == (imWidth  - width )))*0.5f;//it's 0.5 if it's odd, 0 otherwise
+        const float oddV = (!(int(round((imHeight - height)/2.0))*2 == (imHeight - height)))*0.5f;//it's 0.5 if it's odd, 0 otherwise
         const float hoffset = (round(max(min(blackWhiteParam.cropHoffset, maxHoffset), -maxHoffset) * imWidth  + oddH) - oddH)/imWidth;
         const float voffset = (round(max(min(blackWhiteParam.cropVoffset, maxVoffset), -maxVoffset) * imHeight + oddV) - oddV)/imHeight;
-        int startX = round(0.5*(imWidth  - width ) + hoffset*imWidth);
-        int startY = round(0.5*(imHeight - height) + voffset*imHeight);
+        int startX = int(round(0.5f*(imWidth  - width ) + hoffset*imWidth));
+        int startY = int(round(0.5f*(imHeight - height) + voffset*imHeight));
         int endX = startX + width  - 1;
         int endY = startY + height - 1;
 
@@ -602,12 +602,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
         filmLikeLUT.fill( [=](unsigned short in) -> unsigned short
             {
-                float shResult = shadows_highlights(float(in)/65535.0,
+                float shResult = shadows_highlights(float(in)/65535.0f,
                                                      curvesParam.shadowsX,
                                                      curvesParam.shadowsY,
                                                      curvesParam.highlightsX,
                                                      curvesParam.highlightsY);
-                return 65535*default_tonecurve(shResult);
+                return ushort(65535*default_tonecurve(shResult));
             }
         );
         matrix<unsigned short> film_curve_image;
@@ -688,7 +688,7 @@ void ImagePipeline::updateProgress(Valid valid, float stepProgress)
 {
     double totalTime = numeric_limits<double>::epsilon();
     double totalCompletedTime = 0;
-    for (int i = 0; i < (int) completionTimes.size(); i++)
+    for (ulong i = 0; i < completionTimes.size(); i++)
     {
         totalTime += completionTimes[i];
         float fractionCompleted = 0;
@@ -697,9 +697,9 @@ void ImagePipeline::updateProgress(Valid valid, float stepProgress)
         if (i == valid + 1)
             fractionCompleted = stepProgress;
         //if greater -> 0
-        totalCompletedTime += completionTimes[i]*fractionCompleted;
+        totalCompletedTime += completionTimes[i]*double(fractionCompleted);
     }
-    histoInterface->setProgress(totalCompletedTime/totalTime);
+    histoInterface->setProgress(float(totalCompletedTime/totalTime));
 }
 
 //Do not call this on something that's already been used!
