@@ -501,9 +501,12 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
                 */
 
                 //Actually set output according to camera matrix and pre and post multipliers
-                output(i, j  ) = max(0.0f, transform[0][0]*rCamMul*input(i, j) + transform[0][1]*gCamMul*input(i, j+1) + transform[0][2]*bCamMul*input(i, j+2));
-                output(i, j+1) = max(0.0f, transform[1][0]*rCamMul*input(i, j) + transform[1][1]*gCamMul*input(i, j+1) + transform[1][2]*bCamMul*input(i, j+2));
-                output(i, j+2) = max(0.0f, transform[2][0]*rCamMul*input(i, j) + transform[2][1]*gCamMul*input(i, j+1) + transform[2][2]*bCamMul*input(i, j+2));
+                //output(i, j  ) = max(0.0f, transform[0][0]*rCamMul*input(i, j) + transform[0][1]*gCamMul*input(i, j+1) + transform[0][2]*bCamMul*input(i, j+2));
+                //output(i, j+1) = max(0.0f, transform[1][0]*rCamMul*input(i, j) + transform[1][1]*gCamMul*input(i, j+1) + transform[1][2]*bCamMul*input(i, j+2));
+                //output(i, j+2) = max(0.0f, transform[2][0]*rCamMul*input(i, j) + transform[2][1]*gCamMul*input(i, j+1) + transform[2][2]*bCamMul*input(i, j+2));
+                output(i, j  ) = max(0.0f, transform[0][0]*input(i, j) + transform[0][1]*input(i, j+1) + transform[0][2]*input(i, j+2));
+                output(i, j+1) = max(0.0f, transform[1][0]*input(i, j) + transform[1][1]*input(i, j+1) + transform[1][2]*input(i, j+2));
+                output(i, j+2) = max(0.0f, transform[2][0]*input(i, j) + transform[2][1]*input(i, j+1) + transform[2][2]*input(i, j+2));
 
                 /*
                 if (rClipped || gClipped || bClipped)

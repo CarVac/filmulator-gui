@@ -50,6 +50,7 @@ struct LoadParams {
 
 struct DemosaicParams {
     bool caEnabled;
+    int highlights;
 };
 
 struct PrefilmParams {
@@ -57,7 +58,6 @@ struct PrefilmParams {
     float temperature;
     float tint;
     std::string fullFilename;
-    int highlights;
 };
 
 struct FilmParams {
@@ -120,19 +120,19 @@ class ParameterManager : public QObject
 
     //Demosaic
     Q_PROPERTY(bool caEnabled MEMBER m_caEnabled  WRITE setCaEnabled  NOTIFY caEnabledChanged)
+    Q_PROPERTY(int highlights     MEMBER m_highlights   WRITE setHighlights NOTIFY highlightsChanged)
 
     Q_PROPERTY(bool defCaEnabled READ getDefCaEnabled NOTIFY defCaEnabledChanged)
+    Q_PROPERTY(int defHighlights     READ getDefHighlights   NOTIFY defHighlightsChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
     Q_PROPERTY(float temperature  MEMBER m_temperature  WRITE setTemperature NOTIFY temperatureChanged)
     Q_PROPERTY(float tint         MEMBER m_tint         WRITE setTint NOTIFY tintChanged)
-    Q_PROPERTY(int highlights     MEMBER m_highlights   WRITE setHighlights NOTIFY highlightsChanged)
 
     Q_PROPERTY(float defExposureComp READ getDefExposureComp NOTIFY defExposureCompChanged)
     Q_PROPERTY(float defTemperature  READ getDefTemperature  NOTIFY defTemperatureChanged)
     Q_PROPERTY(float defTint         READ getDefTint         NOTIFY defTintChanged)
-    Q_PROPERTY(int defHighlights     READ getDefHighlights   NOTIFY defHighlightsChanged)
 
     //Filmulation
     Q_PROPERTY(float initialDeveloperConcentration MEMBER m_initialDeveloperConcentration WRITE setInitialDeveloperConcentration NOTIFY initialDeveloperConcentrationChanged)
@@ -314,19 +314,19 @@ protected:
 
     //Demosaic
     bool m_caEnabled;
+    int  m_highlights;
 
     bool d_caEnabled; //d_'s are for default values
+    int  d_highlights;
 
     //Prefilmulation
     float m_exposureComp;
     float m_temperature;
     float m_tint;
-    int   m_highlights;
 
     float d_exposureComp;
     float d_temperature;
     float d_tint;
-    int   d_highlights;
 
     //Filmulation
     float m_initialDeveloperConcentration;
@@ -418,12 +418,12 @@ protected:
     //Getters for the defaults
     //Demosaic
     bool getDefCaEnabled(){return d_caEnabled;}
+    int  getDefHighlights(){return d_highlights;}
 
     //Prefilmulation
     float getDefExposureComp(){return d_exposureComp;}
     float getDefTemperature(){return d_temperature;}
     float getDefTint(){return d_tint;}
-    int   getDefHighlights(){return d_highlights;}
 
     //Filmulation
     float getDefInitialDeveloperConcentration(){return d_initialDeveloperConcentration;}
@@ -526,12 +526,12 @@ protected:
 
     //Demosaic
     void setCaEnabled(bool);
+    void setHighlights(int);
 
     //Prefilmulation
     void setExposureComp(float);
     void setTemperature(float);
     void setTint(float);
-    void setHighlights(int);
 
     //Filmulation
     void setInitialDeveloperConcentration(float);
@@ -595,19 +595,19 @@ signals:
 
     //Demosaic
     void caEnabledChanged();
+    void highlightsChanged();
 
     void defCaEnabledChanged();
+    void defHighlightsChanged();
 
     //Prefilmulation
     void exposureCompChanged();
     void temperatureChanged();
     void tintChanged();
-    void highlightsChanged();
 
     void defExposureCompChanged();
     void defTemperatureChanged();
     void defTintChanged();
-    void defHighlightsChanged();
 
     //Filmulation
     void initialDeveloperConcentrationChanged();

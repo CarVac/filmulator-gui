@@ -122,6 +122,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
 
     DemosaicParams demParams;
     demParams.caEnabled = m_caEnabled;
+    demParams.highlights = m_highlights;
     std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
@@ -167,6 +168,17 @@ void ParameterManager::setCaEnabled(bool caEnabled)
     paramChangeWrapper(QString("setCaEnabled"));
 }
 
+void ParameterManager::setHighlights(int highlights)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    m_highlights = highlights;
+    validity = min(validity, Valid::load);
+    paramLocker.unlock();
+    emit highlightsChanged();
+    QMutexLocker signalLocker(&signalMutex);
+    paramChangeWrapper(QString("setHighlights"));
+}
+
 std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
 {
     QMutexLocker paramLocker(&paramMutex);
@@ -190,7 +202,6 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     params.temperature = m_temperature;
     params.tint = m_tint;
     params.fullFilename = m_fullFilename;//it's okay to include previous things in later params if necessary
-    params.highlights = m_highlights;
     std::tuple<Valid,AbortStatus,PrefilmParams> tup(validity, abort, params);
     return tup;
 }
@@ -256,17 +267,6 @@ void ParameterManager::setTint(float tint)
     emit tintChanged();
     QMutexLocker signalLocker(&signalMutex);
     paramChangeWrapper(QString("setTint"));
-}
-
-void ParameterManager::setHighlights(int highlights)
-{
-    QMutexLocker paramLocker(&paramMutex);
-    m_highlights = highlights;
-    validity = min(validity, Valid::demosaic);
-    paramLocker.unlock();
-    emit highlightsChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setHighlights"));
 }
 
 std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
@@ -1712,6 +1712,17 @@ void ParameterManager::loadParams(QString imageID)
         validity = min(validity, Valid::load);
     }
 
+    //highlights (highlight recovery)
+    nameCol = rec.indexOf("ProcThighlightRecovery");
+    if (-1 == nameCol) { std::cout << "paramManager ProcThighlightRecovery" << endl; }
+    const int temp_highlights = query.value(nameCol).toInt();
+    if (temp_highlights != m_highlights)
+    {
+        //cout << "ParameterManager::loadParams highlights" << endl;
+        m_highlights = temp_highlights;
+        validity = min(validity, Valid::load);
+    }
+
     //Exposure compensation
     nameCol = rec.indexOf("ProcTexposureComp");
     if (-1 == nameCol) { std::cout << "paramManager ProcTexposureComp" << endl; }
@@ -1742,17 +1753,6 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams tint" << endl;
         m_tint = temp_tint;
-        validity = min(validity, Valid::demosaic);
-    }
-
-    //highlights (highlight recovery)
-    nameCol = rec.indexOf("ProcThighlightRecovery");
-    if (-1 == nameCol) { std::cout << "paramManager ProcThighlightRecovery" << endl; }
-    const int temp_highlights = query.value(nameCol).toInt();
-    if (temp_highlights != m_highlights)
-    {
-        //cout << "ParameterManager::loadParams highlights" << endl;
-        m_highlights = temp_highlights;
         validity = min(validity, Valid::demosaic);
     }
 

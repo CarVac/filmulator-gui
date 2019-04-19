@@ -101,7 +101,7 @@ SplitView {
                 ToolSlider {
                     id: highlightRecoverySlider
                     title: qsTr("Highlight Recovery")
-                    tooltipText: qsTr("Recover clipped highlights. 1 is useless, 2 recovers monochrome values, and 3-9 extrapolates the colors. 3 works best most of the time, but 9 can work better on skin tones.")
+                    tooltipText: qsTr("Recover clipped highlights. 2 or greater enables highlight reconstruction. 0 and 1 disables it entirely.")
                     minimumValue: 0
                     maximumValue: 9
                     stepSize: 1
