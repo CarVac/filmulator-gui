@@ -472,7 +472,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         if (WithHisto == histo)
         {
             //Histogram work
-            histoInterface->updateHistPostFilm(filmulated_image, .0025);//TODO connect this magic number to the qml
+            histoInterface->updateHistPostFilm(filmulated_image, .0025f);//TODO connect this magic number to the qml
         }
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
