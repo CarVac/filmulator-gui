@@ -23,7 +23,7 @@ libgomp
 libexiv2
 libjpeg
 libraw
-librtprocess 0.5
+librtprocess 0.10
 ```
 Some libraw package maintainers don't include the GPL demosaic packs, so we highly encourage you to compile it yourself.
 >>>>>>> dev
