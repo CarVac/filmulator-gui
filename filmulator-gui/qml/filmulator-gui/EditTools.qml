@@ -101,9 +101,9 @@ SplitView {
                 ToolSlider {
                     id: highlightRecoverySlider
                     title: qsTr("Highlight Recovery")
-                    tooltipText: qsTr("Recover clipped highlights. 2 or greater enables highlight reconstruction. 0 and 1 disables it entirely.")
+                    tooltipText: qsTr("Recover clipped highlights.\n\n0 clips after the preliminary white balance.\n1 is useful if 0 has restricted the red or blue channels in situations where no raw color channels are clipped.\n2 enables highlight reconstruction, which works best when only one channel is clipped, and when purple fringing isn't a problem.")
                     minimumValue: 0
-                    maximumValue: 9
+                    maximumValue: 2
                     stepSize: 1
                     tickmarksEnabled: true
                     value: paramManager.highlights

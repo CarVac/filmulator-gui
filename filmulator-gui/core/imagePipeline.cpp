@@ -349,10 +349,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     double fitparams[2][2][16];
                     CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
                 }
-                amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-                //matrix<float> normalized_image(raw_height, raw_width);
-                //normalized_image = raw_image * (outputscale/inputscale);
-                //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+                //amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                matrix<float> normalized_image(raw_height, raw_width);
+                normalized_image = raw_image * (outputscale/inputscale);
+                lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
             }
 
             input_image.set_size(raw_height, raw_width*3);
@@ -428,9 +428,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         chmax[2] = bChannel.max();
         //Max clip point:
         float clmax[3];
-        clmax[0] = 65535*rCamMul;
-        clmax[1] = 65535*gCamMul;
-        clmax[2] = 65535*bCamMul;
+        clmax[0] = 65535.0f*rCamMul;
+        clmax[1] = 65535.0f*gCamMul;
+        clmax[2] = 65535.0f*bCamMul;
 
         //Now, recover highlights.
         std::function<bool(double)> setProg = [](double) -> bool {return false;};
@@ -438,6 +438,17 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         {
             cout << "Highlight Recovery ================================================================================" << endl;
             HLRecovery_inpaint(width, height, rChannel, gChannel, bChannel, chmax, clmax, setProg);
+        } else if (demosaicParam.highlights == 0)
+        {
+            for (int row = 0; row < height; row++)
+            {
+                for (int col = 0; col < width; col++)
+                {
+                    rChannel(row,col) = min(rChannel(row,col), 65535.0f);
+                    gChannel(row,col) = min(gChannel(row,col), 65535.0f);
+                    bChannel(row,col) = min(bChannel(row,col), 65535.0f);
+                }
+            }
         }
 
         //And return it back to a single layer
