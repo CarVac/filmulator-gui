@@ -331,7 +331,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             double initialGain = 1.0;
             float inputscale = maxValue;
             float outputscale = 65535.0;
-            int border = 4;
+            const int border = 4;//used for amaze
             std::function<bool(double)> setProg = [](double) -> bool {return false;};
 
             cout << "raw width:  " << raw_width << endl;
