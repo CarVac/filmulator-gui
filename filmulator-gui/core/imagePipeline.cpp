@@ -348,20 +348,20 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     //we need to apply white balance and then remove it for Auto CA Correct to work properly
                     matrix<float> raw_fixed(raw_height, raw_width);
                     double fitparams[2][2][16];
-                    for (uint row = 0; row < raw_height; row++)
+                    for (int row = 0; row < raw_height; row++)
                     {
-                        for (uint col = 0; col < raw_width; col++)
+                        for (int col = 0; col < raw_width; col++)
                         {
-                            uint color = cfa[row & 1][col & 1];
+                            uint color = cfa[uint(row) & 1][uint(col) & 1];
                             raw_image(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
                         }
                     }
                     CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
-                    for (uint row = 0; row < raw_height; row++)
+                    for (int row = 0; row < raw_height; row++)
                     {
-                        for (uint col = 0; col < raw_width; col++)
+                        for (int col = 0; col < raw_width; col++)
                         {
-                            uint color = cfa[row & 1][col & 1];
+                            uint color = cfa[uint(row) & 1][uint(col) & 1];
                             raw_image(row, col) = raw_fixed(row, col) / ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
                         }
                     }
