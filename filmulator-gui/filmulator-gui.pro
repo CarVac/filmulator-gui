@@ -123,12 +123,12 @@ QMAKE_CXXFLAGS += -fopenmp
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
 QMAKE_LFLAGS += -std=c++14 -O3
 unix:!macx {
-QMAKE_LFLAGS += -fopenmp
+QMAKE_LFLAGS += -Xpreprocessor -fopenmp
 }
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess
 macx: {
-LIBS += -L /opt/local/lib /opt/local/lib/libiomp5.dylib
+LIBS += -L /opt/local/lib /opt/local/lib/libomp.dylib
 }
 
 QT += sql core quick qml widgets
