@@ -114,7 +114,7 @@ HEADERS += \
 
 QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math
 macx: {
-QMAKE_CXXFLAGS += -lomp -I/opt/local/include
+QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/opt/local/include
 }
 unix:!macx {
 QMAKE_CXXFLAGS += -fopenmp
@@ -122,8 +122,11 @@ QMAKE_CXXFLAGS += -fopenmp
 
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
 QMAKE_LFLAGS += -std=c++14 -O3
+macx: {
+QMAKE_LFLAGS += -lomp
+}
 unix:!macx {
-QMAKE_LFLAGS += -Xpreprocessor -fopenmp
+QMAKE_LFLAGS += -fopenmp
 }
 
 LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess
