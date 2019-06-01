@@ -25,7 +25,7 @@ libjpeg
 libraw
 librtprocess 0.10
 ```
-Some libraw package maintainers don't include the GPL demosaic packs, so we highly encourage you to compile it yourself.
+We highly encourage you to compile libraw yourself to ensure you have support for recent cameras.
 
 It also requires Qt 5.4 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
 
