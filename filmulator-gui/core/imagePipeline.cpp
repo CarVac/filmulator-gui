@@ -337,9 +337,20 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             cout << "raw width:  " << raw_width << endl;
             cout << "raw height: " << raw_height << endl;
 
+            //before demosaic, you want to apply raw white balance
+            matrix<float> premultiplied(raw_height, raw_width);
+            for (int row = 0; row < raw_height; row++)
+            {
+                for (int col = 0; col < raw_width; col++)
+                {
+                    uint color = cfa[uint(row) & 1][uint(col) & 1];
+                    premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                }
+            }
+
             if (maxXtrans > 0)
             {
-                markesteijn_demosaic(raw_width, raw_height, raw_image, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+                markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
             }
             else
             {
@@ -348,28 +359,13 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     //we need to apply white balance and then remove it for Auto CA Correct to work properly
                     matrix<float> raw_fixed(raw_height, raw_width);
                     double fitparams[2][2][16];
-                    for (int row = 0; row < raw_height; row++)
-                    {
-                        for (int col = 0; col < raw_width; col++)
-                        {
-                            uint color = cfa[uint(row) & 1][uint(col) & 1];
-                            raw_image(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
-                        }
-                    }
-                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, raw_image, raw_fixed, cfa, setProg, fitparams, false);
-                    for (int row = 0; row < raw_height; row++)
-                    {
-                        for (int col = 0; col < raw_width; col++)
-                        {
-                            uint color = cfa[uint(row) & 1][uint(col) & 1];
-                            raw_image(row, col) = raw_fixed(row, col) / ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
-                        }
-                    }
+                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, premultiplied, raw_fixed, cfa, setProg, fitparams, false);
+                    premultiplied = raw_fixed;
                 }
-                //amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, raw_image, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-                matrix<float> normalized_image(raw_height, raw_width);
-                normalized_image = raw_image * (outputscale/inputscale);
-                lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+                amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                //matrix<float> normalized_image(raw_height, raw_width);
+                //normalized_image = premultiplied * (outputscale/inputscale);
+                //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
             }
 
             input_image.set_size(raw_height, raw_width*3);
@@ -377,9 +373,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             {
                 for (int col = 0; col < raw_width; col++)
                 {
-                    input_image(row, col*3    ) =   red(row, col)*rCamMul;
-                    input_image(row, col*3 + 1) = green(row, col)*gCamMul;
-                    input_image(row, col*3 + 2) =  blue(row, col)*bCamMul;
+                    input_image(row, col*3    ) =   red(row, col);
+                    input_image(row, col*3 + 1) = green(row, col);
+                    input_image(row, col*3 + 2) =  blue(row, col);
                 }
             }
         }
