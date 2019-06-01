@@ -32,6 +32,14 @@ It also requires Qt 5.4 or newer: open the `.pro` file from Qt Creator and selec
 
 A note: Use a standalone git client to clone the repository initially, and then you can use Qt Creator's built-in git tools.
 
+## Building with CMake:
+
+Inside the `filmulator-gui` directory, create a build directory.
+
+Run `cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..` If you are using a binary release of Qt from them, use -DCMAKE\_PREFIX\_PATH=\[path to the qt dir and version and arch\] as an argument.
+
+Then run `make` and run `make install` as root.
+
 # Using Filmulator
 
 First, import your photos. You can select directories to import, or individual files. You can also select whether to leave the photos where they are, or to copy them into a directory structure based upon the date captured, in both the Destination Directory and the Backup Directory. These can be sorted correctly by setting the Camera UTC Offset to the timezone you set the camera's clock in, and the Local UTC Offset to the timezone where the photo was captured. Select the source directory (your card, or a directory containing your photos), and pressing the `Import` button will begin pulling the photos into the database and writing out the source directory.

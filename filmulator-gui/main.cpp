@@ -1,3 +1,9 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#define FILMULATOR_DATADIR ""
+#endif
+
 #include <stdlib.h>
 #include <QtGui/QGuiApplication>
 #include <QtQml>
@@ -116,9 +122,11 @@ int main(int argc, char *argv[])
         cout << "loading UI from copy in directory" << endl;
         engine.load("qml/filmulator-gui/main.qml");
     }
-    else if (QFile("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml").exists())
+    else if (QFile(QString(FILMULATOR_DATADIR) + "/qml/filmulator-gui/main.qml").exists())//when using cmake
     {
-        engine.load("/usr/lib/filmulator-gui/qml/filmulator-gui/main.qml");
+        cout << "loading ui from datadir" << endl;
+        cout << FILMULATOR_DATADIR << "/qml/filmulator-gui/main.qml" << endl;
+        engine.load(QString(FILMULATOR_DATADIR) + "/qml/filmulator-gui/main.qml");
     }
     else
     {
