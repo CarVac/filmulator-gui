@@ -37,74 +37,86 @@ ApplicationWindow {
         anchors.fill: parent
         orientation: Qt.Vertical
 
-        TabView {
-            id: tabs
-            anchors.margins: (Qt.platform.os === "osx" ? 12 : 2) * uiScale
-            tabPosition: Qt.TopEdge
+        Item {
+            id: tabContainer
             Layout.fillHeight: true
             Layout.minimumHeight: 200 * uiScale
-            style: headerTabViewStyle
+            TabView {
+                id: tabs
+                //anchors.margins: (Qt.platform.os === "osx" ? 12 : 2) * uiScale
+                anchors.fill: parent
+                tabPosition: Qt.TopEdge
+                style: headerTabViewStyle
 
-            Tab {
-                id: importTab
-                title: qsTr("Import")
-                active: true
-                Import {
-                    id: importItem
-                    Component.onCompleted: {
-                        importItem.tooltipWanted.connect(root.tooltipWanted)
+                Tab {
+                    id: importTab
+                    title: qsTr("Import")
+                    active: true
+                    Import {
+                        id: importItem
+                        Component.onCompleted: {
+                            importItem.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
                     }
-                    uiScale: root.uiScale
+                }
+
+                Tab {
+                    id: organizeTab
+                    title: qsTr("Organize")
+                    active: true
+                    Organize {
+                        id: organizeItem
+                        Component.onCompleted: {
+                            organizeItem.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
+                }
+
+                Tab {
+                    id: editorTab
+                    title: qsTr("Filmulate")
+                    active: true
+                    Edit {
+                        id: editItem
+                        Component.onCompleted: {
+                            editItem.tooltipWanted.connect(root.tooltipWanted)
+                            editItem.imageURL.connect(root.imageURL)
+                        }
+                        onRequestingCroppingChanged: {
+                            root.cropping = editItem.requestingCropping
+                        }
+                        uiScale: root.uiScale
+                    }
+                }
+
+                Tab {
+                    id: outputTab
+                    active: true
+                    title: qsTr("Output")
+                }
+
+                Tab {
+                    id: settingsTab
+                    title: qsTr("Settings")
+                    active: true
+                    Settings {
+                        id: settingsItem
+                        Component.onCompleted: {
+                            settingsItem.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
                 }
             }
-
-            Tab {
-                id: organizeTab
-                title: qsTr("Organize")
-                active: true
-                Organize {
-                    id: organizeItem
-                    Component.onCompleted: {
-                        organizeItem.tooltipWanted.connect(root.tooltipWanted)
-                    }
-                    uiScale: root.uiScale
-                }
-            }
-
-            Tab {
-                id: editorTab
-                title: qsTr("Filmulate")
-                active: true
-                Edit {
-                    id: editItem
-                    Component.onCompleted: {
-                        editItem.tooltipWanted.connect(root.tooltipWanted)
-                        editItem.imageURL.connect(root.imageURL)
-                    }
-                    onRequestingCroppingChanged: {
-                        root.cropping = editItem.requestingCropping
-                    }
-                    uiScale: root.uiScale
-                }
-            }
-
-            Tab {
-                id: outputTab
-                active: true
-                title: qsTr("Output")
-            }
-
-            Tab {
-                id: settingsTab
-                title: qsTr("Settings")
-                active: true
-                Settings {
-                    id: settingsItem
-                    Component.onCompleted: {
-                        settingsItem.tooltipWanted.connect(root.tooltipWanted)
-                    }
-                    uiScale: root.uiScale
-                }
+            Rectangle {
+                id: tabBottomBorder
+                x: 0
+                y: 37 * uiScale
+                width: parent.width
+                height: 1 * uiScale
+                color: Colors.whiteGrayH
             }
         }
 
@@ -261,16 +273,13 @@ ApplicationWindow {
                     GradientStop {color: styleData.selected ? "#000000" : "#222222"; position: 0.0}
                     GradientStop {color: "#111111";                                  position: 0.15}
                     GradientStop {color: "#111111";                                  position: 1.0}
-                    //GradientStop {color: "#111111";                                  position: 0.3}
-                    //GradientStop {color: "#111111";                                  position: 0.7}
-                    //GradientStop {color: styleData.selected ? "#222222" : "#000000"; position: 1.0}
                 }
 
                 Item {
                     x: 0
                     y: 0
                     width: parent.width
-                    height: parent.height/2
+                    height: (parent.height/2)*1.1
                     Text {
                         text: styleData.title
                         color: "white"
