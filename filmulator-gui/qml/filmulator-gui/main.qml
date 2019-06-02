@@ -252,24 +252,32 @@ ApplicationWindow {
                 x: 4 * uiScale
                 y: 4 * uiScale
                 width: parent.implicitWidth - 5 * uiScale
-                height: parent.implicitHeight - Math.round(8 * uiScale)
+                height: (parent.implicitHeight - Math.round(8 * uiScale))*2
                 radius: 8 * uiScale
                 border.width: 1 * uiScale
                 border.color: styleData.selected ? Colors.whiteGrayH : Colors.middleGray
                 color: Colors.blackGray
                 gradient: Gradient {
                     GradientStop {color: styleData.selected ? "#000000" : "#222222"; position: 0.0}
-                    GradientStop {color: "#111111";                                  position: 0.3}
-                    GradientStop {color: "#111111";                                  position: 0.7}
-                    GradientStop {color: styleData.selected ? "#222222" : "#000000"; position: 1.0}
+                    GradientStop {color: "#111111";                                  position: 0.15}
+                    GradientStop {color: "#111111";                                  position: 1.0}
+                    //GradientStop {color: "#111111";                                  position: 0.3}
+                    //GradientStop {color: "#111111";                                  position: 0.7}
+                    //GradientStop {color: styleData.selected ? "#222222" : "#000000"; position: 1.0}
                 }
 
-                Text {
-                    text: styleData.title
-                    color: "white"
-                    anchors.centerIn: parent
-                    font.bold: true
-                    font.pixelSize: 12.0 * uiScale
+                Item {
+                    x: 0
+                    y: 0
+                    width: parent.width
+                    height: parent.height/2
+                    Text {
+                        text: styleData.title
+                        color: "white"
+                        anchors.centerIn: parent
+                        font.bold: true
+                        font.pixelSize: 12.0 * uiScale
+                    }
                 }
             }
         }
