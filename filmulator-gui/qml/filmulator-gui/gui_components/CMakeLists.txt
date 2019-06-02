@@ -1,0 +1,20 @@
+INSTALL(
+    FILES
+        ToolRadioButton.qml
+        ToolSlider.qml
+        FilmProgressBar.qml
+        ToolButton.qml
+        ImportDirEntry.qml
+        ToolSwitch.qml
+        ToolButtonStyle.qml
+        OrganizeDelegate.qml
+        ImportTextEntry.qml
+        ImportFileEntry.qml
+        ToolCalendar.qml
+        QueueDelegate.qml
+        ToolTip.qml
+        SlipperySlider.qml
+        ToolRadioButtonStyle.qml
+    DESTINATION
+        ${CMAKE_INSTALL_DATADIR}/Filmulator/qml/filmulator-gui/gui_components
+)
