@@ -2,6 +2,7 @@
 #include <utility>
 #include <iostream>
 #include <omp.h>
+#include <array>
 
 using std::cout;
 using std::endl;
