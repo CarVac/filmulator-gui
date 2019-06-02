@@ -108,4 +108,12 @@ Rectangle {
             tooltip.tooltipWanted.connect(root.tooltipWanted)
         }
     }
+    ToolTip {
+        id: buttonTooltip
+        anchors.fill: reset
+        tooltipText: qsTr("Reset to default")
+        Component.onCompleted: {
+            buttonTooltip.tooltipWanted.connect(root.tooltipWanted)
+        }
+    }
 }
