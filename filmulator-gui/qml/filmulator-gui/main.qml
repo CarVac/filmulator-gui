@@ -195,8 +195,8 @@ ApplicationWindow {
 
         Rectangle {
             id: tooltipBox
-            color: Colors.transDarkGray
-            border.color: Colors.transMiddleGray
+            color: Colors.darkGray
+            border.color: Colors.middleGray
             border.width: 2 * uiScale
             radius: 10 * uiScale
             property int padding: 6 * uiScale
