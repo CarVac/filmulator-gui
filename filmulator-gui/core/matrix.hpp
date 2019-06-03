@@ -524,44 +524,26 @@ double matrix<T>::sum()
 template <class T>
 T matrix<T>::max()
 {
-    T shared_max;
-
-#pragma omp parallel
-    {
     T max = std::numeric_limits<T>::min();
-#pragma omp for schedule(dynamic)
+
+    #pragma omp parallel for reduction(max:max) schedule(dynamic,16)
     for(int row = 0; row < num_rows; row++)
         for(int col = 0; col < num_cols; col++)
             max = std::max(data[row*num_cols + col],max);
-#pragma omp critical
-        {
-        shared_max = std::max(shared_max,max);
-        }
-    }
-    return shared_max;
+    return max;
 }
 
 
 template <class T>
 T matrix<T>::min()
 {
-    T shared_min;
-
-    T* pdata = data;
-    int pnum_cols = num_cols;
-#pragma omp parallel shared(pdata, pnum_cols)
-    {
     T min = std::numeric_limits<T>::max();
-#pragma omp for schedule(dynamic)
+
+    #pragma omp parallel for reduction(min:min) schedule(dynamic,16)
     for(int row = 0; row < num_rows; row++)
         for(int col = 0; col < num_cols; col++)
             min = std::min(data[row*num_cols + col],min);
-#pragma omp critical
-        {
-        shared_min = std::min(shared_min,min);
-        }
-    }
-    return shared_min;
+    return min;
 }
 
 template <class T>
