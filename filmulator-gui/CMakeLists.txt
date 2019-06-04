@@ -30,11 +30,9 @@ find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
 find_package(OpenMP REQUIRED)
 
-
 # Checks for config.h
 include(ConfigureChecks.cmake)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
 
 set(filmulator_SRCS
     main.cpp
@@ -88,13 +86,11 @@ qt5_add_resources(filmulator_RSCS
     resources/pixmaps.qrc
 )
 
-
 if(APPLE)
     add_executable(filmulator MACOSX_BUNDLE
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
-
 
 else()
 add_executable(filmulator
@@ -151,23 +147,29 @@ if(APPLE)
     set(filmulator ${filmulator} "${CMAKE_SOURCE_DIR}/resources/macos/Icon.icns")
     install(TARGETS filmulator BUNDLE DESTINATION "${CMAKE_SOURCE_DIR}/build")
 
+    if(NOT IS_ABSOLUTE "${EXIV2_LIBRARIES}")
     file(READ_SYMLINK "${EXIV2_LIBRARIES}" result)
     file(COPY "${EXIV2_INCLUDE_DIR}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
     file(COPY "${EXIV2_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+    endif()
 
+    if(NOT IS_ABSOLUTE "${JPEG_LIBRARIES}")
     file(READ_SYMLINK "${JPEG_LIBRARIES}" result)
     file(COPY "${JPEG_INCLUDE_DIRS}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
     file(COPY "${JPEG_INCLUDE_DIRS}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
-
+    endif()
+    
+    if(NOT IS_ABSOLUTE "${TIFF_LIBRARIES}")    
     file(READ_SYMLINK "${TIFF_LIBRARIES}" result)
     file(COPY "${TIFF_INCLUDE_DIR}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
     file(COPY "${TIFF_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+    endif()
 
     file(COPY "${RTPROCESS_LIBRARIES}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
 
@@ -179,6 +181,5 @@ else()
     )
 
 endif()
-
 
 add_subdirectory(qml)
