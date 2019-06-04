@@ -88,10 +88,22 @@ qt5_add_resources(filmulator_RSCS
     resources/pixmaps.qrc
 )
 
-add_executable(filmulator
+
+if(APPLE)
+add_executable(filmulator MACOSX_BUNDLE
     ${filmulator_SRCS}
     ${filmulator_RSCS}
 )
+
+
+
+else()
+add_executable(filmulator
+    ${filmulator_SRCS}
+    ${filmulator_RSCS}
+
+)
+endif()
 
 target_compile_options(filmulator
     PRIVATE
@@ -128,10 +140,28 @@ target_link_libraries(filmulator
     ${RTPROCESS_LIBRARIES}
 )
 
-install(TARGETS filmulator
-    RUNTIME
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+if(APPLE)
+    SET( CMAKE_OSX_ARCHITECTURES x86_64 )
+    SET( CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build" )
+    INSTALL( TARGETS filmulator BUNDLE DESTINATION "${CMAKE_SOURCE_DIR}/build" )
+    SET_TARGET_PROPERTIES( filmulator PROPERTIES MACOSX_BUNDLE TRUE MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/resources/macos/Info.plist" )
+    SET( MACOSX_BUNDLE_RESOURCES  "./Filmulator.app/Contents/Resources" )
+    SET_SOURCE_FILES_PROPERTIES( ${CMAKE_SOURCE_DIR}/resources/macos/icon.icns  PROPERTIES MACOSX_PACKAGE_LOCATION "./Filmulator.app/Contents/Resources" )
+    SET( filmulator ${filmulator} "${CMAKE_SOURCE_DIR}/resources/macos/Icon.icns")
+    FILE( COPY "${CMAKE_SOURCE_DIR}/resources/macos/filmulator-gui" DESTINATION "./Filmulator.app/Contents/MacOS" )
+    FILE( COPY "${CMAKE_SOURCE_DIR}/resources/macos/icon.icns" DESTINATION "./Filmulator.app/Contents/Resources" )
+    FILE( COPY "${CMAKE_SOURCE_DIR}/resources/macos/qt.conf" DESTINATION "./Filmulator.app/Contents/Resources" )
+    FILE( COPY "${EXIV2_LIBRARIES}" DESTINATION ".Filmulator.app/Contents/Frameworks" )
+    ADD_CUSTOM_COMMAND( TARGET filmulator POST_BUILD COMMAND install_name_tool -add_rpath @executable_path/../Frameworks Filmulator.app/Contents/MacOS/filmulator       
+                                                          && $ENV{QT}/bin/macdeployqt Filmulator.app -executable=Filmulator.app/Contents/MacOS/filmulator -no-strip -verbose=3 -qmldir=Filmulator.app/Contents/Resources/qml )
+    SET(CMAKE_INSTALL_RPATH @loader_path/../Frameworks)
+else()
+    install(TARGETS filmulator
+        RUNTIME
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+
+endif()
 
 add_subdirectory(qml)
 
