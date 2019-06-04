@@ -113,7 +113,7 @@ ApplicationWindow {
             Rectangle {
                 id: tabBottomBorder
                 x: 0
-                y: 37 * uiScale
+                y: 36 * uiScale
                 width: parent.width
                 height: 1 * uiScale
                 color: Colors.whiteGrayH
