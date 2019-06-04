@@ -1666,7 +1666,7 @@ SplitView {
             width: 120 * uiScale
             notDisabled: root.imageReady
             text: root.cropping ? qsTr("Finish Crop") : qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
-            tooltipText: root.cropping ? qsTr("Click this to save your crop."): qsTr("Click this to begin cropping.")//change to "Hold shift to snap to common aspect ratios" when cropping in progress
+            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
             onTriggered: {
                 if (!root.cropping) {
                     filmProvider.disableThumbnailWrite()
