@@ -196,6 +196,8 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
     const QFileInfo file = QFileInfo(name.mid(count));
     if (!file.isFile())
     {
+        cout << "File not found: " << name.toStdString() << endl;
+        cout << "Count: " << count << endl;
         invalidFile = true;
         emit invalidFileChanged();
         return Validity::invalid;
@@ -214,6 +216,7 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
     //Now we tell the GUI the result:
     if (!isReadableFile)
     {
+        cout << "File " << file.fileName().toStdString() << " not readable file type" << endl;
         invalidFile = true;
         emit invalidFileChanged();
         return Validity::invalid;
