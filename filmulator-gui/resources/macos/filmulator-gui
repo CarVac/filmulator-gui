@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+
+cd "$(dirname "$0")" || exit 1
+
+cwd="$(pwd)"
+export LD_LIBRARY_PATH=../../Frameworks
+export APPDIR=../..
+export QT_QPA_PLATFORM_PLUGIN_PATH=../../plugins/platforms
+exec "${cwd}/filmulator"

@@ -39,6 +39,18 @@ Run `cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..` If 
 
 Then run `make` and run `make install` as root.
 
+## Building on MacOS:
+
+Use the following commands to build the Filmulator application on macOS. 
+
+1. `cd ~/filmulator-gui/filmulator-gui`
+2. `mkdir build && cd build`
+3. `export QT=~/Qt/5.12.3/clang_64`
+4. `cmake -DCMAKE_BUILD_TYPE="RELEASE" -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS=-I/opt/local/include -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp /opt/local/lib/libomp.dylib -I/opt/local/include" -DOpenMP_CXX_LIB_NAMES="libomp" -DOpenMP_libomp_LIBRARY=/opt/local/lib/libomp.dylib -DCMAKE_INSTALL_PREFIX=/opt/local -DCMAKE_SHARED_LINKER_FLAGS=-L/opt/local/lib -DCMAKE_PREFIX_PATH=$(echo $QT/lib/cmake/* | sed -Ee 's$ $;$g') -G "Unix Makefiles" -DCMAKE_VERBOSE_MAKEFILE=1 ..`
+5. `make -j8 install`
+
+> **_NOTE:_**  The location of QT and libomp may vary on your system.
+
 # Using Filmulator
 
 First, import your photos. You can select directories to import, or individual files. You can also select whether to leave the photos where they are, or to copy them into a directory structure based upon the date captured, in both the Destination Directory and the Backup Directory. These can be sorted correctly by setting the Camera UTC Offset to the timezone you set the camera's clock in, and the Local UTC Offset to the timezone where the photo was captured. Select the source directory (your card, or a directory containing your photos), and pressing the `Import` button will begin pulling the photos into the database and writing out the source directory.
