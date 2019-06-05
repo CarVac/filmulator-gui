@@ -224,6 +224,8 @@ public:
     Q_INVOKABLE void copyAll(QString fromImageID);
     Q_INVOKABLE void paste(QString toImageID);
 
+    Q_INVOKABLE QString getFullFilenameQstr(){return QString::fromStdString(m_fullFilename);}
+
     //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
     //and then returns the struct and the validity.
     //There's a second validity-check-only method for more frequent cancellation.
@@ -690,6 +692,9 @@ signals:
     void updateClone(ParameterManager * param);
     void updateImage(bool newImage);
     void updateTableOut(QString table, int operation);
+
+    //Error
+    void fileError();
 };
 
 #endif // PARAMETERMANAGER_H

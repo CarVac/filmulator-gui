@@ -107,7 +107,6 @@ QImage FilmImageProvider::requestImage(const QString& id,
     //Copy the image over.
     last_image = image;
     writeDataMutex.unlock();
-
     processMutex.unlock();
 
     int nrows = image.nr();

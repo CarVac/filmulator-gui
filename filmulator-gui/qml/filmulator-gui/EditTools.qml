@@ -17,6 +17,7 @@ SplitView {
 
     property bool imageReady
     property bool cropping
+    property bool imageError
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -735,7 +736,7 @@ SplitView {
             uiScale: root.uiScale
             x: 0
             y: 0
-            notDisabled: root.imageReady && (!root.cropping)
+            notDisabled: root.imageReady && (!root.cropping) && (!root.imageError)
             text: qsTr("Save TIFF")
             tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : qsTr("Save a TIFF to the directory containing the raw file.")
             onTriggered: {
@@ -753,7 +754,7 @@ SplitView {
             uiScale: root.uiScale
             x: width
             y: 0
-            notDisabled: root.imageReady && (!root.cropping)
+            notDisabled: root.imageReady && (!root.cropping) && (!root.imageError)
             text: qsTr("Save JPEG")
             tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : qsTr("Save a JPEG to the directory containing the raw file.")
             onTriggered: {
@@ -763,6 +764,15 @@ SplitView {
             Component.onCompleted: {
                 saveJPEGButton.tooltipWanted.connect(root.tooltipWanted)
             }
+        }
+    }
+    Connections {
+        target: paramManager
+        onFileError: {
+            root.imageError = true
+        }
+        onFilenameChanged: {
+            root.imageError = false
         }
     }
 }

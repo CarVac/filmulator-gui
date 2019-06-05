@@ -1,5 +1,6 @@
 #include "parameterManager.h"
 #include "../database/database.hpp"
+#include "QFile"
 
 using std::min;
 using std::cout;
@@ -11,6 +12,11 @@ ParameterManager::ParameterManager() : QObject(0)
 
     //Load the defaults, copy to the parameters, there's no filename yet.
     loadDefaults(CopyDefaults::loadToParams, "");
+
+    aperture = "0.0";
+    exposureTime = "0.0";
+    filename = "N/A";
+    sensitivity = 0;
 
     validity = Valid::none;
 
@@ -1100,7 +1106,17 @@ void ParameterManager::selectImage(const QString imageID)
     QString name = query.value(nameCol).toString();
     m_fullFilename = name.toStdString();
     filename = name.right(name.size() - name.lastIndexOf(QString("/")) - 1);
-    emit filenameChanged();
+
+    //We need to check that the file is actually accessible before continuing.
+    QFile file(name);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        qDebug("File could not be opened.");
+        emit fileError();
+        return;
+    } else {
+        emit filenameChanged();
+    }
 
     nameCol = rec.indexOf("FTsensitivity");
     if (-1 == nameCol) { std::cout << "paramManager FTsensitivity" << endl; }

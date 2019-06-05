@@ -3,6 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Window 2.9
 import "gui_components"
+import "colors.js" as Colors
 
 SplitView {
     id: root
@@ -66,6 +67,8 @@ SplitView {
         color: "black"
         Layout.fillWidth: true
         property int backgroundColor: backgroundBrightnessSlider.value
+        property bool loadingError: false
+        property string errorText: ""
         Rectangle {//This is because before the image is loaded there's no background.
             id: background
             x: 0 * uiScale
@@ -1637,7 +1640,7 @@ SplitView {
             Text {
                 id: backgroundColorText
                 x: 0 * uiScale
-                y: 4 * uiScale
+                y: 2 * uiScale
                 width: parent.width
                 color: "white"
                 text: qsTr("Background Brightness")
@@ -1648,7 +1651,7 @@ SplitView {
             SlipperySlider {
                 id: backgroundBrightnessSlider
                 x: 40 * uiScale
-                y: 18 * uiScale
+                y: 17 * uiScale
                 width: parent.width - 80 * uiScale
                 minimumValue: 0
                 maximumValue: 2
@@ -1787,11 +1790,12 @@ SplitView {
         Text {
             id: apertureText
             x: 200 * uiScale
-            y: 0 * uiScale
+            y: 1 * uiScale
             color: "white"
             text: root.cropping ? qsTr("Width: ") + imageRect.displayWidth : " f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
+            visible: !parent.loadingError
         }
         Text {
             id: shutterText
@@ -1801,26 +1805,74 @@ SplitView {
             text: root.cropping ? qsTr("Height: ") + imageRect.displayHeight : " " + paramManager.exposureTime + " s"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
+            visible: !parent.loadingError
         }
         Text {
             id: filenameText
-            //x: 300 * uiScale
             x: 350 * uiScale
-            y: 0 * uiScale
+            y: 1 * uiScale
             color: "white"
             text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.filename
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
+            visible: !parent.loadingError
         }
         Text {
             id: isoText
-            //x: 300 * uiScale
             x: 350 * uiScale
             y: 15 * uiScale
             color: "white"
             text: root.cropping ? qsTr("V offset: ") + imageRect.displayVoffset : "ISO " + paramManager.sensitivity
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
+            visible: !parent.loadingError
+        }
+        Rectangle {
+            id: errorBox
+            x: 200 * uiScale
+            y: 0 * uiScale
+            width: parent.width - (200 * uiScale)
+            height: Math.ceil(30 * uiScale)
+            color: "black"
+            SequentialAnimation on color {
+                id: pulseColor
+                running: root.erroneous
+                loops: Animation.Infinite
+                ColorAnimation {
+                    from: "black"
+                    to: Colors.darkOrange
+                    duration: 1000
+                    easing: easing.InQuart
+                }
+                ColorAnimation {
+                    from: Colors.darkOrange
+                    to: "black"
+                    duration: 1000
+                    easing: easing.OutQuart
+                }
+            }
+            visible: parent.loadingError
+            Text {
+                id: errorTextInfo
+                anchors.fill: parent
+                text: qsTr("Error: ") + photoBox.errorText + qsTr(" is not accessible.")
+                color: "white"
+                font.pixelSize: 12.0 * uiScale
+                elide: Text.ElideMiddle
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+        Connections {
+            target: paramManager
+            onFileError: {
+                photoBox.errorText = paramManager.getFullFilenameQstr()
+                photoBox.loadingError = true
+            }
+            onFilenameChanged: {
+                photoBox.loadingError = false
+                photoBox.errorText = ""
+            }
         }
     }
     EditTools {
