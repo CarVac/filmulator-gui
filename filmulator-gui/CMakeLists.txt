@@ -175,7 +175,7 @@ if(APPLE)
     endif()
 
     file(COPY "${RTPROCESS_LIBRARIES}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
-
+    file(COPY "${OpenMP_libomp_LIBRARY}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
 
 else()
     install(TARGETS filmulator
