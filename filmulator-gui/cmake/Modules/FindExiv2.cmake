@@ -48,13 +48,20 @@ endif (EXIV2_LIBRARY)
 
 # Get the version number from exiv2/version.hpp and store it in the cache:
 if (EXIV2_INCLUDE_DIR AND NOT EXIV2_VERSION)
-    if (EXISTS ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h)
-        set(EXIV_VERSION_HEADER ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h)
-    else()
-        set(EXIV_VERSION_HEADER ${EXIV2_INCLUDE_DIR}/exiv2/version.hpp)
+    set(EXIV2_VERSION_STRING_FOUND FALSE)
+
+    if (EXISTS ${EXIV2_INCLUDE_DIR}/exiv2/version.hpp)
+        file(READ ${EXIV2_INCLUDE_DIR}/exiv2/version.hpp EXIV2_VERSION_CONTENT)
+
+        string(FIND "${EXIV2_VERSION_CONTENT}" "#define EXIV2_MAJOR_VERSION" EXIV2_MAJOR_FOUND)
+        if (${EXIV2_MAJOR_FOUND} GREATER 0)
+            set(EXIV2_VERSION_STRING_FOUND TRUE)
+        endif()
     endif()
 
-    file(READ ${EXIV_VERSION_HEADER} EXIV2_VERSION_CONTENT)
+    if (${EXIV2_MAJOR_FOUND} AND EXISTS ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h)
+        file(READ ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h EXIV2_VERSION_CONTENT)
+    endif()
 
     string(REGEX MATCH "#define EXIV2_MAJOR_VERSION +\\( *([0-9]+) *\\)"  _dummy "${EXIV2_VERSION_CONTENT}")
     set(EXIV2_VERSION_MAJOR "${CMAKE_MATCH_1}")
