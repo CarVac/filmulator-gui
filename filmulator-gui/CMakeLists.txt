@@ -30,11 +30,9 @@ find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
 find_package(OpenMP REQUIRED)
 
-
 # Checks for config.h
 include(ConfigureChecks.cmake)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
 
 set(filmulator_SRCS
     main.cpp
@@ -88,14 +86,11 @@ qt5_add_resources(filmulator_RSCS
     resources/pixmaps.qrc
 )
 
-
 if(APPLE)
-add_executable(filmulator MACOSX_BUNDLE
-    ${filmulator_SRCS}
-    ${filmulator_RSCS}
-)
-
-
+    add_executable(filmulator MACOSX_BUNDLE
+        ${filmulator_SRCS}
+        ${filmulator_RSCS}
+    )
 
 else()
 add_executable(filmulator
@@ -141,20 +136,47 @@ target_link_libraries(filmulator
 )
 
 if(APPLE)
-    SET( CMAKE_OSX_ARCHITECTURES x86_64 )
-    SET( CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build" )
-    INSTALL( TARGETS filmulator BUNDLE DESTINATION "${CMAKE_SOURCE_DIR}/build" )
-    SET_TARGET_PROPERTIES( filmulator PROPERTIES MACOSX_BUNDLE TRUE MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/resources/macos/Info.plist" )
-    SET( MACOSX_BUNDLE_RESOURCES  "./Filmulator.app/Contents/Resources" )
-    SET_SOURCE_FILES_PROPERTIES( ${CMAKE_SOURCE_DIR}/resources/macos/icon.icns  PROPERTIES MACOSX_PACKAGE_LOCATION "./Filmulator.app/Contents/Resources" )
-    SET( filmulator ${filmulator} "${CMAKE_SOURCE_DIR}/resources/macos/Icon.icns")
-    FILE( COPY "${CMAKE_SOURCE_DIR}/resources/macos/filmulator-gui" DESTINATION "./Filmulator.app/Contents/MacOS" )
-    FILE( COPY "${CMAKE_SOURCE_DIR}/resources/macos/icon.icns" DESTINATION "./Filmulator.app/Contents/Resources" )
-    FILE( COPY "${CMAKE_SOURCE_DIR}/resources/macos/qt.conf" DESTINATION "./Filmulator.app/Contents/Resources" )
-    FILE( COPY "${EXIV2_LIBRARIES}" DESTINATION ".Filmulator.app/Contents/Frameworks" )
-    ADD_CUSTOM_COMMAND( TARGET filmulator POST_BUILD COMMAND install_name_tool -add_rpath @executable_path/../Frameworks Filmulator.app/Contents/MacOS/filmulator       
-                                                          && $ENV{QT}/bin/macdeployqt Filmulator.app -executable=Filmulator.app/Contents/MacOS/filmulator -no-strip -verbose=3 -qmldir=Filmulator.app/Contents/Resources/qml )
-    SET(CMAKE_INSTALL_RPATH @loader_path/../Frameworks)
+    file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/filmulator-gui" DESTINATION "./Filmulator.app/Contents/MacOS" FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE WORLD_EXECUTE)
+    file(COPY "${CMAKE_SOURCE_DIR}/../LICENSE" DESTINATION "./Filmulator.app/Contents/Resources")
+    file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/icon.icns" DESTINATION "./Filmulator.app/Contents/Resources")
+    file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/qt.conf" DESTINATION "./Filmulator.app/Contents/Resources")
+    set(CMAKE_OSX_ARCHITECTURES x86_64)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build")
+    set_target_properties(filmulator PROPERTIES MACOSX_BUNDLE TRUE MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/resources/macos/Info.plist")
+    set(MACOSX_BUNDLE_RESOURCES  "./Filmulator.app/Contents/Resources")
+    set_source_files_properties(${CMAKE_SOURCE_DIR}/resources/macos/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Filmulator.app/Contents/Resources")
+    set(filmulator ${filmulator} "${CMAKE_SOURCE_DIR}/resources/macos/Icon.icns")
+    install(TARGETS filmulator BUNDLE DESTINATION "${CMAKE_SOURCE_DIR}/build")
+
+    file(READ_SYMLINK "${EXIV2_LIBRARY}" result)
+    file(COPY "${EXIV2_INCLUDE_DIR}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+    file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
+    file(COPY "${EXIV2_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+    file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+
+    if(IS_SYMLINK "${JPEG_LIBRARY_RELEASE}")
+        file(READ_SYMLINK "${JPEG_LIBRARY_RELEASE}" result)
+        file(COPY "${JPEG_INCLUDE_DIR}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+        if(IS_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+            file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
+            file(COPY "${JPEG_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+            file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+        endif()  
+    endif()
+
+    if(IS_SYMLINK "${TIFF_LIBRARY_RELEASE}")
+        file(READ_SYMLINK "${TIFF_LIBRARY_RELEASE}" result)
+        file(COPY "${TIFF_INCLUDE_DIR}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+        if(IS_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+            file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
+            file(COPY "${TIFF_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+            file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+        endif()
+    endif()
+
+    file(COPY "${RTPROCESS_LIBRARIES}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+    file(COPY "${OpenMP_libomp_LIBRARY}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+
 else()
     install(TARGETS filmulator
         RUNTIME
@@ -164,4 +186,3 @@ else()
 endif()
 
 add_subdirectory(qml)
-

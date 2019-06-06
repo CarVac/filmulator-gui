@@ -17,8 +17,12 @@ if(APPLE)
             SlipperySlider.qml
             ToolRadioButtonStyle.qml
         DESTINATION
-            ${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Resources/qml/filmulator-gui/gui_components
+            Filmulator.app/Contents/Resources/qml/filmulator-gui/gui_components
     )
+
+    install(CODE "execute_process(COMMAND install_name_tool -add_rpath @loader_path/../Frameworks Filmulator.app/Contents/MacOS/filmulator)")
+    install(CODE "execute_process(COMMAND $ENV{QT}/bin/macdeployqt Filmulator.app -executable=Filmulator.app/Contents/MacOS/filmulator -no-strip -verbose=3 -qmldir=Filmulator.app/Contents/Resources/qml)")
+
 else()
     INSTALL(
         FILES
