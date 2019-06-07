@@ -46,54 +46,6 @@ set(filmulator_SRCS
     core/filmulate.cpp
     core/imagePipeline.cpp
     core/imload.cpp
-    core/imread.cppcmake_minimum_required(VERSION 3.5)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-
-include(DefineCMakeDefaults)
-
-project(Filmulator VERSION 1.0.0 LANGUAGES CXX)
-
-include(GNUInstallDirs)
-include(CompilerChecks.cmake)
-
-# Find includes in corresponding build directories
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Instruct CMake to run moc automatically when needed
-set(CMAKE_AUTOMOC ON)
-# Create code from a list of Qt designer ui files
-#set(CMAKE_AUTOUIC ON)
-
-find_package(Qt5Core CONFIG REQUIRED)
-find_package(Qt5Widgets CONFIG REQUIRED)
-find_package(Qt5Quick CONFIG REQUIRED)
-find_package(Qt5Sql CONFIG REQUIRED)
-find_package(Qt5Qml CONFIG REQUIRED)
-# find_package(Qt5LinguistTools CONFIG REQUIRED)
-
-find_package(rtprocess CONFIG REQUIRED)
-find_package(Exiv2 0.25 REQUIRED)
-find_package(libraw REQUIRED)
-find_package(JPEG REQUIRED)
-find_package(TIFF REQUIRED)
-find_package(OpenMP REQUIRED)
-
-# Checks for config.h
-include(ConfigureChecks.cmake)
-configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
-set(filmulator_SRCS
-    main.cpp
-    core/agitate.cpp
-    core/colorCurves.cpp
-    core/colorSpaces.cpp
-    core/curves.cpp
-    core/develop.cpp
-    core/diffuse.cpp
-    core/exposure.cpp
-    core/filmulate.cpp
-    core/imagePipeline.cpp
-    core/imload.cpp
     core/imread.cpp
     core/imreadJpeg.cpp
     core/imreadTiff.cpp
