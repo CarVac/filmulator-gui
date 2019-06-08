@@ -96,7 +96,6 @@ else()
 add_executable(filmulator
     ${filmulator_SRCS}
     ${filmulator_RSCS}
-
 )
 endif()
 
@@ -142,11 +141,14 @@ if(APPLE)
     file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/qt.conf" DESTINATION "./Filmulator.app/Contents/Resources")
     set(CMAKE_OSX_ARCHITECTURES x86_64)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build")
-    set_target_properties(filmulator PROPERTIES MACOSX_BUNDLE TRUE MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/resources/macos/Info.plist")
-    set(MACOSX_BUNDLE_RESOURCES  "./Filmulator.app/Contents/Resources")
+    file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/Info.plist.in" DESTINATION "."
     set_source_files_properties(${CMAKE_SOURCE_DIR}/resources/macos/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Filmulator.app/Contents/Resources")
     set(filmulator ${filmulator} "${CMAKE_SOURCE_DIR}/resources/macos/Icon.icns")
     install(TARGETS filmulator BUNDLE DESTINATION "${CMAKE_SOURCE_DIR}/build")
+    execute_process(COMMAND plutil -replace CFBundleGetInfoString -string "${PROJECT_NAME} ${PROJECT_VERSION}" ./Info.plist.in)
+    execute_process(COMMAND plutil -replace CFBundleVersion -string "${PROJECT_VERSION}" ./Info.plist.in)
+    execute_process(COMMAND plutil -replace LSMinimumSystemVersion -string "${CMAKE_OSX_DEPLOYMENT_TARGET}" ./Info.plist.in)
+    set_target_properties(filmulator PROPERTIES MACOSX_BUNDLE TRUE MACOSX_BUNDLE_INFO_PLIST ./Info.plist.in)
 
     file(READ_SYMLINK "${EXIV2_LIBRARY}" result)
     file(COPY "${EXIV2_INCLUDE_DIR}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
@@ -161,7 +163,7 @@ if(APPLE)
             file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
             file(COPY "${JPEG_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
             file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
-        endif()  
+        endif()
     endif()
 
     if(IS_SYMLINK "${TIFF_LIBRARY_RELEASE}")
