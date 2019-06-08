@@ -24,7 +24,7 @@ find_package(Qt5Qml CONFIG REQUIRED)
 # find_package(Qt5LinguistTools CONFIG REQUIRED)
 
 find_package(rtprocess CONFIG REQUIRED)
-find_package(Exiv2 0.25 REQUIRED)
+find_package(exiv2 0.25 REQUIRED)
 find_package(libraw REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
