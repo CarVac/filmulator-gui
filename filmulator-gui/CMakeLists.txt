@@ -141,7 +141,7 @@ if(APPLE)
     file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/qt.conf" DESTINATION "./Filmulator.app/Contents/Resources")
     set(CMAKE_OSX_ARCHITECTURES x86_64)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build")
-    file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/Info.plist.in" DESTINATION "."
+    file(COPY "${CMAKE_SOURCE_DIR}/resources/macos/Info.plist.in" DESTINATION ".")
     set_source_files_properties(${CMAKE_SOURCE_DIR}/resources/macos/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Filmulator.app/Contents/Resources")
     set(filmulator ${filmulator} "${CMAKE_SOURCE_DIR}/resources/macos/Icon.icns")
     install(TARGETS filmulator BUNDLE DESTINATION "${CMAKE_SOURCE_DIR}/build")
