@@ -106,7 +106,7 @@ Rectangle {
         id: dirDialog
         selectFolder: true
         onAccepted: {
-            root.enteredText = fileUrl.toString().substring(7)
+            root.enteredText = fileUrl.toString().substring(Qt.platform.os == "windows" ? 8 : 7)
         }
     }
 

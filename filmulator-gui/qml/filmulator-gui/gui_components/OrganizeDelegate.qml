@@ -17,7 +17,7 @@ Rectangle {
     property string filename
     property int thumbWritten
 
-    property string __thumbPath: rootDir + '/'+ searchID.slice(0,4) + '/' + searchID + '.jpg'
+    property string __thumbPath: 'file://' + rootDir + '/'+ searchID.slice(0,4) + '/' + searchID + '.jpg'
 
     signal tooltipWanted(string text, int x, int y)
     signal selectImage()

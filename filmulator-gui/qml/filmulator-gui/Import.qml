@@ -137,6 +137,7 @@ Rectangle {
             onEnteredTextChanged: {
                 root.filePath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, true)
+                invalid = false //If it was invalid, we need to at least let them try to import again once they change the contents
             }
             Connections {
                 target: importModel

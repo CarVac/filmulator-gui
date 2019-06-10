@@ -134,7 +134,8 @@ void OrganizeModel::setDateHistoQuery()
 
 QString OrganizeModel::thumbDir()
 {
-    QDir homeDir = QDir::home();
+    //QDir homeDir = QDir::home();
+    QDir homeDir(QDir::homePath());
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/thumbs");
     if (homeDir.cd(dirstr))
@@ -149,6 +150,7 @@ QString OrganizeModel::thumbDir()
         } else {
         }
     }
+    cout << "home directory: " << homeDir.absolutePath().toStdString() << endl;//for debugging windows
     return homeDir.absolutePath();
 }
 

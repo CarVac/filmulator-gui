@@ -190,14 +190,19 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
 {
 
     //Check for "url://" at the beginning
+    //On Windows, for some reason there's an extra / that must be removed
+#ifdef Q_OS_WIN
+    const int count = name.startsWith("file://") ? 8 : 0;
+#else
     const int count = name.startsWith("file://") ? 7 : 0;
+#endif
 
     //Then check that it's a real file.
     const QFileInfo file = QFileInfo(name.mid(count));
     if (!file.isFile())
     {
         cout << "File not found: " << name.toStdString() << endl;
-        cout << "Count: " << count << endl;
+        cout << "# chars removed: " << count << endl;
         invalidFile = true;
         emit invalidFileChanged();
         return Validity::invalid;
