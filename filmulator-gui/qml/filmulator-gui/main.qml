@@ -277,7 +277,7 @@ ApplicationWindow {
 
                 Item {
                     x: 0
-                    y: 1 * uiScale
+                    y: 0.5 * uiScale
                     width: parent.width
                     height: (parent.height/2)*1.1
                     Text {
