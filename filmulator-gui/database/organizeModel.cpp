@@ -141,6 +141,7 @@ QString OrganizeModel::thumbDir()
 #ifdef Q_OS_WIN
     dirstr.prepend("/");//windows needs a / before the drive letter
 #endif
+    cout << "dirstring: " << dirstr.toStdString() << endl;
     if (homeDir.cd(dirstr))
     {
     } else {
@@ -149,11 +150,12 @@ QString OrganizeModel::thumbDir()
             if (homeDir.cd(dirstr))
             {
             } else {
+                cout << "cannot create thumb directory" << endl;
             }
         } else {
         }
     }
-    return homeDir.absolutePath();
+    return dirstr;
 }
 
 void OrganizeModel::setRating(QString searchID, int rating)
