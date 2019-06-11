@@ -113,6 +113,12 @@ int main(int argc, char *argv[])
             engine.load(qmlfile);
         }
     } 
+    else if (QFile(app.applicationDirPath() + "/qml/filmulator-gui/main.qml").exists())
+    {
+        cout << "loading UI from copy in directory 2" << endl;
+        cout << app.applicationDirPath().toStdString() << "/qml/filmulator-gui/main.qml" << endl;
+        engine.load(app.applicationDirPath() + "/qml/filmulator-gui/main.qml");
+    }
 #if defined(Q_OS_MACX)
     else if (QFile("$HOME/filmulator-gui/filmulator-gui/Filmulator.app/Contents/Resources/qml/filmulator-gui/main.qml").exists())
 #else
