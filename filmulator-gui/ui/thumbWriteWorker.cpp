@@ -61,6 +61,7 @@ bool ThumbWriteWorker::writeThumb(QString searchID)
         dir.cd(thumbDir);
     }
     QString outputFilename = dir.absoluteFilePath(searchID);
+    cout << "Thumbnail being written to: " << outputFilename.toStdString() << endl;
 
     //Then we write.
     imwrite_jpeg(gammaCurved, outputFilename.toStdString(), exifData, 95);
