@@ -138,6 +138,9 @@ QString OrganizeModel::thumbDir()
     QDir homeDir(QDir::homePath());
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/thumbs");
+#ifdef Q_OS_WIN
+    dirstr.prepend("/");//windows needs a / before the drive letter
+#endif
     if (homeDir.cd(dirstr))
     {
     } else {
@@ -150,7 +153,6 @@ QString OrganizeModel::thumbDir()
         } else {
         }
     }
-    cout << "home directory: " << homeDir.absolutePath().toStdString() << endl;//for debugging windows
     return homeDir.absolutePath();
 }
 
