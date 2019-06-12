@@ -22,7 +22,7 @@ Item {
     property bool rightClicked: false
     property bool held
 
-    property string __thumbPath: 'file://' + rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
+    property string __thumbPath: (Qt.platform.os == "windows" ? 'file:///' : 'file://') + rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
 
     property bool __current: searchID===selectedID
     property bool __waitingForThumb: false
