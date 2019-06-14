@@ -5,7 +5,7 @@ import QtQuick.Window 2.9
 import "gui_components"
 import "colors.js" as Colors
 
-SplitView {
+SlimSplitView {
     id: root
     anchors.fill: parent
     orientation: Qt.Horizontal

@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.1
 import "gui_components"
 import "colors.js" as Colors
 
-SplitView {
+SlimSplitView {
     id: root
     anchors.fill: parent
     orientation: Qt.Horizontal
@@ -167,7 +167,7 @@ SplitView {
         }
     }
 
-    SplitView {
+    SlimSplitView {
         id: dateHistoSplit
         orientation: Qt.Vertical
         Layout.fillWidth: true

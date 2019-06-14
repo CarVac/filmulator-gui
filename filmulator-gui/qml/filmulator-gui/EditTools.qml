@@ -5,7 +5,7 @@ import "gui_components"
 import "generateHistogram.js" as Script
 import "colors.js" as Colors
 
-SplitView {
+SlimSplitView {
     id: root
     property real uiScale: 1
     //width: 250
