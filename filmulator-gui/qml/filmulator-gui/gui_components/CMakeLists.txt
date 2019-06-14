@@ -15,6 +15,7 @@ if(APPLE)
             QueueDelegate.qml
             ToolTip.qml
             SlipperySlider.qml
+            SlimSplitView.qml
             ToolRadioButtonStyle.qml
         DESTINATION
             Filmulator.app/Contents/Resources/qml/filmulator-gui/gui_components
@@ -40,6 +41,7 @@ elseif(WIN32)
             QueueDelegate.qml
             ToolTip.qml
             SlipperySlider.qml
+            SlimSplitView.qml
             ToolRadioButtonStyle.qml
         DESTINATION
             ${CMAKE_INSTALL_BINDIR}/qml/filmulator-gui/gui_components
@@ -62,6 +64,7 @@ else()
             QueueDelegate.qml
             ToolTip.qml
             SlipperySlider.qml
+            SlimSplitView.qml
             ToolRadioButtonStyle.qml
         DESTINATION
             ${CMAKE_INSTALL_DATADIR}/Filmulator/qml/filmulator-gui/gui_components
