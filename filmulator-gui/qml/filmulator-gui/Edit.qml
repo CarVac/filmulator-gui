@@ -1700,7 +1700,7 @@ SlimSplitView {
 
         ToolButton {
             id: rotateRight
-            anchors.right: fitscreen.left
+            anchors.right: parent.right
             y: 0 * uiScale
             width: 90 * uiScale
             text: qsTr("Rotate Right")
@@ -1710,73 +1710,6 @@ SlimSplitView {
             uiScale: root.uiScale
         }
 
-        ToolButton {
-            id: fitscreen
-            anchors.right: fullzoom.left
-            y: 0 * uiScale
-            text: qsTr("Fit")
-            onTriggered: {
-                if(bottomImage.width != 0 && bottomImage.height != 0) {
-                    bottomImage.scale = flicky.fitScale
-                }
-                else {
-                    bottomImage.scale = 1
-                }
-                flicky.returnToBounds()
-                flicky.fit = true
-            }
-            uiScale: root.uiScale
-        }
-        ToolButton {
-            id: fullzoom
-            anchors.right: zoomin.left
-            y: 0 * uiScale
-            text: "1:1"
-            onTriggered: {
-                var oldCenterX = flicky.centerX
-                var oldCenterY = flicky.centerY
-                bottomImage.scale = 1
-                flicky.contentX = oldCenterX*1 -  bottomImage.width*Math.min(1, flicky.fitScaleX) / 2
-                flicky.contentY = oldCenterY*1 - bottomImage.height*Math.min(1, flicky.fitScaleY) / 2
-                if (bottomImage.scale == flicky.fitScale){flicky.fit = true}
-                else {flicky.fit = false}
-            }
-            uiScale: root.uiScale
-        }
-        ToolButton {
-            id: zoomin
-            anchors.right: zoomout.left
-            y: 0 * uiScale
-            text: "+"
-            onTriggered: {
-                var oldCenterX = flicky.centerX
-                var oldCenterY = flicky.centerY
-                bottomImage.scale *= 1.2
-                flicky.contentX = oldCenterX*bottomImage.scale -  bottomImage.width*Math.min(bottomImage.scale, flicky.fitScaleX) / 2
-                flicky.contentY = oldCenterY*bottomImage.scale - bottomImage.height*Math.min(bottomImage.scale, flicky.fitScaleY) / 2
-                if (bottomImage.scale == flicky.fitScale){flicky.fit = true}
-                else {flicky.fit = false}
-            }
-            uiScale: root.uiScale
-        }
-        ToolButton {
-            id: zoomout
-            anchors.right: parent.right
-            y: 0 * uiScale
-            text: "-"
-            onTriggered: {
-                var oldCenterX = flicky.centerX
-                var oldCenterY = flicky.centerY
-                bottomImage.scale /= 1.2
-                var tempScale = Math.max(bottomImage.scale, flicky.fitScale)
-                flicky.contentX = oldCenterX*tempScale -  bottomImage.width*Math.min(tempScale, flicky.fitScaleX) / 2
-                flicky.contentY = oldCenterY*tempScale - bottomImage.height*Math.min(tempScale, flicky.fitScaleY) / 2
-                flicky.returnToBounds()
-                if (bottomImage.scale == flicky.fitScale) {flicky.fit = true}
-                else {flicky.fit = false}
-            }
-            uiScale: root.uiScale
-        }
         FilmProgressBar {
             id: progressBar
             visible: true
