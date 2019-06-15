@@ -257,7 +257,6 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.exec("PRAGMA user_version;");
     query.next();
     const int oldVersion = query.value(0).toInt();
-    std::cout << "dbSetup old version: " << oldVersion << std::endl;
     QString versionString = ";";
 
     query.exec("BEGIN TRANSACTION;");//begin a transaction
@@ -286,6 +285,7 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers f;");
                    */
         versionString = "PRAGMA user_version = 1;";
+        std::cout << "Upgrading from old db version 0" << std::endl;
         [[fallthrough]];
     case 1:
         /*
@@ -304,6 +304,7 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers d;");
                    */
         versionString = "PRAGMA user_version = 2;";
+        std::cout << "Upgrading from old db version 1" << std::endl;
         [[fallthrough]];
     case 2:
         query.exec("DROP TABLE QueueTable;");
@@ -314,22 +315,26 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "QToutput bool,"
                    "QTsearchID varchar unique);");
         versionString = "PRAGMA user_version = 3;";
+        std::cout << "Upgrading from old db version 2" << std::endl;
         [[fallthrough]];
     case 3:
         query.exec("DROP VIEW integers9;");
         query.exec("DROP VIEW integers4;");
         query.exec("DROP VIEW integers3;");
         versionString = "PRAGMA user_version = 4;";
+        std::cout << "Upgrading from old db version 3" << std::endl;
         [[fallthrough]];
     case 4:
         query.exec("ALTER TABLE SearchTable "
                    "ADD COLUMN STimportStartTime integer;");
         query.exec("UPDATE SearchTable SET STimportStartTime = STimportTime;");
         versionString = "PRAGMA user_version = 5;";
+        std::cout << "Upgrading from old db version 4" << std::endl;
         [[fallthrough]];
     case 5:
         query.exec("UPDATE SearchTable SET STrating = min(5,max(0,STrating));");
         versionString = "PRAGMA user_version = 6;";
+        std::cout << "Upgrading from old db version 5" << std::endl;
         [[fallthrough]];
     case 6:
         query.exec("ALTER TABLE SearchTable "
@@ -339,12 +344,14 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE SearchTable SET STthumbWritten = 1;");
         query.exec("UPDATE SearchTable SET STbigThumbWritten = 0;");
         versionString = "PRAGMA user_version = 7;";
+        std::cout << "Upgrading from old db version 6" << std::endl;
         [[fallthrough]];
     case 7:
         query.exec("ALTER TABLE QueueTable "
                    "ADD COLUMN QTsortedIndex;");
         query.exec("UPDATE QueueTable SET QTsortedIndex = QTindex;");
         versionString = "PRAGMA user_version = 8;";
+        std::cout << "Upgrading from old db version 7" << std::endl;
         [[fallthrough]];
     case 8:
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropHeight;");
@@ -356,6 +363,7 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProcessingTable SET ProcTcropVoffset = 0;");
         query.exec("UPDATE ProcessingTable SET ProcTcropHoffset = 0;");
         versionString = "PRAGMA user_version = 9;";
+        std::cout << "Upgrading from old db version 8" << std::endl;
         [[fallthrough]];
     case 9:
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTmonochrome;");
@@ -375,6 +383,7 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProfileTable SET ProfTbwGmult = 0.78");
         query.exec("UPDATE ProfileTable SET ProfTbwBmult = 0.07");
         versionString = "PRAGMA user_version = 10;";
+        std::cout << "Upgrading from old db version 9" << std::endl;
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

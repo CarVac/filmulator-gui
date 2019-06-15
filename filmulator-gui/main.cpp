@@ -31,8 +31,6 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     char* appdir = getenv("APPDIR");
-    printf("APPDIR: %s\n", appdir);
-    //getchar();
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
@@ -109,16 +107,17 @@ int main(int argc, char *argv[])
 #endif
         if (QFile(qmlfile).exists())
         {
-            cout << "loading UI from copy in appdir directory" << endl;
+            //cout << "loading UI from copy in appdir directory" << endl;
             engine.load(qmlfile);
         }
     } 
     else if (QFile(app.applicationDirPath() + "/qml/filmulator-gui/main.qml").exists())
     {
-        cout << "loading UI from copy in directory 2" << endl;
-        cout << app.applicationDirPath().toStdString() << "/qml/filmulator-gui/main.qml" << endl;
+        //cout << "loading UI from copy in directory" << endl;
+        //cout << app.applicationDirPath().toStdString() << "/qml/filmulator-gui/main.qml" << endl;
         engine.load(app.applicationDirPath() + "/qml/filmulator-gui/main.qml");
     }
+    /*
 #if defined(Q_OS_MACX)
     else if (QFile("$HOME/filmulator-gui/filmulator-gui/Filmulator.app/Contents/Resources/qml/filmulator-gui/main.qml").exists())
 #else
@@ -128,10 +127,11 @@ int main(int argc, char *argv[])
         cout << "loading UI from copy in directory" << endl;
         engine.load("qml/filmulator-gui/main.qml");
     }
+    */
     else if (QFile(QString(FILMULATOR_DATADIR) + "/qml/filmulator-gui/main.qml").exists())//when using cmake
     {
-        cout << "loading ui from datadir" << endl;
-        cout << FILMULATOR_DATADIR << "/qml/filmulator-gui/main.qml" << endl;
+        //cout << "loading ui from datadir" << endl;
+        //cout << FILMULATOR_DATADIR << "/qml/filmulator-gui/main.qml" << endl;
         engine.load(QString(FILMULATOR_DATADIR) + "/qml/filmulator-gui/main.qml");
     }
     else
