@@ -109,8 +109,11 @@ SlimSplitView {
                     tickmarksEnabled: true
                     value: paramManager.highlights
                     defaultValue: paramManager.defHighlights
+                    property bool bindingLoopCutoff: true
                     onValueChanged: {
-                        paramManager.highlights = value
+                        if (!bindingLoopCutoff) {
+                            paramManager.highlights = value
+                        }
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
@@ -124,6 +127,7 @@ SlimSplitView {
                     }
                     Component.onCompleted: {
                         highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale
                 }

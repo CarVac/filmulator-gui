@@ -58,13 +58,11 @@ Rectangle {
                 from: "black"
                 to: Colors.darkOrange
                 duration: 1000
-                easing: easing.InQuart
             }
             ColorAnimation {
                 from: Colors.darkOrange
                 to: "black"
                 duration: 1000
-                easing: easing.OutQuart
             }
         }
 

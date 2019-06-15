@@ -53,8 +53,12 @@ QString createNewProfile(const QString fileHash,
     query.prepare("SELECT FTusageIncrement FROM FileTable WHERE (FTfileID = ?);");
     query.bindValue(0, fileHash);
     query.exec();
-    query.next();
-    int increment = query.value(0).toInt();
+    const bool success = query.next();
+    int increment = 0;
+    if (success)
+    {
+        increment = query.value(0).toInt();
+    }
     increment++;
     query.prepare("UPDATE FileTable SET FTusageIncrement = ? WHERE FTfileID = ?;");
     query.bindValue(0, increment);

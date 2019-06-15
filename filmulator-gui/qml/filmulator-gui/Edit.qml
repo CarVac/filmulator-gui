@@ -1769,19 +1769,17 @@ SlimSplitView {
             color: "black"
             SequentialAnimation on color {
                 id: pulseColor
-                running: root.erroneous
+                running: true
                 loops: Animation.Infinite
                 ColorAnimation {
                     from: "black"
                     to: Colors.darkOrange
                     duration: 1000
-                    easing: easing.InQuart
                 }
                 ColorAnimation {
                     from: Colors.darkOrange
                     to: "black"
                     duration: 1000
-                    easing: easing.OutQuart
                 }
             }
             visible: parent.loadingError

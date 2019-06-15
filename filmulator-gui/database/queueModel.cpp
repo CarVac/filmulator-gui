@@ -57,8 +57,13 @@ void QueueModel::resetIndex()
     QSqlDatabase db = getDB();
     QSqlQuery query(db);
     query.exec("SELECT COUNT(QTindex) FROM QueueTable;");
-    query.next();
-    maxIndex = query.value(0).toInt();
+    const bool success = query.next();
+    if (success)
+    {
+        maxIndex = query.value(0).toInt();
+    } else {
+        maxIndex = 0;
+    }
 }
 
 void QueueModel::deQueue(const QString searchID)
@@ -127,10 +132,14 @@ void QueueModel::enQueue(const QString searchID)
     query.prepare("SELECT COUNT(*) FROM QueueTable WHERE QTsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
-    query.next();
-    const bool alreadyInqueue = query.value(0).toInt() == 1;
+    const bool success = query.next();
+    bool alreadyInQueue = false;
+    if (success)
+    {
+        alreadyInQueue = query.value(0).toInt() == 1;
+    }
 
-    if (alreadyInqueue)
+    if (alreadyInQueue)
     {
         //do nothingg
     }

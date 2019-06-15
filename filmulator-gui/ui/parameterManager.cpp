@@ -8,6 +8,7 @@ using std::endl;
 
 ParameterManager::ParameterManager() : QObject(0)
 {
+    justInitialized = true;
     paramChangeEnabled = true;
 
     //Load the defaults, copy to the parameters, there's no filename yet.
@@ -83,24 +84,30 @@ Valid ParameterManager::markLoadComplete()
 
 void ParameterManager::setTiffIn(bool tiffIn)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_tiffIn = tiffIn;
-    validity = min(validity, Valid::none);
-    paramLocker.unlock();
-    emit tiffInChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setTiff"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_tiffIn = tiffIn;
+        validity = min(validity, Valid::none);
+        paramLocker.unlock();
+        emit tiffInChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setTiff"));
+    }
 }
 
 void ParameterManager::setJpegIn(bool jpegIn)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_jpegIn = jpegIn;
-    validity = min(validity, Valid::none);
-    paramLocker.unlock();
-    emit jpegInChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setJpeg"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_jpegIn = jpegIn;
+        validity = min(validity, Valid::none);
+        paramLocker.unlock();
+        emit jpegInChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setJpeg"));
+    }
 }
 
 std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimDemosaicParams()
@@ -165,24 +172,30 @@ Valid ParameterManager::markDemosaicComplete()
 
 void ParameterManager::setCaEnabled(bool caEnabled)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_caEnabled = caEnabled;
-    validity = min(validity, Valid::load);
-    paramLocker.unlock();
-    emit caEnabledChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setCaEnabled"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_caEnabled = caEnabled;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        emit caEnabledChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setCaEnabled"));
+    }
 }
 
 void ParameterManager::setHighlights(int highlights)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_highlights = highlights;
-    validity = min(validity, Valid::load);
-    paramLocker.unlock();
-    emit highlightsChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setHighlights"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_highlights = highlights;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        emit highlightsChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setHighlights"));
+    }
 }
 
 std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
@@ -244,35 +257,44 @@ Valid ParameterManager::markPrefilmComplete()
 
 void ParameterManager::setExposureComp(float exposureComp)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_exposureComp = exposureComp;
-    validity = min(validity, Valid::demosaic);
-    paramLocker.unlock();
-    emit exposureCompChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setExposureComp"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_exposureComp = exposureComp;
+        validity = min(validity, Valid::demosaic);
+        paramLocker.unlock();
+        emit exposureCompChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setExposureComp"));
+    }
 }
 
 void ParameterManager::setTemperature(float temperature)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_temperature = temperature;
-    validity = min(validity, Valid::demosaic);
-    paramLocker.unlock();
-    emit temperatureChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setTemperature"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_temperature = temperature;
+        validity = min(validity, Valid::demosaic);
+        paramLocker.unlock();
+        emit temperatureChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setTemperature"));
+    }
 }
 
 void ParameterManager::setTint(float tint)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_tint = tint;
-    validity = min(validity, Valid::demosaic);
-    paramLocker.unlock();
-    emit tintChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setTint"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_tint = tint;
+        validity = min(validity, Valid::demosaic);
+        paramLocker.unlock();
+        emit tintChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setTint"));
+    }
 }
 
 std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
@@ -349,189 +371,240 @@ Valid ParameterManager::markFilmComplete()
 
 void ParameterManager::setInitialDeveloperConcentration(float initialDeveloperConcentration)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_initialDeveloperConcentration = initialDeveloperConcentration;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit initialDeveloperConcentrationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setInitialDeveloperConcentration"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_initialDeveloperConcentration = initialDeveloperConcentration;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit initialDeveloperConcentrationChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setInitialDeveloperConcentration"));
+    }
 }
 
 void ParameterManager::setReservoirThickness(float reservoirThickness)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_reservoirThickness = reservoirThickness;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit reservoirThicknessChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setReservoirThickness"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_reservoirThickness = reservoirThickness;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit reservoirThicknessChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setReservoirThickness"));
+    }
 }
 
 void ParameterManager::setActiveLayerThickness(float activeLayerThickness)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_activeLayerThickness = activeLayerThickness;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit activeLayerThicknessChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setActiveLayerThickness"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_activeLayerThickness = activeLayerThickness;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit activeLayerThicknessChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setActiveLayerThickness"));
+    }
 }
 
 void ParameterManager::setCrystalsPerPixel(float crystalsPerPixel)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_crystalsPerPixel = crystalsPerPixel;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit crystalsPerPixelChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setCrystalsPerPixel"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_crystalsPerPixel = crystalsPerPixel;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit crystalsPerPixelChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setCrystalsPerPixel"));
+    }
 }
 
 void ParameterManager::setInitialCrystalRadius(float initialCrystalRadius)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_initialCrystalRadius = initialCrystalRadius;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit initialCrystalRadiusChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setInitialCrystalRadius"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_initialCrystalRadius = initialCrystalRadius;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit initialCrystalRadiusChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setInitialCrystalRadius"));
+    }
 }
 
 void ParameterManager::setInitialSilverSaltDensity(float initialSilverSaltDensity)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_initialSilverSaltDensity = initialSilverSaltDensity;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit initialSilverSaltDensityChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setInitialSilverSaltDensity"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_initialSilverSaltDensity = initialSilverSaltDensity;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit initialSilverSaltDensityChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setInitialSilverSaltDensity"));
+    }
 }
 
 void ParameterManager::setDeveloperConsumptionConst(float developerConsumptionConst)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_developerConsumptionConst = developerConsumptionConst;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit developerConsumptionConstChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setDeveloperConsumptionConst"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_developerConsumptionConst = developerConsumptionConst;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit developerConsumptionConstChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setDeveloperConsumptionConst"));
+    }
 }
 
 void ParameterManager::setCrystalGrowthConst(float crystalGrowthConst)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_crystalGrowthConst = crystalGrowthConst;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit crystalGrowthConstChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setCrystalGrowthConst"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_crystalGrowthConst = crystalGrowthConst;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit crystalGrowthConstChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setCrystalGrowthConst"));
+    }
 }
 
 void ParameterManager::setSilverSaltConsumptionConst(float silverSaltConsumptionConst)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_silverSaltConsumptionConst = silverSaltConsumptionConst;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit silverSaltConsumptionConstChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setSilverSaltConsumptionConst"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_silverSaltConsumptionConst = silverSaltConsumptionConst;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit silverSaltConsumptionConstChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setSilverSaltConsumptionConst"));
+    }
 }
 
 void ParameterManager::setTotalDevelopmentTime(float totalDevelopmentTime)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_totalDevelopmentTime = totalDevelopmentTime;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit totalDevelopmentTimeChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setTotalDevelopmentTime"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_totalDevelopmentTime = totalDevelopmentTime;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit totalDevelopmentTimeChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setTotalDevelopmentTime"));
+    }
 }
 
 void ParameterManager::setAgitateCount(int agitateCount)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_agitateCount = agitateCount;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit agitateCountChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setAgitateCount"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_agitateCount = agitateCount;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit agitateCountChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setAgitateCount"));
+    }
 }
 
 void ParameterManager::setDevelopmentSteps(int developmentSteps)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_developmentSteps = developmentSteps;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit developmentStepsChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setDevelopmentSteps"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_developmentSteps = developmentSteps;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit developmentStepsChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setDevelopmentSteps"));
+    }
 }
 
 void ParameterManager::setFilmArea(float filmArea)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_filmArea = filmArea;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit filmAreaChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setFilmArea"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_filmArea = filmArea;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit filmAreaChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setFilmArea"));
+    }
 }
 
 void ParameterManager::setSigmaConst(float sigmaConst)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_sigmaConst = sigmaConst;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit sigmaConstChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setSigmaConst"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_sigmaConst = sigmaConst;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit sigmaConstChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setSigmaConst"));
+    }
 }
 
 void ParameterManager::setLayerMixConst(float layerMixConst)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_layerMixConst = layerMixConst;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit layerMixConstChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setLayerMixConst"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_layerMixConst = layerMixConst;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit layerMixConstChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setLayerMixConst"));
+    }
 }
 
 void ParameterManager::setLayerTimeDivisor(float layerTimeDivisor)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_layerTimeDivisor = layerTimeDivisor;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit layerTimeDivisorChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setLayerTimeDivisor"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_layerTimeDivisor = layerTimeDivisor;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit layerTimeDivisorChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setLayerTimeDivisor"));
+    }
 }
 
 void ParameterManager::setRolloffBoundary(float rolloffBoundary)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_rolloffBoundary = rolloffBoundary;
-    validity = min(validity, Valid::prefilmulation);
-    paramLocker.unlock();
-    emit rolloffBoundaryChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setRolloffBoundary"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_rolloffBoundary = rolloffBoundary;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit rolloffBoundaryChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRolloffBoundary"));
+    }
 }
 
 std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhiteParams()
@@ -596,113 +669,140 @@ Valid ParameterManager::markBlackWhiteComplete()
 
 void ParameterManager::setBlackpoint(float blackpoint)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_blackpoint = blackpoint;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit blackpointChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setBlackpoint"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_blackpoint = blackpoint;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit blackpointChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setBlackpoint"));
+    }
 }
 
 void ParameterManager::setWhitepoint(float whitepoint)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_whitepoint = whitepoint;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit whitepointChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setWhitepoint"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_whitepoint = whitepoint;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit whitepointChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setWhitepoint"));
+    }
 }
 
 void ParameterManager::setCropHeight(float cropHeight)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_cropHeight = cropHeight;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit cropHeightChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setCropHeight"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_cropHeight = cropHeight;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit cropHeightChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setCropHeight"));
+    }
 }
 
 void ParameterManager::setCropAspect(float cropAspect)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_cropAspect = cropAspect;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit cropHeightChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setCropAspect"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_cropAspect = cropAspect;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit cropHeightChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setCropAspect"));
+    }
 }
 
 void ParameterManager::setCropVoffset(float cropVoffset)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_cropVoffset = cropVoffset;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit cropHeightChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setCropVoffset"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_cropVoffset = cropVoffset;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit cropHeightChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setCropVoffset"));
+    }
 }
 
 void ParameterManager::setCropHoffset(float cropHoffset)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_cropHoffset = cropHoffset;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit cropHeightChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setCropHoffset"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_cropHoffset = cropHoffset;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit cropHeightChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setCropHoffset"));
+    }
 }
 
 void ParameterManager::setRotation(int rotation)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setRotation"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_rotation = rotation;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit rotationChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotation"));
+    }
 }
 
 void ParameterManager::rotateRight()
 {
-    QMutexLocker paramLocker(&paramMutex);
-    int rotation = m_rotation - 1;
-    if (rotation < 0)
+    if (!justInitialized)
     {
-        rotation += 4;
+        QMutexLocker paramLocker(&paramMutex);
+        int rotation = m_rotation - 1;
+        if (rotation < 0)
+        {
+            rotation += 4;
+        }
+        m_rotation = rotation;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit rotationChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("rotateRight"));
+        writeback();//Normally the slider has to call this when released, but this isn't a slider.
     }
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("rotateRight"));
-    writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
 void ParameterManager::rotateLeft()
 {
-    QMutexLocker paramLocker(&paramMutex);
-    int rotation = m_rotation + 1;
-    if (rotation > 3)
+    if (!justInitialized)
     {
-        rotation -= 4;
+        QMutexLocker paramLocker(&paramMutex);
+        int rotation = m_rotation + 1;
+        if (rotation > 3)
+        {
+            rotation -= 4;
+        }
+        m_rotation = rotation;
+        validity = min(validity, Valid::filmulation);
+        paramLocker.unlock();
+        emit rotationChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("rotateLeft"));
+        writeback();//Normally the slider has to call this when released, but this isn't a slider.
     }
-    m_rotation = rotation;
-    validity = min(validity, Valid::filmulation);
-    paramLocker.unlock();
-    emit rotationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("rotateLeft"));
-    writeback();//Normally the slider has to call this when released, but this isn't a slider.
 }
 
 Valid ParameterManager::markColorCurvesComplete()
@@ -784,112 +884,142 @@ Valid ParameterManager::markFilmLikeCurvesComplete()
 
 void ParameterManager::setShadowsX(float shadowsX)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_shadowsX = shadowsX;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit shadowsXChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setShadowsX"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_shadowsX = shadowsX;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit shadowsXChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setShadowsX"));
+    }
 }
 
 void ParameterManager::setShadowsY(float shadowsY)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_shadowsY = shadowsY;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit shadowsYChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setShadowsY"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_shadowsY = shadowsY;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit shadowsYChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setShadowsY"));
+    }
 }
 
 void ParameterManager::setHighlightsX(float highlightsX)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_highlightsX = highlightsX;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit highlightsXChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setHighlightsX"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_highlightsX = highlightsX;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit highlightsXChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setHighlightsX"));
+    }
 }
 
 void ParameterManager::setHighlightsY(float highlightsY)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_highlightsY = highlightsY;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit highlightsYChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setHighlightsY"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_highlightsY = highlightsY;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit highlightsYChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setHighlightsY"));
+    }
 }
 
 void ParameterManager::setVibrance(float vibrance)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_vibrance = vibrance;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit vibranceChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setVibrance"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_vibrance = vibrance;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit vibranceChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setVibrance"));
+    }
 }
 
 void ParameterManager::setSaturation(float saturation)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_saturation = saturation;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit saturationChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setSaturation"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_saturation = saturation;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit saturationChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setSaturation"));
+    }
 }
 
 void ParameterManager::setMonochrome(bool monochrome)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_monochrome = monochrome;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit monochromeChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setMonochrome"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_monochrome = monochrome;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit monochromeChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setMonochrome"));
+    }
 }
 
 void ParameterManager::setBwRmult(float Rmult)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_bwRmult = Rmult;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit bwRmultChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setBwRmult"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_bwRmult = Rmult;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit bwRmultChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setBwRmult"));
+    }
 }
 
 void ParameterManager::setBwGmult(float Gmult)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_bwGmult = Gmult;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit bwGmultChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setBwGmult"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_bwGmult = Gmult;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit bwGmultChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setBwGmult"));
+    }
 }
 
 void ParameterManager::setBwBmult(float Bmult)
 {
-    QMutexLocker paramLocker(&paramMutex);
-    m_bwBmult = Bmult;
-    validity = min(validity, Valid::blackwhite);
-    paramLocker.unlock();
-    emit bwBmultChanged();
-    QMutexLocker signalLocker(&signalMutex);
-    paramChangeWrapper(QString("setBwBmult"));
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_bwBmult = Bmult;
+        validity = min(validity, Valid::blackwhite);
+        paramLocker.unlock();
+        emit bwBmultChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setBwBmult"));
+    }
 }
 
 Valid ParameterManager::getValid()
@@ -1694,6 +1824,8 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
 // you want. It'll have to load some sort of null for other things so that it doesn't write.
 void ParameterManager::loadParams(QString imageID)
 {
+    //Once we're told what to load, then we're well past initialization
+    justInitialized = false;
     QSqlRecord rec;
     int nameCol;
 

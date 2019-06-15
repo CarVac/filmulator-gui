@@ -287,6 +287,10 @@ protected:
     QMutex paramMutex;
     QMutex signalMutex;
 
+
+    //This is to attempt to prevent binding loops at the start of the program
+    bool justInitialized;
+
     QString imageIndex;
     QString copyFromImageIndex;
     bool pasteable;

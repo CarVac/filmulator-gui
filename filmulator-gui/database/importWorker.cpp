@@ -172,16 +172,19 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     query.prepare("SELECT FTfilepath FROM FileTable WHERE (FTfileID = ?);");
     query.bindValue(0, hashString);
     query.exec();
-    query.next();
-    const QString dbRecordedPath = query.value(0).toString();
+    const bool inDatabaseAlready = query.next();
+    QString dbRecordedPath;
+    if (inDatabaseAlready)
+    {
+        dbRecordedPath = query.value(0).toString();
+    }
     db.close();
     //If it's not in the database yet,
     //And we're not updating locations
     //  (if we are updating locations, we don't want it to add new things to the db)
     bool changedST = false;
-    if (dbRecordedPath == "" && !replaceLocation)
+    if (!inDatabaseAlready && !replaceLocation)
     {
-        cout << "importWorker no replace, doesn't exist" << endl;
         //Record the file location in the database.
         if (!importInPlace)
         {
@@ -254,7 +257,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         //Tell the views we need updating.
         changedST = true;
     }
-    else if (dbRecordedPath != "")//it's already in the database, so just move the file.
+    else if (inDatabaseAlready)//it's already in the database, so just move the file.
     {
         //See if the file is in its old location, and copy if not.
         //DON'T do this if we're updating the location.
