@@ -348,6 +348,10 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 }
             }
 
+            cout << "demosaic start" << timeDiff(timeRequested) << endl;
+            struct timeval demosaic_time;
+            gettimeofday(&demosaic_time, nullptr);
+
             if (maxXtrans > 0)
             {
                 markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
@@ -362,11 +366,12 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                     CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, premultiplied, raw_fixed, cfa, setProg, fitparams, false);
                     premultiplied = raw_fixed;
                 }
-                //amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-                matrix<float> normalized_image(raw_height, raw_width);
-                normalized_image = premultiplied * (outputscale/inputscale);
-                lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+                amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                //matrix<float> normalized_image(raw_height, raw_width);
+                //normalized_image = premultiplied * (outputscale/inputscale);
+                //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
             }
+            cout << "demosaic end: " << timeDiff(demosaic_time) << endl;
 
             input_image.set_size(raw_height, raw_width*3);
             for (int row = 0; row < raw_height; row++)
