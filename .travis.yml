@@ -12,8 +12,8 @@ before_install:
     
 install: 
     # C++14
-    - sudo apt-get -y install g++-7
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
+    - sudo apt-get -y install g++-9
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
     # Qt 5.10.1
     - sudo apt-get -y install qt510base qt510declarative qt510quickcontrols libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev
     - source /opt/qt510/bin/qt510-env.sh
