@@ -1,0 +1,57 @@
+# C/C++ with GCC
+# Build your C/C++ project with GCC using make.
+# Add steps that publish test results, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
+
+trigger:
+- master
+
+pool:
+  vmImage: "vs2017-win2016"
+
+variables:
+  MSYS2_ROOT: $(System.Workfolder)\msys64
+  MSYS_PAC: $(System.Workfolder)\msys64\usr\bin\pacman
+  MSYS_BASH: $(System.Workfolder)\msys64\usr\bin\bash
+
+steps:
+  - script: |
+      choco install msys2 --params="/InstallDir:%CD:~0,2%\msys64 /NoUpdate /NoPath"
+    displayName: Install MSYS2
+  - script: |
+      %MYYS_PAC% --noconfirm --Syyuu
+      %MYYS_PAC% --noconfirm --needed -S ^
+      tar gzip nano make diffutils intltool git ^
+      mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
+      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,qtwebkit}
+    displayName: Install Dependencies
+  - bash: |
+      mkdir lbrt
+      pushd lbrt
+      git clone https://github.com/CarVac/librtprocess lrt
+      pushd lrt
+      git checkout -b master
+      git pull origin master
+      popd
+      mkdir build
+      pushd build
+      %MSYS_BASH% cmake -G MSYS Makefiles"-DCMAKE_INSTALL_PREFIX="$MSYSTEM_PREFIX" -
+      %MSYS_BASH% DCMAKE_BUILD_TYPE="Release" ../lrt
+      %MSYS_BASH% make -j4
+      %MSYS_BASH% make install
+      popd
+      popd
+    displayName: build librtprocess
+  - bash: |
+      mkdir build
+      pushd build
+      mkdir installed
+      INSTALLDIR=installed
+      %MSYS_BASH% cmake -G"MSYS Makefiles"-
+      DCMAKE_BUILD_TYPE="$BUILD_TYPE"-DCMAKE_INSTALL_PREFIX=$INSTALLDIR ../filmulator/filmulator-gui
+      %MSYS_BASH% make -j4
+      %MSYS_BASH% make install
+      popd
+
+
+
