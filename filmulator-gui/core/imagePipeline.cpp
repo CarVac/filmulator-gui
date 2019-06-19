@@ -629,6 +629,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
 
         matrix<float> cropped_image;
+        cout << "crop start:" << timeDiff (timeRequested) << endl;
+        struct timeval crop_time;
+        gettimeofday(&crop_time, nullptr);
 
         downscale_and_crop(rotated_image,
                            cropped_image,
@@ -639,6 +642,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                            width,
                            height);
 
+        cout << "crop end: " << timeDiff(crop_time) << endl;
 
         rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
 

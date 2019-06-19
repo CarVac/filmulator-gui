@@ -1,12 +1,17 @@
 #include "filmSim.hpp"
 #include <cmath>
 #include <math.h>
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 template <typename T>
 void downscaleDivisible1D(const matrix<T> input,
                           matrix<T> &output,
                           const int scaleFactor,
                           const bool interleaved);
+
 template <typename T>
 void downscaleBilinear1D(const matrix<T> input,
                          matrix<T> &output,
@@ -43,29 +48,61 @@ void downscale_and_crop(const matrix<float> input,
     //Integer is much faster, but we can only do integer multiples.
     //Bilinear can only do shrinks between 1 and 2.
     const double overallScaleFactor = max(double(inputXSize)/double(outputXSize),double(inputYSize)/double(outputYSize));
+    if (overallScaleFactor == 1)
+    {
+        if ((outputXSize == input.nc()/3) && (outputYSize == input.nr()))
+        {
+            // no scale and no crop
+            output = input;
+            return;
+        } else {
+            // crop only, no scale
+            output.set_size(outputYSize, outputXSize*3);
+            #pragma omp parallel for shared(output)
+            for (int i = 0; i < outputYSize; i++)
+            {
+                int iin = inputStartX + i;
+                for (int j = 0; j < outputXSize*3; j += 3)
+                {
+                    int jin = 3*inputStartY + j;
+                    output(i, j  ) = input(iin, jin  );
+                    output(i, j+1) = input(iin, jin+1);
+                    output(i, j+2) = input(iin, jin+2);
+                }
+            }
+            return;
+        }
+    }
     const int integerScaleFactor = floor(overallScaleFactor);
-    //double bilinearScaleFactor = overallScaleFactor/double(integerScaleFactor);
 
     //Downscale in one direction
     matrix<float> bilinearX;
     matrix<float> bothX;
     downscaleBilinear1D(input,bilinearX,inputStartX,inputEndX,overallScaleFactor,true);
-    downscaleDivisible1D(bilinearX,bothX,integerScaleFactor,true);
+    if (integerScaleFactor != 1)
+    {
+        downscaleDivisible1D(bilinearX,bothX,integerScaleFactor,true);
+    }
+    matrix<float> &temp = integerScaleFactor == 1 ? bilinearX : bothX;
 
     //Then transpose
     matrix<float> bothXTransposed;
-    bothXTransposed.set_size(bothX.nc(),bothX.nr());
-    bothX.transpose_to(bothXTransposed);
+    bothXTransposed.set_size(temp.nc(),temp.nr());
+    temp.transpose_to(bothXTransposed);
 
     //Then downscale in the other direction.
     matrix<float> bothXTransposedBilinearY;
     matrix<float> bothXTransposedBothY;
     downscaleBilinear1D(bothXTransposed,bothXTransposedBilinearY,inputStartY,inputEndY,overallScaleFactor,false);
-    downscaleDivisible1D(bothXTransposedBilinearY,bothXTransposedBothY,integerScaleFactor,false);
+    if (integerScaleFactor != 1)
+    {
+        downscaleDivisible1D(bothXTransposedBilinearY,bothXTransposedBothY,integerScaleFactor,false);
+    }
+    matrix<float> &result = integerScaleFactor == 1 ? bothXTransposedBilinearY : bothXTransposedBothY;
 
     //Then transpose to the output.
-    output.set_size(bothXTransposedBothY.nc(),bothXTransposedBothY.nr());
-    bothXTransposedBothY.transpose_to(output);
+    output.set_size(result.nc(),result.nr());
+    result.transpose_to(output);
     return;
 }
 
