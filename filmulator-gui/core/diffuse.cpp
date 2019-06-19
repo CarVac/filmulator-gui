@@ -138,8 +138,7 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
                      col++)
                 {
                     htemp[col] = running_sum;
-                    running_sum = running_sum + hpadded[col+convrad+1];
-                    running_sum = running_sum - hpadded[col-convrad];
+                    running_sum += hpadded[col+convrad+1] - hpadded[col-convrad];
                 }
                 
                 //Copy what was in htemp to hpadded for the next iteration.
