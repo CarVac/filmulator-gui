@@ -61,10 +61,10 @@ void downscale_and_crop(const matrix<float> input,
             #pragma omp parallel for shared(output)
             for (int i = 0; i < outputYSize; i++)
             {
-                int iin = inputStartX + i;
+                int iin = inputStartY + i;
                 for (int j = 0; j < outputXSize*3; j += 3)
                 {
-                    int jin = 3*inputStartY + j;
+                    int jin = 3*inputStartX + j;
                     output(i, j  ) = input(iin, jin  );
                     output(i, j+1) = input(iin, jin+1);
                     output(i, j+2) = input(iin, jin+2);
