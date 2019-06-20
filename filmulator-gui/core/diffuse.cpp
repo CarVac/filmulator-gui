@@ -90,7 +90,7 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
     const int width = developer_concentration.nc();
 
 #pragma omp parallel shared(developer_concentration,convlength,convrad,order,\
-        length,width,paddedwidth,pad,swell_factor)
+        paddedwidth,pad,swell_factor)
     {
         vector<float> hpadded(paddedwidth); //stores one padded line
         vector<float> htemp(paddedwidth); // stores result of box blur
@@ -156,7 +156,7 @@ void diffuse_y(matrix<float> &developer_concentration, int convlength,
     const int width = developer_concentration.nc();
 
 #pragma omp parallel shared(developer_concentration,convlength,convrad,order,\
-        length,width,paddedlength,pad,swell_factor)
+        paddedlength,pad,swell_factor)
     {
         constexpr int numcols = 8;  // process numcols columns at once for better usage of L1 cpu cache
         vector<std::array<float, numcols>> hpadded(paddedlength); //stores one padded line
