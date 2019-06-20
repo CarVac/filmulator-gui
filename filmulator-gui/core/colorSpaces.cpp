@@ -194,6 +194,13 @@ void sRGB_linearize(matrix<unsigned short> &in,
     int nRows = in.nr();
     int nCols = in.nc();
 
+    // build lookup table
+    float invgamma[65536];
+    for (int i = 0; i < 65536; i++)
+    {
+        invgamma[i] = sRGB_inverse_gamma(i / 65535.0f);
+    }
+
     out.set_size(nRows, nCols);
 
 #pragma omp parallel shared(in, out) firstprivate(nRows, nCols)
@@ -203,9 +210,9 @@ void sRGB_linearize(matrix<unsigned short> &in,
         {
             for (int j = 0; j < nCols; j += 3)
             {
-                out(i, j  ) = sRGB_inverse_gamma(float(in(i, j  ))/65535.0);
-                out(i, j+1) = sRGB_inverse_gamma(float(in(i, j+1))/65535.0);
-                out(i, j+2) = sRGB_inverse_gamma(float(in(i, j+2))/65535.0);
+                out(i, j  ) = invgamma[in(i, j  )];
+                out(i, j+1) = invgamma[in(i, j+1)];
+                out(i, j+2) = invgamma[in(i, j+2)];
             }
         }
     }
