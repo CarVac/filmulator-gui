@@ -214,6 +214,10 @@ template <class T>
 void matrix<T>::set_size(const int nrows, const int ncols)
 {
     assert(nrows >= 0 && ncols >= 0);
+    if (num_rows == nrows && num_cols == ncols) {
+        return;
+    }
+
     num_rows = nrows;
     num_cols = ncols;
     if(data)
