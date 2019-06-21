@@ -68,7 +68,7 @@ struct filmulateParams {//TODO: adjust variable names.
     float rolloffBoundary;
 };
 
-matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
+void exposure(matrix<float> &input_image, float crystals_per_pixel,
         float rolloff_boundary);
 
 //Equalizes the concentration of developer across the reservoir and all pixels.

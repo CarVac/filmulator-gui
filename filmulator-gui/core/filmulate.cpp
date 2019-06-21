@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
 //Function-------------------------------------------------------------------------
 bool ImagePipeline::filmulate(matrix<float> &input_image,
                               matrix<float> &output_density,
@@ -68,10 +67,8 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
 
     //Now we activate some of the crystals on the film. This is literally
     //akin to exposing film to light.
-    matrix<float> active_crystals_per_pixel;
-    active_crystals_per_pixel = exposure(input_image, crystals_per_pixel,
-            rolloff_boundary);
-
+    matrix<float> active_crystals_per_pixel = input_image;
+    exposure(active_crystals_per_pixel, crystals_per_pixel, rolloff_boundary);
     //We set the crystal radius to a small seed value for each color.
     matrix<float> crystal_radius;
     crystal_radius.set_size(nrows,ncols*3);
@@ -226,7 +223,16 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
         return true;
     }
 
-    output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;
+    const int numRows = crystal_radius.nr();
+    const int numCols = crystal_radius.nc();
+
+    output_density.set_size(numRows, numCols);
+    #pragma omp parallel for
+    for (int i = 0; i < numRows; ++i) {
+        for (int j = 0; j < numCols; ++j) {
+            output_density(i, j) = crystal_radius(i, j) * crystal_radius(i, j) * active_crystals_per_pixel(i, j);
+        }
+    }
     tout << "Output density time: "<<timeDiff(mult_start) << endl;
 #ifdef DOUT
     debug_out.close();
