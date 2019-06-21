@@ -339,14 +339,6 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
             //before demosaic, you want to apply raw white balance
             matrix<float> premultiplied(raw_height, raw_width);
-            for (int row = 0; row < raw_height; row++)
-            {
-                for (int col = 0; col < raw_width; col++)
-                {
-                    uint color = cfa[uint(row) & 1][uint(col) & 1];
-                    premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
-                }
-            }
 
             cout << "demosaic start" << timeDiff(timeRequested) << endl;
             struct timeval demosaic_time;
@@ -354,10 +346,26 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
             if (maxXtrans > 0)
             {
+                for (int row = 0; row < raw_height; row++)
+                {
+                    for (int col = 0; col < raw_width; col++)
+                    {
+                        uint color = xtrans[uint(row) % 6][uint(col) % 6];
+                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                    }
+                }
                 markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
             }
             else
             {
+                for (int row = 0; row < raw_height; row++)
+                {
+                    for (int col = 0; col < raw_width; col++)
+                    {
+                        uint color = cfa[uint(row) & 1][uint(col) & 1];
+                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                    }
+                }
                 if (demosaicParam.caEnabled)
                 {
                     //we need to apply white balance and then remove it for Auto CA Correct to work properly
