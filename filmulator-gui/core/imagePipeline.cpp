@@ -429,70 +429,64 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
         struct timeval hlrecovery_time;
         gettimeofday(&hlrecovery_time, nullptr);
 
-        //For highlight recovery, we need to split up the image into three separate layers.
-        matrix<float> rChannel, gChannel, bChannel;
         int height = scaled_image.nr();
         int width  = scaled_image.nc()/3;
-        rChannel.set_size(height, width);
-        gChannel.set_size(height, width);
-        bChannel.set_size(height, width);
-
-        for (int row = 0; row < height; row++)
-        {
-            for (int col = 0; col < width; col++)
-            {
-                rChannel(row, col) = scaled_image(row, col*3    );
-                gChannel(row, col) = scaled_image(row, col*3 + 1);
-                bChannel(row, col) = scaled_image(row, col*3 + 2);
-            }
-        }
-
-        //We applied the camMul camera multipliers before applying white balance.
-        //Now we need to calculate the channel max and the raw clip levels.
-        //Channel max:
-        float chmax[3];
-        chmax[0] = rChannel.max();
-        chmax[1] = gChannel.max();
-        chmax[2] = bChannel.max();
-        //Max clip point:
-        float clmax[3];
-        clmax[0] = 65535.0f*rCamMul;
-        clmax[1] = 65535.0f*gCamMul;
-        clmax[2] = 65535.0f*bCamMul;
 
         //Now, recover highlights.
         std::function<bool(double)> setProg = [](double) -> bool {return false;};
+        //And return it back to a single layer
         if (demosaicParam.highlights >= 2)
         {
             cout << "Highlight Recovery ================================================================================" << endl;
-            HLRecovery_inpaint(width, height, rChannel, gChannel, bChannel, chmax, clmax, setProg);
-        } else if (demosaicParam.highlights == 0)
-        {
+            recovered_image.set_size(height, width*3);
+            //For highlight recovery, we need to split up the image into three separate layers.
+            matrix<float> rChannel(height, width), gChannel(height, width), bChannel(height, width);
+
+            #pragma omp parallel for
             for (int row = 0; row < height; row++)
             {
                 for (int col = 0; col < width; col++)
                 {
-                    rChannel(row,col) = min(rChannel(row,col), 65535.0f);
-                    gChannel(row,col) = min(gChannel(row,col), 65535.0f);
-                    bChannel(row,col) = min(bChannel(row,col), 65535.0f);
+                    rChannel(row, col) = scaled_image(row, col*3    );
+                    gChannel(row, col) = scaled_image(row, col*3 + 1);
+                    bChannel(row, col) = scaled_image(row, col*3 + 2);
                 }
             }
-        }
 
-        //And return it back to a single layer
-        recovered_image.set_size(height, width*3);
-        for (int row = 0; row < height; row++)
-        {
-            for (int col = 0; col < width; col++)
+            //We applied the camMul camera multipliers before applying white balance.
+            //Now we need to calculate the channel max and the raw clip levels.
+            //Channel max:
+            const float chmax[3] = {rChannel.max(), gChannel.max(), bChannel.max()};
+            //Max clip point:
+            const float clmax[3] = {65535.0f*rCamMul, 65535.0f*gCamMul, 65535.0f*bCamMul};
+
+            HLRecovery_inpaint(width, height, rChannel, gChannel, bChannel, chmax, clmax, setProg);
+            #pragma omp parallel for
+            for (int row = 0; row < height; row++)
             {
-                recovered_image(row, col*3    ) = rChannel(row, col);
-                recovered_image(row, col*3 + 1) = gChannel(row, col);
-                recovered_image(row, col*3 + 2) = bChannel(row, col);
+                for (int col = 0; col < width; col++)
+                {
+                    recovered_image(row, col*3    ) = rChannel(row, col);
+                    recovered_image(row, col*3 + 1) = gChannel(row, col);
+                    recovered_image(row, col*3 + 2) = bChannel(row, col);
+                }
             }
+        } else if (demosaicParam.highlights == 0)
+        {
+            recovered_image.set_size(height, width*3);
+            #pragma omp parallel for
+            for (int row = 0; row < height; row++)
+            {
+                for (int col = 0; col < width; col++)
+                {
+                    recovered_image(row, col*3    ) = min(scaled_image(row, col*3    ), 65535.0f);
+                    recovered_image(row, col*3 + 1) = min(scaled_image(row, col*3 + 1), 65535.0f);
+                    recovered_image(row, col*3 + 2) = min(scaled_image(row, col*3 + 2), 65535.0f);
+                }
+            }
+        } else {
+            recovered_image = scaled_image;
         }
-        rChannel.set_size(0,0);
-        gChannel.set_size(0,0);
-        bChannel.set_size(0,0);
 
         cout << "hlrecovery end: " << timeDiff(hlrecovery_time) << endl;
 
@@ -512,17 +506,14 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
 
         //Here we apply the exposure compensation and white balance and color conversion matrix.
-        matrix<float> wbImage;
         whiteBalance(recovered_image,
-                     wbImage,
+                     pre_film_image,
                      prefilmParam.temperature,
                      prefilmParam.tint,
                      camToRGB,
                      rCamMul, gCamMul, bCamMul,//needed as a reference but not actually applied
                      rPreMul, gPreMul, bPreMul,
-                     65535.0f);
-
-        pre_film_image = wbImage * pow(2, prefilmParam.exposureComp);
+                     65535.0f, pow(2, prefilmParam.exposureComp));
 
         if (NoCache == cache)
         {

@@ -398,7 +398,7 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
                   float temperature, float tint, float cam2rgb[3][3],
                   float rCamMul, float gCamMul, float bCamMul,
                   float rPreMul, float gPreMul, float bPreMul,
-                  float maxValue)
+                  float maxValue, float factor)
 {
     float rMult, gMult, bMult;
     whiteBalancePostMults(temperature, tint, cam2rgb,
@@ -415,9 +415,9 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
     float transform[3][3];
     for (int i = 0; i < 3; i++)
     {
-        transform[0][i] = rMult * cam2rgb[0][i];
-        transform[1][i] = gMult * cam2rgb[1][i];
-        transform[2][i] = bMult * cam2rgb[2][i];
+        transform[0][i] = factor * rMult * cam2rgb[0][i];
+        transform[1][i] = factor * gMult * cam2rgb[1][i];
+        transform[2][i] = factor * bMult * cam2rgb[2][i];
     }
     //transform[0][0] = 1.0f;
     //transform[1][1] = 1.0f;
