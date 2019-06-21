@@ -346,6 +346,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
 
             if (maxXtrans > 0)
             {
+                #pragma omp parallel for
                 for (int row = 0; row < raw_height; row++)
                 {
                     for (int col = 0; col < raw_width; col++)
@@ -358,6 +359,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             }
             else
             {
+                #pragma omp parallel for
                 for (int row = 0; row < raw_height; row++)
                 {
                     for (int col = 0; col < raw_width; col++)
@@ -369,19 +371,19 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 if (demosaicParam.caEnabled)
                 {
                     //we need to apply white balance and then remove it for Auto CA Correct to work properly
-                    matrix<float> raw_fixed(raw_height, raw_width);
                     double fitparams[2][2][16];
-                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, premultiplied, raw_fixed, cfa, setProg, fitparams, false);
-                    premultiplied = raw_fixed;
+                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
                 }
                 amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
                 //matrix<float> normalized_image(raw_height, raw_width);
                 //normalized_image = premultiplied * (outputscale/inputscale);
                 //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
             }
+            premultiplied.set_size(0, 0);
             cout << "demosaic end: " << timeDiff(demosaic_time) << endl;
 
             input_image.set_size(raw_height, raw_width*3);
+            #pragma omp parallel for
             for (int row = 0; row < raw_height; row++)
             {
                 for (int col = 0; col < raw_width; col++)
