@@ -485,7 +485,7 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                 }
             }
         } else {
-            recovered_image = scaled_image;
+            recovered_image = std::move(scaled_image);
         }
 
         cout << "hlrecovery end: " << timeDiff(hlrecovery_time) << endl;
