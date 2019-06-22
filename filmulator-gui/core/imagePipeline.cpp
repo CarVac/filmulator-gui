@@ -239,6 +239,9 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
             raw_image.set_size(raw_height, raw_width);
 
             //copy raw data
+            float rawMin = std::numeric_limits<float>::max();
+            float rawMax = std::numeric_limits<float>::min();
+            #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
             for (int row = 0; row < raw_height; row++)
             {
                 //IMAGE is an (width*height) by 4 array, not width by height by 4.
@@ -251,11 +254,13 @@ matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManag
                         tempBlackpoint = tempBlackpoint + image_processor->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
                     }
                     raw_image[row][col] = RAW[rowoffset + col + leftmargin] - tempBlackpoint;
+                    rawMin = std::min(rawMin, raw_image[row][col]);
+                    rawMax = std::max(rawMax, raw_image[row][col]);
                 }
             }
 
-            cout << "max of raw_image: " << raw_image.max() << " ===============================================" << endl;
-            cout << "min of raw_image: " << raw_image.min() << endl;
+            cout << "max of raw_image: " << rawMax << " ===============================================" << endl;
+            cout << "min of raw_image: " << rawMin << endl;
         }
         valid = paramManager->markLoadComplete();
         updateProgress(valid, 0.0f);
