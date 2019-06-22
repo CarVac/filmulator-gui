@@ -278,8 +278,10 @@ template <class T> //template<class U>
 matrix<T>& matrix<T>::operator=(matrix<T> &&toMove)
 {
     if(this != &toMove) {
+        delete [] data;
         data = toMove.data;
         toMove.data = nullptr;
+        delete [] ptr;
         ptr = toMove.ptr;
         toMove.ptr = nullptr;
         num_rows = toMove.num_rows;
