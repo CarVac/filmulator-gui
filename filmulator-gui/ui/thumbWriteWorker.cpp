@@ -9,11 +9,11 @@ ThumbWriteWorker::ThumbWriteWorker(QObject *parent) : QObject(parent)
 {
 }
 
-void ThumbWriteWorker::setImage(const matrix<unsigned short> imageIn,
+void ThumbWriteWorker::setImage(matrix<unsigned short> imageIn,
                                 Exiv2::ExifData dataIn)
 {
     QMutexLocker locker(&dataMutex);
-    image = imageIn;
+    image = std::move(imageIn);
     exifData = dataIn;
 }
 

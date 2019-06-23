@@ -17,7 +17,7 @@ public:
     ImagePipeline(Cache, Histo, QuickQuality);
 
     //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
-    matrix<unsigned short> processImage(ParameterManager * paramManager,
+    matrix<unsigned short>& processImage(ParameterManager * paramManager,
                                         Interface * histoInterface,
                                         Exiv2::ExifData &exifOutput);
 
@@ -39,7 +39,7 @@ public:
     int resolution;
 
 protected:
-    matrix<unsigned short> emptyMatrix(){matrix<unsigned short> mat; return mat;}
+    matrix<unsigned short>& emptyMatrix(){return empty;}
 
     Cache cache;
     bool cacheEmpty = false;
@@ -58,6 +58,7 @@ protected:
 
     //raw stuff
     matrix<float> raw_image;
+    matrix<unsigned short> empty;
     unsigned cfa[2][2];
     unsigned xtrans[6][6];
     int maxXtrans;

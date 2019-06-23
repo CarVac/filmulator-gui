@@ -18,7 +18,7 @@
  */
 #include "filmSim.hpp"
 
-bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
+bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
                   Exiv2::ExifData exifData)
 {
     int xsize, ysize;

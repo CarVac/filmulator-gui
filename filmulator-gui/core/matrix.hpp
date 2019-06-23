@@ -82,6 +82,7 @@ class matrix
 
         //template <class U> //Never gets called if use matrix<U>
         matrix<T>& operator=(const matrix<T> &toCopy);
+        matrix<T>& operator=(matrix<T> &&toMove);
         template <class U>
         matrix<T>& operator=(const U value);
         template <class U>
@@ -270,6 +271,24 @@ matrix<T>& matrix<T>::operator=(const matrix<T> &toCopy)
         for(int col = 0; col < num_cols; col++)
             data[row*num_cols + col] =
                 toCopy.data[row*num_cols + col];
+    return *this;
+}
+
+template <class T> //template<class U>
+matrix<T>& matrix<T>::operator=(matrix<T> &&toMove)
+{
+    if(this != &toMove) {
+        delete [] data;
+        data = toMove.data;
+        toMove.data = nullptr;
+        delete [] ptr;
+        ptr = toMove.ptr;
+        toMove.ptr = nullptr;
+        num_rows = toMove.num_rows;
+        toMove.num_rows = 0;
+        num_cols = toMove.num_cols;
+        toMove.num_cols = 0;
+    }
     return *this;
 }
 

@@ -17,7 +17,7 @@ class ThumbWriteWorker : public QObject
 
 public:
     explicit ThumbWriteWorker(QObject *parent = 0);
-    void setImage(const matrix<unsigned short> imageIn,
+    void setImage(matrix<unsigned short> imageIn,
                   Exiv2::ExifData dataIn);
 
 public slots:

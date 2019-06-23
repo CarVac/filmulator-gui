@@ -38,9 +38,9 @@ public:
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
 
-    void updateHistPreFilm( const matrix<float> image, float maximum );
-    void updateHistPostFilm( const matrix<float> image, float maximum );
-    void updateHistFinal( const matrix<unsigned short> image);
+    void updateHistPreFilm( const matrix<float>& image, float maximum );
+    void updateHistPostFilm( const matrix<float>& image, float maximum );
+    void updateHistFinal( const matrix<unsigned short>& image);
 
     Q_INVOKABLE void writeTiff();
     Q_INVOKABLE void writeJpeg();
@@ -87,8 +87,8 @@ protected:
     float getHistogramPoint(Histogram &hist, int index, int i, LogY isLog);
     QImage emptyImage();
 
-    void updateShortHistogram(Histogram &hist, const matrix<unsigned short> image );
-    void updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum );
+    void updateShortHistogram(Histogram &hist, const matrix<unsigned short>& image );
+    void updateFloatHistogram(Histogram &hist, const matrix<float>& image, float maximum );
     int histIndex(float value, float max);
     void zeroHistogram(Histogram &hist);
 

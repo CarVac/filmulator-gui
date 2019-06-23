@@ -1,6 +1,6 @@
 #include "filmImageProvider.h"
 
-void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsigned short> image )//, int &roll)
+void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsigned short>& image )//, int &roll)
 {
     zeroHistogram(hist);
     for(int i = 0; i < image.nr(); i = i + 5)
@@ -25,7 +25,7 @@ void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsig
     //roll++;
 }
 
-void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum )//, int &roll)
+void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float>& image, float maximum )//, int &roll)
 {
     zeroHistogram(hist);
     for(int i = 0; i < image.nr(); i = i + 5)
@@ -72,21 +72,21 @@ void FilmImageProvider::zeroHistogram(Histogram &hist)
     return;
 }
 
-void FilmImageProvider::updateHistPreFilm( const matrix<float> image, float maximum )
+void FilmImageProvider::updateHistPreFilm( const matrix<float>& image, float maximum )
 {
     updateFloatHistogram( preFilmHist, image, maximum );//, histPreFilmRoll );
     emit histPreFilmChanged();
     return;
 }
 
-void FilmImageProvider::updateHistPostFilm( const matrix<float> image, float maximum )
+void FilmImageProvider::updateHistPostFilm( const matrix<float>& image, float maximum )
 {
     updateFloatHistogram( postFilmHist, image, maximum );//, histPostFilmRoll );
     emit histPostFilmChanged();
     return;
 }
 
-void FilmImageProvider::updateHistFinal( const matrix<unsigned short> image )
+void FilmImageProvider::updateHistFinal( const matrix<unsigned short>& image )
 {
     updateShortHistogram( finalHist, image );//, histFinalRoll );
     emit histFinalChanged();
