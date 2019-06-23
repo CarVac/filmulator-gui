@@ -285,7 +285,9 @@ matrix<T>& matrix<T>::operator=(matrix<T> &&toMove)
         ptr = toMove.ptr;
         toMove.ptr = nullptr;
         num_rows = toMove.num_rows;
+        toMove.num_rows = 0;
         num_cols = toMove.num_cols;
+        toMove.num_cols = 0;
     }
     return *this;
 }

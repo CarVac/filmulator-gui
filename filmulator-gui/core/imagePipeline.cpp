@@ -39,7 +39,7 @@ int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
     }
 }
 
-matrix<unsigned short> ImagePipeline::processImage(ParameterManager * paramManager,
+matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramManager,
                                                    Interface * interface_in,
                                                    Exiv2::ExifData &exifOutput)
 {

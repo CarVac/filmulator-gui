@@ -150,7 +150,7 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
 string convert_from_raw(char* raw_filename, int i, string tempdir,
         int highlights);
 
-bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
+bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
                   Exiv2::ExifData exifData);
 
 bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
@@ -228,7 +228,7 @@ void monochrome_convert(matrix<unsigned short> &input,
                         matrix<unsigned short> &output,
                         float rmult, float gmult, float bmult);
 
-void downscale_and_crop(const matrix<float> input,
+void downscale_and_crop(const matrix<float> &input,
                         matrix<float> &output,
                         const int inputStartX,
                         const int inputStartY,

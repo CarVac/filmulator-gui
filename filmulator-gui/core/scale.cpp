@@ -7,13 +7,13 @@ using std::cout;
 using std::endl;
 
 template <typename T>
-void downscaleDivisible1D(const matrix<T> input,
+void downscaleDivisible1D(const matrix<T> &input,
                           matrix<T> &output,
                           const int scaleFactor,
                           const bool interleaved);
 
 template <typename T>
-void downscaleBilinear1D(const matrix<T> input,
+void downscaleBilinear1D(const matrix<T> &input,
                          matrix<T> &output,
                          const int start,
                          const int end,
@@ -28,7 +28,7 @@ void upscaleBilinear1D(const matrix<T> input,
 
 
 //Scales the input to the output to fit within the output sizes.
-void downscale_and_crop(const matrix<float> input,
+void downscale_and_crop(const matrix<float> &input,
                         matrix<float> &output,
                         const int inputStartX,
                         const int inputStartY,
@@ -108,7 +108,7 @@ void downscale_and_crop(const matrix<float> input,
 
 //Scales the image such that the number of columns is redeuced by integer factor scaleFactor.
 template <typename T>
-void downscaleDivisible1D(const matrix<T> input,
+void downscaleDivisible1D(const matrix<T> &input,
                           matrix<T> &output,
                           const int scaleFactor,
                           const bool interleaved)
@@ -169,7 +169,7 @@ void downscaleDivisible1D(const matrix<T> input,
 //The scaling factor is computed from the overall scale factor such that it ends up an integer multiple
 // of the desired final size.
 template <typename T>
-void downscaleBilinear1D(const matrix<T> input,
+void downscaleBilinear1D(const matrix<T> &input,
                          matrix<T> &output,
                          const int start,
                          const int end,
