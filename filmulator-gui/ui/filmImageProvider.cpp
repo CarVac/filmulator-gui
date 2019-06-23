@@ -61,7 +61,6 @@ QImage FilmImageProvider::requestImage(const QString& id,
                                        const QSize& /*requestedSize*/)
 {
     gettimeofday(&request_start_time,NULL);
-    QImage output = emptyImage();
     cout << "FilmImageProvider::requestImage Here?" << endl;
     cout << "FilmImageProvider::requestImage id: " << id.toStdString() << endl;
 
@@ -104,23 +103,24 @@ QImage FilmImageProvider::requestImage(const QString& id,
     //Prepare the output filename.
     outputFilename = filename.substr(0,filename.length()-4);
     outputFilename.append("-output");
-    //Copy the image over.
-    last_image = image;
+    //Move the image over.
+    last_image = std::move(image);
     writeDataMutex.unlock();
     processMutex.unlock();
 
-    int nrows = image.nr();
-    int ncols = image.nc();
+    const int nrows = last_image.nr();
+    const int ncols = last_image.nc();
 
-    output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
+    QImage output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
+    #pragma omp parallel for
     for(int i = 0; i < nrows; i++)
     {
         QRgb *line = (QRgb *)output.scanLine(i);
         for(int j = 0; j < ncols; j = j + 3)
         {
-            *line = QColor(image(i,j)/256,
-                           image(i,j+1)/256,
-                           image(i,j+2)/256).rgb();
+            *line = QColor(last_image(i,j)/256,
+                           last_image(i,j+1)/256,
+                           last_image(i,j+2)/256).rgb();
             line++;
         }
     }
