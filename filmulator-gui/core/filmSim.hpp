@@ -220,11 +220,11 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
                   float rPreMul, float gPreMul, float bPreMul,
                   float maxValue, float factor = 1.f);
 
-void vibrance_saturation(matrix<unsigned short> &input,
+void vibrance_saturation(const matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
                          float vibrance, float saturation);
 
-void monochrome_convert(matrix<unsigned short> &input,
+void monochrome_convert(const matrix<unsigned short> &input,
                         matrix<unsigned short> &output,
                         float rmult, float gmult, float bmult);
 

@@ -1,5 +1,4 @@
 #include "imagePipeline.h"
-
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
     cache = cacheIn;
@@ -712,7 +711,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 return ushort(65535*default_tonecurve(shResult));
             }
         );
-        matrix<unsigned short> film_curve_image;
+        matrix<unsigned short>& film_curve_image = vibrance_saturation_image;
         film_like_curve(color_curve_image,
                         film_curve_image,
                         filmLikeLUT);
