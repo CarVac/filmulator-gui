@@ -283,7 +283,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         struct timeval imload_time;
         gettimeofday( &imload_time, nullptr );
 
-        matrix<float> scaled_image;
+        matrix<float>& scaled_image = recovered_image;
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
             scaled_image = stealVictim->input_image;
