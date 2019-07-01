@@ -70,7 +70,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     matrix<float> active_crystals_per_pixel = input_image;
     exposure(active_crystals_per_pixel, crystals_per_pixel, rolloff_boundary);
     //We set the crystal radius to a small seed value for each color.
-    matrix<float> crystal_radius;
+    matrix<float>& crystal_radius = output_density;
     crystal_radius.set_size(nrows,ncols*3);
     crystal_radius = initial_crystal_radius;
 
@@ -205,11 +205,6 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     tout << "Layer mix time: " << layer_mix_dif << " seconds" << endl;
     tout << "Agitate time: " << agitate_dif << " seconds" << endl;
     
-    //Done filmulating, now do some housecleaning
-    silver_salt_density.free();
-    developer_concentration.free();
-
-
     //Now we compute the density (opacity) of the film.
     //We assume that overlapping crystals or dye clouds are
     //nonexistant. It works okay, for now...
@@ -226,7 +221,6 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     const int numRows = crystal_radius.nr();
     const int numCols = crystal_radius.nc();
 
-    output_density.set_size(numRows, numCols);
     #pragma omp parallel for
     for (int i = 0; i < numRows; ++i) {
         for (int j = 0; j < numCols; ++j) {
