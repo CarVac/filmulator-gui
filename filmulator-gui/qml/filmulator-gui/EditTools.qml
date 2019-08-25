@@ -164,21 +164,22 @@ SlimSplitView {
                     id: tintSlider
                     title: qsTr("Tint")
                     tooltipText: qsTr("Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.\n\nThe default value is the camera's chosen WB.")
-                    minimumValue: 0.1
-                    maximumValue: 3
-                    value: paramManager.tint
-                    defaultValue: paramManager.defTint
+                    minimumValue: Math.log(0.1)
+                    maximumValue: Math.log(10)
+                    value: Math.log(paramManager.tint)
+                    defaultValue: Math.log(paramManager.defTint)
+                    valueText: Math.exp(value)
                     onValueChanged: {
-                        paramManager.tint = value
+                        paramManager.tint = Math.exp(value)
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
                         onTintChanged: {
-                            tintSlider.value = paramManager.tint
+                            tintSlider.value = Math.log(paramManager.tint)
                         }
                         onDefTintChanged: {
-                            tintSlider.defaultValue = paramManager.defTint
+                            tintSlider.defaultValue = Math.log(paramManager.defTint);
                         }
                     }
                     Component.onCompleted: {
