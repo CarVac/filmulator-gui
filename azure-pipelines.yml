@@ -64,7 +64,6 @@ steps:
       %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"
       cd build/installed
       iscc.exe "filmulator_build.iss"
-      popd
     displayName: generate installer
   - task: PublishBuildArtifacts@1
     inputs:
