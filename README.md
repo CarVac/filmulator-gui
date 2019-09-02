@@ -76,7 +76,7 @@ If you want the UI to appear larger on a high-pixel density display, use the Use
 
 # Status
 
-If told to make a version number for it right now, I'd put it as 1.0.0.
+If told to make a version number for it right now, I'd put it as 0.8.0.
 
 Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the `Import` and `Organize` tabs need some UI massaging, as does the queue. Finally, the `Output` tab hasn't even been started yet.
 
