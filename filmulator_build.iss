@@ -20,7 +20,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={commonpf64}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile="LICENSE.txt"
+LicenseFile="bin\LICENSE.txt"
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputDir="output"
