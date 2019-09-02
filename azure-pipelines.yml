@@ -56,19 +56,21 @@ steps:
     displayName: build filmulator
   - script: |
       set listdll=libbz2-1.dll,libdouble-conversion.dll,libexiv2.dll,libexpat-1.dll,libfreetype-6.dll,libgcc_s_seh-1.dll,libglib-2.0-0.dll,libgomp-1.dll,libgraphite2.dll,libharfbuzz-0.dll,libiconv-2.dll,libicudt*.dll,libicuin*.dll,libicuuc*.dll,libintl-8.dll,libjasper-4.dll,libjpeg-8.dll,liblcms2-2.dll,liblzma-5.dll,libpcre-1.dll,libpcre2-16-0.dll,libpng16-16.dll,libraw_r-*.dll,librtprocess.dll,libstdc++-6.dll,libtiff-5.dll,libwinpthread-1.dll,libzstd.dll,zlib1.dll
-      cd build/installed/bin
+      pushd build/installed/bin
       set PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem
       set HOME=.
       %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
       %MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --release --qmldir qml/filmulator-gui filmulator.exe"
+      popd
     displayName: package dlls
   - script: |
+      set HOME=.
       %MSYS_BASH% -c "/bin/cp --verbose LICENSE.txt -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator-gui/filmulator-gui80.ico -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"
-      cd build
-      cd installed
+      pushd build/installed
       %IS_CC% "filmulator_build.iss"
+      popd
     displayName: generate installer
   - task: PublishBuildArtifacts@1
     inputs:
