@@ -4,7 +4,8 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
 
 trigger:
-- highlightrecovery
+- master
+- dev
 
 pool:
   vmImage: "vs2017-win2016"
