@@ -4,7 +4,8 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
 
 trigger:
-- highlightrecovery
+- master
+- dev
 
 pool:
   vmImage: "vs2017-win2016"
@@ -56,6 +57,14 @@ steps:
       %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
       %MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --release --qmldir qml/filmulator-gui filmulator.exe"
     displayName: package dlls
+  - script: |
+      set HOME=.
+      %MSYS_BASH% -c "/bin/cp --verbose LICENSE.txt -t build/installed/bin"
+      %MSYS_BASH% -c "/bin/cp --verbose filmulator-gui/filmulator-gui80.ico -t build/installed/bin"
+      %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"
+      cd build/installed
+      iscc.exe "filmulator_build.iss"
+    displayName: generate installer
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: 'build/installed' 
