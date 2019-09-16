@@ -91,12 +91,16 @@ if(APPLE)
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
-
+elseif(WIN32)
+    add_executable(filmulator WIN32
+        ${filmulator_SRCS}
+        ${filmulator_RSCS}
+    )
 else()
-add_executable(filmulator
-    ${filmulator_SRCS}
-    ${filmulator_RSCS}
-)
+    add_executable(filmulator
+        ${filmulator_SRCS}
+        ${filmulator_RSCS}
+    )
 endif()
 
 target_compile_options(filmulator
