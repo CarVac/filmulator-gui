@@ -26,7 +26,6 @@ Item {
         action: Action {
             onTriggered: {
                 if (root.notDisabled){
-                    console.log("success?")
                     root.triggered()
                 }
             }
@@ -59,7 +58,6 @@ Item {
         Component.onCompleted: {
             //Forward the tooltipWanted signal to root.
             tooltip.tooltipWanted.connect(root.tooltipWanted)
-            console.log(root.text)
         }
     }
 }

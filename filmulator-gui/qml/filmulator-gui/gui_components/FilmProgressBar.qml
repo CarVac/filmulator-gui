@@ -1,6 +1,7 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import "../colors.js" as Colors
+import "."
 
 Item {
     id: root
@@ -16,24 +17,27 @@ Item {
 
     ProgressBar {
         id: progressBar
-        orientation: Qt.Horizontal
         indeterminate: false
         visible: true
         x: __padding
         y: __padding
 
-        style: ProgressBarStyle {
-            background: Rectangle {
-                implicitWidth: root.width - __padding * 2
-                implicitHeight: root.height - __padding * 2
-                radius: 3 * uiScale
-                color: "#B0B0B0"
-                border.width: 1 * uiScale
-                border.color: "#808080"
-            }
-            progress: Rectangle {
-                color: "#FF9922"
-                border.color: "#A87848"
+        background: Rectangle {
+            implicitWidth: root.width - __padding * 2
+            implicitHeight: root.height - __padding * 2
+            radius: 3 * uiScale
+            color: Colors.brightGrayH
+            border.width: 1 * uiScale
+            border.color: Colors.middleGray
+        }
+        contentItem: Item {
+            implicitWidth: root.width - __padding * 2
+            implicitHeight: root.height - __padding * 2
+            Rectangle {
+                width: progressBar.visualPosition*parent.width
+                height: parent.height
+                color: Colors.lightOrange
+                border.color: Colors.weakOrange
                 radius: 3 * uiScale
             }
         }
