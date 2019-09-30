@@ -113,8 +113,8 @@ Rectangle {
             }
         }
         background: Rectangle {
-            implicitWidth: 26 * uiScale
-            implicitHeight: 26 * uiScale
+            implicitWidth: parent.width
+            implicitHeight: parent.width
             border.width: 1 * uiScale
             border.color: parent.pressed ? Colors.lightOrange : Colors.brightGray
             radius: 5 * uiScale
