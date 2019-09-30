@@ -205,7 +205,8 @@ ApplicationWindow {
             property int minHeight: 30 * uiScale
             property int posPad: 10 * uiScale
             width: Math.min(maxWidth, tooltipText.contentWidth + 2*padding)
-            height: tooltipText.contentHeight + 2*padding
+            //For some reason, this switch needs to exist in height so that 1-line tooltips are displayed correctly the first time.
+            height: parent.visible ? (tooltipText.contentHeight + 2*padding) : 12
             z: 10
             Text {
                 id: tooltipText
