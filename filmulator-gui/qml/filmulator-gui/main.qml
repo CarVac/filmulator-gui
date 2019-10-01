@@ -50,17 +50,23 @@ ApplicationWindow {
 //                    width: 0
 //                    height: 0
                 }
+                property real tabwidth: 105
+                property real tabheight: 61
+                property real rectx: 4
+                property real recty: 28.5
+                property real rectheight: 54
 
                 TabButton {
                     id: importButton
                     text: qsTr("Import")
-                    width: 105 * uiScale
-                    height: 35 * uiScale
+                    width: tabs.tabwidth * uiScale
+                    height: tabs.tabheight * uiScale
                     background: Rectangle {
-                        x: 4 * uiScale
-                        y: 16 * uiScale
+                        x: tabs.rectx * uiScale
+                        //WTF WHY!? why doesn't it scale properly if I don't do this instead of just uiscale?
+                        y: tabs.recty * (1+1.2*(uiScale-1))
                         width: parent.width - 5*uiScale
-                        height: 2*parent.height - 16*uiScale
+                        height: tabs.rectheight * uiScale
                         radius: 8 * uiScale
                         border.width: 1 * uiScale
                         border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
@@ -109,13 +115,14 @@ ApplicationWindow {
                 TabButton {
                     id: organizeButton
                     text: qsTr("Organize")
-                    width: 105 * uiScale
-                    height: 35 * uiScale
+                    width: tabs.tabwidth * uiScale
+                    height: tabs.tabheight * uiScale
                     background: Rectangle {
-                        x: 4 * uiScale
-                        y: 16 * uiScale
+                        x: tabs.rectx * uiScale
+                        //WTF WHY!? why doesn't it scale properly if I don't do this instead of just uiscale?
+                        y: tabs.recty * (1+1.2*(uiScale-1))
                         width: parent.width - 5*uiScale
-                        height: 2*parent.height - 16*uiScale
+                        height: tabs.rectheight * uiScale
                         radius: 8 * uiScale
                         border.width: 1 * uiScale
                         border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
@@ -147,13 +154,14 @@ ApplicationWindow {
                 TabButton {
                     id: filmulateButton
                     text: qsTr("Filmulate")
-                    width: 105 * uiScale
-                    height: 35 * uiScale
+                    width: tabs.tabwidth * uiScale
+                    height: tabs.tabheight * uiScale
                     background: Rectangle {
-                        x: 4 * uiScale
-                        y: 16 * uiScale
+                        x: tabs.rectx * uiScale
+                        //WTF WHY!? why doesn't it scale properly if I don't do this instead of just uiscale?
+                        y: tabs.recty * (1+1.2*(uiScale-1))
                         width: parent.width - 5*uiScale
-                        height: 2*parent.height - 16*uiScale
+                        height: tabs.rectheight * uiScale
                         radius: 8 * uiScale
                         border.width: 1 * uiScale
                         border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
@@ -185,13 +193,14 @@ ApplicationWindow {
                 TabButton {
                     id: settingsButton
                     text: qsTr("Settings")
-                    width: 105 * uiScale
-                    height: 35 * uiScale
+                    width: tabs.tabwidth * uiScale
+                    height: tabs.tabheight * uiScale
                     background: Rectangle {
-                        x: 4 * uiScale
-                        y: 16 * uiScale
+                        x: tabs.rectx * uiScale
+                        //WTF WHY!? why doesn't it scale properly if I don't do this instead of just uiscale?
+                        y: tabs.recty * (1+1.2*(uiScale-1))
                         width: parent.width - 5*uiScale
-                        height: 2*parent.height - 16*uiScale
+                        height: tabs.rectheight * uiScale
                         radius: 8 * uiScale
                         border.width: 1 * uiScale
                         border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
