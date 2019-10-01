@@ -10,6 +10,7 @@ Item {
     height: 30 * uiScale
     property alias value: progressBar.value
     property alias tooltipText: tooltip.tooltipText
+    property bool mini: false
 
     property real __padding: 2 * uiScale
 
@@ -37,7 +38,7 @@ Item {
                 width: progressBar.visualPosition*parent.width
                 height: parent.height
                 color: Colors.lightOrange
-                border.color: Colors.weakOrange
+                border.color: root.mini ? Colors.lightOrange : Colors.weakOrange
                 radius: 3 * uiScale
             }
         }
