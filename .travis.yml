@@ -15,7 +15,7 @@ install:
     - sudo apt-get -y install g++-9
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
     # Qt 5.12.3
-    - sudo apt-get -y install qt512base qt512declarative qt512quickcontrols qt512quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev mesa-common-dev
+    - sudo apt-get -y install qt512base qt512declarative qt512quickcontrols qt512quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev
     - source /opt/qt512/bin/qt512-env.sh
 
 script:
