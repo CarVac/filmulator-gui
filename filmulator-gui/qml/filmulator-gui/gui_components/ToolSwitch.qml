@@ -1,6 +1,5 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import "../colors.js" as Colors
 import "."
 
@@ -31,21 +30,22 @@ Rectangle {
         x: __padding*2
         y: __padding/2
         anchors.verticalCenter: parent.verticalCenter
-        style: SwitchStyle {
-            groove: Rectangle {
-                implicitWidth: 70 * uiScale
-                implicitHeight: 20 * uiScale
-                radius: 3 * uiScale
-                gradient: Gradient {
-                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGrayL; position: 0.0}
-                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 0.1}
-                    GradientStop {color: control.checked ? Colors.lightOrange : Colors.brightGray; position: 1.0}
-                }
-
-                border.width: 1 * uiScale
-                border.color: control.checked ? Colors.weakOrange : Colors.middleGray
+        indicator: Rectangle {
+            implicitWidth: 70 * uiScale
+            implicitHeight: 20 * uiScale
+            radius: 3 * uiScale
+            gradient: Gradient {
+                GradientStop {color: toggleSwitch.checked ? Colors.lightOrange : Colors.brightGrayL; position: 0.0}
+                GradientStop {color: toggleSwitch.checked ? Colors.lightOrange : Colors.brightGray; position: 0.1}
+                GradientStop {color: toggleSwitch.checked ? Colors.lightOrange : Colors.brightGray; position: 1.0}
             }
-            handle: Rectangle {
+
+            border.width: 1 * uiScale
+            border.color: parent.checked ? Colors.weakOrange : Colors.middleGray
+
+            //handle
+            Rectangle {
+                x: toggleSwitch.checked ? parent.width-width : 0
                 implicitWidth: 30 * uiScale
                 implicitHeight: 20 * uiScale
                 radius: 3 * uiScale
@@ -57,7 +57,7 @@ Rectangle {
                 }
 
                 border.width: 1 * uiScale
-                border.color: control.checked ? Colors.weakOrange : Colors.middleGray
+                border.color: toggleSwitch.checked ? Colors.weakOrange : Colors.middleGray
             }
         }
         MouseArea {
@@ -94,10 +94,26 @@ Rectangle {
                 root.resetToDefault()
             }
         }
-
-        style: ToolButtonStyle {
-            uiScale: root.uiScale
-            notDisabled: root.changed
+        background: Rectangle {
+            implicitWidth: parent.width
+            implicitHeight: parent.width
+            border.width: 1 * uiScale
+            border.color: parent.pressed ? Colors.lightOrange : Colors.brightGray
+            radius: 5 * uiScale
+            gradient: Gradient {
+                GradientStop {color: reset.pressed ? "#000000" : "#222222"; position: 0.0}
+                GradientStop {color: reset.pressed ? "#161106" : "#111111"; position: 0.3}
+                GradientStop {color: reset.pressed ? "#161106" : "#111111"; position: 0.7}
+                GradientStop {color: reset.pressed ? "#272217" : "#000000"; position: 1.0}
+            }
+        }
+        contentItem: Text {
+            color: parent.pressed ? Colors.whiteOrange : "white"
+            anchors.centerIn: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: parent.text
+            font.pixelSize: 12.0 * uiScale
         }
     }
 
