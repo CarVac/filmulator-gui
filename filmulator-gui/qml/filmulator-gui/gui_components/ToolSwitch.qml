@@ -25,41 +25,12 @@ Rectangle {
 
     state: defaultOn ? "ON" : "OFF"
 
-    Switch {
+    SlideySwitch {
         id: toggleSwitch
         x: __padding*2
         y: __padding/2
+        uiScale: root.uiScale
         anchors.verticalCenter: parent.verticalCenter
-        indicator: Rectangle {
-            implicitWidth: 70 * uiScale
-            implicitHeight: 20 * uiScale
-            radius: 3 * uiScale
-            gradient: Gradient {
-                GradientStop {color: toggleSwitch.checked ? Colors.lightOrange : Colors.brightGrayL; position: 0.0}
-                GradientStop {color: toggleSwitch.checked ? Colors.lightOrange : Colors.brightGray; position: 0.1}
-                GradientStop {color: toggleSwitch.checked ? Colors.lightOrange : Colors.brightGray; position: 1.0}
-            }
-
-            border.width: 1 * uiScale
-            border.color: parent.checked ? Colors.weakOrange : Colors.middleGray
-
-            //handle
-            Rectangle {
-                x: toggleSwitch.checked ? parent.width-width : 0
-                implicitWidth: 30 * uiScale
-                implicitHeight: 20 * uiScale
-                radius: 3 * uiScale
-                gradient: Gradient {
-                    GradientStop {color: Colors.lowGrayH; position: 0.0}
-                    GradientStop {color: Colors.lowGray; position: 0.15}
-                    GradientStop {color: Colors.lowGray; position: 0.9}
-                    GradientStop {color: Colors.lowGrayL; position: 1.0}
-                }
-
-                border.width: 1 * uiScale
-                border.color: toggleSwitch.checked ? Colors.weakOrange : Colors.middleGray
-            }
-        }
         MouseArea {
             id: hoverStealer
             anchors.fill: parent
