@@ -7,7 +7,6 @@ if(APPLE)
             ToolButton.qml
             ImportDirEntry.qml
             ToolSwitch.qml
-            ToolButtonStyle.qml
             OrganizeDelegate.qml
             ImportTextEntry.qml
             ImportFileEntry.qml
@@ -16,7 +15,6 @@ if(APPLE)
             ToolTip.qml
             SlipperySlider.qml
             SlimSplitView.qml
-            ToolRadioButtonStyle.qml
         DESTINATION
             Filmulator.app/Contents/Resources/qml/filmulator-gui/gui_components
     )
@@ -33,7 +31,6 @@ elseif(WIN32)
             ToolButton.qml
             ImportDirEntry.qml
             ToolSwitch.qml
-            ToolButtonStyle.qml
             OrganizeDelegate.qml
             ImportTextEntry.qml
             ImportFileEntry.qml
@@ -42,7 +39,6 @@ elseif(WIN32)
             ToolTip.qml
             SlipperySlider.qml
             SlimSplitView.qml
-            ToolRadioButtonStyle.qml
         DESTINATION
             ${CMAKE_INSTALL_BINDIR}/qml/filmulator-gui/gui_components
     )
@@ -56,7 +52,6 @@ else()
             ToolButton.qml
             ImportDirEntry.qml
             ToolSwitch.qml
-            ToolButtonStyle.qml
             OrganizeDelegate.qml
             ImportTextEntry.qml
             ImportFileEntry.qml
@@ -65,7 +60,6 @@ else()
             ToolTip.qml
             SlipperySlider.qml
             SlimSplitView.qml
-            ToolRadioButtonStyle.qml
         DESTINATION
             ${CMAKE_INSTALL_DATADIR}/Filmulator/qml/filmulator-gui/gui_components
     )
