@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.12
 import "../colors.js" as Colors
 
 /*! This is a modified implementationof the Qt Quick Controls Slider, without any initial stiction.
