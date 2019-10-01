@@ -43,12 +43,10 @@ ApplicationWindow {
             Layout.minimumHeight: 200 * uiScale
             TabBar {
                 id: tabs
-//                height: 0
 
                 background:  Rectangle {
+                    //needs to be invisible
                     color: "#00000000"
-//                    width: 0
-//                    height: 0
                 }
                 property real tabwidth: 105
                 property real tabheight: 61
