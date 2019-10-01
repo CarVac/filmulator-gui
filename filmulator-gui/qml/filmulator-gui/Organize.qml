@@ -5,7 +5,8 @@ import "colors.js" as Colors
 
 SlimSplitView {
     id: root
-    anchors.fill: parent
+    Layout.fillWidth: true
+    Layout.fillHeight: true
     orientation: Qt.Horizontal
     property real uiScale: 1
 

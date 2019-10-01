@@ -7,7 +7,8 @@ Rectangle {
     id: root
     property real uiScale: 1
     color: Colors.darkGrayL
-    anchors.fill: parent
+    Layout.fillWidth: true
+    Layout.fillHeight: true
 
     signal tooltipWanted(string text, int x, int y)
 

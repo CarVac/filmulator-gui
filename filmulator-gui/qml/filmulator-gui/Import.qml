@@ -8,7 +8,8 @@ Rectangle {
     id: root
     property real uiScale: 1
     color: Colors.darkGrayL
-    anchors.fill: parent
+    Layout.fillWidth: true
+    Layout.fillHeight: true
     property string folderPath: ""
     property string filePath: ""
     property bool sourceIsFolder: true

@@ -6,7 +6,8 @@ import "colors.js" as Colors
 
 SlimSplitView {
     id: root
-    anchors.fill: parent
+    Layout.fillWidth: true
+    Layout.fillHeight: true
     orientation: Qt.Horizontal
     property real uiScale: 1
     property bool imageReady: false//must only be made ready when the full size image is ready
