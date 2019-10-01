@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.12
 import "../colors.js" as Colors
 
 Rectangle {
