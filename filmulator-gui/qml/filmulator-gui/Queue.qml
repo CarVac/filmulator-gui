@@ -1,6 +1,6 @@
-import QtQuick 2.3
-import QtQuick.Layouts 1.1
-import QtQml.Models 2.1
+import QtQuick 2.12
+import QtQuick.Layouts 1.12
+import QtQml.Models 2.12
 import "gui_components"
 import "getRoot.js" as GetRootObject
 import "colors.js" as Colors
