@@ -1,8 +1,6 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
-import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 import "gui_components"
 import "colors.js" as Colors
 
@@ -57,9 +55,11 @@ Rectangle {
             height: 30 * root.uiScale
             color: Colors.darkGray
 
-            ExclusiveGroup {id: sourceSelectorGroup}
-
             property bool hovered: (sourceDirButton.hovered || sourceFileButton.hovered)
+
+            ButtonGroup {
+                id: sourceSelectorGroup
+            }
 
             ToolRadioButton {
                 id: sourceDirButton
@@ -70,7 +70,7 @@ Rectangle {
                 text: qsTr("Import Directory")
                 tooltipText: qsTr("Import from a directory and all subdirectories.")
                 checked: true
-                exclusiveGroup: sourceSelectorGroup
+                ButtonGroup.group: sourceSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.sourceIsFolder = true
@@ -90,7 +90,7 @@ Rectangle {
                 standalone: true
                 text: qsTr("Import Files")
                 tooltipText: qsTr("Import one or more files.")
-                exclusiveGroup: sourceSelectorGroup
+                ButtonGroup.group: sourceSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.sourceIsFolder = false
@@ -160,9 +160,11 @@ Rectangle {
             height: 30 * uiScale
             color: Colors.darkGray
 
-            ExclusiveGroup {id: destSelectorGroup}
-
             property bool hovered: (importAndMoveButton.hovered || importInPlaceButton.hovered)
+
+            ButtonGroup {
+                id: destSelectorGroup
+            }
 
             ToolRadioButton {
                 id: importAndMoveButton
@@ -173,7 +175,7 @@ Rectangle {
                 text: qsTr("Copy to directory")
                 tooltipText: qsTr("When importing, copy files to a folder structure based on date and time of capture. This lets you create backup copies at the same time.")
                 checked: true
-                exclusiveGroup: destSelectorGroup
+                ButtonGroup.group: destSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.importInPlace = false
@@ -193,7 +195,7 @@ Rectangle {
                 standalone: true
                 text: qsTr("Import in place")
                 tooltipText: qsTr("Import files into the database without moving or copying them.")
-                exclusiveGroup: destSelectorGroup
+                ButtonGroup.group: destSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.importInPlace = true
