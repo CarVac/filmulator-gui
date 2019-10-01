@@ -1,8 +1,7 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.1
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
+import QtQuick.Dialogs 1.3
 import "gui_components"
 import "colors.js" as Colors
 
@@ -42,73 +41,230 @@ ApplicationWindow {
             id: tabContainer
             Layout.fillHeight: true
             Layout.minimumHeight: 200 * uiScale
-            TabView {
+            TabBar {
                 id: tabs
-                //anchors.margins: (Qt.platform.os === "osx" ? 12 : 2) * uiScale
-                anchors.fill: parent
-                tabPosition: Qt.TopEdge
-                style: headerTabViewStyle
+//                height: 0
 
-                Tab {
-                    id: importTab
-                    title: qsTr("Import")
-                    active: true
-                    Import {
-                        id: importItem
-                        Component.onCompleted: {
-                            importItem.tooltipWanted.connect(root.tooltipWanted)
-                        }
-                        uiScale: root.uiScale
-                    }
+                background:  Rectangle {
+                    color: "#00000000"
+//                    width: 0
+//                    height: 0
                 }
 
-                Tab {
-                    id: organizeTab
-                    title: qsTr("Organize")
-                    active: true
-                    Organize {
-                        id: organizeItem
-                        Component.onCompleted: {
-                            organizeItem.tooltipWanted.connect(root.tooltipWanted)
+                TabButton {
+                    id: importButton
+                    text: qsTr("Import")
+                    width: 105 * uiScale
+                    height: 35 * uiScale
+                    background: Rectangle {
+                        x: 4 * uiScale
+                        y: 16 * uiScale
+                        width: parent.width - 5*uiScale
+                        height: 2*parent.height - 16*uiScale
+                        radius: 8 * uiScale
+                        border.width: 1 * uiScale
+                        border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
+                        gradient: Gradient {
+                            GradientStop { color: importButton.checked ? "#222222" : "#000000"; position: 0.0 }
+                            GradientStop { color: "#111111";                                    position: 0.15}
+                            GradientStop { color: "#111111";                                    position: 1.0 }
                         }
-                        uiScale: root.uiScale
+                        Item {
+                            x: 0
+                            y: 1.5 * uiScale
+                            width: parent.width
+                            height: (parent.height/2)*1.1
+                            Text {
+                                color: importButton.checked ? "white" : Colors.brightGray
+                                text: importButton.text
+                                anchors.centerIn: parent
+                                //anchors.horizontalCenter: parent.horizontalCenter
+                                //y: 7.75 * uiScale
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                font.bold: true
+                                font.pixelSize: 12.0 * uiScale
+                            }
+                            FilmProgressBar {
+                                id: importTabProgress
+                                mini: true
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                y: 22 * uiScale
+                                width: parent.width - 8*uiScale
+                                height: 6 * uiScale
+                                value: importModel.progress
+                                visible: (value > 0 && value < 1)
+                                Connections {
+                                    target: importModel
+                                    onProgressChanged: importTabProgress.value = importModel.progress
+                                }
+                                uiScale: root.uiScale
+                            }
+                        }
+                    }
+                    contentItem: Item {
+                        //dummy to hide the default text
                     }
                 }
-
-                Tab {
-                    id: editorTab
-                    title: qsTr("Filmulate")
-                    active: true
-                    Edit {
-                        id: editItem
-                        Component.onCompleted: {
-                            editItem.tooltipWanted.connect(root.tooltipWanted)
-                            editItem.imageURL.connect(root.imageURL)
+                TabButton {
+                    id: organizeButton
+                    text: qsTr("Organize")
+                    width: 105 * uiScale
+                    height: 35 * uiScale
+                    background: Rectangle {
+                        x: 4 * uiScale
+                        y: 16 * uiScale
+                        width: parent.width - 5*uiScale
+                        height: 2*parent.height - 16*uiScale
+                        radius: 8 * uiScale
+                        border.width: 1 * uiScale
+                        border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
+                        gradient: Gradient {
+                            GradientStop { color: organizeButton.checked ? "#222222" : "#000000"; position: 0.0 }
+                            GradientStop { color: "#111111";                                      position: 0.15}
+                            GradientStop { color: "#111111";                                      position: 1.0 }
                         }
-                        onRequestingCroppingChanged: {
-                            root.cropping = editItem.requestingCropping
+                        Item {
+                            x: 0
+                            y: 1.5 * uiScale
+                            width: parent.width
+                            height: (parent.height/2)*1.1
+                            Text {
+                                color: organizeButton.checked ? "white" : Colors.brightGray
+                                text: organizeButton.text
+                                anchors.centerIn: parent
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                font.bold: true
+                                font.pixelSize: 12.0 * uiScale
+                            }
                         }
-                        uiScale: root.uiScale
+                    }
+                    contentItem: Item {
+                        //dummy to hide the default text
                     }
                 }
+                TabButton {
+                    id: filmulateButton
+                    text: qsTr("Filmulate")
+                    width: 105 * uiScale
+                    height: 35 * uiScale
+                    background: Rectangle {
+                        x: 4 * uiScale
+                        y: 16 * uiScale
+                        width: parent.width - 5*uiScale
+                        height: 2*parent.height - 16*uiScale
+                        radius: 8 * uiScale
+                        border.width: 1 * uiScale
+                        border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
+                        gradient: Gradient {
+                            GradientStop { color: filmulateButton.checked ? "#222222" : "#000000"; position: 0.0 }
+                            GradientStop { color: "#111111";                                       position: 0.15}
+                            GradientStop { color: "#111111";                                       position: 1.0 }
+                        }
+                        Item {
+                            x: 0
+                            y: 1.5 * uiScale
+                            width: parent.width
+                            height: (parent.height/2)*1.1
+                            Text {
+                                color: filmulateButton.checked ? "white" : Colors.brightGray
+                                text: filmulateButton.text
+                                anchors.centerIn: parent
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                font.bold: true
+                                font.pixelSize: 12.0 * uiScale
+                            }
+                        }
+                    }
+                    contentItem: Item {
+                        //dummy to hide the default text
+                    }
+                }
+                TabButton {
+                    id: settingsButton
+                    text: qsTr("Settings")
+                    width: 105 * uiScale
+                    height: 35 * uiScale
+                    background: Rectangle {
+                        x: 4 * uiScale
+                        y: 16 * uiScale
+                        width: parent.width - 5*uiScale
+                        height: 2*parent.height - 16*uiScale
+                        radius: 8 * uiScale
+                        border.width: 1 * uiScale
+                        border.color: parent.checked ? Colors.lightOrange : Colors.middleGray
+                        gradient: Gradient {
+                            GradientStop { color: settingsButton.checked ? "#222222" : "#000000"; position: 0.0 }
+                            GradientStop { color: "#111111";                                      position: 0.15}
+                            GradientStop { color: "#111111";                                      position: 1.0 }
+                        }
+                        Item {
+                            x: 0
+                            y: 1.5 * uiScale
+                            width: parent.width
+                            height: (parent.height/2)*1.1
+                            Text {
+                                color: settingsButton.checked ? "white" : Colors.brightGray
+                                text: settingsButton.text
+                                anchors.centerIn: parent
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                font.bold: true
+                                font.pixelSize: 12.0 * uiScale
+                            }
+                        }
+                    }
+                    contentItem: Item {
+                        //dummy to hide the default text
+                    }
+                }
+            }
 
-                Tab {
-                    id: outputTab
-                    active: true
-                    title: qsTr("Output")
+            StackLayout {
+                id: mainContent
+                x: 0
+                y: Math.ceil(36 * uiScale)
+                width: parent.width
+                height: parent.height-y
+
+                currentIndex: tabs.currentIndex
+
+                Import {
+                    id: importItem
+                    Component.onCompleted: {
+                        importItem.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
                 }
 
-                Tab {
-                    id: settingsTab
-                    title: qsTr("Settings")
-                    active: true
-                    Settings {
-                        id: settingsItem
-                        Component.onCompleted: {
-                            settingsItem.tooltipWanted.connect(root.tooltipWanted)
-                        }
-                        uiScale: root.uiScale
+                Organize {
+                    id: organizeItem
+                    Component.onCompleted: {
+                        organizeItem.tooltipWanted.connect(root.tooltipWanted)
                     }
+                    uiScale: root.uiScale
+                }
+
+                Edit {
+                    id: editItem
+                    Component.onCompleted: {
+                        editItem.tooltipWanted.connect(root.tooltipWanted)
+                        editItem.imageURL.connect(root.imageURL)
+                    }
+                    onRequestingCroppingChanged: {
+                        root.cropping = editItem.requestingCropping
+                    }
+                    uiScale: root.uiScale
+                }
+
+                Settings {
+                    id: settingsItem
+                    Component.onCompleted: {
+                        settingsItem.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
                 }
             }
             Rectangle {
@@ -250,6 +406,7 @@ ApplicationWindow {
     }
 
     //styles
+    /*
     property Component headerTabViewStyle: TabViewStyle {
         tabOverlap: 0 * uiScale
         frameOverlap: 0 * uiScale
@@ -292,5 +449,5 @@ ApplicationWindow {
                 }
             }
         }
-    }
+    }*/
 }
