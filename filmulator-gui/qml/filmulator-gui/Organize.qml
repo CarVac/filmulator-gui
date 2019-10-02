@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Layouts 1.12
+import Qt.labs.calendar 1.0
 import "gui_components"
 import "colors.js" as Colors
 
@@ -63,6 +64,110 @@ SlimSplitView {
                         gridView.returnToBounds()
                     }
                     uiScale: root.uiScale
+                }
+
+                Rectangle {
+                    id: calendarRect
+                    property date selectedDate: settings.getOrganizeCaptureDate()
+                    color: Colors.darkGray
+                    width: parent.width
+                    height: 250 * uiScale
+
+                    property date calendarDate
+                    property int month: calendarDate.getMonth()
+                    property int year: calendarDate.getFullYear()
+                    Component.onCompleted: {
+                        calendarDate = new Date(Date.now())
+                    }
+
+                    //navigation
+                    ToolButton {
+                        id: backYear
+                        text: "<<"
+                        tooltipText: qsTr("Go to previous year")
+                        width: 30 * uiScale
+                        height: 30 * uiScale
+                        x: 0 * uiScale
+                        y: 0 * uiScale
+                        onTriggered: {
+                            calendarRect.calendarDate = new Date(calendarRect.year - 1, calendarRect.month)
+                        }
+                        Component.onCompleted: {
+                            backYear.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
+                    ToolButton {
+                        id: backMonth
+                        text: "<"
+                        tooltipText: qsTr("Go to previous month")
+                        width: 30 * uiScale
+                        height: 30 * uiScale
+                        x: 30 * uiScale
+                        y: 0 * uiScale
+                        onTriggered: {
+                            var newMonth = calendarRect.month - 1
+                            var newYear = calendarRect.year
+                            if (newMonth < 0) {
+                                newMonth = 11
+                                newYear = newYear - 1
+                            }
+                            calendarRect.calendarDate = new Date(newYear, newMonth)
+                        }
+                        Component.onCompleted: {
+                            backMonth.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
+                    Text {
+                        text: parent.year + "/" + (parent.month < 9 ? "0" : "") + (parent.month + 1)
+                        width: parent.width - 120 * uiScale
+                        height: 30 * uiScale
+                        x: 60 * uiScale
+                        y: 0 * uiScale
+                        color: "white"
+                        font.pixelSize: 12.0 * uiScale
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    ToolButton {
+                        id: forwardMonth
+                        text: ">"
+                        tooltipText: qsTr("Go to next month")
+                        width: 30 * uiScale
+                        height: 30 * uiScale
+                        x: parent.width - 60 * uiScale
+                        y: 0 * uiScale
+                        onTriggered: {
+                            var newMonth = calendarRect.month + 1
+                            var newYear = calendarRect.year
+                            if (newMonth > 11) {
+                                newMonth = 0
+                                newYear = newYear + 1
+                            }
+                            calendarRect.calendarDate = new Date(newYear, newMonth)
+                        }
+                        Component.onCompleted: {
+                            forwardMonth.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
+                    ToolButton {
+                        id: forwardYear
+                        text: ">>"
+                        tooltipText: qsTr("Go to next year")
+                        width: 30 * uiScale
+                        height: 30 * uiScale
+                        x: parent.width - 30 * uiScale
+                        y: 0 * uiScale
+                        onTriggered: {
+                            calendarRect.calendarDate = new Date(calendarRect.year + 1, calendarRect.month)
+                        }
+                        Component.onCompleted: {
+                            forwardYear.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
                 }
 
                 ToolCalendar {
