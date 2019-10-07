@@ -70,7 +70,7 @@ SlimSplitView {
                     id: calendarRect
                     property date selectedDate: settings.getOrganizeCaptureDate()
                     color: Colors.darkGray
-                    width: parent.width
+                    Layout.fillWidth: true
                     height: 250 * uiScale
 
                     property date calendarDate
@@ -167,6 +167,37 @@ SlimSplitView {
                             forwardYear.tooltipWanted.connect(root.tooltipWanted)
                         }
                         uiScale: root.uiScale
+                    }
+
+                    ColumnLayout {
+                        y: 30 * uiScale
+                        width: parent.width
+                        DayOfWeekRow {
+                            locale: Qt.locale("en_US")
+                            Layout.fillWidth: true
+                            height: 24 * uiScale
+                            delegate: Text {
+                                text: model.shortName
+                                color: "white"
+                                font.pixelSize: 12.0 * uiScale
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                        MonthGrid {
+                            locale: Qt.locale("en_US")
+                            month: calendarRect.month
+                            year: calendarRect.year
+                            Layout.fillWidth: true
+                            delegate: Text {
+                                text: model.day
+                                Layout.fillWidth: true
+                                color: model.month === calendarRect.month ? "#FFFFFFFF" : "#88FFFFFF"
+                                font.pixelSize: 12.0 * uiScale
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
                     }
                 }
 
