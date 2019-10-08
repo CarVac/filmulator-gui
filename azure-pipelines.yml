@@ -33,7 +33,7 @@ steps:
       echo "done clone"
       cd LibRaw
       set HOME=.
-      %MSYS_BASH% -c "sh ./configure"
+      %MSYS_BASH% -c "sh ./configure.ac"
       %MSYS_BASH% -c "make -j2 -f Makefile.mingw"
       %MSYS_BASH% -c "make install -f Makefile.mingw"
     displayName: build libraw
