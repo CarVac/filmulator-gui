@@ -74,10 +74,21 @@ SlimSplitView {
                     height: 250 * uiScale
 
                     property date calendarDate
+                    property int day: calendarDate.getDate()
                     property int month: calendarDate.getMonth()
                     property int year: calendarDate.getFullYear()
                     Component.onCompleted: {
                         calendarDate = new Date(Date.now())
+                    }
+
+                    Connections {
+                        target: organizeModel
+                        onCaptureDateChanged: {
+                            var newDate = organizeModel.getSelectedDate()
+                            calendarRect.selectedDate = newDate
+                            calendarRect.calendarDate = newDate
+                            settings.organizeCaptureDate = newDate
+                        }
                     }
 
                     //navigation
@@ -172,6 +183,7 @@ SlimSplitView {
                     ColumnLayout {
                         y: 30 * uiScale
                         width: parent.width
+                        height: 220 * uiScale
                         DayOfWeekRow {
                             locale: Qt.locale("en_US")
                             Layout.fillWidth: true
@@ -189,13 +201,24 @@ SlimSplitView {
                             month: calendarRect.month
                             year: calendarRect.year
                             Layout.fillWidth: true
+                            Layout.fillHeight: true
                             delegate: Text {
                                 text: model.day
                                 Layout.fillWidth: true
+                                Layout.fillHeight: true
                                 color: model.month === calendarRect.month ? "#FFFFFFFF" : "#88FFFFFF"
                                 font.pixelSize: 12.0 * uiScale
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
+                                Rectangle {
+                                    id: dayRectangle
+                                    anchors.fill: parent
+                                    z: -1
+                                    color: Colors.darkGray
+                                    border.color: (model.day === calendarRect.day && model.month === calendarRect.month && model.year === calendarRect.year) ? Colors.medOrange : Colors.darkGray
+                                    border.width: 2 * uiScale
+                                    radius: 5 * uiScale
+                                }
                             }
                         }
                     }
