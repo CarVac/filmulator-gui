@@ -122,6 +122,7 @@ QDate Settings::getOrganizeCaptureDate()
 {
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
     organizeCaptureDate = settings.value("photoDB/organizeCaptureDate", QVariant(QDate::currentDate())).toDate();
+    organizeCaptureDate = organizeCaptureDate.addDays(1);
     emit organizeCaptureDateChanged();
     return organizeCaptureDate;
 }

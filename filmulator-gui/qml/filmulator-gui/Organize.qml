@@ -68,26 +68,38 @@ SlimSplitView {
 
                 Rectangle {
                     id: calendarRect
-                    property date selectedDate: settings.getOrganizeCaptureDate()
                     color: Colors.darkGray
                     Layout.fillWidth: true
                     height: 250 * uiScale
 
-                    property date calendarDate
+                    property date selectedDate: settings.getOrganizeCaptureDate()
+                    property int selectedDay: selectedDate.getDate()
+                    property int selectedMonth: selectedDate.getMonth()
+                    property int selectedYear: selectedDate.getFullYear()
+
+                    property date calendarDate: settings.getOrganizeCaptureDate()
                     property int day: calendarDate.getDate()
                     property int month: calendarDate.getMonth()
                     property int year: calendarDate.getFullYear()
+
+                    property bool notCompleted: true
+
                     Component.onCompleted: {
-                        calendarDate = new Date(Date.now())
+                        organizeModel.setMinMaxCaptureTime(settings.getOrganizeCaptureDate())
+                        calendarRect.calendarDate = settings.getOrganizeCaptureDate()
+                        calendarRect.selectedDate = settings.getOrganizeCaptureDate()
+                        calendarRect.notCompleted = false
                     }
 
                     Connections {
                         target: organizeModel
                         onCaptureDateChanged: {
-                            var newDate = organizeModel.getSelectedDate()
-                            calendarRect.selectedDate = newDate
-                            calendarRect.calendarDate = newDate
-                            settings.organizeCaptureDate = newDate
+                            if (!calendarRect.notCompleted) {
+                                var newDate = organizeModel.getSelectedDate()
+                                calendarRect.selectedDate = newDate
+                                calendarRect.calendarDate = newDate
+                                settings.organizeCaptureDate = newDate
+                            }
                         }
                     }
 
@@ -215,87 +227,45 @@ SlimSplitView {
                                     anchors.fill: parent
                                     z: -1
                                     color: Colors.darkGray
-                                    border.color: (model.day === calendarRect.day && model.month === calendarRect.month && model.year === calendarRect.year) ? Colors.medOrange : Colors.darkGray
+                                    border.color: (model.day === calendarRect.selectedDay && model.month === calendarRect.selectedMonth && model.year === calendarRect.selectedYear) ? Colors.medOrange : Colors.darkGray
                                     border.width: 2 * uiScale
                                     radius: 5 * uiScale
                                 }
-                            }
-                        }
-                    }
-                }
-
-                ToolCalendar {
-                    id: captureCalendar
-                    minimumDate: "1970-01-01"
-                    maximumDate: "2038-01-01"
-                    selectedDate: settings.getOrganizeCaptureDate()
-                    onPressed: {
-                        filterListFlick.interactive = false
-                        var isChanged = 0
-                        if (!initialClick && !secondClick) {
-                            initialClick = true
-                            if (tempDate.toString() !== date.toString()) {
-                                isChanged = 1
-                            }
-                            if (tempDate.toDateString().slice(4,7) !== date.toDateString().slice(4,7)) {
-                                //If the month changed, we don't want to update on any further movements.
-                                //We start a counter to ignore x frames of movement.
-                                monthChanged = 15
-                            }
-                            tempDate = date
-                        } else {
-                            initialClick = false
-                            secondClick = true
-                            if (monthChanged <= 0) {
-                                // If the ignore counter is empty
-                                if (tempDate.toString() !== date.toString()) {
-                                    isChanged = 1
+                                MouseArea {
+                                    id: dayMouseArea
+                                    anchors.fill: parent
+                                    property int oldYear
+                                    property int oldMonth
+                                    property int oldDay
+                                    onPressed: {
+                                        filterListFlick.interactive = false
+                                        //only respond to clicks in the current month
+                                        oldYear = model.year
+                                        oldMonth = model.month
+                                        oldDay = model.day
+                                        if (model.month === calendarRect.month) {
+                                            var monthOne = model.month+1
+                                            var monthStr = (monthOne < 10) ? ("0" + monthOne) : ("" + monthOne)
+                                            var dayStr = (model.day < 10) ? ("0" + model.day) : ("" + model.day)
+                                            var captureTimeString = model.year + "/" + monthStr + "/" + dayStr
+                                            organizeModel.setMinMaxCaptureTimeString(captureTimeString)
+                                            settings.organizeCaptureDate = new Date(model.year, model.month, model.day)
+                                        }
+                                    }
+                                    onReleased: {
+                                        var changed = (oldYear !== model.year) || (oldMonth !== model.month) || (oldDay !== model.day)
+                                        if (model.month === calendarRect.month && changed) {
+                                            var monthOne = model.month+1
+                                            var monthStr = (monthOne < 10) ? ("0" + monthOne) : ("" + monthOne)
+                                            var dayStr = (model.day < 10) ? ("0" + model.day) : ("" + model.day)
+                                            var captureTimeString = model.year + "/" + monthStr + "/" + dayStr
+                                            organizeModel.setMinMaxCaptureTimeString(captureTimeString)
+                                            settings.organizeCaptureDate = new Date(model.year, model.month, model.day)
+                                        }
+                                        filterListFlick.interactive = true
+                                    }
                                 }
-                                tempDate = date
-                            } else {
-                                //If we still have to see
-                                monthChanged = monthChanged - 1;
                             }
-                        }
-                        if (isChanged === 1) {
-                            organizeModel.setMinMaxCaptureTime(tempDate)
-                            gridView.returnToBounds()
-                        }
-                    }
-
-                    onReleased: {
-                        var isChanged = 0
-                        //If the mouse has moved, and to a new date, and in the same month
-                        if (!initialClick && tempDate.toString() !== date.toString() && monthChanged <= 0) {
-                            //Use the new position.
-                            tempDate = date
-                            //Then do have it update the model.
-                            isChanged = 1
-                        }
-
-                        initialClick = false
-                        secondClick = false
-                        monthChanged = 0
-                        settings.organizeCaptureDate = tempDate
-                        if (isChanged === 1) {
-                            organizeModel.setMinMaxCaptureTime(tempDate)
-                        }
-                        selectedDate = tempDate
-                        filterListFlick.interactive = true
-                    }
-
-                    uiScale: root.uiScale
-                    Component.onCompleted: {
-                        captureCalendar.tooltipWanted.connect(root.tooltipWanted)
-                        organizeModel.setMinMaxCaptureTime(selectedDate)
-                        gridView.returnToBounds()
-                    }
-                    Connections {
-                        target: organizeModel
-                        onCaptureDateChanged: {
-                            var newDate = organizeModel.getSelectedDate()
-                            captureCalendar.selectedDate = newDate
-                            settings.organizeCaptureDate = newDate
                         }
                     }
                 }
