@@ -24,19 +24,8 @@ steps:
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
       tar gzip nano make diffutils intltool git cmake ^
       mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
-      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,qt5,qtwebkit}
+      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,qtwebkit}
     displayName: Install Dependencies
-  - script: |
-      mkdir libraw
-      cd libraw
-      git clone https://github.com/LibRaw/LibRaw.git
-      echo "done clone"
-      cd LibRaw
-      set HOME=.
-      %MSYS_BASH% -c "sh ./configure.ac"
-      %MSYS_BASH% -c "make -j2 -f Makefile.mingw"
-      %MSYS_BASH% -c "make install -f Makefile.mingw"
-    displayName: build libraw
   - script: |
       mkdir librt
       cd librt
