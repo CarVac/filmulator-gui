@@ -1,6 +1,7 @@
 function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale)
 {
     var histFunc;
+    var drawLuma = true;
     switch (histNumber)
     {
     case 1:
@@ -11,6 +12,10 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
         break;
     case 3:
         histFunc = function(a,b) {return filmProvider.getHistPostFilmPoint(a,b);};
+        break;
+    case 4:
+        histFunc = function(a,b) {return filmProvider.getHistRawPoint(a,b);};
+        drawLuma = false;
     }
 
     ctx.save();
@@ -29,20 +34,23 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
     var maxValue = 128.0
 
     //Luma curve
-    ctx.beginPath();
-    ctx.moveTo(startx,starty);
-    for(var i = 0; i < maxValue; i++)
+    if(drawLuma)
     {
-        histPoint = histFunc(0,i);
-        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+        ctx.beginPath();
+        ctx.moveTo(startx,starty);
+        for(var i = 0; i < maxValue; i++)
+        {
+            histPoint = histFunc(0,i);
+            ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+        }
+        ctx.lineTo(endx,starty);
+        ctx.lineTo(startx,starty);
+        ctx.closePath();
+        myGradient.addColorStop(1,"white");
+        myGradient.addColorStop(0,'rgb(180,180,180)');
+        ctx.fillStyle = myGradient;
+        ctx.fill()
     }
-    ctx.lineTo(endx,starty);
-    ctx.lineTo(startx,starty);
-    ctx.closePath();
-    myGradient.addColorStop(1,"white");
-    myGradient.addColorStop(0,'rgb(180,180,180)');
-    ctx.fillStyle = myGradient;
-    ctx.fill()
 
     //rCurve
     ctx.beginPath()

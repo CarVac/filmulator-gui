@@ -180,23 +180,30 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << image_processor->imgdata.color.cblack[4] << endl;
             cout << image_processor->imgdata.color.cblack[5] << endl;
             cout << "block-based blackpoint: " << endl;
+            uint maxBlockBlackpoint = 0;
             if (blackRow > 0 && blackCol > 0)
             {
                 for (int i = 0; i < blackRow; i++)
                 {
                     for (int j = 0; j < blackCol; j++)
                     {
+                        maxBlockBlackpoint = max(maxBlockBlackpoint, image_processor->imgdata.color.cblack[6 + i*blackCol + j]);
                         cout << image_processor->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
                     }
                     cout << endl;
                 }
             }
+            cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
 
             //get white saturation values
             cout << "WHITE SATURATION ========================================================" << endl;
             cout << "data_maximum: " << image_processor->imgdata.color.data_maximum << endl;
             cout << "maximum: " << image_processor->imgdata.color.maximum << endl;
-            maxValue = image_processor->imgdata.color.maximum;
+
+            //This needs the black point subtracted, and a fudge factor to ensure clipping is hard and fast.
+            //Maybe the fudge factor should be user-set.
+            maxValue = image_processor->imgdata.color.maximum - blackpoint - maxBlockBlackpoint;
+            cout << "black-subtracted maximum: " << maxValue << endl;
             cout << "fmaximum: " << image_processor->imgdata.color.fmaximum << endl;
             cout << "fnorm: " << image_processor->imgdata.color.fnorm << endl;
 
@@ -256,6 +263,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     rawMin = std::min(rawMin, raw_image[row][col]);
                     rawMax = std::max(rawMax, raw_image[row][col]);
                 }
+            }
+
+            //generate raw histogram
+            if (WithHisto == histo)
+            {
+                histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans);
             }
 
             cout << "max of raw_image: " << rawMax << " ===============================================" << endl;
@@ -360,6 +373,18 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
                 markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+                //there's no inputscale for markesteijn so we need to scale
+                float scaleFactor = outputscale / inputscale;
+                #pragma omp parallel for
+                for (int row = 0; row < red.nr(); row++)
+                {
+                    for (int col = 0; col < red.nc(); col++)
+                    {
+                        red(row, col)   = red(row, col)   * scaleFactor;
+                        green(row, col) = green(row, col) * scaleFactor;
+                        blue(row, col)  = blue(row, col)  * scaleFactor;
+                    }
+                }
             }
             else
             {

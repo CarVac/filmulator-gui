@@ -35,12 +35,14 @@ public:
     void updateFilmProgress(float);
 
     Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,LogY::no);}
+    Q_INVOKABLE float getHistRawPoint(int index, int i){return getHistogramPoint(rawHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
 
-    void updateHistPreFilm( const matrix<float>& image, float maximum );
-    void updateHistPostFilm( const matrix<float>& image, float maximum );
-    void updateHistFinal( const matrix<unsigned short>& image);
+    void updateHistRaw(const matrix<float>& image, float maximum, unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans);
+    void updateHistPreFilm(const matrix<float>& image, float maximum);
+    void updateHistPostFilm(const matrix<float>& image, float maximum);
+    void updateHistFinal(const matrix<unsigned short>& image);
 
     Q_INVOKABLE void writeTiff();
     Q_INVOKABLE void writeJpeg();
@@ -81,6 +83,7 @@ protected:
     matrix<unsigned short> last_image;
 
     Histogram finalHist;
+    Histogram rawHist;
     Histogram postFilmHist;
     Histogram preFilmHist;
 
@@ -97,6 +100,7 @@ signals:
 
     //Notifications for the histograms
     void histFinalChanged();
+    void histRawChanged();
     void histPostFilmChanged();
     void histPreFilmChanged();
 

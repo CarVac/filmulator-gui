@@ -20,11 +20,12 @@ SlimSplitView {
 
     signal tooltipWanted(string text, int x, int y)
 
-    Item {
+    Rectangle {
         width: parent.width
         Layout.minimumHeight: 50 * uiScale
         Layout.maximumHeight: 500 * uiScale
         height: 250 * uiScale
+        color: Colors.lowGray
         Canvas {
             id: mainHistoCanvas
             anchors.fill: parent
@@ -67,6 +68,40 @@ SlimSplitView {
                     id: topSpacer
                     color: "#00000000"//transparent
                     height: 3 * uiScale
+                }
+
+                Rectangle {
+                    height: 30 * uiScale
+                    Layout.fillWidth: true
+                    color: Colors.lowGray
+
+                    Canvas {
+                        id: rawHistoCanvas
+                        anchors.fill: parent
+
+                        property int lineWidth: 2 * uiScale
+                        property real alpha: 1.0
+                        property int padding: 3 * uiScale
+
+                        canvasSize.width: root.maxWidth
+                        canvasSize.height: height
+
+                        onWidthChanged: requestPaint();
+                        Connections {
+                            target: filmProvider
+                            onHistPreFilmChanged: rawHistoCanvas.requestPaint()
+                        }
+
+                        onPaint: Script.generateHistogram(4,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
+
+                        ToolTip {
+                            id: rawHistoTooltip
+                            tooltipText: qsTr("This is a histogram of the data in the raw file.")
+                            Component.onCompleted: {
+                                rawHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
+                            }
+                        }
+                    }
                 }
 
                 ToolSwitch {
@@ -217,39 +252,43 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
-                Canvas {
-                    id: preFilmHistoCanvas
-                    Layout.fillWidth: true
-                    //It seems that since this is in a layout, you can't bind dimensions or locations.
-                    // Makes sense, given that the layout is supposed to abstract that away.
+                Rectangle {
                     height: 30 * uiScale
-                    property int lineWidth: 2 * uiScale
-                    property real alpha: 1.0
-                    property int padding: 3 * uiScale
+                    Layout.fillWidth: true
+                    color: Colors.lowGray
 
-                    canvasSize.width: root.maxWidth
-                    canvasSize.height: height
+                    Canvas {
+                        id: preFilmHistoCanvas
+                        anchors.fill: parent
 
-                    onWidthChanged: requestPaint();
-                    Connections {
-                        target: filmProvider
-                        onHistPreFilmChanged: preFilmHistoCanvas.requestPaint()
-                    }
+                        property int lineWidth: 2 * uiScale
+                        property real alpha: 1.0
+                        property int padding: 3 * uiScale
 
-                    onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
-                    Rectangle {
-                        id: rolloffLine
-                        height: parent.height
-                        width: 1
-                        color: rolloffSlider.pressed ? Colors.medOrange : "white"
-                        x: parent.padding + paramManager.rolloffBoundary/65535*(parent.width-2*parent.padding)
-                    }
+                        canvasSize.width: root.maxWidth
+                        canvasSize.height: height
 
-                    ToolTip {
-                        id: preFilmTooltip
-                        tooltipText: qsTr("This is a histogram of the input to the film simulation.")
-                        Component.onCompleted: {
-                            preFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
+                        onWidthChanged: requestPaint();
+                        Connections {
+                            target: filmProvider
+                            onHistPreFilmChanged: preFilmHistoCanvas.requestPaint()
+                        }
+
+                        onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
+                        Rectangle {
+                            id: rolloffLine
+                            height: parent.height
+                            width: 1
+                            color: rolloffSlider.pressed ? Colors.medOrange : "white"
+                            x: parent.padding + paramManager.rolloffBoundary/65535*(parent.width-2*parent.padding)
+                        }
+
+                        ToolTip {
+                            id: preFilmTooltip
+                            tooltipText: qsTr("This is a histogram of the input to the film simulation.")
+                            Component.onCompleted: {
+                                preFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
+                            }
                         }
                     }
                 }
@@ -368,48 +407,52 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
-                Canvas {
-                    id: postFilmHistoCanvas
-                    Layout.fillWidth: true
-                    //It seems that since this is in a layout, you can't bind dimensions or locations.
-                    // Makes sense, given that the layout is supposed to abstract that away.
+                Rectangle {
                     height: 30 * uiScale
-                    property int lineWidth: 2 * uiScale
-                    property real alpha: 1.0
-                    property int padding: 3 * uiScale
+                    Layout.fillWidth: true
+                    color: Colors.lowGray
 
-                    canvasSize.width: root.maxWidth
-                    canvasSize.height: height
+                    Canvas {
+                        id: postFilmHistoCanvas
+                        anchors.fill: parent
 
-                    onWidthChanged: requestPaint();
-                    Connections {
-                        target: filmProvider
-                        onHistPostFilmChanged: postFilmHistoCanvas.requestPaint()
-                    }
+                        property int lineWidth: 2 * uiScale
+                        property real alpha: 1.0
+                        property int padding: 3 * uiScale
 
-                    onPaint: Script.generateHistogram(3,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
-                    Rectangle {
-                        id: blackpointLine
-                        height: parent.height
-                        width: 1
-                        color: blackpointSlider.pressed ? Colors.medOrange : "white"
-                        x: parent.padding + paramManager.blackpoint/.0025*(parent.width-2*parent.padding)
-                        //The .0025 is the highest bin in the post filmulator histogram.
-                    }
+                        canvasSize.width: root.maxWidth
+                        canvasSize.height: height
 
-                    Rectangle {
-                        id: whitepointLine
-                        height: parent.height
-                        width: 1
-                        color: whitepointSlider.pressed ? Colors.medOrange : (blackpointSlider.pressed ? Colors.brighterOrange : "white")
-                        x: parent.padding + (paramManager.blackpoint+paramManager.whitepoint)/.0025*(parent.width-2*parent.padding)
-                        //The .0025 is the highest bin in the post filmulator histogram.
-                    }
-                    ToolTip {
-                        id: postFilmTooltip
-                        tooltipText: qsTr("This is a histogram of the output from the film simulation.")
-                        Component.onCompleted: {
-                            postFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
+                        onWidthChanged: requestPaint();
+                        Connections {
+                            target: filmProvider
+                            onHistPostFilmChanged: postFilmHistoCanvas.requestPaint()
+                        }
+
+                        onPaint: Script.generateHistogram(3,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
+                        Rectangle {
+                            id: blackpointLine
+                            height: parent.height
+                            width: 1
+                            color: blackpointSlider.pressed ? Colors.medOrange : "white"
+                            x: parent.padding + paramManager.blackpoint/.0025*(parent.width-2*parent.padding)
+                            //The .0025 is the highest bin in the post filmulator histogram.
+                        }
+
+                        Rectangle {
+                            id: whitepointLine
+                            height: parent.height
+                            width: 1
+                            color: whitepointSlider.pressed ? Colors.medOrange : (blackpointSlider.pressed ? Colors.brighterOrange : "white")
+                            x: parent.padding + (paramManager.blackpoint+paramManager.whitepoint)/.0025*(parent.width-2*parent.padding)
+                            //The .0025 is the highest bin in the post filmulator histogram.
+                        }
+                        ToolTip {
+                            id: postFilmTooltip
+                            tooltipText: qsTr("This is a histogram of the output from the film simulation.")
+                            Component.onCompleted: {
+                                postFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
+                            }
                         }
                     }
                 }

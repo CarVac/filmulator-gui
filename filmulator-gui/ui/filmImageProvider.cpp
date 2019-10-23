@@ -210,8 +210,6 @@ float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, Lo
             return log(hist.bHist[i]+1)/log(hist.bHistMax+1);
     }
     //xHistMax is the maximum height of any bin except the extremes.
-
-    //return float(min(hist.allHist[i*4+index],hist.histMax[index]))/float(hist.histMax[index]); //maximum is the max of all elements except 0 and 127
 }
 
 QImage FilmImageProvider::emptyImage()

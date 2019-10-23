@@ -20,6 +20,7 @@ class Interface
 {
 public:
     virtual void setProgress(float){}
+    virtual void updateHistRaw(const matrix<float>& /*image*/, float /*maximum*/, unsigned /*cfa*/[2][2], unsigned /*xtrans*/[6][6], int /*maxXtrans)*/){}
     virtual void updateHistPreFilm(const matrix<float>& /*image*/, float /*maximum*/){}
     virtual void updateHistPostFilm(const matrix<float>& /*image*/, float /*maximum*/){}
     virtual void updateHistFinal(const matrix<unsigned short>& /*image*/){}
