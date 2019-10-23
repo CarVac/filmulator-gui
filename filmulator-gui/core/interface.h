@@ -10,10 +10,12 @@ struct Histogram {
     long long gHist[128];
     long long bHist[128];
 
-    long long lHistMax;
-    long long rHistMax;
-    long long gHistMax;
-    long long bHistMax;
+    float lHistMax;
+    float rHistMax;
+    float gHistMax;
+    float bHistMax;
+
+    bool empty = true;
 };
 
 class Interface

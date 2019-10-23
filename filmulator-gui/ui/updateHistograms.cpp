@@ -1,15 +1,8 @@
 #include "filmImageProvider.h"
-#include "../core/filmSim.hpp"
-#include <iostream>
 #include <omp.h>
-using std::cout;
-using std::endl;
 
 void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsigned short>& image)
 {
-    struct timeval time;
-    gettimeofday(&time, nullptr);
-
     long long lHist[128];
     long long rHist[128];
     long long gHist[128];
@@ -24,10 +17,10 @@ void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsig
         gHist[i] = 0;
         bHist[i] = 0;
     }
-    hist.lHistMax = 1;
-    hist.rHistMax = 1;
-    hist.gHistMax = 1;
-    hist.bHistMax = 1;
+    long long lHistMax = 1;
+    long long rHistMax = 1;
+    long long gHistMax = 1;
+    long long bHistMax = 1;
 
     //for(int i = 0; i < image.nr(); i = i + 5)
     //    for(int j = 0; j < image.nc(); j = j + 15)
@@ -52,19 +45,33 @@ void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsig
         hist.rHist[i] = rHist[i];
         hist.gHist[i] = gHist[i];
         hist.bHist[i] = bHist[i];
-        hist.lHistMax = (hist.lHist[i] > hist.lHistMax) ? hist.lHist[i] : hist.lHistMax;
-        hist.rHistMax = (hist.rHist[i] > hist.rHistMax) ? hist.rHist[i] : hist.rHistMax;
-        hist.gHistMax = (hist.gHist[i] > hist.gHistMax) ? hist.gHist[i] : hist.gHistMax;
-        hist.bHistMax = (hist.bHist[i] > hist.bHistMax) ? hist.bHist[i] : hist.bHistMax;
+        lHistMax = (hist.lHist[i] > lHistMax) ? hist.lHist[i] : lHistMax;
+        rHistMax = (hist.rHist[i] > rHistMax) ? hist.rHist[i] : rHistMax;
+        gHistMax = (hist.gHist[i] > gHistMax) ? hist.gHist[i] : gHistMax;
+        bHistMax = (hist.bHist[i] > bHistMax) ? hist.bHist[i] : bHistMax;
     }
-    cout << "shortHistoTime: " << timeDiff(time) << endl;
+    //don't forget to copy 0 and 127
+    hist.lHist[0] = lHist[0];
+    hist.rHist[0] = rHist[0];
+    hist.gHist[0] = gHist[0];
+    hist.bHist[0] = bHist[0];
+    hist.lHist[127] = lHist[127];
+    hist.rHist[127] = rHist[127];
+    hist.gHist[127] = gHist[127];
+    hist.bHist[127] = bHist[127];
+
+    //shrink the height just a smidge
+    hist.lHistMax = lHistMax * 1.1f;
+    hist.rHistMax = rHistMax * 1.1f;
+    hist.gHistMax = gHistMax * 1.1f;
+    hist.bHistMax = bHistMax * 1.1f;
+
+    //mark histogram as populated
+    hist.empty = false;
 }
 
 void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float>& image, float maximum)
 {
-    struct timeval time;
-    gettimeofday(&time, nullptr);
-
     long long lHist[128];
     long long rHist[128];
     long long gHist[128];
@@ -79,10 +86,10 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
         gHist[i] = 0;
         bHist[i] = 0;
     }
-    hist.lHistMax = 1;
-    hist.rHistMax = 1;
-    hist.gHistMax = 1;
-    hist.bHistMax = 1;
+    long long lHistMax = 1;
+    long long rHistMax = 1;
+    long long gHistMax = 1;
+    long long bHistMax = 1;
 
     //for(int i = 0; i < image.nr(); i = i + 5)
     //    for(int j = 0; j < image.nc(); j = j + 15)
@@ -107,20 +114,34 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
         hist.rHist[i] = rHist[i];
         hist.gHist[i] = gHist[i];
         hist.bHist[i] = bHist[i];
-        hist.lHistMax = (hist.lHist[i] > hist.lHistMax) ? hist.lHist[i] : hist.lHistMax;
-        hist.rHistMax = (hist.rHist[i] > hist.rHistMax) ? hist.rHist[i] : hist.rHistMax;
-        hist.gHistMax = (hist.gHist[i] > hist.gHistMax) ? hist.gHist[i] : hist.gHistMax;
-        hist.bHistMax = (hist.bHist[i] > hist.bHistMax) ? hist.bHist[i] : hist.bHistMax;
+        lHistMax = (hist.lHist[i] > lHistMax) ? hist.lHist[i] : lHistMax;
+        rHistMax = (hist.rHist[i] > rHistMax) ? hist.rHist[i] : rHistMax;
+        gHistMax = (hist.gHist[i] > gHistMax) ? hist.gHist[i] : gHistMax;
+        bHistMax = (hist.bHist[i] > bHistMax) ? hist.bHist[i] : bHistMax;
     }
-    cout << "floatHistoTime: " << timeDiff(time) << endl;
+    //don't forget to copy 0 and 127
+    hist.lHist[0] = lHist[0];
+    hist.rHist[0] = rHist[0];
+    hist.gHist[0] = gHist[0];
+    hist.bHist[0] = bHist[0];
+    hist.lHist[127] = lHist[127];
+    hist.rHist[127] = rHist[127];
+    hist.gHist[127] = gHist[127];
+    hist.bHist[127] = bHist[127];
+
+    //shrink the height just a smidge
+    hist.lHistMax = lHistMax * 1.1f;
+    hist.rHistMax = rHistMax * 1.1f;
+    hist.gHistMax = gHistMax * 1.1f;
+    hist.bHistMax = bHistMax * 1.1f;
+
+    //mark histogram as populated
+    hist.empty = false;
 }
 
 void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
                                       unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans)
 {
-    struct timeval time;
-    gettimeofday(&time, nullptr);
-
     //long long lHist[128];
     long long rHist[128];
     long long gHist[128];
@@ -135,9 +156,9 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
         gHist[i] = 0;
         bHist[i] = 0;
     }
-    rawHist.rHistMax = 1;
-    rawHist.gHistMax = 1;
-    rawHist.bHistMax = 1;
+    long long rHistMax = 1;
+    long long gHistMax = 1;
+    long long bHistMax = 1;
 
     //for(int i = 0; i < image.nr(); i = i + 5)
     //    for(int j = 0; j < image.nc(); j = j + 15)
@@ -182,11 +203,25 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
         rawHist.rHist[i] = rHist[i];
         rawHist.gHist[i] = gHist[i];
         rawHist.bHist[i] = bHist[i];
-        rawHist.rHistMax = (rawHist.rHist[i] > rawHist.rHistMax) ? rawHist.rHist[i] : rawHist.rHistMax;
-        rawHist.gHistMax = (rawHist.gHist[i] > rawHist.gHistMax) ? rawHist.gHist[i] : rawHist.gHistMax;
-        rawHist.bHistMax = (rawHist.bHist[i] > rawHist.bHistMax) ? rawHist.bHist[i] : rawHist.bHistMax;
+        rHistMax = (rawHist.rHist[i] > rHistMax) ? rawHist.rHist[i] : rHistMax;
+        gHistMax = (rawHist.gHist[i] > gHistMax) ? rawHist.gHist[i] : gHistMax;
+        bHistMax = (rawHist.bHist[i] > bHistMax) ? rawHist.bHist[i] : bHistMax;
     }
-    cout << "rawHistoTime: " << timeDiff(time) << endl;
+    //don't forget to copy 0 and 127
+    rawHist.rHist[0] = rHist[0];
+    rawHist.gHist[0] = gHist[0];
+    rawHist.bHist[0] = bHist[0];
+    rawHist.rHist[127] = rHist[127];
+    rawHist.gHist[127] = gHist[127];
+    rawHist.bHist[127] = bHist[127];
+
+    //shrink the height just a smidge
+    rawHist.rHistMax = rHistMax * 1.1f;
+    rawHist.gHistMax = gHistMax * 1.1f;
+    rawHist.bHistMax = bHistMax * 1.1f;
+
+    //mark histogram as populated
+    rawHist.empty = false;
 }
 
 inline int FilmImageProvider::histIndex(float value, float maximum)

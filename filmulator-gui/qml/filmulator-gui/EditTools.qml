@@ -29,9 +29,9 @@ SlimSplitView {
         Canvas {
             id: mainHistoCanvas
             anchors.fill: parent
-            property int lineWidth: 2 * uiScale
+            property real lineWidth: 2 * uiScale
             property real alpha: 1.0
-            property int padding: 5 * uiScale
+            property real padding: 5 * uiScale
             canvasSize.width: root.maxWidth
             canvasSize.height: 500 * uiScale
 
@@ -79,9 +79,9 @@ SlimSplitView {
                         id: rawHistoCanvas
                         anchors.fill: parent
 
-                        property int lineWidth: 2 * uiScale
+                        property real lineWidth: 2 * uiScale
                         property real alpha: 1.0
-                        property int padding: 3 * uiScale
+                        property real padding: 3 * uiScale
 
                         canvasSize.width: root.maxWidth
                         canvasSize.height: height
@@ -261,9 +261,9 @@ SlimSplitView {
                         id: preFilmHistoCanvas
                         anchors.fill: parent
 
-                        property int lineWidth: 2 * uiScale
+                        property real lineWidth: 2 * uiScale
                         property real alpha: 1.0
-                        property int padding: 3 * uiScale
+                        property real padding: 3 * uiScale
 
                         canvasSize.width: root.maxWidth
                         canvasSize.height: height
@@ -416,9 +416,9 @@ SlimSplitView {
                         id: postFilmHistoCanvas
                         anchors.fill: parent
 
-                        property int lineWidth: 2 * uiScale
+                        property real lineWidth: 2 * uiScale
                         property real alpha: 1.0
-                        property int padding: 3 * uiScale
+                        property real padding: 3 * uiScale
 
                         canvasSize.width: root.maxWidth
                         canvasSize.height: height

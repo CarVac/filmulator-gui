@@ -184,30 +184,34 @@ void FilmImageProvider::updateFilmProgress(float percentDone_in)//Percent filmul
 
 float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, LogY isLog)
 {
+    if(hist.empty)
+    {
+        return 0.0f;
+    }
     //index is 0 for L, 1 for R, 2 for G, and 3 for B.
     assert((index < 4) && (index >= 0));
     switch (index)
     {
     case 0: //luminance
         if (!isLog)
-            return float(min(hist.lHist[i],hist.lHistMax))/float(hist.lHistMax);
+            return float(min(float(hist.lHist[i]),hist.lHistMax))/float(hist.lHistMax);
         else
-            return log(hist.lHist[i]+1)/log(hist.lHistMax+1);
+            return float(log(hist.lHist[i]+1)/log(double(hist.lHistMax+1)));
     case 1: //red
         if (!isLog)
-            return float(min(hist.rHist[i],hist.rHistMax))/float(hist.rHistMax);
+            return float(min(float(hist.rHist[i]),hist.rHistMax))/float(hist.rHistMax);
         else
-            return log(hist.rHist[i]+1)/log(hist.rHistMax+1);
+            return float(log(hist.rHist[i]+1)/log(double(hist.rHistMax+1)));
     case 2: //green
         if (!isLog)
-            return float(min(hist.gHist[i],hist.gHistMax))/float(hist.gHistMax);
+            return float(min(float(hist.gHist[i]),hist.gHistMax))/float(hist.gHistMax);
         else
-            return log(hist.gHist[i]+1)/log(hist.gHistMax+1);
+            return float(log(hist.gHist[i]+1)/log(double(hist.gHistMax+1)));
     default://case 3: //blue
         if (!isLog)
-            return float(min(hist.bHist[i],hist.bHistMax))/float(hist.bHistMax);
+            return float(min(float(hist.bHist[i]),hist.bHistMax))/float(hist.bHistMax);
         else
-            return log(hist.bHist[i]+1)/log(hist.bHistMax+1);
+            return float(log(hist.bHist[i]+1)/log(double(hist.bHistMax+1)));
     }
     //xHistMax is the maximum height of any bin except the extremes.
 }
