@@ -92,7 +92,7 @@ if(APPLE)
         ${filmulator_RSCS}
     )
 elseif(WIN32)
-    add_executable(filmulator WIN32
+    add_executable(filmulator
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
