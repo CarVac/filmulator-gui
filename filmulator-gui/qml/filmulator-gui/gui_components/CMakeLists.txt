@@ -13,6 +13,7 @@ if(APPLE)
             ToolCalendar.qml
             QueueDelegate.qml
             ToolTip.qml
+            SlideySwitch.qml
             SlipperySlider.qml
             SlimSplitView.qml
         DESTINATION
@@ -37,6 +38,7 @@ elseif(WIN32)
             ToolCalendar.qml
             QueueDelegate.qml
             ToolTip.qml
+            SlideySwitch.qml
             SlipperySlider.qml
             SlimSplitView.qml
         DESTINATION
@@ -58,6 +60,7 @@ else()
             ToolCalendar.qml
             QueueDelegate.qml
             ToolTip.qml
+            SlideySwitch.qml
             SlipperySlider.qml
             SlimSplitView.qml
         DESTINATION
