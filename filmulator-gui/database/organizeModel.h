@@ -36,6 +36,8 @@ public:
     Q_INVOKABLE QDate getSelectedDate();
     Q_INVOKABLE QString getSelectedYMDString();
 
+    Q_INVOKABLE void batchEnqueue();
+
     DateHistogramModel *dateHistogram = new DateHistogramModel;
 
     Q_INVOKABLE void setMinMaxCaptureTime(QDate captureTimeIn);
@@ -90,12 +92,15 @@ signals:
 
     void organizeFilterChanged();
 
+    void enqueueThis(const QString STsearchID);
+
     void updateTableOut(QString table, int operation);
 
 public slots:
 
 protected:
     QSqlQuery modelQuery();
+    QString adaptableModelQuery(const bool searchIDOnly);
     void emitChange() {emit organizeFilterChanged();}
 
     //Was the histogram query initialized yet?

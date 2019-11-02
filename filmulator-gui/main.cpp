@@ -95,6 +95,8 @@ int main(int argc, char *argv[])
                      queueModel, SLOT(updateTable(QString, int)));
     QObject::connect(importModel, SIGNAL(enqueueThis(QString)),
                      queueModel, SLOT(enQueue(QString)));
+    QObject::connect(organizeModel, SIGNAL(enqueueThis(QString)),
+                     queueModel, SLOT(enQueue(QString)));
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
     if (appdir)

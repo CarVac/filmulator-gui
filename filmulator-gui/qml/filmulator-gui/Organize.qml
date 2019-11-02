@@ -291,6 +291,18 @@ SlimSplitView {
                         organizeModel.minRating = value
                     }
                 }
+
+                ToolButton {
+                    id: enqueueAll
+                    text: qsTr("Enqueue All")
+                    tooltipText: qsTr("Puts every visible image in the work queue. If any is already there, it is left where it was.")
+                    Layout.fillWidth: true
+                    onTriggered: organizeModel.batchEnqueue()
+                    Component.onCompleted: {
+                        enqueueAll.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
             }
         }
     }

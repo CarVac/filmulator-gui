@@ -24,6 +24,13 @@ OrganizeModel::OrganizeModel(QObject *parent) :
 
 QSqlQuery OrganizeModel::modelQuery()
 {
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    return QSqlQuery(adaptableModelQuery(false), db);
+}
+
+QString OrganizeModel::adaptableModelQuery(const bool searchIDOnly)
+{
     //We can't use the inbuilt relational table stuff; we have to
     // make our own writing functionality, and instead of setting the table,
     // we have to make our own query.
@@ -35,7 +42,13 @@ QSqlQuery OrganizeModel::modelQuery()
 
     //First we will prepare a string to feed into the query.
     //We only really care about info in the searchtable.
-    std::string queryString = "SELECT * ";
+    std::string queryString = "SELECT ";
+    if (searchIDOnly)
+    {
+        queryString.append("STsearchID ");
+    }  else {
+        queryString.append("* ");
+    }
     queryString.append("FROM SearchTable ");
     queryString.append("WHERE ");
 
@@ -111,9 +124,20 @@ QSqlQuery OrganizeModel::modelQuery()
         queryString.append("SearchTable.STfilename DESC;");
     }
 
-    //Each thread needs a unique database connection
+    return QString::fromStdString(queryString);
+}
+
+void OrganizeModel::batchEnqueue()
+{
     QSqlDatabase db = getDB();
-    return QSqlQuery(QString::fromStdString(queryString), db);
+
+    //The query must return only STsearchID
+    QSqlQuery query(adaptableModelQuery(true), db);
+
+    while(query.next())
+    {
+        emit enqueueThis(query.value(0).toString());
+    }
 }
 
 void OrganizeModel::setOrganizeQuery()

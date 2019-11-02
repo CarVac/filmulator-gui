@@ -43,6 +43,8 @@ SlimSplitView {
 
             onPaint: Script.generateHistogram(1,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
 
+
+            Component.onCompleted: mainHistoCanvas.requestPaint()
         }
     }
 
