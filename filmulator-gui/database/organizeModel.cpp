@@ -127,19 +127,6 @@ QString OrganizeModel::adaptableModelQuery(const bool searchIDOnly)
     return QString::fromStdString(queryString);
 }
 
-void OrganizeModel::batchEnqueue()
-{
-    QSqlDatabase db = getDB();
-
-    //The query must return only STsearchID
-    QSqlQuery query(adaptableModelQuery(true), db);
-
-    while(query.next())
-    {
-        emit enqueueThis(query.value(0).toString());
-    }
-}
-
 void OrganizeModel::setOrganizeQuery()
 {
     setQuery(modelQuery());

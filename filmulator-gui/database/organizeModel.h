@@ -36,7 +36,7 @@ public:
     Q_INVOKABLE QDate getSelectedDate();
     Q_INVOKABLE QString getSelectedYMDString();
 
-    Q_INVOKABLE void batchEnqueue();
+    Q_INVOKABLE QString adaptableModelQuery(const bool searchIDOnly);
 
     DateHistogramModel *dateHistogram = new DateHistogramModel;
 
@@ -100,7 +100,6 @@ public slots:
 
 protected:
     QSqlQuery modelQuery();
-    QString adaptableModelQuery(const bool searchIDOnly);
     void emitChange() {emit organizeFilterChanged();}
 
     //Was the histogram query initialized yet?

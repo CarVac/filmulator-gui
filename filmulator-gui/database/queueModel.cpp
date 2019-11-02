@@ -141,7 +141,7 @@ void QueueModel::enQueue(const QString searchID)
 
     if (alreadyInQueue)
     {
-        //do nothingg
+        //do nothing
     }
     else
     {
@@ -180,6 +180,88 @@ void QueueModel::enQueue(const QString searchID)
 
         //Increment the index.
         resetIndex();
+    }
+}
+
+void QueueModel::batchEnqueue(const QString searchQuery)
+{
+    cout << "batch enqueue!" << endl;
+    cout << searchQuery.toStdString() << endl;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    //The query must return only STsearchID
+    QSqlQuery query(searchQuery, db);
+
+    //get the IDs to enqueue
+    QStringList searchIDList;
+    while(query.next())
+    {
+        searchIDList << query.value(0).toString();
+    }
+
+    //write to queue
+    int newItemCount = 0;
+    int oldMaxIndex = maxIndex;
+    query.exec("BEGIN TRANSACTION;");
+    for(int i = 0; i < searchIDList.size(); i++)
+    {
+        QString searchID = searchIDList.at(i);
+
+        //First check to see if it's already in the queue.
+        query.prepare("SELECT COUNT(*) FROM QueueTable WHERE QTsearchID = ?;");
+        query.bindValue(0, searchID);
+        query.exec();
+        const bool success = query.next();
+        bool alreadyInQueue = false;
+        if (success)
+        {
+            alreadyInQueue = query.value(0).toInt() == 1;
+        }
+
+        if (alreadyInQueue)
+        {
+            //do nothing
+        }
+        else
+        {
+            newItemCount++;
+            query.prepare("SELECT STimportTime,STlastProcessedTime FROM SearchTable WHERE STsearchID=?;");
+            query.bindValue(0, searchID);
+            query.exec();
+            query.next();
+            const int importTime = query.value(0).toInt();
+            const int lastProcessedTime = query.value(1).toInt();
+
+            //When edited and import times were the same, this sometimes led to false positives.
+            //I subtract 1 from the lastProcessedTime to give it some buffer for (floating point?) error.
+            const bool edited = importTime < (lastProcessedTime-1);
+            query.prepare("INSERT OR IGNORE INTO QueueTable "
+                          "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID, QTsortedIndex) "
+                          "VALUES (?,?,?,?,?,?);");
+            query.bindValue(0, maxIndex);
+            query.bindValue(1, edited);
+            query.bindValue(2, false);
+            query.bindValue(3, false);
+            query.bindValue(4, searchID);
+            query.bindValue(5, maxIndex);
+            query.exec();
+
+            //Increment the index.
+            resetIndex();
+        }
+    }
+    query.exec("END TRANSACTION;");
+
+    //notify the model that a bunch of rows were added
+    if (newItemCount > 0)
+    {
+        beginInsertRows(QModelIndex(),oldMaxIndex,maxIndex-1);
+        queryModel.setQuery(modelQuery());
+        while (queryModel.canFetchMore())
+        {
+            queryModel.fetchMore();
+        }
+        endInsertRows();
     }
 }
 
