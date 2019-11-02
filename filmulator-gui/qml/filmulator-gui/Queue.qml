@@ -276,6 +276,9 @@ Item {
                                                 forgetCover.visible = false
                                                 forgetDelay.start()
                                             }
+                                            Component.onCompleted: {
+                                                forgetCover.tooltipWanted.connect(root.tooltipWanted)
+                                            }
                                         }
                                     }
 
@@ -328,6 +331,9 @@ Item {
                                                 deleteButton.active = false
                                                 deleteCover.visible = false
                                                 deleteDelay.start()
+                                            }
+                                            Component.onCompleted: {
+                                                deleteCover.tooltipWanted.connect(root.tooltipWanted)
                                             }
                                         }
                                     }
