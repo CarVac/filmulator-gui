@@ -200,6 +200,13 @@ void QueueModel::batchEnqueue(const QString searchQuery)
     //write to queue
     int newItemCount = 0;
     int oldMaxIndex = maxIndex;
+    int newMaxIndex = maxIndex;
+    QVariantList indexList;
+    QVariantList editedList;
+    QVariantList exportedList;
+    QVariantList outputList;
+    QVariantList searchIDListShort;
+    QVariantList indexList2;
     query.exec("BEGIN TRANSACTION;");
     for(int i = 0; i < searchIDList.size(); i++)
     {
@@ -233,21 +240,35 @@ void QueueModel::batchEnqueue(const QString searchQuery)
             //When edited and import times were the same, this sometimes led to false positives.
             //I subtract 1 from the lastProcessedTime to give it some buffer for (floating point?) error.
             const bool edited = importTime < (lastProcessedTime-1);
-            query.prepare("INSERT OR IGNORE INTO QueueTable "
-                          "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID, QTsortedIndex) "
-                          "VALUES (?,?,?,?,?,?);");
-            query.bindValue(0, maxIndex);
-            query.bindValue(1, edited);
-            query.bindValue(2, false);
-            query.bindValue(3, false);
-            query.bindValue(4, searchID);
-            query.bindValue(5, maxIndex);
-            query.exec();
-
-            //Increment the index.
-            resetIndex();
+            indexList << newMaxIndex;
+            editedList << edited;
+            exportedList << false;
+            outputList << false;
+            searchIDListShort << searchID;
+            indexList2 << newMaxIndex;
+            newMaxIndex++;
         }
     }
+
+    query.prepare("INSERT OR IGNORE INTO QueueTable "
+                  "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID, QTsortedIndex) "
+                  "VALUES (?,?,?,?,?,?);");
+    query.bindValue(0, indexList);
+    query.bindValue(1, editedList);
+    query.bindValue(2, exportedList);
+    query.bindValue(3, outputList);
+    query.bindValue(4, searchIDListShort);
+    query.bindValue(5, indexList2);
+    query.execBatch();
+
+    //Increment the index all the way to the end
+    resetIndex();
+
+    if (newMaxIndex != maxIndex)
+    {
+        cout << "queue index mismatch!" << endl;
+    }
+
     query.exec("END TRANSACTION;");
 
     //notify the model that a bunch of rows were added
