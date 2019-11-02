@@ -185,8 +185,6 @@ void QueueModel::enQueue(const QString searchID)
 
 void QueueModel::batchEnqueue(const QString searchQuery)
 {
-    cout << "batch enqueue!" << endl;
-    cout << searchQuery.toStdString() << endl;
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
     //The query must return only STsearchID
