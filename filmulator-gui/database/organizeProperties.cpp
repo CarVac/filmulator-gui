@@ -219,7 +219,12 @@ void OrganizeModel::setMinRating(int ratingIn)
 {
     bool changed = (minRating == ratingIn ? false : true);
 
-    minRating = ratingIn;
+    if (ratingIn < 0)
+    {
+        minRating = -5;
+    } else {
+        minRating = ratingIn;
+    }
     emit minRatingChanged();
 
     if (changed)

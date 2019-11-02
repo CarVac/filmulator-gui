@@ -17,6 +17,7 @@ Item {
     property bool processed
     property bool exported
     property bool markedForOutput
+    property int rating
     property bool rightClicked: false
     property bool held
 
@@ -118,6 +119,25 @@ Item {
     }
     //Instead of another color to indicate output queueing,
     //just place another green rectangle over the center third of the processedSavedRect.
+
+    Rectangle {
+        id: forwardx
+        width: root.width * 0.05
+        height: root.width
+        anchors.centerIn: parent
+        color: "red"
+        rotation: 45
+        visible: rating < 0
+    }
+    Rectangle {
+        id: backwardX
+        width: root.width * 0.05
+        height: root.width
+        anchors.centerIn: parent
+        color: "red"
+        rotation: -45
+        visible: rating < 0
+    }
 
     Component.onCompleted: {
         loadThumb.sourceComponent = thumbImage

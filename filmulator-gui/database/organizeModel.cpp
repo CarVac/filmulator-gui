@@ -171,7 +171,7 @@ void OrganizeModel::setRating(QString searchID, int rating)
 
     QSqlQuery query(db);
     query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
-    query.bindValue(0, QVariant(max(min(rating,5),0)));
+    query.bindValue(0, QVariant(max(min(rating,5),-5)));
     query.bindValue(1, searchID);
     query.exec();
     emit updateTableOut("SearchTable", 0);//An edit made to the search table.

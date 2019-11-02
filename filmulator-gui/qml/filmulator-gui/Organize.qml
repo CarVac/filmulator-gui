@@ -271,10 +271,10 @@ SlimSplitView {
                 }
 
                 ToolSlider {
-                    id: ratingSlider
-                    title: qsTr("Rating")
+                    id: minRatingSlider
+                    title: qsTr("Min Rating")
                     tooltipText: qsTr("Controls the minimum rating to display.")
-                    minimumValue: 0
+                    minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
                     tickmarksEnabled: true
@@ -285,10 +285,49 @@ SlimSplitView {
                         organizeModel.minRating = value
                         gridView.returnToBounds()
                     }
+                    onEditComplete: {
+                        if (minRatingSlider.value > maxRatingSlider.value) {
+                            maxRatingSlider.value = minRatingSlider.value
+                            settings.maxOrganizeRating = value
+                            organizeModel.maxRating = value
+                            gridView.returnToBounds()
+                        }
+                    }
+
                     uiScale: root.uiScale
                     Component.onCompleted: {
-                        ratingSlider.tooltipWanted.connect(root.tooltipWanted)
+                        minRatingSlider.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.minRating = value
+                    }
+                }
+
+                ToolSlider {
+                    id: maxRatingSlider
+                    title: qsTr("Min Rating")
+                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    minimumValue: -1
+                    maximumValue: 5
+                    stepSize: 1
+                    tickmarksEnabled: true
+                    value: settings.getMaxOrganizeRating()
+                    defaultValue: settings.getMaxOrganizeRating()
+                    onValueChanged: {
+                        settings.maxOrganizeRating = value
+                        organizeModel.maxRating = value
+                        gridView.returnToBounds()
+                    }
+                    onEditComplete: {
+                        if (minRatingSlider.value > maxRatingSlider.value) {
+                            minRatingSlider.value = maxRatingSlider.value
+                            settings.organizeRating = value
+                            organizeModel.minRating = value
+                            gridView.returnToBounds()
+                        }
+                    }
+                    uiScale: root.uiScale
+                    Component.onCompleted: {
+                        maxRatingSlider.tooltipWanted.connect(root.tooltipWanted)
+                        organizeModel.maxRating = value
                     }
                 }
 

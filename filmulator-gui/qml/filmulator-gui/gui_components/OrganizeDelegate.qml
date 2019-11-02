@@ -86,7 +86,7 @@ Rectangle {
     Rectangle {
         id: ratingRect
         x: 0
-        y: 0
+        y: rating >= 0 ? 0 : 295*uiScale
         height: 5 * uiScale
         width: (rating >= 0) ? root.width * rating/5 : root.width
         color: ratingArea.pressed ? "#00000000" : ((rating >= 0) ? Colors.medOrange : "red")

@@ -130,6 +130,10 @@ QDate Settings::getOrganizeCaptureDate()
 void Settings::setOrganizeRating(int ratingIn)
 {
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    if (ratingIn < 0)
+    {
+        ratingIn = -5;
+    }
     organizeRating = ratingIn;
     settings.setValue("photoDB/organizeRating", ratingIn);
     emit organizeRatingChanged();
@@ -138,9 +142,25 @@ void Settings::setOrganizeRating(int ratingIn)
 int Settings::getOrganizeRating()
 {
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
-    organizeRating = settings.value("photoDB/organizeRating", 0).toInt();
+    organizeRating = settings.value("photoDB/organizeRating", -5).toInt();
     emit organizeRatingChanged();
     return organizeRating;
+}
+
+void Settings::setMaxOrganizeRating(int ratingIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    maxOrganizeRating = ratingIn;
+    settings.setValue("photoDB/maxOrganizeRating", ratingIn);
+    emit maxOrganizeRatingChanged();
+}
+
+int Settings::getMaxOrganizeRating()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    maxOrganizeRating = settings.value("photoDB/maxOrganizeRating", 5).toInt();
+    emit maxOrganizeRatingChanged();
+    return maxOrganizeRating;
 }
 
 void Settings::setUiScale(float uiScaleIn)
