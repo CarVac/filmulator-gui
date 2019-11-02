@@ -92,19 +92,30 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #define PARAM image_processor->imgdata.params
 #define IMAGE image_processor->imgdata.image
 #define RAW   image_processor->imgdata.rawdata.raw_image
-//#define COLOR image_processor.imgdata.color
+#define RAW3  image_processor->imgdata.rawdata.color3_image
+#define RAW4  image_processor->imgdata.rawdata.color4_image
+#define RAWF  image_processor->imgdata.rawdata.float_image
 
+            if (image_processor->is_floating_point())
+            {
+                cerr << "processImage: libraw cannot open a floating point raw" << endl;
+                //LibRaw cannot process floating point images unless compiled with the DNG SDK.
+            }
             //This makes IMAGE contains the sensel value and 3 blank values at every
             //location.
-            if (0 != image_processor->unpack())
+            int libraw_error = image_processor->unpack();
+            if (libraw_error != 0)
             {
                 cerr << "processImage: Could not read input file, or was canceled" << endl;
+                cerr << "error number: " << libraw_error << endl;
                 return emptyMatrix();
             }
 
             //get dimensions
             raw_width  = RSIZE.width;
             raw_height = RSIZE.height;
+            cout << "raw width:  " << raw_width << endl;
+            cout << "raw height: " << raw_height << endl;
 
             int topmargin = RSIZE.top_margin;
             int leftmargin = RSIZE.left_margin;
@@ -212,6 +223,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //bayer only for now
             for (unsigned int i=0; i<2; i++)
             {
+                cout << "bayer: ";
                 for (unsigned int j=0; j<2; j++)
                 {
                     cfa[i][j] = unsigned(image_processor->COLOR(int(i), int(j)));
@@ -219,7 +231,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     {
                         cfa[i][j] = 1;
                     }
+                    cout << cfa[i][j];
                 }
+                cout << endl;
             }
 
             //get xtrans color filter array
@@ -247,28 +261,78 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //copy raw data
             float rawMin = std::numeric_limits<float>::max();
             float rawMax = std::numeric_limits<float>::min();
-            #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
-            for (int row = 0; row < raw_height; row++)
+
+            isSraw = image_processor->is_sraw();
+            isNikonSraw = image_processor->is_nikon_sraw();
+            if (isSraw)
             {
-                //IMAGE is an (width*height) by 4 array, not width by height by 4.
-                int rowoffset = (row + topmargin)*full_width;
-                for (int col = 0; col < raw_width; col++)
+                raw_image.set_size(raw_height, raw_width*3);
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                for (int row = 0; row < raw_height; row++)
                 {
-                    float tempBlackpoint = blackpoint;
-                    if (blackRow > 0 && blackCol > 0)
+                    //IMAGE is an (width*height) by 4 array, not width by height by 4.
+                    int rowoffset = (row + topmargin)*full_width;
+                    for (int col = 0; col < raw_width; col++)
                     {
-                        tempBlackpoint = tempBlackpoint + image_processor->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                        float tempBlackpoint = blackpoint;
+                        if (blackRow > 0 && blackCol > 0)
+                        {
+                            tempBlackpoint = tempBlackpoint + image_processor->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                        }
+                        //sraw comes from raw4 but only uses 3 channels
+                        raw_image[row][col*3   ] = RAW4[rowoffset + col + leftmargin][0] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col*3   ]);
+                        rawMax = std::max(rawMax, raw_image[row][col*3   ]);
+                        raw_image[row][col*3 +1] = RAW4[rowoffset + col + leftmargin][1] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col*3 +1]);
+                        rawMax = std::max(rawMax, raw_image[row][col*3 +1]);
+                        raw_image[row][col*3 +2] = RAW4[rowoffset + col + leftmargin][2] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col*3 +2]);
+                        rawMax = std::max(rawMax, raw_image[row][col*3 +2]);
                     }
-                    raw_image[row][col] = RAW[rowoffset + col + leftmargin] - tempBlackpoint;
-                    rawMin = std::min(rawMin, raw_image[row][col]);
-                    rawMax = std::max(rawMax, raw_image[row][col]);
+                }
+            } else if (image_processor->is_floating_point()){//we can't even get here until libraw supports floating point raw
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                for (int row = 0; row < raw_height; row++)
+                {
+                    //IMAGE is an (width*height) by 4 array, not width by height by 4.
+                    int rowoffset = (row + topmargin)*full_width;
+                    for (int col = 0; col < raw_width; col++)
+                    {
+                        float tempBlackpoint = blackpoint;
+                        if (blackRow > 0 && blackCol > 0)
+                        {
+                            tempBlackpoint = tempBlackpoint + image_processor->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                        }
+                        raw_image[row][col] = RAWF[rowoffset + col + leftmargin] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col]);
+                        rawMax = std::max(rawMax, raw_image[row][col]);
+                    }
+                }
+            } else {
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                for (int row = 0; row < raw_height; row++)
+                {
+                    //IMAGE is an (width*height) by 4 array, not width by height by 4.
+                    int rowoffset = (row + topmargin)*full_width;
+                    for (int col = 0; col < raw_width; col++)
+                    {
+                        float tempBlackpoint = blackpoint;
+                        if (blackRow > 0 && blackCol > 0)
+                        {
+                            tempBlackpoint = tempBlackpoint + image_processor->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                        }
+                        raw_image[row][col] = RAW[rowoffset + col + leftmargin] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col]);
+                        rawMax = std::max(rawMax, raw_image[row][col]);
+                    }
                 }
             }
 
             //generate raw histogram
             if (WithHisto == histo)
             {
-                histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans);
+                histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, cfa[0][0]==6);
             }
 
             cout << "max of raw_image: " << rawMax << " ===============================================" << endl;
@@ -308,6 +372,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             gPreMul = stealVictim->gPreMul;
             bPreMul = stealVictim->bPreMul;
             maxValue = stealVictim->maxValue;
+            isSraw = stealVictim->isSraw;
+            isNikonSraw = stealVictim->isNikonSraw;
             raw_width = stealVictim->raw_width;
             raw_height = stealVictim->raw_height;
             exifData = stealVictim->exifData;
@@ -337,6 +403,40 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             {
                 cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
                 return emptyMatrix();
+            }
+        }
+        else if (isSraw)//already demosaiced
+        {
+            //We just need to scale to 65535, and apply camera WB
+            float inputscale = maxValue;
+            float outputscale = 65535.0;
+            float scaleFactor = outputscale / inputscale;
+            input_image.set_size(raw_height, raw_width*3);
+            if (isNikonSraw)
+            {
+                #pragma omp parallel for
+                for (int row = 0; row < raw_height; row++)
+                {
+                    for (int col = 0; col < raw_width*3; col++)
+                    {
+                        int color = col % 3;
+                        input_image(row, col) = raw_image(row, col) * scaleFactor;
+
+                    }
+                }
+            }
+            else
+            {
+                #pragma omp parallel for
+                for (int row = 0; row < raw_height; row++)
+                {
+                    for (int col = 0; col < raw_width*3; col++)
+                    {
+                        int color = col % 3;
+                        input_image(row, col) = raw_image(row, col) * scaleFactor * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+
+                    }
+                }
             }
         }
         else //raw
@@ -383,6 +483,19 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         red(row, col)   = red(row, col)   * scaleFactor;
                         green(row, col) = green(row, col) * scaleFactor;
                         blue(row, col)  = blue(row, col)  * scaleFactor;
+                    }
+                }
+            }
+            else if (cfa[0][0] == 6)//monochrome but not sraw; no demosaicing
+            {
+                float scaleFactor = outputscale / inputscale;
+                for (int row = 0; row < raw_height; row++)
+                {
+                    for (int col = 0; col < raw_width; col++)
+                    {
+                        red(row, col)   = raw_image(row, col) * scaleFactor;
+                        green(row, col) = raw_image(row, col) * scaleFactor;
+                        blue(row, col)  = raw_image(row, col) * scaleFactor;
                     }
                 }
             }
@@ -466,7 +579,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         //And return it back to a single layer
         if (demosaicParam.highlights >= 2)
         {
-            cout << "Highlight Recovery ================================================================================" << endl;
             recovered_image.set_size(height, width*3);
             //For highlight recovery, we need to split up the image into three separate layers.
             matrix<float> rChannel(height, width), gChannel(height, width), bChannel(height, width);
@@ -517,7 +629,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             recovered_image = std::move(scaled_image);
         }
 
-        cout << "hlrecovery end: " << timeDiff(hlrecovery_time) << endl;
 
         valid = paramManager->markDemosaicComplete();
         updateProgress(valid, 0.0f);

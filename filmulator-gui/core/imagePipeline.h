@@ -68,6 +68,8 @@ protected:
     float rCamMul, gCamMul, bCamMul;//wb used on the image
     float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
     float maxValue;
+    bool isSraw;
+    bool isNikonSraw;
 
     matrix<float> input_image;
     matrix<float> recovered_image;

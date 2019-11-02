@@ -140,7 +140,7 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
 }
 
 void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
-                                      unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans)
+                                      unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans, bool isRGB, bool isMonochrome)
 {
     //long long lHist[128];
     long long rHist[128];
@@ -162,7 +162,33 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
 
     //for(int i = 0; i < image.nr(); i = i + 5)
     //    for(int j = 0; j < image.nc(); j = j + 15)
-    if(maxXtrans == 0)//it's bayer
+    if (isRGB)
+    {
+        #pragma omp parallel for reduction(+: rHist[:128]) reduction(+: gHist[:128]) reduction(+: bHist[:128])
+        for(int i = 0; i < image.nr(); i = i + 1)
+        {
+            for(int j = 0; j < image.nc(); j = j + 3)
+            {
+                rHist[histIndex(image(i,j  ),maximum)]++;
+                gHist[histIndex(image(i,j+1),maximum)]++;
+                bHist[histIndex(image(i,j+2),maximum)]++;
+            }
+        }
+    }
+    else if (isMonochrome)//is 6/6/6 channels but not RGB
+    {
+        #pragma omp parallel for reduction(+: rHist[:128]) reduction(+: gHist[:128]) reduction(+: bHist[:128])
+        for(int i = 0; i < image.nr(); i = i + 1)
+        {
+            for(int j = 0; j < image.nc(); j = j + 1)
+            {
+                rHist[histIndex(image(i,j),maximum)]++;
+                gHist[histIndex(image(i,j),maximum)]++;
+                bHist[histIndex(image(i,j),maximum)]++;
+            }
+        }
+    }
+    else if (maxXtrans == 0)//it's bayer
     {
         #pragma omp parallel for reduction(+: rHist[:128]) reduction(+: gHist[:128]) reduction(+: bHist[:128])
         for(int i = 0; i < image.nr(); i = i + 1)
@@ -180,7 +206,9 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
                 }
             }
         }
-    } else {//it's xtrans
+    }
+    else //it's xtrans
+    {
         #pragma omp parallel for reduction(+: rHist[:128]) reduction(+: gHist[:128]) reduction(+: bHist[:128])
         for(int i = 0; i < image.nr(); i = i + 1)
         {

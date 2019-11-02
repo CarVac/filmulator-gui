@@ -39,7 +39,7 @@ public:
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
 
-    void updateHistRaw(const matrix<float>& image, float maximum, unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans);
+    void updateHistRaw(const matrix<float>& image, float maximum, unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans, bool isRGB, bool isMonochrome);
     void updateHistPreFilm(const matrix<float>& image, float maximum);
     void updateHistPostFilm(const matrix<float>& image, float maximum);
     void updateHistFinal(const matrix<unsigned short>& image);
