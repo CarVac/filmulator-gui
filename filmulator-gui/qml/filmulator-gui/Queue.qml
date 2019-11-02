@@ -268,7 +268,7 @@ Item {
                                         ToolButton {
                                             id: forgetCover
                                             text: qsTr("Forget photos")
-                                            tooltipText: qsTr("Remove marked photos from the database. The files will not be deleted.")
+                                            tooltipText: qsTr("Remove marked photos that are in the queue from the database. The files will not be deleted.")
                                             anchors.fill: parent
                                             uiScale: root.uiScale
                                             onTriggered: {
@@ -321,7 +321,7 @@ Item {
                                         ToolButton {
                                             id: deleteCover
                                             text: qsTr("Delete photos")
-                                            tooltipText: qsTr("Remove marked photos from the database and delete them. YOU WILL LOSE YOUR FILES IF NOT BACKED UP!")
+                                            tooltipText: qsTr("Remove marked photos that are in the queue from the database and delete them. YOU WILL LOSE YOUR FILES IF NOT BACKED UP!")
                                             anchors.fill: parent
                                             uiScale: root.uiScale
                                             onTriggered: {
