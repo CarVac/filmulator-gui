@@ -236,7 +236,7 @@ Item {
 
                                         onTriggered: {
                                             if (forgetButton.active) {
-                                                //forget stuff!!!
+                                                queueModel.batchForget()
                                                 forgetButton.active = false
                                                 queueDelegate.rightClicked = false
                                                 loadMenu.sourceComponent = undefined

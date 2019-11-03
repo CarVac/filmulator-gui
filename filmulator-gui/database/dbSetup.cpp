@@ -3,6 +3,7 @@
 #include <QVariant>
 #include <iostream>
 #include <QStandardPaths>
+#include <QFile>
 
 DBSuccess setupDB(QSqlDatabase *db)
 {
@@ -36,8 +37,24 @@ DBSuccess setupDB(QSqlDatabase *db)
     }
 
     QSqlQuery query;
-    //query.exec("PRAGMA synchronous = OFF");//Use for speed, but dangerous.
-    //query.exec("PRAGMA synchronous = NORMAL");//Use for less speed, slightly dangerous.
+
+    //Check the database version.
+    query.exec("PRAGMA user_version;");
+    query.next();
+    const int oldVersion = query.value(0).toInt();
+    if (oldVersion > 10)//=================================================================version check here!
+    {
+        std::cout << "Newer database format. Aborting." << std::endl;
+        return DBSuccess::failure;
+    }
+    else if (oldVersion < 10)//============================================================version check here!
+    {
+        std::cout << "Backing up old database" << std::endl;
+        QFile file(dir.absoluteFilePath("filmulatorDB"));
+        QString name = "filmulatorDB_schema_";
+        name.append(QString::number(oldVersion));
+        file.copy(dir.absoluteFilePath(name));
+    }
 
     //We need to set up 3 tables for the processing.
     //1. The master table for searching. This should be small
@@ -252,11 +269,10 @@ DBSuccess setupDB(QSqlDatabase *db)
     //Well, orientation obviously doesn't get a preset.
     query.exec();
 
+    //Because older versions would erroneously overwrite the file usage count on setting a new location, we need to set them all to 1
+    //SELECT COUNT(*), FTfileID FROM FileTable INNER JOIN SearchTable WHERE STsourceHash=FTfileID GROUP BY FTfileID;
 
-    //Check the database version.
-    query.exec("PRAGMA user_version;");
-    query.next();
-    const int oldVersion = query.value(0).toInt();
+    //Update old versions of the database
     QString versionString = ";";
 
     query.exec("BEGIN TRANSACTION;");//begin a transaction

@@ -451,6 +451,15 @@ SlimSplitView {
 
                     }
                 }
+                Connections {
+                    target: queueModel
+                    onSearchTableChanged: {
+                        var xPos = dateHistoView.contentX
+                        organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
+                        dateHistoView.contentX = xPos
+
+                    }
+                }
 
                 Component.onCompleted: {
                     organizeModel.setDateHistoQuery()
@@ -506,6 +515,14 @@ SlimSplitView {
 
                 Connections {
                     target: importModel
+                    onSearchTableChanged: {
+                        var yPos = gridView.contentY
+                        organizeModel.setOrganizeQuery()
+                        gridView.contentY = yPos
+                    }
+                }
+                Connections {
+                    target: queueModel
                     onSearchTableChanged: {
                         var yPos = gridView.contentY
                         organizeModel.setOrganizeQuery()

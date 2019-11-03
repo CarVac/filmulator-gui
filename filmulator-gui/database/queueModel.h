@@ -21,6 +21,8 @@ public:
     Q_INVOKABLE void markSaved(const QString searchID);
 
     Q_INVOKABLE void batchEnqueue(const QString searchQuery);
+    Q_INVOKABLE void batchForget();
+    Q_INVOKABLE void batchDelete();
 
 public slots:
     Q_INVOKABLE void deQueue(const QString searchID);
@@ -35,6 +37,7 @@ protected:
 
 signals:
     void queueChanged();
+    void searchTableChanged();
 };
 
 #endif // QUEUEMODEL_H

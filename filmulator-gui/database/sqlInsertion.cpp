@@ -13,28 +13,47 @@ void fileInsert(const QString hash,
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
     QSqlQuery query(db);
-    query.prepare("REPLACE INTO FileTable values (?,?,?,?,?,?,?,?,?);");
-                                                 //0 1 2 3 4 5 6 7 8
-    //Hash of the file:
-    query.bindValue(0, hash);
-    //Full path to the new location of the file:
-    query.bindValue(1, filePathName);
-    //Camera manufacturer
-    query.bindValue(2, exifMake(exifData));
-    //Camera model
-    query.bindValue(3, exifModel(exifData));
-    //ISO sensitivity
-    query.bindValue(4, exifIso(exifData));
-    //Exposure time
-    query.bindValue(5, exifTv(exifData));
-    //Aperture number
-    query.bindValue(6, exifAv(exifData));
-    //Focal length
-    query.bindValue(7, exifFl(exifData));
-    //Initialize a counter at 0 for number of times it has been referenced.
-    // We only do this for new imports into the database.
-    query.bindValue(8, 0);
+
+    //TODO: check if exists, if so only update filePathName
+    query.prepare("SELECT FTfilePath FROM FileTable WHERE (FTfileID = ?);");
+    query.bindValue(0,hash);
     query.exec();
+    const bool inDatabaseAlready = query.next();
+
+    if (inDatabaseAlready)
+    {
+        query.prepare("UPDATE FileTable "
+                      "SET (FTfilePath = ?) "
+                      "WHERE (FTfileID = ?);");
+        query.bindValue(0,filePathName);
+        query.bindValue(1, hash);
+        query.exec();
+    }
+    else
+    {
+        query.prepare("INSERT INTO FileTable values (?,?,?,?,?,?,?,?,?);");
+                                                   //0 1 2 3 4 5 6 7 8
+        //Hash of the file:
+        query.bindValue(0, hash);
+        //Full path to the new location of the file:
+        query.bindValue(1, filePathName);
+        //Camera manufacturer
+        query.bindValue(2, exifMake(exifData));
+        //Camera model
+        query.bindValue(3, exifModel(exifData));
+        //ISO sensitivity
+        query.bindValue(4, exifIso(exifData));
+        //Exposure time
+        query.bindValue(5, exifTv(exifData));
+        //Aperture number
+        query.bindValue(6, exifAv(exifData));
+        //Focal length
+        query.bindValue(7, exifFl(exifData));
+        //Initialize a counter at 0 for number of times it has been referenced.
+        // We only do this for new imports into the database.
+        query.bindValue(8, 0);
+        query.exec();
+    }
 }
 
 /*This function creates a default profile in the profile table, and a search entry in the searchtable.*/

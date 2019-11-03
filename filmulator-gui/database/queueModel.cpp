@@ -35,7 +35,7 @@ QSqlQuery QueueModel::modelQuery()
     queryString.append("         ,SearchTable.STrating AS STrating ");
     queryString.append("FROM QueueTable ");
     queryString.append("INNER JOIN SearchTable "
-                       "WHERE SearchTable.STsearchID=QueueTable.QTsearchID ");
+                       "ON SearchTable.STsearchID=QueueTable.QTsearchID ");
     queryString.append("ORDER BY ");
     queryString.append("QueueTable.QTindex ASC;");
 
@@ -282,6 +282,142 @@ void QueueModel::batchEnqueue(const QString searchQuery)
         }
         endInsertRows();
     }
+}
+
+void QueueModel::batchForget()
+{
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
+
+    query.exec("BEGIN TRANSACTION;");
+
+    //Read out the parameters of images that we don't want to delete
+    query.prepare("SELECT QTsortedIndex, "  //0
+                  "       QTprocessed, "    //1
+                  "       QTexported, "     //2
+                  "       QToutput, "       //3
+                  "       QTsearchID "      //4
+                  "FROM QueueTable "
+                  "INNER JOIN ( "
+                  "    SELECT STsearchID "
+                  "    FROM SearchTable "
+                  "    WHERE STrating >= 0) "
+                  "ON STsearchID = QTsearchID "
+                  "ORDER BY QTsortedIndex;");
+    query.exec();
+    QVariantList indexList;
+    QVariantList editedList;
+    QVariantList exportedList;
+    QVariantList outputList;
+    QVariantList searchIDList;
+    QVariantList indexList2;
+    int tempIndex = 0;
+    while(query.next())
+    {
+        indexList << tempIndex;
+        editedList << query.value(1).toBool();
+        exportedList << query.value(2).toBool();
+        outputList << query.value(3).toBool();
+        searchIDList << query.value(4).toString();
+        indexList2 << tempIndex;
+        tempIndex++;
+    }
+    //Generate a temp table with the IDs needing deletion
+    query.exec("CREATE TABLE ForgetTable AS "
+               "SELECT QueueTable.QTsearchID AS searchID, "
+               "       STsourceHash AS sourceHash "
+               "FROM QueueTable "
+               "INNER JOIN ( "
+               "    SELECT SearchTable.STsearchID AS STsearchID, "
+               "           SearchTable.STsourceHash AS STsourceHash "
+               "    FROM SearchTable "
+               "    WHERE SearchTable.STrating < 0) "
+               "ON QueueTable.QTsearchID = STsearchID;");
+
+    //Remove entries from ProcessingTable
+    query.exec("DELETE FROM ProcessingTable "
+               "WHERE ProcTprocID IN "
+               "(SELECT ForgetTable.searchID FROM ForgetTable);");
+
+    //Remove entries from SearchTable
+    query.exec("DELETE FROM SearchTable "
+               "WHERE STsearchID IN "
+               "(SELECT ForgetTable.searchID FROM ForgetTable);");
+
+    //Remove entries from QueueTable
+    //We're actually removing all of them
+    beginRemoveRows(QModelIndex(),0,maxIndex-1);
+    query.exec("DELETE FROM QueueTable;");
+    maxIndex = 0;
+
+    //We're done with the temp deletion table
+    query.exec("DROP TABLE ForgetTable;");
+
+    //Update the file counts in FileTable
+    //First generate another temp table
+    query.exec("CREATE TABLE CountTable "
+               "AS "
+               "SELECT COUNT(*) AS usageCount, "
+               "       FTfileID AS fileID "
+               "FROM FileTable "
+               "INNER JOIN SearchTable "
+               "ON STsourceHash = FTfileID "
+               "GROUP BY FTfileID;");
+
+    //Now insert the values back into FileTable
+    //Anything not counted will be null now.
+    query.exec("UPDATE FileTable "
+               "SET FTusageIncrement = ( "
+               "SELECT usageCount "
+               "FROM CountTable "
+               "WHERE CountTable.fileID=FileTable.FTfileID);");
+
+    //Done with this temp
+    query.exec("DROP TABLE CountTable;");
+
+    //Now remove FileTable entries with 0 files
+    query.exec("DELETE FROM FileTable "
+               "WHERE IFNULL(FTusageIncrement,0) = 0;");
+
+    query.exec("END TRANSACTION");
+    //Finish telling the queue that we've removed stuff
+    endRemoveRows();
+
+    //Now we need to batch insert the good stuff back into the queue
+    query.exec("BEGIN TRANSACTION");
+
+    query.prepare("INSERT OR IGNORE INTO QueueTable "
+                  "(QTindex, QTprocessed, QTexported, QToutput, QTsearchID, QTsortedIndex) "
+                  "VALUES (?,?,?,?,?,?);");
+    query.bindValue(0, indexList);
+    query.bindValue(1, editedList);
+    query.bindValue(2, exportedList);
+    query.bindValue(3, outputList);
+    query.bindValue(4, searchIDList);
+    query.bindValue(5, indexList2);
+    query.execBatch();
+
+    //Increment the index all the way to the end
+    resetIndex();
+
+    query.exec("END TRANSACTION;");
+
+    //notify the model that a bunch of rows were added
+    beginInsertRows(QModelIndex(),0,maxIndex-1);
+    queryModel.setQuery(modelQuery());
+    while (queryModel.canFetchMore())
+    {
+        queryModel.fetchMore();
+    }
+    endInsertRows();
+
+    emit searchTableChanged();
+}
+
+void QueueModel::batchDelete()
+{
+    //
 }
 
 void QueueModel::clearQueue()

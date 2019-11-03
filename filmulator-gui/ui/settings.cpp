@@ -130,10 +130,6 @@ QDate Settings::getOrganizeCaptureDate()
 void Settings::setOrganizeRating(int ratingIn)
 {
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
-    if (ratingIn < 0)
-    {
-        ratingIn = -5;
-    }
     organizeRating = ratingIn;
     settings.setValue("photoDB/organizeRating", ratingIn);
     emit organizeRatingChanged();
@@ -142,7 +138,7 @@ void Settings::setOrganizeRating(int ratingIn)
 int Settings::getOrganizeRating()
 {
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
-    organizeRating = settings.value("photoDB/organizeRating", -5).toInt();
+    organizeRating = settings.value("photoDB/organizeRating", -1).toInt();
     emit organizeRatingChanged();
     return organizeRating;
 }
