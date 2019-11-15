@@ -78,6 +78,7 @@ struct FilmParams {
     float layerMixConst;
     float layerTimeDivisor;
     float rolloffBoundary;
+    float toeBoundary;
 };
 
 struct BlackWhiteParams {
@@ -152,6 +153,7 @@ class ParameterManager : public QObject
     Q_PROPERTY(float layerMixConst                 MEMBER m_layerMixConst                 WRITE setLayerMixConst                 NOTIFY layerMixConstChanged)
     Q_PROPERTY(float layerTimeDivisor              MEMBER m_layerTimeDivisor              WRITE setLayerTimeDivisor              NOTIFY layerTimeDivisorChanged)
     Q_PROPERTY(float rolloffBoundary               MEMBER m_rolloffBoundary               WRITE setRolloffBoundary               NOTIFY rolloffBoundaryChanged)
+    Q_PROPERTY(float toeBoundary                   MEMBER m_toeBoundary                   WRITE setToeBoundary                   NOTIFY toeBoundaryChanged)
 
     Q_PROPERTY(float defInitialDeveloperConcentration READ getDefInitialDeveloperConcentration NOTIFY defInitialDeveloperConcentrationChanged)
     Q_PROPERTY(float defReservoirThickness            READ getDefReservoirThickness            NOTIFY defReservoirThicknessChanged)
@@ -170,6 +172,7 @@ class ParameterManager : public QObject
     Q_PROPERTY(float defLayerMixConst                 READ getDefLayerMixConst                 NOTIFY defLayerMixConstChanged)
     Q_PROPERTY(float defLayerTimeDivisor              READ getDefLayerTimeDivisor              NOTIFY defLayerTimeDivisorChanged)
     Q_PROPERTY(float defRolloffBoundary               READ getDefRolloffBoundary               NOTIFY defRolloffBoundaryChanged)
+    Q_PROPERTY(float defToeBoundary                   READ getDefToeBoundary                   NOTIFY defToeBoundaryChanged)
 
     //Whitepoint & Blackpoint
     Q_PROPERTY(float blackpoint  MEMBER m_blackpoint  WRITE setBlackpoint  NOTIFY blackpointChanged)
@@ -352,6 +355,7 @@ protected:
     float m_layerMixConst;
     float m_layerTimeDivisor;
     float m_rolloffBoundary;
+    float m_toeBoundary;
 
     float d_initialDeveloperConcentration;
     float d_reservoirThickness;
@@ -370,6 +374,7 @@ protected:
     float d_layerMixConst;
     float d_layerTimeDivisor;
     float d_rolloffBoundary;
+    float d_toeBoundary;
 
     //Whitepoint & Blackpoint
     float m_blackpoint;
@@ -449,6 +454,7 @@ protected:
     float getDefLayerMixConst(){return d_layerMixConst;}
     float getDefLayerTimeDivisor(){return d_layerTimeDivisor;}
     float getDefRolloffBoundary(){return d_rolloffBoundary;}
+    float getDefToeBoundary(){return d_toeBoundary;}
 
     //Whitepoint & blackpoint
     float getDefBlackpoint(){return d_blackpoint;}
@@ -501,6 +507,7 @@ protected:
     float getLayerMixConst(){return m_layerMixConst;}
     float getLayerTimeDivisor(){return m_layerTimeDivisor;}
     float getRolloffBoundary(){return m_rolloffBoundary;}
+    float getToeBoundary(){return m_toeBoundary;}
 
     //Whitepoint & blackpoint
     float getBlackpoint(){return m_blackpoint;}
@@ -557,6 +564,7 @@ protected:
     void setLayerMixConst(float);
     void setLayerTimeDivisor(float);
     void setRolloffBoundary(float);
+    void setToeBoundary(float);
 
     //Whitepoint & Blackpoint
     void setBlackpoint(float);
@@ -633,6 +641,7 @@ signals:
     void layerMixConstChanged();
     void layerTimeDivisorChanged();
     void rolloffBoundaryChanged();
+    void toeBoundaryChanged();
 
     void defInitialDeveloperConcentrationChanged();
     void defReservoirThicknessChanged();
@@ -651,6 +660,7 @@ signals:
     void defLayerMixConstChanged();
     void defLayerTimeDivisorChanged();
     void defRolloffBoundaryChanged();
+    void defToeBoundaryChanged();
 
     //Whitepoint & Blackpoint
     void blackpointChanged();

@@ -42,12 +42,12 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.exec("PRAGMA user_version;");
     query.next();
     const int oldVersion = query.value(0).toInt();
-    if (oldVersion > 10)//=================================================================version check here!
+    if (oldVersion > 11)//=================================================================version check here!
     {
         std::cout << "Newer database format. Aborting." << std::endl;
         return DBSuccess::failure;
     }
-    else if (oldVersion < 10)//============================================================version check here!
+    else if (oldVersion < 11)//============================================================version check here!
     {
         std::cout << "Backing up old database" << std::endl;
         QFile file(dir.absoluteFilePath("filmulatorDB"));
@@ -135,7 +135,8 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTmonochrome integer,"                   //36
                "ProcTbwRmult real,"                         //37
                "ProcTbwGmult real,"                         //38
-               "ProcTbwBmult real"                          //39
+               "ProcTbwBmult real,"                         //39
+               "ProcTtoeBoundary real"                      //40
                ");"
                );
 
@@ -176,7 +177,8 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProfTmonochrome integer,"                   //31
                "ProfTbwRmult real,"                         //32
                "ProfTbwGmult real,"                         //33
-               "ProfTbwBmult real"                          //34
+               "ProfTbwBmult real,"                         //34
+               "ProfTtoeBoundary real"                      //35
                ");"
                );
 
@@ -194,9 +196,9 @@ DBSuccess setupDB(QSqlDatabase *db)
 
     //Now we set the default Default profile.
     query.prepare("REPLACE INTO ProfileTable values "
-                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3
-                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
+                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3
+                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
     //Name of profile; must be unique.
     query.bindValue(0, "Default");
     //Initial Developer Concentration
@@ -265,6 +267,8 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.bindValue(32, 0.21f); //bwRmult
     query.bindValue(33, 0.78f); //bwGmult
     query.bindValue(34, 0.07f); //bwBmult
+    //How much to offset the exposure tone curve to the right while maintaining the toe
+    query.bindValue(35, 0.0f); //toeBoundary
 
     //Well, orientation obviously doesn't get a preset.
     query.exec();
@@ -400,6 +404,14 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProfileTable SET ProfTbwBmult = 0.07");
         versionString = "PRAGMA user_version = 10;";
         std::cout << "Upgrading from old db version 9" << std::endl;
+        [[fallthrough]];
+    case 10:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTtoeBoundary;");
+        query.exec("UPDATE ProcessingTable SET ProcTtoeBoundary = 0;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTtoeBoundary;");
+        query.exec("UPDATE ProfileTable SET ProfTtoeBoundary = 0;");
+        versionString = "PRAGMA user_version = 11;";
+        std::cout << "Upgrading from old db version 10" << std::endl;
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

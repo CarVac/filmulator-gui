@@ -335,6 +335,7 @@ std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
     params.layerMixConst = m_layerMixConst;
     params.layerTimeDivisor = m_layerTimeDivisor;
     params.rolloffBoundary = m_rolloffBoundary;
+    params.toeBoundary = m_toeBoundary;
     std::tuple<Valid,AbortStatus,FilmParams> tup(validity,abort, params);
     return tup;
 }
@@ -604,6 +605,20 @@ void ParameterManager::setRolloffBoundary(float rolloffBoundary)
         emit rolloffBoundaryChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setRolloffBoundary"));
+    }
+}
+
+void ParameterManager::setToeBoundary(float toeBoundary)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_toeBoundary = toeBoundary;
+        validity = min(validity, Valid::prefilmulation);
+        paramLocker.unlock();
+        emit toeBoundaryChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setToeBoundary"));
     }
 }
 
@@ -1090,10 +1105,11 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTmonochrome, "                     //36
                   "ProcTbwRmult, "                        //37
                   "ProcTbwGmult, "                        //38
-                  "ProcTbwBmult) "                        //39
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3
-                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
+                  "ProcTbwBmult, "                        //39
+                  "ProcTtoeBoundary) "                    //40
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4
+                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -1134,6 +1150,7 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(37, m_bwRmult);
     query.bindValue(38, m_bwGmult);
     query.bindValue(39, m_bwBmult);
+    query.bindValue(40, m_toeBoundary);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -1363,6 +1380,7 @@ void ParameterManager::selectImage(const QString imageID)
     emit bwRmultChanged();
     emit bwGmultChanged();
     emit bwBmultChanged();
+    emit toeBoundaryChanged();
 
     emit defCaEnabledChanged();
     emit defHighlightsChanged();
@@ -1398,6 +1416,7 @@ void ParameterManager::selectImage(const QString imageID)
     emit defBwRmultChanged();
     emit defBwGmultChanged();
     emit defBwBmultChanged();
+    emit defToeBoundaryChanged();
 
 
     //Mark that it's safe for sliders to move again.
@@ -1663,6 +1682,16 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_rolloffBoundary = temp_rolloffBoundary;
+    }
+
+    //Toe boundary. This is the offset for the values where the toe starts to roll off.
+    nameCol = rec.indexOf("ProfTtoeBoundary");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTtoeBoundary" << endl; }
+    const float temp_toeBoundary = query.value(nameCol).toFloat();
+    d_toeBoundary = temp_toeBoundary;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_toeBoundary = temp_toeBoundary;
     }
 
     //Post-filmulator black clipping point
@@ -2088,6 +2117,17 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams rolloffBoundary" << endl;
         m_rolloffBoundary = temp_rolloffBoundary;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Toe boundary. This is the offset for the values where the toe starts to roll off.
+    nameCol = rec.indexOf("ProcTtoeBoundary");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTtoeBoundary" << endl; }
+    const float temp_toeBoundary = query.value(nameCol).toFloat();
+    if (temp_toeBoundary != m_toeBoundary)
+    {
+        //cout << "ParameterManager::loadParams toeBoundary" << endl;
+        m_toeBoundary = temp_toeBoundary;
         validity = min(validity, Valid::prefilmulation);
     }
 
@@ -2588,6 +2628,15 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams rolloffBoundary" << endl;
         m_rolloffBoundary = temp_rolloffBoundary;
+        validity = min(validity, Valid::prefilmulation);
+    }
+
+    //Toe boundary. This is the offset for the values where the toe starts to roll off.
+    const float temp_toeBoundary = sourceParams->getToeBoundary();
+    if (temp_toeBoundary != m_toeBoundary)
+    {
+        //cout << "ParameterManager::cloneParams toeBoundary" << endl;
+        m_toeBoundary = temp_toeBoundary;
         validity = min(validity, Valid::prefilmulation);
     }
 

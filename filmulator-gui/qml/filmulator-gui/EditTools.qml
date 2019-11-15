@@ -278,6 +278,13 @@ SlimSplitView {
 
                         onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
                         Rectangle {
+                            id: toeLine
+                            height: parent.height
+                            width: 1
+                            color: toeSlider.pressed ? Colors.medOrange : "white"
+                            x: parent.padding + paramManager.toeBoundary/65535*(parent.width-2*parent.padding)
+                        }
+                        Rectangle {
                             id: rolloffLine
                             height: parent.height
                             width: 1
@@ -293,6 +300,34 @@ SlimSplitView {
                             }
                         }
                     }
+                }
+
+                ToolSlider {
+                    id: toeSlider
+                    title: qsTr("Shadow Rolloff Point")
+                    tooltipText: qsTr("This adjusts the contrast in the shadows of the image prior to the film simulation. Raising this darkens the image and makes it more contrasty.")
+                    minimumValue: 0
+                    maximumValue: Math.sqrt(10000)
+                    value: Math.sqrt(paramManager.toeBoundary)
+                    defaultValue: Math.sqrt(paramManager.defToeBoundary)
+                    valueText: value*value/65535
+                    onValueChanged: {
+                        paramManager.toeBoundary = value*value
+                    }
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        onToeBoundaryChanged: {
+                            toeSlider.value = Math.sqrt(paramManager.toeBoundary)
+                        }
+                        onDefToeBoundaryChanged: {
+                            toeSlider.defaultValue = Math.sqrt(paramManager.defToeBoundary)
+                        }
+                    }
+                    Component.onCompleted: {
+                        toeSlider.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
                 }
 
                 ToolSlider {
