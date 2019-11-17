@@ -311,7 +311,7 @@ SlimSplitView {
                     maximumValue: Math.sqrt(10000)
                     value: Math.sqrt(paramManager.toeBoundary)
                     defaultValue: Math.sqrt(paramManager.defToeBoundary)
-                    valueText: (value*value/65535).toFixed(5)
+                    valueText: (value*value/65535).toFixed(6)
                     onValueChanged: {
                         paramManager.toeBoundary = value*value
                     }
@@ -339,7 +339,7 @@ SlimSplitView {
                     maximumValue: 65535
                     value: paramManager.rolloffBoundary
                     defaultValue: paramManager.defRolloffBoundary
-                    valueText: (value/65535).toFixed(5)
+                    valueText: (value/65535).toFixed(6)
                     onValueChanged: {
                         paramManager.rolloffBoundary = value
                     }
