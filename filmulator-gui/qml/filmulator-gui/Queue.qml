@@ -214,7 +214,7 @@ Item {
                                 id: menuLayout
                                 spacing: 0 * root.uiScale
                                 x: Math.min(Math.max(0,-queueDelegate.mapToItem(null,0,0).x), sizer.mapToItem(queueDelegate,sizer.width,0).x - width)
-                                y: -154 * root.uiScale//#buttons*30+4
+                                anchors.bottom: parent.top
                                 z: 2
                                 width: 200 * root.uiScale
 
@@ -433,20 +433,24 @@ Item {
                                     }
                                     uiScale: root.uiScale
                                 }
-                                RowLayout {
-                                    id: rate
-                                    spacing: 0 * root.uiScale
+                                Item {
+                                    //row layouts have rounding issues at high item counts if you specify size
+                                    //if you use Layouts.fillWidth then the gaps are too big
+                                    id: rateRow
+                                    width: parent.width
                                     height: 30 * root.uiScale
                                     z: 2
 
-                                    property real buttonWidth: (parent.width - root.uiScale/2)/7
+                                    property int buttonCount: 7
+                                    property real buttonWidth: parent.width/buttonCount
 
                                     ToolButton {
                                         id: rateNegative
                                         width: parent.buttonWidth
+                                        x: 0 * parent.buttonWidth
                                         text: qsTr("X")
                                         tooltipText: qsTr("Mark this photo for forgetting or for deletion")
-                                        notDisabled: -1 != STrating
+                                        notDisabled: STrating >= 0 //-6 through -1 should be deletion, mapped to 5 through 0 rating, to preserve rating when swapping between deletion and non-deletion
                                         uiScale: root.uiScale
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, -1)
@@ -460,6 +464,7 @@ Item {
                                     ToolButton {
                                         id: rate0
                                         width: parent.buttonWidth
+                                        x: 1 * parent.buttonWidth
                                         text: qsTr("0")
                                         tooltipText: qsTr("Rate this 0 stars")
                                         notDisabled: 0 != STrating
@@ -476,6 +481,7 @@ Item {
                                     ToolButton {
                                         id: rate1
                                         width: parent.buttonWidth
+                                        x: 2 * parent.buttonWidth
                                         text: qsTr("1")
                                         tooltipText: qsTr("Rate this 1 star")
                                         notDisabled: 1 != STrating
@@ -492,6 +498,7 @@ Item {
                                     ToolButton {
                                         id: rate2
                                         width: parent.buttonWidth
+                                        x: 3 * parent.buttonWidth
                                         text: qsTr("2")
                                         tooltipText: qsTr("Rate this 2 stars")
                                         notDisabled: 2 != STrating
@@ -508,6 +515,7 @@ Item {
                                     ToolButton {
                                         id: rate3
                                         width: parent.buttonWidth
+                                        x: 4 * parent.buttonWidth
                                         text: qsTr("3")
                                         tooltipText: qsTr("Rate this 3 stars")
                                         notDisabled: 3 != STrating
@@ -524,6 +532,7 @@ Item {
                                     ToolButton {
                                         id: rate4
                                         width: parent.buttonWidth
+                                        x: 5 * parent.buttonWidth
                                         text: qsTr("4")
                                         tooltipText: qsTr("Rate this 4 stars")
                                         notDisabled: 4 != STrating
@@ -540,6 +549,7 @@ Item {
                                     ToolButton {
                                         id: rate5
                                         width: parent.buttonWidth
+                                        x: 6 * parent.buttonWidth
                                         text: qsTr("5")
                                         tooltipText: qsTr("Rate this 5 stars")
                                         notDisabled: 5 != STrating
@@ -553,6 +563,10 @@ Item {
                                             rate5.tooltipWanted.connect(root.tooltipWanted)
                                         }
                                     }
+                                }
+                                Item {
+                                    id: rightClickBottomSpacer
+                                    implicitHeight: 2*uiScale
                                 }
                             }
                         }
