@@ -176,7 +176,7 @@ SlimSplitView {
                     maximumValue: Math.log(20000)
                     value: Math.log(paramManager.temperature)
                     defaultValue: Math.log(paramManager.defTemperature)
-                    valueText: Math.exp(value)
+                    valueText: Math.exp(value).toFixed(1)
                     onValueChanged: {
                         paramManager.temperature = Math.exp(value)
                     }
@@ -204,7 +204,7 @@ SlimSplitView {
                     maximumValue: Math.log(10)
                     value: Math.log(paramManager.tint)
                     defaultValue: Math.log(paramManager.defTint)
-                    valueText: Math.exp(value)
+                    valueText: Math.exp(value).toFixed(4)
                     onValueChanged: {
                         paramManager.tint = Math.exp(value)
                     }
@@ -235,6 +235,7 @@ SlimSplitView {
                     tickmarkFactor: 6
                     value: paramManager.exposureComp
                     defaultValue: paramManager.defExposureComp
+                    valueText: value.toFixed(4)
                     onValueChanged: {
                         paramManager.exposureComp = value
                     }
@@ -310,7 +311,7 @@ SlimSplitView {
                     maximumValue: Math.sqrt(10000)
                     value: Math.sqrt(paramManager.toeBoundary)
                     defaultValue: Math.sqrt(paramManager.defToeBoundary)
-                    valueText: value*value/65535
+                    valueText: (value*value/65535).toFixed(5)
                     onValueChanged: {
                         paramManager.toeBoundary = value*value
                     }
@@ -338,7 +339,7 @@ SlimSplitView {
                     maximumValue: 65535
                     value: paramManager.rolloffBoundary
                     defaultValue: paramManager.defRolloffBoundary
-                    valueText: value/65535
+                    valueText: (value/65535).toFixed(5)
                     onValueChanged: {
                         paramManager.rolloffBoundary = value
                     }
@@ -396,6 +397,7 @@ SlimSplitView {
                     maximumValue: 100
                     value: 100*paramManager.layerMixConst
                     defaultValue: 100*paramManager.defLayerMixConst
+                    valueText: value.toFixed(4)
                     onValueChanged: {
                         paramManager.layerMixConst = value/100;
                     }
@@ -502,7 +504,7 @@ SlimSplitView {
                     maximumValue: 1.4
                     value: Math.sqrt(paramManager.blackpoint*1000)
                     defaultValue: Math.sqrt(paramManager.defBlackpoint*1000)
-                    valueText: value*value/2
+                    valueText: (value*value/2).toFixed(5)
                     onValueChanged: {
                         paramManager.blackpoint = value*value/1000
                     }
@@ -530,7 +532,7 @@ SlimSplitView {
                     maximumValue: 2.5/1000
                     value: paramManager.whitepoint
                     defaultValue: paramManager.defWhitepoint
-                    valueText: value*500// 1000/2
+                    valueText: (value*500).toFixed(5)// 1000/2
                     onValueChanged: {
                         paramManager.whitepoint = value
                     }
@@ -558,7 +560,7 @@ SlimSplitView {
                     maximumValue: 1
                     value: paramManager.shadowsY
                     defaultValue: paramManager.defShadowsY
-                    valueText: value*1000
+                    valueText: (value*1000).toFixed(3)
                     onValueChanged: {
                         paramManager.shadowsY = value
                     }
@@ -586,7 +588,7 @@ SlimSplitView {
                     maximumValue: 1
                     value: paramManager.highlightsY
                     defaultValue: paramManager.defHighlightsY
-                    valueText: value*1000
+                    valueText: (value*1000).toFixed(3)
                     onValueChanged: {
                         paramManager.highlightsY = value
                     }
@@ -645,7 +647,7 @@ SlimSplitView {
                     maximumValue: 0.5
                     value: paramManager.vibrance
                     defaultValue: paramManager.defVibrance
-                    valueText: value*200
+                    valueText: (value*200).toFixed(3)
                     onValueChanged: {
                         paramManager.vibrance = value
                     }
@@ -675,7 +677,7 @@ SlimSplitView {
                     maximumValue: 0.5
                     value: paramManager.saturation
                     defaultValue: paramManager.defSaturation
-                    valueText: value*200
+                    valueText: (value*200).toFixed(3)
                     onValueChanged: {
                         paramManager.saturation = value
                     }

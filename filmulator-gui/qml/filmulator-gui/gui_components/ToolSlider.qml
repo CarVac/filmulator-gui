@@ -243,13 +243,8 @@ Rectangle {
                     }
                     oldAngle = newAngle
                     var revolutions = delta / (2 * Math.PI)
-                    value = value + revolutions * (maximumValue - minimumValue) / 8
-                    if (value > maximumValue) {
-                        value = maximumValue
-                    }
-                    if (value < minimumValue) {
-                        value = minimumValue
-                    }
+                    var newValue = value + revolutions * (maximumValue - minimumValue) / 8
+                    value = Math.max(Math.min(newValue,maximumValue),minimumValue)
                 }
             }
             onReleased: {
