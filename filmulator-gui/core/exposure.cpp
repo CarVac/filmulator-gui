@@ -35,7 +35,7 @@ void exposure(matrix<float> &input_image, float crystals_per_pixel,
         for(int row = 0; row < nrows; row++) {
             for(int col = 0; col<ncols; col++) {
                 float input = max(0.0f,input_image(row,col));
-                input = input - toe_boundary + (toe_boundary*toe_boundary)/(input + toe_boundary);
+                input = input - toe_boundary + (toe_boundary*toe_boundary)/(input + toe_boundary+1/65535.0f);
                 input = input > rolloff_boundary ? 65535.f - ((crystal_headroom * crystal_headroom) / (input + crystal_headroom - rolloff_boundary)) : input;
                 input_image(row,col) = input * crystals_per_pixel;
             }
