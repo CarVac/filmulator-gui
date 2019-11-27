@@ -292,7 +292,7 @@ void QueueModel::batchForget()
 
     query.exec("BEGIN TRANSACTION;");
 
-    //Read out the parameters of images that we don't want to delete
+    //Read out the parameters of images in the queue that we don't want to delete
     query.prepare("SELECT QTsortedIndex, "  //0
                   "       QTprocessed, "    //1
                   "       QTexported, "     //2
@@ -346,7 +346,7 @@ void QueueModel::batchForget()
                "(SELECT ForgetTable.searchID FROM ForgetTable);");
 
     //Remove entries from QueueTable
-    //We're actually removing all of them
+    //We're actually removing all of them and inserting them back later
     beginRemoveRows(QModelIndex(),0,maxIndex-1);
     query.exec("DELETE FROM QueueTable;");
     maxIndex = 0;
