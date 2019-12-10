@@ -356,22 +356,33 @@ void QueueModel::batchForget()
 
     //Update the file counts in FileTable
     //First generate another temp table
-    query.exec("CREATE TABLE CountTable "
-               "AS "
-               "SELECT COUNT(*) AS usageCount, "
+    query.exec("CREATE TABLE CountTable ("
+               "usageCount int, "
+               "oldUsageCount int, "
+               "fileID varchar PRIMARY KEY);");
+
+    //Fill the table with counts of usages
+    query.exec("INSERT INTO CountTable "
+               "(usageCount, oldUsageCount, fileID) "
+               "SELECT ifnull(COUNT(SearchTable.STimportTime),0), "
+               "       ifnull(FTusageIncrement,0), "
                "       FTfileID AS fileID "
                "FROM FileTable "
-               "INNER JOIN SearchTable "
+               "LEFT OUTER JOIN SearchTable "
                "ON STsourceHash = FTfileID "
                "GROUP BY FTfileID;");
 
-    //Now insert the values back into FileTable
-    //Anything not counted will be null now.
+    //Remove ones where they already match
+    query.exec("DELETE FROM CountTable "
+               "WHERE usageCount=oldUsageCount;");
+
+    //Now put the updated values back into FileTable
     query.exec("UPDATE FileTable "
                "SET FTusageIncrement = ( "
                "SELECT usageCount "
                "FROM CountTable "
-               "WHERE CountTable.fileID=FileTable.FTfileID);");
+               "WHERE CountTable.fileID=FileTable.FTfileID) "
+               "WHERE FileTable.FTfileID IN (SELECT fileID FROM CountTable);");//to prevent nulls and make things fast
 
     //Done with this temp
     query.exec("DROP TABLE CountTable;");
