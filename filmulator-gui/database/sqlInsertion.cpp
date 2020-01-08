@@ -4,6 +4,9 @@
 #include "../ui/parameterManager.h"
 #include "../ui/thumbWriteWorker.h"
 #include "../database/database.hpp"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 /*This function inserts info on a raw file into the database.*/
 void fileInsert(const QString hash,
@@ -19,15 +22,18 @@ void fileInsert(const QString hash,
     query.bindValue(0,hash);
     query.exec();
     const bool inDatabaseAlready = query.next();
+    cout << "old path: " << query.value(0).toString().toStdString() << endl;
 
     if (inDatabaseAlready)
     {
         query.prepare("UPDATE FileTable "
-                      "SET (FTfilePath = ?) "
+                      "SET FTfilePath = ? "
                       "WHERE (FTfileID = ?);");
-        query.bindValue(0,filePathName);
+        query.bindValue(0, filePathName);
         query.bindValue(1, hash);
         query.exec();
+        cout << filePathName.toStdString() << endl;
+        cout << hash.toStdString() << endl;
     }
     else
     {
