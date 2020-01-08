@@ -22,7 +22,6 @@ void fileInsert(const QString hash,
     query.bindValue(0,hash);
     query.exec();
     const bool inDatabaseAlready = query.next();
-    cout << "old path: " << query.value(0).toString().toStdString() << endl;
 
     if (inDatabaseAlready)
     {
@@ -32,8 +31,6 @@ void fileInsert(const QString hash,
         query.bindValue(0, filePathName);
         query.bindValue(1, hash);
         query.exec();
-        cout << filePathName.toStdString() << endl;
-        cout << hash.toStdString() << endl;
     }
     else
     {
