@@ -75,6 +75,7 @@ win32:LIBS += -L/usr/lib
 unix {
 script.extra = move_script; install -m 755 -p filmulator
 extra.path = /usr/bin
+LIBS += -L/usr/local/lib
 }
 
 # Please do not modify the following two lines. Required for deployment.

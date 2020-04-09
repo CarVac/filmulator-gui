@@ -24,7 +24,7 @@ find_package(Qt5Qml CONFIG REQUIRED)
 # find_package(Qt5LinguistTools CONFIG REQUIRED)
 
 find_package(rtprocess CONFIG REQUIRED)
-find_package(exiv2 0.25 REQUIRED)
+find_package(exiv2 REQUIRED)
 find_package(libraw REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
@@ -135,7 +135,7 @@ target_link_libraries(filmulator
     ${JPEG_LIBRARIES}
     ${TIFF_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
-    ${RTPROCESS_LIBRARIES}
+    rtprocess::rtprocess
 )
 
 if(APPLE)

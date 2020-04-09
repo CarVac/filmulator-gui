@@ -428,7 +428,8 @@ void QueueModel::batchForget()
 
 void QueueModel::batchDelete()
 {
-    //
+    // Delete the marked files
+    // Then batch forget all the marked files too
 }
 
 void QueueModel::clearQueue()

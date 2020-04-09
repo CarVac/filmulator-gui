@@ -122,7 +122,12 @@ QDate Settings::getOrganizeCaptureDate()
 {
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
     organizeCaptureDate = settings.value("photoDB/organizeCaptureDate", QVariant(QDate::currentDate())).toDate();
+
+    //this was added to fix weird behavior, but is it necessary?
+    //someone reported a bug where the calendar shifts the day forward.
+    //And restarting the program would also shift the day forward.
     organizeCaptureDate = organizeCaptureDate.addDays(1);
+
     emit organizeCaptureDateChanged();
     return organizeCaptureDate;
 }

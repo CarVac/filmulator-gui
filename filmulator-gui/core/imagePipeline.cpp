@@ -455,6 +455,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << "raw height: " << raw_height << endl;
 
             //before demosaic, you want to apply raw white balance
+            //======================================================================
+            //TODO: If the camera white balance disagrees with some sort of AWB by a *lot*, use an awb instead
+            //======================================================================
             matrix<float> premultiplied(raw_height, raw_width);
 
             cout << "demosaic start" << timeDiff(timeRequested) << endl;
