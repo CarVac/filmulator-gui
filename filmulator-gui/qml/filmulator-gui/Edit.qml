@@ -1742,7 +1742,7 @@ SlimSplitView {
         }
         Text {
             id: filenameText
-            x: 350 * uiScale
+            x: 300 * uiScale
             y: 1 * uiScale
             color: "white"
             text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.filename
@@ -1752,7 +1752,7 @@ SlimSplitView {
         }
         Text {
             id: isoText
-            x: 350 * uiScale
+            x: 300 * uiScale
             y: 15 * uiScale
             color: "white"
             text: root.cropping ? qsTr("V offset: ") + imageRect.displayVoffset : "ISO " + paramManager.sensitivity
