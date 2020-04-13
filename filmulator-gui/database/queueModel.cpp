@@ -426,12 +426,6 @@ void QueueModel::batchForget()
     emit searchTableChanged();
 }
 
-void QueueModel::batchDelete()
-{
-    // Delete the marked files
-    // Then batch forget all the marked files too
-}
-
 void QueueModel::clearQueue()
 {
     //Each thread needs a unique database connection

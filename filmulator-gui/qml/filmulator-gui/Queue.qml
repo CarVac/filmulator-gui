@@ -218,123 +218,58 @@ Item {
                                 z: 2
                                 width: 200 * root.uiScale
 
-                                RowLayout {
-                                    id: forgetdelete
-                                    spacing: 0 * root.uiScale
-                                    height: 30 * root.uiScale
+                                ToolButton {
+                                    id: forgetButton
+                                    property bool active: false
+                                    text: active ? qsTr("Are you sure?") : qsTr("...Wait a moment...")
+                                    width: parent.width
                                     z: 2
+                                    uiScale: root.uiScale
 
-                                    property real buttonWidth: (parent.width - root.uiScale/2)/2
+                                    onTriggered: {
+                                        if (forgetButton.active) {
+                                            queueModel.batchForget()
+                                            forgetButton.active = false
+                                            queueDelegate.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                        else {
+                                            forgetCover.visible = true
+                                            forgetButton.active = false
+                                            forgetDelay.stop()
+                                        }
+                                    }
 
-                                    ToolButton {
-                                        id: forgetButton
-                                        property bool active: false
-                                        text: active ? qsTr("Really forget?") : qsTr("...Wait...")
-                                        width: parent.buttonWidth
-                                        z: 2
-                                        uiScale: root.uiScale
-
+                                    Timer {
+                                        id: forgetDelay
+                                        interval: 1000
                                         onTriggered: {
-                                            if (forgetButton.active) {
-                                                queueModel.batchForget()
-                                                forgetButton.active = false
-                                                queueDelegate.rightClicked = false
-                                                loadMenu.sourceComponent = undefined
-                                            }
-                                            else {
-                                                forgetCover.visible = true
-                                                forgetButton.active = false
-                                                forgetDelay.stop()
-                                            }
+                                            forgetButton.active = true
+                                            forgetTimeout.start()
                                         }
-
-                                        Timer {
-                                            id: forgetDelay
-                                            interval: 1000
-                                            onTriggered: {
-                                                forgetButton.active = true
-                                                forgetTimeout.start()
-                                            }
-                                        }
-                                        Timer {
-                                            id: forgetTimeout
-                                            interval: 5000
-                                            onTriggered: {
-                                                forgetCover.visible = true
-                                                forgetButton.active = false
-                                            }
-                                        }
-
-                                        ToolButton {
-                                            id: forgetCover
-                                            text: qsTr("Forget photos")
-                                            tooltipText: qsTr("Remove marked photos that are in the queue from the database. The files will not be deleted.")
-                                            anchors.fill: parent
-                                            uiScale: root.uiScale
-                                            onTriggered: {
-                                                forgetButton.active = false
-                                                forgetCover.visible = false
-                                                forgetDelay.start()
-                                            }
-                                            Component.onCompleted: {
-                                                forgetCover.tooltipWanted.connect(root.tooltipWanted)
-                                            }
+                                    }
+                                    Timer {
+                                        id: forgetTimeout
+                                        interval: 5000
+                                        onTriggered: {
+                                            forgetCover.visible = true
+                                            forgetButton.active = false
                                         }
                                     }
 
                                     ToolButton {
-                                        id: deleteButton
-                                        property bool active: false
-                                        text: active ? qsTr("Really delete?") : qsTr("...Wait...")
-                                        width: parent.buttonWidth
-                                        z: 2
+                                        id: forgetCover
+                                        text: qsTr("Forget photos")
+                                        tooltipText: qsTr("Remove marked photos that are in the queue from the database. The files will not be deleted.")
+                                        anchors.fill: parent
                                         uiScale: root.uiScale
-
                                         onTriggered: {
-                                            if (deleteButton.active) {
-                                                //delete stuff!!!
-                                                deleteButton.active = false
-                                                queueDelegate.rightClicked = false
-                                                loadMenu.sourceComponent = undefined
-                                            }
-                                            else {
-                                                deleteCover.visible = true
-                                                deleteButton.active = false
-                                                deleteDelay.stop()
-                                            }
+                                            forgetButton.active = false
+                                            forgetCover.visible = false
+                                            forgetDelay.start()
                                         }
-
-                                        Timer {
-                                            id: deleteDelay
-                                            interval: 1000
-                                            onTriggered: {
-                                                deleteButton.active = true
-                                                deleteTimeout.start()
-                                            }
-                                        }
-                                        Timer {
-                                            id: deleteTimeout
-                                            interval: 5000
-                                            onTriggered: {
-                                                deleteCover.visible = true
-                                                deleteButton.active = false
-                                            }
-                                        }
-
-                                        ToolButton {
-                                            id: deleteCover
-                                            text: qsTr("Delete photos")
-                                            tooltipText: qsTr("Remove marked photos that are in the queue from the database and delete them. YOU WILL LOSE YOUR FILES IF NOT BACKED UP!")
-                                            anchors.fill: parent
-                                            uiScale: root.uiScale
-                                            onTriggered: {
-                                                deleteButton.active = false
-                                                deleteCover.visible = false
-                                                deleteDelay.start()
-                                            }
-                                            Component.onCompleted: {
-                                                deleteCover.tooltipWanted.connect(root.tooltipWanted)
-                                            }
+                                        Component.onCompleted: {
+                                            forgetCover.tooltipWanted.connect(root.tooltipWanted)
                                         }
                                     }
                                 }
