@@ -24,6 +24,7 @@ libexiv2
 libjpeg
 libraw
 librtprocess 0.10
+liblensfun
 ```
 We highly encourage you to compile libraw yourself to ensure you have support for recent cameras.
 
