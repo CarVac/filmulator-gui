@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/icons">
         <file>filmulator64icon.svg</file>
+        <file>refresh.svg</file>
     </qresource>
 </RCC>

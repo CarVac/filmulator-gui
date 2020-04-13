@@ -102,7 +102,13 @@ Rectangle {
         height: 28 * uiScale
         x: root.width-width-__padding
         y: __padding
-        text: "[]"
+        Image {
+            width: 14 * uiScale
+            height: 14 * uiScale
+            anchors.centerIn: parent
+            source: "qrc:///icons/refresh.svg"
+            antialiasing: true
+        }
         action: Action {
             onTriggered: {
                 slider.value = defaultValue
