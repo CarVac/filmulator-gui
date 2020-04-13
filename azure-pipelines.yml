@@ -30,7 +30,7 @@ steps:
   - script: |
       mkdir librt
       cd librt
-      git clone https://github.com/mermerico/librtprocess lrt
+      git clone https://github.com/CarVac/librtprocess lrt
       echo "done clone"
       mkdir buildDir
       cd buildDir
