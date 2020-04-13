@@ -56,7 +56,7 @@ steps:
       set PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem
       set HOME=.
       %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
-      %MSYS2_ROOT%/mingw64/bin/windeployqt.exe --verbose 0 --release --qmldir qml/filmulator-gui filmulator.exe
+      %MSYS2_ROOT%/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe
     displayName: package dlls
   - script: |
       set HOME=.
