@@ -38,9 +38,9 @@ script:
     #- qmake PREFIX=/usr
   - mkdir build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE="Release" ..
+  - cmake -DCMAKE_INSTALL_PREFIX="appdir" -DCMAKE_BUILD_TYPE="Release" ..
   - make -j4
-  - make INSTALL_ROOT=appdir install ; find appdir/
+  - make install ; find appdir/
   - pwd
   - # Dear upstream, please install to more standard locations
   - mkdir -p appdir/usr/bin ; mv appdir/usr/lib/filmulator-gui/filmulator-gui appdir/usr/bin/filmulator-gui
