@@ -2,5 +2,8 @@
     <qresource prefix="/icons">
         <file>filmulator64icon.svg</file>
         <file>refresh.svg</file>
+        <file>rotateleft.svg</file>
+        <file>crop.svg</file>
+        <file>cropactive.svg</file>
     </qresource>
 </RCC>

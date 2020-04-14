@@ -1662,54 +1662,6 @@ SlimSplitView {
             }
         }
 
-        ToolButton {
-            id: crop
-            anchors.right: rotateLeft.left
-            y: 0 * uiScale
-            width: 120 * uiScale
-            notDisabled: root.imageReady
-            text: root.cropping ? qsTr("Finish Crop") : qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
-            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
-            onTriggered: {
-                if (!root.cropping) {
-                    filmProvider.disableThumbnailWrite()
-                    root.requestingCropping = true
-                } else {
-                    filmProvider.enableThumbnailWrite()
-                    root.cancelCropping = false
-                    root.requestingCropping = false
-                }
-            }
-            Component.onCompleted: {
-                crop.tooltipWanted.connect(root.tooltipWanted)
-            }
-            uiScale: root.uiScale
-        }
-
-        ToolButton {
-            id: rotateLeft
-            anchors.right: rotateRight.left
-            y: 0 * uiScale
-            width: 90 * uiScale
-            text: qsTr("Rotate Left")
-            onTriggered: {
-                paramManager.rotateLeft()
-            }
-            uiScale: root.uiScale
-        }
-
-        ToolButton {
-            id: rotateRight
-            anchors.right: parent.right
-            y: 0 * uiScale
-            width: 90 * uiScale
-            text: qsTr("Rotate Right")
-            onTriggered: {
-                paramManager.rotateRight()
-            }
-            uiScale: root.uiScale
-        }
-
         FilmProgressBar {
             id: progressBar
             visible: true
@@ -1794,6 +1746,87 @@ SlimSplitView {
                 verticalAlignment: Text.AlignVCenter
             }
         }
+
+        ToolButton {
+            id: crop
+            anchors.right: rotateLeft.left
+            y: 0 * uiScale
+            notDisabled: root.imageReady
+            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: root.cropping ? "qrc:///icons/cropactive.svg" : "qrc:///icons/crop.svg"
+                antialiasing: true
+                opacity: crop.notDisabled ? 1 : 0.5
+            }
+            onTriggered: {
+                if (!root.cropping) {
+                    filmProvider.disableThumbnailWrite()
+                    root.requestingCropping = true
+                } else {
+                    filmProvider.enableThumbnailWrite()
+                    root.cancelCropping = false
+                    root.requestingCropping = false
+                }
+            }
+            Component.onCompleted: {
+                crop.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
+            id: rotateLeft
+            anchors.right: rotateRight.left
+            y: 0 * uiScale
+            tooltipText: qsTr("Rotate image 90 degrees left.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: "qrc:///icons/rotateleft.svg"
+                antialiasing: true
+            }
+            onTriggered: {
+                paramManager.rotateLeft()
+            }
+            Component.onCompleted: {
+                rotateLeft.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
+            id: rotateRight
+            anchors.right: rightSpacer.left
+            y: 0 * uiScale
+            tooltipText: qsTr("Rotate image 90 degrees right.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: "qrc:///icons/rotateleft.svg"
+                mirror: true
+                antialiasing: true
+            }
+            onTriggered: {
+                paramManager.rotateRight()
+            }
+            Component.onCompleted: {
+                rotateRight.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        Item {
+            id: rightSpacer
+            anchors.right: parent.right
+            y: 0 * uiScale
+            width: 2 * uiScale
+            height: 2 * uiScale
+        }
+
         Connections {
             target: paramManager
             onFileError: {
