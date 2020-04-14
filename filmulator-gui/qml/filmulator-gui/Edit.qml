@@ -1725,7 +1725,7 @@ SlimSplitView {
                 width: 14 * uiScale
                 height: 14 * uiScale
                 anchors.centerIn: parent
-                source: "qrc:///icons/brightness.svg"
+                source: "qrc:///icons/brightness.png"
                 antialiasing: true
             }
             onTriggered: {
@@ -1753,7 +1753,7 @@ SlimSplitView {
                 width: 14 * uiScale
                 height: 14 * uiScale
                 anchors.centerIn: parent
-                source: root.cropping ? "qrc:///icons/cropactive.svg" : "qrc:///icons/crop.svg"
+                source: root.cropping ? "qrc:///icons/cropactive.png" : "qrc:///icons/crop.png"
                 antialiasing: true
                 opacity: crop.notDisabled ? 1 : 0.5
             }
@@ -1782,7 +1782,7 @@ SlimSplitView {
                 width: 14 * uiScale
                 height: 14 * uiScale
                 anchors.centerIn: parent
-                source: "qrc:///icons/rotateleft.svg"
+                source: "qrc:///icons/rotateleft.png"
                 antialiasing: true
             }
             onTriggered: {
@@ -1803,7 +1803,7 @@ SlimSplitView {
                 width: 14 * uiScale
                 height: 14 * uiScale
                 anchors.centerIn: parent
-                source: "qrc:///icons/rotateleft.svg"
+                source: "qrc:///icons/rotateleft.png"
                 mirror: true
                 antialiasing: true
             }

@@ -6,5 +6,11 @@
         <file>crop.svg</file>
         <file>cropactive.svg</file>
         <file>brightness.svg</file>
+        <file>brightness.png</file>
+        <file>crop.png</file>
+        <file>cropactive.png</file>
+        <file>filmulator64icon.png</file>
+        <file>refresh.png</file>
+        <file>rotateleft.png</file>
     </qresource>
 </RCC>

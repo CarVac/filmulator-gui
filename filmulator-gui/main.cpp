@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
         qWarning("Error: your root item has to be a Window");
         return -1;
     }
-    window->setIcon(QIcon(":/icons/filmulator64icon.svg"));
+    window->setIcon(QIcon(":/icons/filmulator64icon.png"));
     window->show();
 
     return app.exec();
