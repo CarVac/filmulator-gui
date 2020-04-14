@@ -66,7 +66,7 @@ SlimSplitView {
         id: photoBox
         color: "black"
         Layout.fillWidth: true
-        property int backgroundColor: backgroundBrightnessSlider.value
+        property int backgroundColor: 0
         property bool loadingError: false
         property string errorText: ""
         Rectangle {//This is because before the image is loaded there's no background.
@@ -1631,37 +1631,6 @@ SlimSplitView {
             }
         }
 
-        Item {
-            id: backgroundColorBox
-            y: 0 * uiScale
-            width: 180 * uiScale
-            height: 30 * uiScale
-            anchors.right: crop.left
-            Text {
-                id: backgroundColorText
-                x: 0 * uiScale
-                y: 2 * uiScale
-                width: parent.width
-                color: "white"
-                text: qsTr("Background Brightness")
-                horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: 12.0 * uiScale
-            }
-
-            SlipperySlider {
-                id: backgroundBrightnessSlider
-                x: 40 * uiScale
-                y: 17 * uiScale
-                width: parent.width - 80 * uiScale
-                minimumValue: 0
-                maximumValue: 2
-                value: 0
-                stepSize: 1
-                tickmarksEnabled: true
-                uiScale: root.uiScale
-            }
-        }
-
         FilmProgressBar {
             id: progressBar
             visible: true
@@ -1745,6 +1714,33 @@ SlimSplitView {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
+        }
+
+        ToolButton {
+            id: backgroundBrightness
+            anchors.right: crop.left
+            y: 0 * uiScale
+            tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: "qrc:///icons/brightness.svg"
+                antialiasing: true
+            }
+            onTriggered: {
+                if (photoBox.backgroundColor == 0) {
+                    photoBox.backgroundColor = 1
+                } else if (photoBox.backgroundColor == 1) {
+                    photoBox.backgroundColor = 2
+                } else {
+                    photoBox.backgroundColor = 0
+                }
+            }
+            Component.onCompleted: {
+                backgroundBrightness.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
         }
 
         ToolButton {

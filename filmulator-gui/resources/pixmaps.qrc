@@ -5,5 +5,6 @@
         <file>rotateleft.svg</file>
         <file>crop.svg</file>
         <file>cropactive.svg</file>
+        <file>brightness.svg</file>
     </qresource>
 </RCC>
