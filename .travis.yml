@@ -35,7 +35,10 @@ script:
   - sudo make install
   - cd ../..
   - cd filmulator-gui
-  - qmake PREFIX=/usr
+    #- qmake PREFIX=/usr
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE="Release" ..
   - make -j4
   - make INSTALL_ROOT=appdir install ; find appdir/
   - pwd
