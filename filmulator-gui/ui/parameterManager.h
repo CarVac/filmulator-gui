@@ -115,6 +115,8 @@ class ParameterManager : public QObject
     Q_PROPERTY(QString exposureTime READ getExposureTime NOTIFY exposureTimeChanged)
     Q_PROPERTY(QString aperture     READ getAperture     NOTIFY apertureChanged)
     Q_PROPERTY(float focalLength    READ getFocalLength  NOTIFY focalLengthChanged)
+    Q_PROPERTY(QString make         READ getMake         NOTIFY makeChanged)
+    Q_PROPERTY(QString model        READ getModel        NOTIFY modelChanged)
 
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
@@ -313,6 +315,8 @@ protected:
     QString exposureTime;
     QString aperture;
     float focalLength;
+    QString make;
+    QString model;
 
     Valid validity;
 
@@ -423,6 +427,8 @@ protected:
     QString getExposureTime(){return exposureTime;}
     QString getAperture(){return aperture;}
     float getFocalLength(){return focalLength;}
+    QString getMake(){return make;}
+    QString getModel(){return model;}
 
     bool getPasteable(){return pasteable;}
 
@@ -599,6 +605,8 @@ signals:
     void exposureTimeChanged();
     void apertureChanged();
     void focalLengthChanged();
+    void makeChanged();
+    void modelChanged();
 
     //Copy/pasteing
     void pasteableChanged();

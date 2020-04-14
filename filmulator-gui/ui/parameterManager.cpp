@@ -16,8 +16,11 @@ ParameterManager::ParameterManager() : QObject(0)
 
     aperture = "0.0";
     exposureTime = "0.0";
-    filename = "N/A";
+    filename = "";
     sensitivity = 0;
+    focalLength = 0;
+    make = "";
+    model = "";
 
     validity = Valid::none;
 
@@ -1237,7 +1240,7 @@ void ParameterManager::selectImage(const QString imageID)
     QSqlDatabase db = getDB();
     QSqlQuery query(db);
     query.prepare("SELECT \
-                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength \
+                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength,FTcameraMake,FTcameraModel \
                   FROM FileTable WHERE FTfileID = ?;");
     query.bindValue(0, QVariant(tempString));
     query.exec();
@@ -1315,6 +1318,16 @@ void ParameterManager::selectImage(const QString imageID)
     if (-1 == nameCol) { std::cout << "paramManager FTfocalLength" << endl; }
     focalLength = query.value(nameCol).toFloat();
     emit focalLengthChanged();
+
+    nameCol = rec.indexOf("FTcameraMake");
+    if (-1 == nameCol) { std::cout << "paramManager FTcameraMake" << endl; }
+    make = query.value(nameCol).toString();
+    emit makeChanged();
+
+    nameCol = rec.indexOf("FTcameraModel");
+    if (-1 == nameCol) { std::cout << "paramManager FTcameraModel" << endl; }
+    model = query.value(nameCol).toString();
+    emit modelChanged();
 
     //Copy all of the processing parameters from the db into this param manager.
     //First we check and see if it's new or not.

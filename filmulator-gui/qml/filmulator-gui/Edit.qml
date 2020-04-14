@@ -1662,11 +1662,11 @@ SlimSplitView {
             visible: !parent.loadingError
         }
         Text {
-            id: filenameText
+            id: focallengthText
             x: 300 * uiScale
             y: 1 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.filename
+            text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.focalLength + "mm"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
             visible: !parent.loadingError
@@ -1681,6 +1681,27 @@ SlimSplitView {
             elide: Text.ElideRight
             visible: !parent.loadingError
         }
+        Text {
+            id: filenameText
+            x: 400 * uiScale
+            y: 1 * uiScale
+            color: "white"
+            text: paramManager.filename
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: !parent.loadingError
+        }
+        Text {
+            id: cameraText
+            x: 400 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: paramManager.model
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: !parent.loadingError
+        }
+
         Rectangle {
             id: errorBox
             x: 200 * uiScale
