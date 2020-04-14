@@ -1,11 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>filmulator64icon.svg</file>
-        <file>refresh.svg</file>
-        <file>rotateleft.svg</file>
-        <file>crop.svg</file>
-        <file>cropactive.svg</file>
-        <file>brightness.svg</file>
         <file>brightness.png</file>
         <file>crop.png</file>
         <file>cropactive.png</file>
