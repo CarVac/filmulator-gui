@@ -58,8 +58,8 @@ steps:
       %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
       %MSYS_BASH% -c "/usr/bin/wget.exe http://tripleboot.org/Uploads/windeployqt64releaseonly.zip"
       %MSYS_BASH% -c "/usr/bin/unzip.exe windeployqt64releaseonly.zip"
-      %MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /mingw64/bin/windeployqtreleaseonly.exe"
-      %MSYS_BASH% -c "/mingw64/bin/windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      %MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /bin/windeployqtreleaseonly.exe"
+      %MSYS_BASH% -c "/bin/windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
       #%MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
     displayName: package dlls
   - script: |
