@@ -110,13 +110,14 @@ class ParameterManager : public QObject
     //Loading
     Q_PROPERTY(QString imageIndex   READ getImageIndex   NOTIFY imageIndexChanged)
 
-    Q_PROPERTY(QString filename     READ getFilename     NOTIFY filenameChanged)
-    Q_PROPERTY(int sensitivity      READ getSensitivity  NOTIFY sensitivityChanged)
-    Q_PROPERTY(QString exposureTime READ getExposureTime NOTIFY exposureTimeChanged)
-    Q_PROPERTY(QString aperture     READ getAperture     NOTIFY apertureChanged)
-    Q_PROPERTY(float focalLength    READ getFocalLength  NOTIFY focalLengthChanged)
-    Q_PROPERTY(QString make         READ getMake         NOTIFY makeChanged)
-    Q_PROPERTY(QString model        READ getModel        NOTIFY modelChanged)
+    Q_PROPERTY(QString filename         READ getFilename         NOTIFY filenameChanged)
+    Q_PROPERTY(QString fullFilenameQstr READ getFullFilenameQstr NOTIFY fullFilenameQstrChanged)
+    Q_PROPERTY(int sensitivity          READ getSensitivity      NOTIFY sensitivityChanged)
+    Q_PROPERTY(QString exposureTime     READ getExposureTime     NOTIFY exposureTimeChanged)
+    Q_PROPERTY(QString aperture         READ getAperture         NOTIFY apertureChanged)
+    Q_PROPERTY(float focalLength        READ getFocalLength      NOTIFY focalLengthChanged)
+    Q_PROPERTY(QString make             READ getMake             NOTIFY makeChanged)
+    Q_PROPERTY(QString model            READ getModel            NOTIFY modelChanged)
 
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
@@ -229,7 +230,6 @@ public:
     Q_INVOKABLE void copyAll(QString fromImageID);
     Q_INVOKABLE void paste(QString toImageID);
 
-    Q_INVOKABLE QString getFullFilenameQstr(){return QString::fromStdString(m_fullFilename);}
 
     //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
     //and then returns the struct and the validity.
@@ -311,6 +311,7 @@ protected:
     //Variables for the properties.
     //Image parameters, read-only.
     QString filename;
+    QString fullFilenameQstr;
     int sensitivity;
     QString exposureTime;
     QString aperture;
@@ -423,6 +424,7 @@ protected:
     QString getImageIndex(){return imageIndex;}
 
     QString getFilename(){return filename;}
+    QString getFullFilenameQstr(){return fullFilenameQstr;}
     int getSensitivity(){return sensitivity;}
     QString getExposureTime(){return exposureTime;}
     QString getAperture(){return aperture;}
@@ -601,6 +603,7 @@ signals:
 
     //Read-only image properties
     void filenameChanged();
+    void fullFilenameQstrChanged();
     void sensitivityChanged();
     void exposureTimeChanged();
     void apertureChanged();

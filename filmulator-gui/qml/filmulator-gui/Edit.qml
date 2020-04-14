@@ -1701,6 +1701,17 @@ SlimSplitView {
             elide: Text.ElideRight
             visible: !parent.loadingError
         }
+        ToolTip {
+            id: fileInfoTooltip
+            x: 200 * uiScale
+            y: 1 * uiScale
+            width: 400 * uiScale
+            height: 30 * uiScale
+            tooltipText: paramManager.fullFilenameQstr
+            Component.onCompleted: {
+                fileInfoTooltip.tooltipWanted.connect(root.tooltipWanted)
+            }
+        }
 
         Rectangle {
             id: errorBox

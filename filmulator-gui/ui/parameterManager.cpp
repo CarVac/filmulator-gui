@@ -17,6 +17,7 @@ ParameterManager::ParameterManager() : QObject(0)
     aperture = "0.0";
     exposureTime = "0.0";
     filename = "";
+    fullFilenameQstr = "";
     sensitivity = 0;
     focalLength = 0;
     make = "";
@@ -1254,6 +1255,7 @@ void ParameterManager::selectImage(const QString imageID)
     nameCol = rec.indexOf("FTfilePath");
     if (-1 == nameCol) { std::cout << "paramManager FTfilePath" << endl; }
     QString name = query.value(nameCol).toString();
+    fullFilenameQstr = name;
     m_fullFilename = name.toStdString();
     filename = name.right(name.size() - name.lastIndexOf(QString("/")) - 1);
 
@@ -1266,6 +1268,7 @@ void ParameterManager::selectImage(const QString imageID)
         return;
     } else {
         emit filenameChanged();
+        emit fullFilenameQstrChanged();
     }
 
     nameCol = rec.indexOf("FTsensitivity");
