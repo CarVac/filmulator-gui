@@ -59,6 +59,7 @@ steps:
       %MSYS_BASH% -c "wget http://tripleboot.org/Uploads/windeployqt64releaseonly.zip"
       %MSYS_BASH% -c "unzip windeployqt64releaseonly.zip"
       %MSYS_BASH% -c "./windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #%MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
     displayName: package dlls
   - script: |
       set HOME=.
