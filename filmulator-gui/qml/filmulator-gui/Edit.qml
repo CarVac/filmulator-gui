@@ -1690,6 +1690,14 @@ SlimSplitView {
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
             visible: !parent.loadingError
+            ToolTip {
+                id: fileInfoTooltip
+                anchors.fill: parent
+                tooltipText: paramManager.fullFilenameQstr
+                Component.onCompleted: {
+                    fileInfoTooltip.tooltipWanted.connect(root.tooltipWanted)
+                }
+            }
         }
         Text {
             id: cameraText
@@ -1700,17 +1708,6 @@ SlimSplitView {
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
             visible: !parent.loadingError
-        }
-        ToolTip {
-            id: fileInfoTooltip
-            x: 200 * uiScale
-            y: 1 * uiScale
-            width: 400 * uiScale
-            height: 30 * uiScale
-            tooltipText: paramManager.fullFilenameQstr
-            Component.onCompleted: {
-                fileInfoTooltip.tooltipWanted.connect(root.tooltipWanted)
-            }
         }
 
         Rectangle {
