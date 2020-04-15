@@ -95,6 +95,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #define RAW3  image_processor->imgdata.rawdata.color3_image
 #define RAW4  image_processor->imgdata.rawdata.color4_image
 #define RAWF  image_processor->imgdata.rawdata.float_image
+#define LENS  image_processor->imgdata.lens
+#define MAKER image_processor->imgdata.lens.makernotes
 
             if (image_processor->is_floating_point())
             {
@@ -110,6 +112,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 cerr << "error number: " << libraw_error << endl;
                 return emptyMatrix();
             }
+
+            //lens info (for debugging only; TODO: remove)
+            cout << "lens minfocal: " << LENS.MinFocal << endl;
+            cout << "lens maxfocal: " << LENS.MaxFocal << endl;
+            cout << "lens widefno:  " << LENS.MaxAp4MinFocal << endl;
+            cout << "lens telefno:  " << LENS.MaxAp4MaxFocal << endl;
+            cout << "lens make:     " << LENS.LensMake << endl;
+            cout << "lens model:    " << LENS.Lens << endl;
+            cout << "maker lensstring: " << MAKER.Lens << endl;
+            cout << "maker focaltype:  " << MAKER.FocalType << endl;
+            cout << "====================================================" << endl;
 
             //get dimensions
             raw_width  = RSIZE.width;
