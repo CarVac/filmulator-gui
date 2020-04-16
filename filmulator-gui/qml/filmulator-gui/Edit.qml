@@ -1666,7 +1666,7 @@ SlimSplitView {
             x: 300 * uiScale
             y: 1 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.focalLength + "mm"
+            text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.focalLength.toFixed(1) + "mm"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
             visible: !parent.loadingError
