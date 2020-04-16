@@ -123,6 +123,14 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << "lens model:    " << LENS.Lens << endl;
             cout << "maker LensID:     " << MAKER.LensID << endl;
             cout << "maker lensstring: " << MAKER.Lens << endl;
+            cout << "maker minfocal:   " << MAKER.MinFocal << endl;
+            cout << "maker maxfocal:   " << MAKER.MaxFocal << endl;
+            cout << "maker MaxAp4Min:  " << MAKER.MaxAp4MinFocal << endl;
+            cout << "maker MaxAp4Max:  " << MAKER.MaxAp4MaxFocal << endl;
+            cout << "maker MinAp4Min:  " << MAKER.MinAp4MinFocal << endl;
+            cout << "maker MinAp4Max:  " << MAKER.MinAp4MaxFocal << endl;
+            cout << "maker FeaturesPre " << MAKER.LensFeatures_pre << endl;
+            cout << "maker FeaturesSuf " << MAKER.LensFeatures_suf << endl;
             cout << "====================================================" << endl;
             unsigned long long lensID = MAKER.LensID;
             cout << "nikon-specific lensIDnumber:   " << ((lensID<<(8*0))>>(8*7)) << endl;
