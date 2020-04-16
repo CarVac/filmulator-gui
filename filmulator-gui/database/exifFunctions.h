@@ -48,4 +48,10 @@ float exifFl(Exiv2::ExifData exifData);
  * */
 int exifRating(Exiv2::ExifData exifData, Exiv2::XmpData xmpData);
 
+/*Translates Nikon metadata focal length from its log representation to mm*/
+float nikonFocalLength(const unsigned int inputFL);
+
+/*Translates Nikon metadata aperture from its log representation to fno*/
+QString nikonAperture(const unsigned int inputAperture);
+
 #endif // EXIFFUNCTIONS_H

@@ -1,4 +1,5 @@
 #include "imagePipeline.h"
+#include "../database/exifFunctions.h"
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
     cache = cacheIn;
@@ -120,9 +121,38 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << "lens telefno:  " << LENS.MaxAp4MaxFocal << endl;
             cout << "lens make:     " << LENS.LensMake << endl;
             cout << "lens model:    " << LENS.Lens << endl;
+            cout << "maker LensID:     " << MAKER.LensID << endl;
             cout << "maker lensstring: " << MAKER.Lens << endl;
-            cout << "maker focaltype:  " << MAKER.FocalType << endl;
             cout << "====================================================" << endl;
+            unsigned long long lensID = MAKER.LensID;
+            cout << "nikon-specific lensIDnumber:   " << ((lensID<<(8*0))>>(8*7)) << endl;
+            cout << "nikon-specific lensFstops:     " << ((lensID<<(8*1))>>(8*7)) << endl;
+            cout << "nikon-specific minFocalLength: " << nikonFocalLength((lensID<<(8*2))>>(8*7)) << endl;
+            cout << "nikon-specific maxFocalLength: " << nikonFocalLength((lensID<<(8*3))>>(8*7)) << endl;
+            cout << "nikon-specific maxApAtMinFL:   " << nikonAperture((lensID<<(8*4))>>(8*7)).toStdString() << endl;
+            cout << "nikon-specific maxApAtMaxFL:   " << nikonAperture((lensID<<(8*5))>>(8*7)).toStdString() << endl;
+            cout << "nikon-specific MCUversion:     " << ((lensID<<(8*6))>>(8*7)) << endl;
+            cout << "nikon-specific LensType:       " << ((lensID<<(8*7))>>(8*7)) << endl;
+
+            unsigned long long lensIDnumber   = ((lensID<<(8*0))>>(8*7));
+            unsigned long long lensFstops     = ((lensID<<(8*1))>>(8*7));
+            unsigned long long minFocalLength = ((lensID<<(8*2))>>(8*7));
+            unsigned long long maxFocalLength = ((lensID<<(8*3))>>(8*7));
+            unsigned long long maxApAtMinFL   = ((lensID<<(8*4))>>(8*7));
+            unsigned long long maxApAtMaxFL   = ((lensID<<(8*5))>>(8*7));
+            unsigned long long MCUversion     = ((lensID<<(8*6))>>(8*7));
+            unsigned long long LensType       = ((lensID<<(8*7))>>(8*7));
+
+            unsigned long long newLensID = lensIDnumber << 56 |
+                                           lensFstops << 48 |
+                                           minFocalLength << 40 |
+                                           maxFocalLength << 32 |
+                                           maxApAtMinFL << 24 |
+                                           maxApAtMaxFL << 16 |
+                                           MCUversion << 8 |
+                                           LensType;
+            cout << "nikon-specific new lensID: " << newLensID << endl;
+            cout << std::hex << lensIDnumber << " " << lensFstops << " " << minFocalLength << " " << maxFocalLength << " " << maxApAtMinFL << " " << maxApAtMaxFL << " " << MCUversion << " " << LensType << std::dec << endl;
 
             //get dimensions
             raw_width  = RSIZE.width;
@@ -138,17 +168,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //get color matrix
             for (int i = 0; i < 3; i++)
             {
-                cout << "camToRGB: ";
+                //cout << "camToRGB: ";
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
-                    cout << camToRGB[i][j] << " ";
+                    //cout << camToRGB[i][j] << " ";
                 }
-                cout << endl;
+                //cout << endl;
             }
             for (int i = 0; i < 3; i++)
             {
-                cout << "camToRGB4: ";
+                //cout << "camToRGB4: ";
                 for (int j = 0; j < 4; j++)
                 {
                     camToRGB4[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
@@ -162,9 +192,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     {
                         camToRGB4[i][j] = camToRGB4[i][1];
                     }
-                    cout << camToRGB4[i][j] << " ";
+                    //cout << camToRGB4[i][j] << " ";
                 }
-                cout << endl;
+                //cout << endl;
             }
             rCamMul = image_processor->imgdata.color.cam_mul[0];
             gCamMul = image_processor->imgdata.color.cam_mul[1];
@@ -193,17 +223,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             int blackRow = int(image_processor->imgdata.color.cblack[4]);
             int blackCol = int(image_processor->imgdata.color.cblack[5]);
 
-            cout << "BLACKPOINT" << endl;
-            cout << blackpoint << endl;
-            cout << "color channel blackpoints" << endl;
-            cout << rBlack << endl;
-            cout << gBlack << endl;
-            cout << bBlack << endl;
-            cout << g2Black << endl;
-            cout << "block-based blackpoint dimensions:" << endl;
-            cout << image_processor->imgdata.color.cblack[4] << endl;
-            cout << image_processor->imgdata.color.cblack[5] << endl;
-            cout << "block-based blackpoint: " << endl;
+            //cout << "BLACKPOINT" << endl;
+            //cout << blackpoint << endl;
+            //cout << "color channel blackpoints" << endl;
+            //cout << rBlack << endl;
+            //cout << gBlack << endl;
+            //cout << bBlack << endl;
+            //cout << g2Black << endl;
+            //cout << "block-based blackpoint dimensions:" << endl;
+            //cout << image_processor->imgdata.color.cblack[4] << endl;
+            //cout << image_processor->imgdata.color.cblack[5] << endl;
+            //cout << "block-based blackpoint: " << endl;
             uint maxBlockBlackpoint = 0;
             if (blackRow > 0 && blackCol > 0)
             {
@@ -212,12 +242,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int j = 0; j < blackCol; j++)
                     {
                         maxBlockBlackpoint = max(maxBlockBlackpoint, image_processor->imgdata.color.cblack[6 + i*blackCol + j]);
-                        cout << image_processor->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
+                        //cout << image_processor->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
                     }
-                    cout << endl;
+                    //cout << endl;
                 }
             }
-            cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
+            //cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
 
             //get white saturation values
             cout << "WHITE SATURATION ========================================================" << endl;
@@ -236,7 +266,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //bayer only for now
             for (unsigned int i=0; i<2; i++)
             {
-                cout << "bayer: ";
+                //cout << "bayer: ";
                 for (unsigned int j=0; j<2; j++)
                 {
                     cfa[i][j] = unsigned(image_processor->COLOR(int(i), int(j)));
@@ -244,23 +274,23 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     {
                         cfa[i][j] = 1;
                     }
-                    cout << cfa[i][j];
+                    //cout << cfa[i][j];
                 }
-                cout << endl;
+                //cout << endl;
             }
 
             //get xtrans color filter array
             maxXtrans = 0;
             for (int i=0; i<6; i++)
             {
-                cout << "xtrans: ";
+                //cout << "xtrans: ";
                 for (int j=0; j<6; j++)
                 {
                     xtrans[i][j] = uint(image_processor->imgdata.idata.xtrans[i][j]);
                     maxXtrans = max(maxXtrans,int(image_processor->imgdata.idata.xtrans[i][j]));
-                    cout << xtrans[i][j];
+                    //cout << xtrans[i][j];
                 }
-                cout << endl;
+                //cout << endl;
             }
 
             auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
