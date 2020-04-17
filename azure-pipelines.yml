@@ -23,9 +23,9 @@ steps:
   - script: |
       %MSYS_PAC% --noconfirm -Syu
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
-      tar gzip nano make diffutils intltool git cmake wget unzip ^
+      tar gzip nano make diffutils intltool git cmake ^
       mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
-      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5}
+      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,lensfun}
     displayName: Install Dependencies
   - script: |
       mkdir librt
@@ -56,11 +56,11 @@ steps:
       set PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem
       set HOME=.
       %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
-      %MSYS_BASH% -c "/usr/bin/wget.exe http://tripleboot.org/Uploads/windeployqt64releaseonly.zip"
-      %MSYS_BASH% -c "/usr/bin/unzip.exe windeployqt64releaseonly.zip"
-      %MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /bin/windeployqtreleaseonly.exe"
-      %MSYS_BASH% -c "/bin/windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
-      #%MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #%MSYS_BASH% -c "/usr/bin/wget.exe http://tripleboot.org/Uploads/windeployqt64releaseonly.zip"
+      #%MSYS_BASH% -c "/usr/bin/unzip.exe windeployqt64releaseonly.zip"
+      #%MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /bin/windeployqtreleaseonly.exe"
+      #%MSYS_BASH% -c "/bin/windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      %MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
     displayName: package dlls
   - script: |
       set HOME=.
