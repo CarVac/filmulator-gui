@@ -116,64 +116,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
             identifyLens(loadParam.fullFilename);
 
-            /*
-            //Grab exif data
-            auto exivImage = Exiv2::ImageFactory::open(loadParam.fullFilename);
-            exivImage->readMetadata();
-            Exiv2::ExifData exifData = exivImage->exifData();
-
-            //lens info (for debugging only; TODO: remove)
-            cout << "lens minfocal: " << LENS.MinFocal << endl;
-            cout << "lens maxfocal: " << LENS.MaxFocal << endl;
-            cout << "lens widefno:  " << LENS.MaxAp4MinFocal << endl;
-            cout << "lens telefno:  " << LENS.MaxAp4MaxFocal << endl;
-            cout << "lens make:     " << LENS.LensMake << endl;
-            cout << "lens model:    " << LENS.Lens << endl;
-            cout << "maker LensID:     " << MAKER.LensID << endl;
-            cout << "maker lensstring: " << MAKER.Lens << endl;
-            cout << "maker minfocal:   " << MAKER.MinFocal << endl;
-            cout << "maker maxfocal:   " << MAKER.MaxFocal << endl;
-            cout << "maker MaxAp4Min:  " << MAKER.MaxAp4MinFocal << endl;
-            cout << "maker MaxAp4Max:  " << MAKER.MaxAp4MaxFocal << endl;
-            cout << "maker MinAp4Min:  " << MAKER.MinAp4MinFocal << endl;
-            cout << "maker MinAp4Max:  " << MAKER.MinAp4MaxFocal << endl;
-            cout << "maker FeaturesPre " << MAKER.LensFeatures_pre << endl;
-            cout << "maker FeaturesSuf " << MAKER.LensFeatures_suf << endl;
-            cout << "====================================================" << endl;
-            unsigned long long lensID = MAKER.LensID;
-            cout << "nikon-specific lensIDnumber:   " << ((lensID<<(8*0))>>(8*7)) << endl;
-            cout << "nikon-specific lensFstops:     " << ((lensID<<(8*1))>>(8*7)) << endl;
-            cout << "nikon-specific minFocalLength: " << nikonFocalLength((lensID<<(8*2))>>(8*7)) << endl;
-            cout << "nikon-specific maxFocalLength: " << nikonFocalLength((lensID<<(8*3))>>(8*7)) << endl;
-            cout << "nikon-specific maxApAtMinFL:   " << nikonAperture((lensID<<(8*4))>>(8*7)).toStdString() << endl;
-            cout << "nikon-specific maxApAtMaxFL:   " << nikonAperture((lensID<<(8*5))>>(8*7)).toStdString() << endl;
-            cout << "nikon-specific MCUversion:     " << ((lensID<<(8*6))>>(8*7)) << endl;
-            cout << "nikon-specific LensType:       " << ((lensID<<(8*7))>>(8*7)) << endl;
-
-            unsigned long long lensIDnumber   = ((lensID<<(8*0))>>(8*7));
-            unsigned long long lensFstops     = ((lensID<<(8*1))>>(8*7));
-            unsigned long long minFocalLength = ((lensID<<(8*2))>>(8*7));
-            unsigned long long maxFocalLength = ((lensID<<(8*3))>>(8*7));
-            unsigned long long maxApAtMinFL   = ((lensID<<(8*4))>>(8*7));
-            unsigned long long maxApAtMaxFL   = ((lensID<<(8*5))>>(8*7));
-            unsigned long long MCUversion     = ((lensID<<(8*6))>>(8*7));
-            unsigned long long LensType       = ((lensID<<(8*7))>>(8*7));
-
-            unsigned long long newLensID = lensIDnumber << 56 |
-                                           lensFstops << 48 |
-                                           minFocalLength << 40 |
-                                           maxFocalLength << 32 |
-                                           maxApAtMinFL << 24 |
-                                           maxApAtMaxFL << 16 |
-                                           MCUversion << 8 |
-                                           LensType;
-            cout << "nikon-specific new lensID: " << newLensID << endl;
-            cout << std::hex << lensIDnumber << " " << lensFstops << " " << minFocalLength << " " << maxFocalLength << " " << maxApAtMinFL << " " << maxApAtMaxFL << " " << MCUversion << " " << LensType << std::dec << endl;
-
-            cout << "Panasonic lens type: " << exifData["Exif.Panasonic.LensType"].toString() << endl;
-            cout << "Pentax lens type: " << exifData["Exif.Pentax.LensType"].toString() << endl;
-            */
-
             //get dimensions
             raw_width  = RSIZE.width;
             raw_height = RSIZE.height;
