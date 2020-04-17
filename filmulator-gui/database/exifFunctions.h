@@ -2,6 +2,7 @@
 #define EXIFFUNCTIONS_H
 
 #include <exiv2/exiv2.hpp>
+#include <lensfun/lensfun.h>
 #include <QString>
 #include <QDateTime>
 
@@ -53,5 +54,10 @@ float nikonFocalLength(const unsigned int inputFL);
 
 /*Translates Nikon metadata aperture from its log representation to fno*/
 QString nikonAperture(const unsigned int inputAperture);
+
+/*Find the camera and lens model from image metadata, given the file
+ * No output for now. That will change.
+ * */
+void identifyLens(const std::string fullfilename);
 
 #endif // EXIFFUNCTIONS_H

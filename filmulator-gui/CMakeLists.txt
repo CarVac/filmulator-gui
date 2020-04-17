@@ -29,6 +29,7 @@ find_package(libraw REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(lensfun REQUIRED)
 
 # Checks for config.h
 include(ConfigureChecks.cmake)
@@ -121,6 +122,7 @@ target_include_directories(filmulator
         ${JPEG_INCLUDE_DIRS}
         ${TIFF_INCLUDE_DIR}
         ${RTPROCESS_INCLUDE_DIR}
+        ${LENSFUN_INCLUDE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -134,6 +136,7 @@ target_link_libraries(filmulator
     ${LIBRAW_LIBRARIES}
     ${JPEG_LIBRARIES}
     ${TIFF_LIBRARIES}
+    ${LENSFUN_LIBRARY}
     ${OpenMP_CXX_LIBRARIES}
     rtprocess::rtprocess
 )
@@ -159,6 +162,8 @@ if(APPLE)
     file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
     file(COPY "${EXIV2_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+
+    #NEEDS LENSFUN ADDED TO MAC BUILD
 
     if(IS_SYMLINK "${JPEG_LIBRARY_RELEASE}")
         file(READ_SYMLINK "${JPEG_LIBRARY_RELEASE}" result)

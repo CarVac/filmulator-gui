@@ -114,6 +114,14 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 return emptyMatrix();
             }
 
+            identifyLens(loadParam.fullFilename);
+
+            /*
+            //Grab exif data
+            auto exivImage = Exiv2::ImageFactory::open(loadParam.fullFilename);
+            exivImage->readMetadata();
+            Exiv2::ExifData exifData = exivImage->exifData();
+
             //lens info (for debugging only; TODO: remove)
             cout << "lens minfocal: " << LENS.MinFocal << endl;
             cout << "lens maxfocal: " << LENS.MaxFocal << endl;
@@ -161,6 +169,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                            LensType;
             cout << "nikon-specific new lensID: " << newLensID << endl;
             cout << std::hex << lensIDnumber << " " << lensFstops << " " << minFocalLength << " " << maxFocalLength << " " << maxApAtMinFL << " " << maxApAtMaxFL << " " << MCUversion << " " << LensType << std::dec << endl;
+
+            cout << "Panasonic lens type: " << exifData["Exif.Panasonic.LensType"].toString() << endl;
+            cout << "Pentax lens type: " << exifData["Exif.Pentax.LensType"].toString() << endl;
+            */
 
             //get dimensions
             raw_width  = RSIZE.width;

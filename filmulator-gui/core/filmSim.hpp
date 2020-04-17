@@ -29,7 +29,7 @@
 #include <setjmp.h>
 #include <exiv2/exiv2.hpp>
 #include "lut.hpp"
-#include "libraw/libraw.h"
+#include <libraw/libraw.h>
 #include "matrix.hpp"
 #include <sys/time.h>
 #include "interface.h"
