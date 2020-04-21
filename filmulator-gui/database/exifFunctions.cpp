@@ -1,11 +1,13 @@
 #include "exifFunctions.h"
 #include <libraw/libraw.h>
 #include <iostream>
+#include <memory>
 
 using std::cout;
 using std::endl;
 using std::max;
 using std::min;
+using std::unique_ptr;
 
 QDateTime exifUtcTime(Exiv2::ExifData exifData, const int cameraTZ)
 {
@@ -246,7 +248,7 @@ void identifyLens(const std::string fullFilename)
     if (lensModel.length() == 0)
     {
         Exiv2::Exifdatum metadatum = exifData["Exif.NikonLd3.LensIDNumber"];
-        if (exifData["Exif.NikonLd3.LensIDNumber"].toString().length() > 0)
+        if (metadatum.toString().length() > 0)
         {
             lensModel = metadatum.print(&exifImage->exifData());
             cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
@@ -255,11 +257,62 @@ void identifyLens(const std::string fullFilename)
     if (lensModel.length() == 0)
     {
         Exiv2::Exifdatum metadatum = exifData["Exif.Pentax.LensType"];
-        if (exifData["Exif.Pentax.LensType"].toString().length() > 0)
+        if (metadatum.toString().length() > 0)
         {
             lensModel = metadatum.print(&exifImage->exifData());
             cout << "Exif.Pentax.LensType: " << lensModel << endl;
         }
+    }
+    if (lensModel.length() == 0)
+    {
+        Exiv2::Exifdatum metadatum = exifData["Exif.PentaxDng.LensType"];
+        if (metadatum.toString().length() > 0)
+        {
+            lensModel = metadatum.print(&exifImage->exifData());
+            cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
+        }
+    }
+
+    //identify the camera model in the database
+    cout << "SEARCHING CAMERA MODELS =================================" << endl;
+    const lfCamera * camera = NULL;
+    const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
+    if (cameraList)
+    {
+        camera = cameraList[0];
+        int i = 0;
+        while (cameraList[i])
+        {
+            cout << "Camera: " << cameraList[i]->Model << endl;
+            cout << "Crop factor: " << cameraList[i]->CropFactor << endl;
+            cout << "Match score: " << cameraList[i]->Score << endl;
+            i++;
+        }
+    } else {
+        cout << "No matching cameras found in database." << endl;
+    }
+    lf_free(cameraList);
+
+    cout << "SEARCHING LENS MODELS ===================================" << endl;
+    const lfLens * lens = NULL;
+    if (lensModel.length() > 0)
+    {
+        const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
+        if (lensList)
+        {
+            lens = lensList[0];
+            int i = 0;
+            while (lensList[i])
+            {
+                cout << "Maker: " << lensList[i]->Maker << endl;
+                cout << "Model: " << lensList[i]->Model << endl;
+                cout << "Match score: " << lensList[i]->Score << endl;
+                i++;
+            }
+        } else {
+            cout << "No matching lenses found in database." << endl;
+        }
+        lf_free(lensList);
     }
 
     ldb->Destroy();
