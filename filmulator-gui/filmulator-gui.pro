@@ -45,6 +45,7 @@ SOURCES += main.cpp \
     database/sqlModel.cpp \
     database/sqlInsertion.cpp \
     database/signalSwitchboard.cpp \
+    database/rawproc_lensfun/lensfun_dbupdate.cpp \
     ui/filmImageProvider.cpp \
     ui/parameterManager.cpp \
     ui/settings.cpp \
@@ -106,6 +107,7 @@ HEADERS += \
     database/signalSwitchboard.h \
     database/sqlInsertion.h \
     database/sqlModel.h \
+    database/rawproc_lensfun/lensfun_dbupdate.h \
     ui/filmImageProvider.h \
     ui/parameterManager.h \
     ui/settings.h \
