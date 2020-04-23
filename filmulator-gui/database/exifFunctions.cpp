@@ -2,6 +2,8 @@
 #include <libraw/libraw.h>
 #include <iostream>
 #include <memory>
+#include <QStandardPaths>
+#include <QDir>
 
 using std::cout;
 using std::endl;
@@ -213,8 +215,12 @@ void identifyLens(const std::string fullFilename)
     exifImage->readMetadata();
     Exiv2::ExifData exifData = exifImage->exifData();
 
-    lfDatabase *ldb = lf_db_new();
-    ldb->Load();
+    lfDatabase *ldb = new lfDatabase;
+    QDir dir = QDir::home();
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator");
+    std::string stdstring = dirstr.toStdString();
+    ldb->Load(stdstring.c_str());
 
     //(lens)fun stuff here!
 

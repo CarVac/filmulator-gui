@@ -12,6 +12,7 @@ Settings::Settings(QObject *parent) :
     dirConfig = settings.value("photoDB/dirConfig", "/yyyy/MM/yyyy-MM-dd/").toString();
     cameraTZ = settings.value("photoDB/cameraTZ", 0).toInt();
     importTZ = settings.value("photoDB/importTZ", 0).toInt();
+    lensfunStatus = "";
 }
 
 void Settings::setPhotoStorageDir(QString dirIn)
