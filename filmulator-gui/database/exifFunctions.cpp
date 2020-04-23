@@ -203,7 +203,7 @@ void identifyLens(const std::string fullFilename)
     const char *cstrfilename = fullFilename.c_str();
     if (0 != libraw->open_file(cstrfilename))
     {
-        cout << "identifyLEns: Could not read input file!" << endl;
+        cout << "identifyLens: Could not read input file!" << endl;
         return;//============================================================================change this later
     }
 #define IDATA libraw->imgdata.idata
@@ -321,5 +321,5 @@ void identifyLens(const std::string fullFilename)
         lf_free(lensList);
     }
 
-    ldb->Destroy();
+    delete ldb;
 }
