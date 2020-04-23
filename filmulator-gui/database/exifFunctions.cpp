@@ -218,7 +218,7 @@ void identifyLens(const std::string fullFilename)
     lfDatabase *ldb = new lfDatabase;
     QDir dir = QDir::home();
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    dirstr.append("/filmulator");
+    dirstr.append("/filmulator/version_2");
     std::string stdstring = dirstr.toStdString();
     ldb->Load(stdstring.c_str());
 
