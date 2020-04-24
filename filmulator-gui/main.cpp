@@ -11,6 +11,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QTranslator>
 #include "ui/filmImageProvider.h"
+#include "ui/lensSelectModel.h"
 #include "ui/settings.h"
 #include "database/importModel.h"
 #include "database/organizeModel.h"
@@ -98,6 +99,10 @@ int main(int argc, char *argv[])
     QObject::connect(organizeModel, SIGNAL(enqueueThis(QString)),
                      queueModel, SLOT(enQueue(QString)));
     engine.rootContext()->setContextProperty("queueModel", queueModel);
+
+    //Prepare a model for the lensfun lens list.
+    LensSelectModel *lensModel = new LensSelectModel;
+    engine.rootContext()->setContextProperty("lensModel", lensModel);
 
     if (appdir)
     {

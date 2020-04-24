@@ -1785,6 +1785,142 @@ SlimSplitView {
             }
         }
 
+        //right-aligned stuff
+
+        Rectangle {
+            id: lensfunBox
+            anchors.right: leftButtonSpacer.left
+            y: 0 * uiScale
+            width: 400 * uiScale
+            height: active ? 400 * uiScale : 30 * uiScale
+            radius: 5 * uiScale
+            property bool active: false
+            color: active ? Colors.darkGray : "black"
+
+            ToolButton {
+                id: lensFunMenuButton
+                x: 0 * uiScale
+                y: 0 * uiScale
+                tooltipText: qsTr("Select a lens model for lens corrections.")
+                Image {
+                    id: lensFunMenuButtonImage
+                    width: 14 * uiScale
+                    height: 14 * uiScale
+                    anchors.centerIn: parent
+                    source: "qrc:///icons/uparrow.png"
+                    antialiasing: true
+                    rotation: lensfunBox.active ? 0 : 180
+                }
+                onTriggered: {
+                    lensfunBox.active = !lensfunBox.active
+                }
+                Component.onCompleted: {
+                    lensFunMenuButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+
+                uiScale: root.uiScale
+            }
+
+            Rectangle {
+                id: textEntryRect
+                color: "black"
+                x: 33 * uiScale
+                y: 3 * uiScale
+                width: parent.width - 36*uiScale
+                height: 24 * uiScale
+                property string selectedLens: ""
+                Text {
+                    id: selectedLensText
+                    x: 3 * uiScale
+                    y: 3 * uiScale
+                    width: parent.width-2*x
+                    height: parent.height-2*y
+                    color: "white"
+                    font.pixelSize: 12.0 * uiScale
+                    clip: true
+                    visible: !lensfunBox.active
+                    text: (parent.selectedLens == "") ? "No lens selected" : parent.selectedLens
+                }
+
+                TextInput {
+                    id: lensFilterBox
+                    x: 3 * uiScale
+                    y: 3 * uiScale
+                    width: parent.width-2*x
+                    height: parent.height-2*y
+                    color: "white"
+                    selectByMouse: true
+                    cursorVisible: focus
+                    font.pixelSize: 12.0 * uiScale
+                    clip: true
+                    visible: lensfunBox.active
+                    onTextChanged: {
+                        lensModel.update(lensFilterBox.text)
+                    }
+                }
+            }
+            ListView {
+                id: lensListBox
+                x: 3 * uiScale
+                y: 33 * uiScale
+                width: parent.width - 6*uiScale
+                height: parent.height - 36*uiScale
+                visible: lensfunBox.active
+                orientation: ListView.Vertical
+                spacing: 3 * uiScale
+                clip: true
+                delegate: Rectangle {
+                    id: lensListDelegate
+                    width: lensListBox.width - 6 * uiScale
+                    height: 40 * uiScale
+                    radius: 5 * uiScale
+                    color: Colors.darkGrayL
+                    property string lensMake: make
+                    property string lensName: model
+                    property int matchScore: score
+                    Text {
+                        id: lensNameText
+                        x: 5 * uiScale
+                        y: 5 * uiScale
+                        width: parent.width - 10*uiScale
+                        height: 20 * uiScale
+                        color: "white"
+                        elide: Text.ElideMiddle
+                        text: (parent.lensMake.length===0) ? parent.lensName : (parent.lensName.startsWith(parent.lensMake) ? parent.lensName : (parent.lensMake + " " + parent.lensName))
+                    }
+                    Text {
+                        id: lensScoreText
+                        x: 5 * uiScale
+                        y: 20 * uiScale
+                        width: parent.width - 10*uiScale
+                        height: 20 * uiScale
+                        color: "white"
+                        text: qsTr("Search fit score: ") + parent.matchScore
+                    }
+                    MouseArea {
+                        id: lensSelectMouseArea
+                        anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton
+                        onDoubleClicked: {
+                            textEntryRect.selectedLens = parent.lensName
+                            lensfunBox.active = false
+                        }
+                    }
+                }
+
+                Component.onCompleted: {
+                    lensListBox.model = lensModel
+                }
+            }
+        }
+
+        Item {
+            id: leftButtonSpacer
+            anchors.right: backgroundBrightness.left
+            y: 0 * uiScale
+            width: 2 * uiScale
+            height: 2 * uiScale
+        }
         ToolButton {
             id: backgroundBrightness
             anchors.right: crop.left
