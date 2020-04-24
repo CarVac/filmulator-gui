@@ -1643,53 +1643,53 @@ SlimSplitView {
         }
         Text {
             id: apertureText
-            x: 200 * uiScale
+            x: 202 * uiScale
             y: 1 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("Width: ") + imageRect.displayWidth : " f/" + paramManager.aperture
+            text: "f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
         }
         Text {
             id: shutterText
-            x: 200 * uiScale
+            x: 202 * uiScale
             y: 15 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("Height: ") + imageRect.displayHeight : " " + paramManager.exposureTime + " s"
+            text: paramManager.exposureTime + " s"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
         }
         Text {
             id: focallengthText
-            x: 300 * uiScale
+            x: 270 * uiScale
             y: 1 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.focalLength.toFixed(1) + "mm"
+            text: paramManager.focalLength.toFixed(1) + "mm"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
         }
         Text {
             id: isoText
-            x: 300 * uiScale
+            x: 270 * uiScale
             y: 15 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("V offset: ") + imageRect.displayVoffset : "ISO " + paramManager.sensitivity
+            text: "ISO " + paramManager.sensitivity
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
         }
         Text {
             id: filenameText
-            x: 400 * uiScale
+            x: 340 * uiScale
             y: 1 * uiScale
             color: "white"
             text: paramManager.filename
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
             ToolTip {
                 id: fileInfoTooltip
                 anchors.fill: parent
@@ -1701,13 +1701,53 @@ SlimSplitView {
         }
         Text {
             id: cameraText
-            x: 400 * uiScale
+            x: 340 * uiScale
             y: 15 * uiScale
             color: "white"
             text: paramManager.model
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
+        }
+        Text {
+            id: cropWidthText
+            x: 202 * uiScale
+            y: 1 * uiScale
+            color: "white"
+            text: qsTr("Width: ") + imageRect.displayWidth
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.cropping && !parent.loadingError
+        }
+        Text {
+            id: cropHeightText
+            x: 202 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: qsTr("Height: ") + imageRect.displayHeight
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.cropping && !parent.loadingError
+        }
+        Text {
+            id: hOffsetText
+            x: 300 * uiScale
+            y: 1 * uiScale
+            color: "white"
+            text: qsTr("H offset: ") + imageRect.displayHoffset
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.cropping && !parent.loadingError
+        }
+        Text {
+            id: vOffsetText
+            x: 300 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: qsTr("V offset: ") + imageRect.displayVoffset
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.cropping && !parent.loadingError
         }
 
         Rectangle {
