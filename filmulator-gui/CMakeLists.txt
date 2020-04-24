@@ -78,6 +78,7 @@ set(filmulator_SRCS
     database/signalSwitchboard.cpp
     database/database.cpp
     ui/filmImageProvider.cpp
+    ui/lensSelectModel.cpp
     ui/parameterManager.cpp
     ui/settings.cpp
     ui/thumbWriteWorker.cpp

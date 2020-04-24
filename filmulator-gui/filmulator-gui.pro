@@ -47,6 +47,7 @@ SOURCES += main.cpp \
     database/signalSwitchboard.cpp \
     database/rawproc_lensfun/lensfun_dbupdate.cpp \
     ui/filmImageProvider.cpp \
+    ui/lensSelectModel.cpp \
     ui/parameterManager.cpp \
     ui/settings.cpp \
     ui/thumbWriteWorker.cpp \
@@ -109,6 +110,7 @@ HEADERS += \
     database/sqlModel.h \
     database/rawproc_lensfun/lensfun_dbupdate.h \
     ui/filmImageProvider.h \
+    ui/lensSelectModel.h \
     ui/parameterManager.h \
     ui/settings.h \
     ui/thumbWriteWorker.h \

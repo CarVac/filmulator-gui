@@ -303,7 +303,7 @@ void identifyLens(const std::string fullFilename)
     const lfLens * lens = NULL;
     if (lensModel.length() > 0)
     {
-        const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
+        const lfLens ** lensList = ldb->FindLenses(NULL, NULL, lensModel.c_str());
         if (lensList)
         {
             lens = lensList[0];
