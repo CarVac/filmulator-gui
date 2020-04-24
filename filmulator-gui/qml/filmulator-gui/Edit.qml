@@ -1791,7 +1791,7 @@ SlimSplitView {
             id: lensfunBox
             anchors.right: leftButtonSpacer.left
             y: 0 * uiScale
-            width: 400 * uiScale
+            width: 350 * uiScale
             height: active ? 400 * uiScale : 30 * uiScale
             radius: 5 * uiScale
             property bool active: false
