@@ -212,7 +212,7 @@ Rectangle {
                 x: parent.padding
                 y: parent.padding
                 font.pixelSize: 12.0 * uiScale
-                text: qsTr("Check for lens correction updates")
+                text: qsTr("Update lens correction database")
             }
 
             Rectangle {
