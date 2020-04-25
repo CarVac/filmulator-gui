@@ -1817,7 +1817,6 @@ SlimSplitView {
                 Component.onCompleted: {
                     lensFunMenuButton.tooltipWanted.connect(root.tooltipWanted)
                 }
-
                 uiScale: root.uiScale
             }
 
@@ -1842,6 +1841,17 @@ SlimSplitView {
                     text: (parent.selectedLens == "") ? "No lens selected" : parent.selectedLens
                 }
 
+                MouseArea {
+                    id: textEntryMouseArea
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    enabled: !lensfunBox.active
+                    onClicked: {
+                        lensfunBox.active = true
+                        lensFilterBox.forceActiveFocus()
+                    }
+                }
+
                 TextInput {
                     id: lensFilterBox
                     x: 3 * uiScale
@@ -1864,7 +1874,7 @@ SlimSplitView {
                 x: 3 * uiScale
                 y: 33 * uiScale
                 width: parent.width - 6*uiScale
-                height: parent.height - 36*uiScale
+                height: parent.height - 66*uiScale
                 visible: lensfunBox.active
                 orientation: ListView.Vertical
                 spacing: 3 * uiScale
@@ -1874,7 +1884,7 @@ SlimSplitView {
                     width: lensListBox.width - 6 * uiScale
                     height: 40 * uiScale
                     radius: 5 * uiScale
-                    color: Colors.darkGrayL
+                    color: (lensName === textEntryRect.selectedLens) ? Colors.darkGrayH : Colors.darkGrayL
                     property string lensMake: make
                     property string lensName: model
                     property int matchScore: score
@@ -1901,6 +1911,10 @@ SlimSplitView {
                         id: lensSelectMouseArea
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
+                        propagateComposedEvents: true
+                        onClicked: {
+                            textEntryRect.selectedLens = parent.lensName
+                        }
                         onDoubleClicked: {
                             textEntryRect.selectedLens = parent.lensName
                             lensfunBox.active = false
@@ -1911,6 +1925,38 @@ SlimSplitView {
                 Component.onCompleted: {
                     lensListBox.model = lensModel
                 }
+            }
+            ToolButton {
+                id: savePreferredLens
+                x: 0 * uiScale
+                y: parent.height - 30 * uiScale;
+                width: parent.width/2
+                visible: lensfunBox.active
+                text: qsTr("Remember preferred lens")
+                tooltipText: qsTr("Use the selected lens as default for all future photos taken with the same camera and lens combination.")
+                onTriggered: {
+                    //store exif camera, exif lens name, and lensfun lens name in database
+                }
+                Component.onCompleted: {
+                    savePreferredLens.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+            ToolButton {
+                id: forgetPreferredLens
+                x: parent.width/2
+                y: parent.height - 30 * uiScale;
+                width: parent.width/2
+                visible: lensfunBox.active
+                text: qsTr("Forget preferred lens")
+                tooltipText: qsTr("Clear the default lens for photos taken with the same camera and lens combination.")
+                onTriggered: {
+                    //store exif camera, exif lens name, and lensfun lens name in database
+                }
+                Component.onCompleted: {
+                    forgetPreferredLens.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
             }
         }
 

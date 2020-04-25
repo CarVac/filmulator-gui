@@ -2846,6 +2846,9 @@ void ParameterManager::paramChangeWrapper(QString source)
 }
 
 //This is for copying and pasting.
+//TODO: think about what lens corrections means for copy/paste
+//probably:
+// copy on/off preferences, not correction parameters nor lens name
 void ParameterManager::copyAll(QString fromImageID)
 {
     std::cout << "copy all" << std::endl;
