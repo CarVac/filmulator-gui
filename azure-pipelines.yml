@@ -60,7 +60,10 @@ steps:
       #%MSYS_BASH% -c "/usr/bin/unzip.exe windeployqt64releaseonly.zip"
       #%MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /bin/windeployqtreleaseonly.exe"
       #%MSYS_BASH% -c "/bin/windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
-      %MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #
+      #%MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #apparently removing --release might make it work with qt 5.14?
+      %MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --qmldir qml/filmulator-gui filmulator.exe"
     displayName: package dlls
   - script: |
       set HOME=.
