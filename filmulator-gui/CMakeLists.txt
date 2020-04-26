@@ -77,6 +77,7 @@ set(filmulator_SRCS
     database/sqlInsertion.cpp
     database/signalSwitchboard.cpp
     database/database.cpp
+    database/rawproc_lensfun/lensfun_dbupdate.cpp
     ui/filmImageProvider.cpp
     ui/lensSelectModel.cpp
     ui/parameterManager.cpp
@@ -126,8 +127,8 @@ target_include_directories(filmulator
         ${TIFF_INCLUDE_DIR}
         ${RTPROCESS_INCLUDE_DIR}
         ${LENSFUN_INCLUDE_DIR}
-        ${CURL_INCLUDE_DIR}
-        ${ARCHIVE_INCLUDE_DIR}
+        ${CURL_INCLUDE_DIRS}
+        ${LibArchive_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -142,6 +143,8 @@ target_link_libraries(filmulator
     ${JPEG_LIBRARIES}
     ${TIFF_LIBRARIES}
     ${LENSFUN_LIBRARY}
+    ${CURL_LIBRARIES}
+    ${LibArchive_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
     rtprocess::rtprocess
 )
