@@ -24,14 +24,14 @@ find_package(Qt5Qml CONFIG REQUIRED)
 # find_package(Qt5LinguistTools CONFIG REQUIRED)
 
 find_package(rtprocess CONFIG REQUIRED)
-find_package(exiv2 REQUIRED)
+find_package(Exiv2 REQUIRED)
 find_package(libraw REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(lensfun REQUIRED)
-find_package(curl REQUIRED)
-find_package(archive REQUIRED)
+find_package(LENSFUN REQUIRED)
+find_package(CURL REQUIRED)
+find_package(LibArchive REQUIRED)
 
 # Checks for config.h
 include(ConfigureChecks.cmake)
