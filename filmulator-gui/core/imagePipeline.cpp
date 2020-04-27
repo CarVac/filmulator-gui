@@ -518,11 +518,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
                     }
                 }
-                if (demosaicParam.caEnabled)
+                if (demosaicParam.caEnabled > 0)
                 {
                     //we need to apply white balance and then remove it for Auto CA Correct to work properly
                     double fitparams[2][2][16];
-                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
+                    CA_correct(0, 0, raw_width, raw_height, true, demosaicParam.caEnabled, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
                 }
                 amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
                 //matrix<float> normalized_image(raw_height, raw_width);
