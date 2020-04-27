@@ -126,8 +126,8 @@ class ParameterManager : public QObject
     Q_PROPERTY(int caEnabled  MEMBER m_caEnabled  WRITE setCaEnabled  NOTIFY caEnabledChanged)
     Q_PROPERTY(int highlights MEMBER m_highlights   WRITE setHighlights NOTIFY highlightsChanged)
 
-    Q_PROPERTY(bool defCaEnabled READ getDefCaEnabled NOTIFY defCaEnabledChanged)
-    Q_PROPERTY(int defHighlights     READ getDefHighlights   NOTIFY defHighlightsChanged)
+    Q_PROPERTY(int defCaEnabled  READ getDefCaEnabled  NOTIFY defCaEnabledChanged)
+    Q_PROPERTY(int defHighlights READ getDefHighlights NOTIFY defHighlightsChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -437,7 +437,7 @@ protected:
     //Getters for the defaults
     //Demosaic
     int getDefCaEnabled(){return d_caEnabled;}
-    int  getDefHighlights(){return d_highlights;}
+    int getDefHighlights(){return d_highlights;}
 
     //Prefilmulation
     float getDefExposureComp(){return d_exposureComp;}
@@ -490,7 +490,7 @@ protected:
     bool getJpegIn(){return m_jpegIn;}
     //Demosaic
     int getCaEnabled(){return m_caEnabled;}
-    int  getHighlights(){return m_highlights;}
+    int getHighlights(){return m_highlights;}
 
     //Prefilmulation
     float getExposureComp(){return m_exposureComp;}
@@ -546,7 +546,7 @@ protected:
     void setJpegIn(bool);
 
     //Demosaic
-    void setCaEnabled(bool);
+    void setCaEnabled(int);
     void setHighlights(int);
 
     //Prefilmulation
