@@ -1933,9 +1933,9 @@ SlimSplitView {
                 width: parent.width/2
                 visible: lensfunBox.active
                 text: qsTr("Remember preferred lens")
-                tooltipText: qsTr("Use the selected lens as default for all future photos taken with the same camera and lens combination.")
+                tooltipText: qsTr("Use the selected lens as default for all future photos taken with the same camera and lens combination.\n\nThis also remembers the currently selected lens corrections.")
                 onTriggered: {
-                    //store exif camera, exif lens name, and lensfun lens name in database
+                    //store exif camera, exif lens name, and lensfun lens name in database, plus preferred corrections
                 }
                 Component.onCompleted: {
                     savePreferredLens.tooltipWanted.connect(root.tooltipWanted)
@@ -1951,7 +1951,7 @@ SlimSplitView {
                 text: qsTr("Forget preferred lens")
                 tooltipText: qsTr("Clear the default lens for photos taken with the same camera and lens combination.")
                 onTriggered: {
-                    //store exif camera, exif lens name, and lensfun lens name in database
+                    //clear exif camera, exif lens name, and lensfun lens name in database
                 }
                 Component.onCompleted: {
                     forgetPreferredLens.tooltipWanted.connect(root.tooltipWanted)
