@@ -31,7 +31,6 @@ LensSelectModel::LensSelectModel(QObject *parent) : QAbstractTableModel(parent)
 void LensSelectModel::update(QString lensString)
 {
     beginResetModel();
-    cout << "LensSelectModel::update: " << lensString.toStdString() << endl;
     std::string lensStr = lensString.toStdString();
 
     //clear all the data
@@ -53,7 +52,6 @@ void LensSelectModel::update(QString lensString)
                 scoreList.push_back(lensList[i]->Score);
                 i++;
                 m_rowCount++;
-                cout << m_rowCount << endl;
             }
         }
         lf_free(lensList);
