@@ -106,31 +106,35 @@ SlimSplitView {
                     }
                 }
 
-                ToolSwitch {
-                    id: caSwitch
-                    tooltipText: qsTr("Automatically correct directional color fringing.")
-                    text: qsTr("CA correction")
-                    isOn: paramManager.caEnabled
-                    defaultOn: paramManager.defCaEnabled
-                    onIsOnChanged: {
-                        paramManager.caEnabled = isOn
-                        paramManager.writeback()
+                ToolSlider {
+                    id: autoCASlider
+                    title: qsTr("Automatic CA correction")
+                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed, but higher is stronger.")
+                    minimumValue: 0
+                    maximumValue: 5
+                    stepSize: 1
+                    tickmarksEnabled: true
+                    value: paramManager.caEnabled
+                    defaultValue: paramManager.defCaEnabled
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.caEnabled = value
+                        }
                     }
-                    onResetToDefault: {
-                        paramManager.caEnabled = isOn
-                        paramManager.writeback()
-                    }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onCaEnabledChanged: {
-                            caSwitch.isOn = paramManager.caEnabled
+                        onHighlightsChanged: {
+                            autoCASlider.value = paramManager.caEnabled
                         }
-                        onDefCaEnabledChanged: {
-                            caSwitch.defaultOn = paramManager.defCaEnabled
+                        onDefHighlightsChanged: {
+                            autoCASlider.defaultValue = paramManager.defCaEnabled
                         }
                     }
                     Component.onCompleted: {
-                        caSwitch.tooltipWanted.connect(root.tooltipWanted)
+                        autoCASlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale
                 }

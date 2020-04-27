@@ -174,7 +174,7 @@ Valid ParameterManager::markDemosaicComplete()
     return validity;
 }
 
-void ParameterManager::setCaEnabled(bool caEnabled)
+void ParameterManager::setCaEnabled(int caEnabled)
 {
     if (!justInitialized)
     {
@@ -1474,7 +1474,7 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     //First is caEnabled.
     nameCol = rec.indexOf("ProfTcaEnabled");
     if (-1 == nameCol) { std::cout << "paramManager ProfTcaEnabled" << endl; }
-    const bool temp_caEnabled = query.value(nameCol).toBool();
+    const int temp_caEnabled = query.value(nameCol).toInt();
     d_caEnabled = temp_caEnabled;
     if (copyDefaults == CopyDefaults::loadToParams)
     {
@@ -1852,7 +1852,7 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     }
     else
     {
-        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(absFilePath);
+        auto image = Exiv2::ImageFactory::open(absFilePath);
         image->readMetadata();
         Exiv2::ExifData exifData = image->exifData();
         d_rotation = exifDefaultRotation(exifData);
@@ -1897,7 +1897,7 @@ void ParameterManager::loadParams(QString imageID)
     //First is caEnabled.
     nameCol = rec.indexOf("ProcTcaEnabled");
     if (-1 == nameCol) { std::cout << "paramManager ProcTcaEnabled" << endl; }
-    const bool temp_caEnabled = query.value(nameCol).toBool();
+    const int temp_caEnabled = query.value(nameCol).toInt();
     if (temp_caEnabled != m_caEnabled)
     {
         //cout << "ParameterManager::loadParams caEnabled" << endl;
@@ -2450,7 +2450,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     }
 
     //Then is caEnabled.
-    const bool temp_caEnabled = sourceParams->getCaEnabled();
+    const int temp_caEnabled = sourceParams->getCaEnabled();
     if (temp_caEnabled != m_caEnabled)
     {
         //cout << "ParameterManager::cloneParams caEnabled" << endl;

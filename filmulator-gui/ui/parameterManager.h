@@ -49,7 +49,7 @@ struct LoadParams {
 };
 
 struct DemosaicParams {
-    bool caEnabled;
+    int caEnabled;
     int highlights;
 };
 
@@ -123,8 +123,8 @@ class ParameterManager : public QObject
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
 
     //Demosaic
-    Q_PROPERTY(bool caEnabled MEMBER m_caEnabled  WRITE setCaEnabled  NOTIFY caEnabledChanged)
-    Q_PROPERTY(int highlights     MEMBER m_highlights   WRITE setHighlights NOTIFY highlightsChanged)
+    Q_PROPERTY(int caEnabled  MEMBER m_caEnabled  WRITE setCaEnabled  NOTIFY caEnabledChanged)
+    Q_PROPERTY(int highlights MEMBER m_highlights   WRITE setHighlights NOTIFY highlightsChanged)
 
     Q_PROPERTY(bool defCaEnabled READ getDefCaEnabled NOTIFY defCaEnabledChanged)
     Q_PROPERTY(int defHighlights     READ getDefHighlights   NOTIFY defHighlightsChanged)
@@ -327,11 +327,11 @@ protected:
     bool m_jpegIn;
 
     //Demosaic
-    bool m_caEnabled;
-    int  m_highlights;
+    int m_caEnabled;
+    int m_highlights;
 
-    bool d_caEnabled; //d_'s are for default values
-    int  d_highlights;
+    int d_caEnabled; //d_'s are for default values
+    int d_highlights;
 
     //Prefilmulation
     float m_exposureComp;
@@ -436,7 +436,7 @@ protected:
 
     //Getters for the defaults
     //Demosaic
-    bool getDefCaEnabled(){return d_caEnabled;}
+    int getDefCaEnabled(){return d_caEnabled;}
     int  getDefHighlights(){return d_highlights;}
 
     //Prefilmulation
@@ -489,7 +489,7 @@ protected:
     bool getTiffIn(){return m_tiffIn;}
     bool getJpegIn(){return m_jpegIn;}
     //Demosaic
-    bool getCaEnabled(){return m_caEnabled;}
+    int getCaEnabled(){return m_caEnabled;}
     int  getHighlights(){return m_highlights;}
 
     //Prefilmulation
