@@ -122,6 +122,7 @@ SlimSplitView {
                             paramManager.caEnabled = value
                         }
                     }
+                    onResetPerfomed: paramManager.resetAutoCa()
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager

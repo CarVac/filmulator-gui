@@ -291,7 +291,7 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.bindValue(34, 0.07f); //bwBmult
     //How much to offset the exposure tone curve to the right while maintaining the toe
     query.bindValue(35, 0.0f); //toeBoundary
-    query.bindValue(36, ""); //lensfun lens
+    query.bindValue(36, "NoLens"); //lensfun lens
     query.bindValue(37, -1); //lensfun CA - negative 1 indicates use preferences
     query.bindValue(38, -1); //lensfun vignetting
     query.bindValue(39, -1); //lensfun distortion
@@ -444,7 +444,7 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunCa;");
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunVign;");
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunDist;");
-        query.exec("UPDATE ProcessingTable SET ProcTlensfunName = '';");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunName = \"NoLens\";");
         query.exec("UPDATE ProcessingTable SET ProcTlensfunCa    = -1");
         query.exec("UPDATE ProcessingTable SET ProcTlensfunVign  = -1");
         query.exec("UPDATE ProcessingTable SET ProcTlensfunDist  = -1");
@@ -452,7 +452,7 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunCa;");
         query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunVign;");
         query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunDist;");
-        query.exec("UPDATE ProfileTable SET ProfTlensfunName = '';");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunName = \"NoLens\";");
         query.exec("UPDATE ProfileTable SET ProfTlensfunCa    = -1");
         query.exec("UPDATE ProfileTable SET ProfTlensfunVign  = -1");
         query.exec("UPDATE ProfileTable SET ProfTlensfunDist  = -1");

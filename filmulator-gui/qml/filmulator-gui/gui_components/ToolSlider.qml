@@ -36,6 +36,7 @@ Rectangle {
 
     signal tooltipWanted(string text, int coordX, int coordY)
 
+    signal resetPerfomed()
     signal editComplete()
 
     //handler for limiting updates.
@@ -112,6 +113,11 @@ Rectangle {
         action: Action {
             onTriggered: {
                 slider.value = defaultValue
+
+                //Some tools need a special action taken when reset,
+                // like lens correction, which reset to a -1 database value
+                // while exposing a preferred value
+                root.resetPerformed()
 
                 //We have to pretend that the slider was changed
                 // so that it writes back to the database.

@@ -1823,11 +1823,22 @@ SlimSplitView {
             Rectangle {
                 id: textEntryRect
                 color: "black"
-                x: 33 * uiScale
+                x: 32 * uiScale
                 y: 3 * uiScale
                 width: parent.width - 36*uiScale
                 height: 24 * uiScale
-                property string selectedLens: ""
+                property string selectedLens: paramManager.lensfunName
+                onSelectedLensChanged: {
+                    paramManager.lensfunName = selectedLens
+                    paramManager.writeback()
+                }
+                Connections {
+                    target: paramManager
+                    onLensfunNameChanged: {
+                        textEntryRect.selectedLens = paramManager.lensfunName
+                    }
+                }
+
                 Text {
                     id: selectedLensText
                     x: 3 * uiScale
@@ -1856,8 +1867,8 @@ SlimSplitView {
                     id: lensFilterBox
                     x: 3 * uiScale
                     y: 3 * uiScale
-                    width: parent.width-2*x
-                    height: parent.height-2*y
+                    width: parent.width - 2*x - 30 * uiScale
+                    height: parent.height - 2*y
                     color: "white"
                     selectByMouse: true
                     cursorVisible: focus
@@ -1867,7 +1878,37 @@ SlimSplitView {
                     onTextChanged: {
                         lensModel.update(lensFilterBox.text)
                     }
+                    Connections {
+                        target: paramManager
+                        onExifLensNameChanged: {
+                            lensFilterBox.text = paramManager.exifLensName
+                        }
+                    }
                 }
+            }
+            ToolButton {
+                id: lensFunResetButton
+                x: parent.width - 30*uiScale
+                y: 0 * uiScale
+                visible: lensfunBox.active
+                tooltipText: qsTr("Reset selected lens back to default and sets search box back to EXIF-derived lens name.")
+                Image {
+                    width: 14 * uiScale
+                    height: 14 * uiScale
+                    anchors.centerIn: parent
+                    source: "qrc:///icons/refresh.png"
+                    antialiasing: true
+                }
+                onTriggered: {
+                    lensFilterBox.text = paramManager.exifLensName
+                    textEntryRect.selectedLens = paramManager.defLensfunName
+                    paramManager.resetLensfunName()
+                    paramManager.writeback()
+                }
+                Component.onCompleted: {
+                    lensFunResetButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
             }
             ListView {
                 id: lensListBox
@@ -1911,7 +1952,6 @@ SlimSplitView {
                         id: lensSelectMouseArea
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
-                        propagateComposedEvents: true
                         onClicked: {
                             textEntryRect.selectedLens = parent.lensName
                         }
@@ -1936,6 +1976,7 @@ SlimSplitView {
                 tooltipText: qsTr("Use the selected lens as default for all future photos taken with the same camera and lens combination.\n\nThis also remembers the currently selected lens corrections.")
                 onTriggered: {
                     //store exif camera, exif lens name, and lensfun lens name in database, plus preferred corrections
+                    paramManager.setLensPreferences()
                 }
                 Component.onCompleted: {
                     savePreferredLens.tooltipWanted.connect(root.tooltipWanted)
@@ -1952,6 +1993,7 @@ SlimSplitView {
                 tooltipText: qsTr("Clear the default lens for photos taken with the same camera and lens combination.")
                 onTriggered: {
                     //clear exif camera, exif lens name, and lensfun lens name in database
+                    paramManager.eraseLensPreferences()
                 }
                 Component.onCompleted: {
                     forgetPreferredLens.tooltipWanted.connect(root.tooltipWanted)

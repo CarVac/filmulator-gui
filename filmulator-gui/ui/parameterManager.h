@@ -255,7 +255,7 @@ public:
     //Must be called when resetting lens corrections back to default
     //So that we write back to the database, the db gets the proper "autoselect" values
     Q_INVOKABLE void resetAutoCa(){m_caEnabled = -1;}
-    Q_INVOKABLE void resetLensfunName(){m_lensfunName = "";}
+    Q_INVOKABLE void resetLensfunName(){m_lensfunName = "NoLens";}
     Q_INVOKABLE void resetLensfunCa(){m_lensfunCa = -1;}
     Q_INVOKABLE void resetLensfunVign(){m_lensfunVign = -1;}
     Q_INVOKABLE void resetLensfunDist(){m_lensfunDist = -1;}

@@ -402,7 +402,12 @@ QString identifyLens(const std::string fullFilename)
         const lfLens ** lensList = ldb->FindLenses(NULL, NULL, lensModel.c_str());
         if (lensList)
         {
-            lensName = QString(lensList[0]->Model);
+            //We want to exclude truly shitty matches
+            //"70-200" matches various 70-200s with scores of 24/100 or less
+            if (lensList[0]->Score > 25)
+            {
+                lensName = QString(lensList[0]->Model);
+            }
             /*
             int i = 0;
             while (lensList[i])
