@@ -43,11 +43,12 @@ steps:
       mkdir lensfun
       cd lensfun
       git clone https://github.com/lensfun/lensfun lf
+      cd lf
       echo "done clone"
       mkdir buildDir
       cd buildDir
       set HOME=.
-      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 2>err.log"
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../ > out.log 2>err.log"
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install"
     displayName: build lensfun
