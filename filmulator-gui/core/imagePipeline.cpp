@@ -114,7 +114,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 return emptyMatrix();
             }
 
-            identifyLens(loadParam.fullFilename);
+            //identifyLens(loadParam.fullFilename);
 
             //get dimensions
             raw_width  = RSIZE.width;
