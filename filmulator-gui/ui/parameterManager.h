@@ -12,6 +12,8 @@
 #include <QDebug>
 #include <tuple>
 #include <iostream>
+#include <memory>
+#include <lensfun/lensfun.h>
 #include "../core/filmSim.hpp"
 #include "../database/exifFunctions.h"
 
@@ -51,6 +53,11 @@ struct LoadParams {
 struct DemosaicParams {
     int caEnabled;
     int highlights;
+    QString cameraName;
+    QString lensName;
+    bool lensfunCA;
+    bool lensfunVignetting;
+    bool lensfunDistortion;
 };
 
 struct PrefilmParams {
@@ -110,6 +117,7 @@ class ParameterManager : public QObject
     //Loading
     Q_PROPERTY(QString imageIndex   READ getImageIndex   NOTIFY imageIndexChanged)
 
+    //Read-only stuff for the UI
     Q_PROPERTY(QString filename         READ getFilename         NOTIFY filenameChanged)
     Q_PROPERTY(QString fullFilenameQstr READ getFullFilenameQstr NOTIFY fullFilenameQstrChanged)
     Q_PROPERTY(int sensitivity          READ getSensitivity      NOTIFY sensitivityChanged)
@@ -118,16 +126,30 @@ class ParameterManager : public QObject
     Q_PROPERTY(float focalLength        READ getFocalLength      NOTIFY focalLengthChanged)
     Q_PROPERTY(QString make             READ getMake             NOTIFY makeChanged)
     Q_PROPERTY(QString model            READ getModel            NOTIFY modelChanged)
+    //Read-only lensfun stuff
+    Q_PROPERTY(QString exifLensName  READ getExifLensName     NOTIFY exifLensNameChanged)
+    Q_PROPERTY(bool autoCaAvail      READ getAutoCaAvail      NOTIFY autoCaAvailChanged)
+    Q_PROPERTY(bool lensfunCaAvail   READ getLensfunCaAvail   NOTIFY lensfunCaAvailChanged)
+    Q_PROPERTY(bool lensfunVignAvail READ getLensfunVignAvail NOTIFY lensfunVignAvailChanged)
+    Q_PROPERTY(bool lensfunDistAvail READ getLensfunDistAvail NOTIFY lensfunDistAvailChanged)
 
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
 
     //Demosaic
-    Q_PROPERTY(int caEnabled  MEMBER m_caEnabled  WRITE setCaEnabled  NOTIFY caEnabledChanged)
-    Q_PROPERTY(int highlights MEMBER m_highlights   WRITE setHighlights NOTIFY highlightsChanged)
+    Q_PROPERTY(int caEnabled       MEMBER s_caEnabled   WRITE setCaEnabled   NOTIFY caEnabledChanged)
+    Q_PROPERTY(int highlights      MEMBER m_highlights  WRITE setHighlights  NOTIFY highlightsChanged)
+    Q_PROPERTY(QString lensfunName MEMBER s_lensfunName WRITE setLensfunName NOTIFY lensfunNameChanged)
+    Q_PROPERTY(int lensfunCa       MEMBER s_lensfunCa   WRITE setLensfunCa   NOTIFY lensfunCaChanged)
+    Q_PROPERTY(int lensfunVign     MEMBER s_lensfunVign WRITE setLensfunVign NOTIFY lensfunVignChanged)
+    Q_PROPERTY(int lensfunDist     MEMBER s_lensfunDist WRITE setLensfunDist NOTIFY lensfunDistChanged)
 
     Q_PROPERTY(int defCaEnabled  READ getDefCaEnabled  NOTIFY defCaEnabledChanged)
     Q_PROPERTY(int defHighlights READ getDefHighlights NOTIFY defHighlightsChanged)
+    Q_PROPERTY(QString defLensfunName READ getDefLensfunName NOTIFY defLensfunNameChanged)
+    Q_PROPERTY(int defLensfunCa       READ getDefLensfunCa   NOTIFY defLensfunCaChanged)
+    Q_PROPERTY(int defLensfunVign     READ getDefLensfunVign NOTIFY defLensfunVignChanged)
+    Q_PROPERTY(int defLensfunDist     READ getDefLensfunDist NOTIFY defLensfunDistChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -230,6 +252,17 @@ public:
     Q_INVOKABLE void copyAll(QString fromImageID);
     Q_INVOKABLE void paste(QString toImageID);
 
+    //Must be called when resetting lens corrections back to default
+    //So that we write back to the database, the db gets the proper "autoselect" values
+    Q_INVOKABLE void resetAutoCa(){m_caEnabled = -1;}
+    Q_INVOKABLE void resetLensfunName(){m_lensfunName = "";}
+    Q_INVOKABLE void resetLensfunCa(){m_lensfunCa = -1;}
+    Q_INVOKABLE void resetLensfunVign(){m_lensfunVign = -1;}
+    Q_INVOKABLE void resetLensfunDist(){m_lensfunDist = -1;}
+
+    //When you set lens preferences, you need to set d_lensfunXXX = s_lensfunXXX
+    Q_INVOKABLE void setLensPreferences();
+    Q_INVOKABLE void eraseLensPreferences();
 
     //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
     //and then returns the struct and the validity.
@@ -292,6 +325,11 @@ protected:
     QMutex paramMutex;
     QMutex signalMutex;
 
+    //We need a lensfun database for looking up various things
+    std::unique_ptr<lfDatabase> ldb = std::make_unique<lfDatabase>();
+
+    //Refresh lens correction availability
+    void updateAvailability();
 
     //This is to attempt to prevent binding loops at the start of the program
     bool justInitialized;
@@ -318,6 +356,11 @@ protected:
     float focalLength;
     QString make;
     QString model;
+    QString exifLensName;
+    bool autoCaAvail; //For non-Bayer sensors this is not available
+    bool lensfunCaAvail; //These vary depending on camera and lens (and the lensfun db)
+    bool lensfunVignAvail;
+    bool lensfunDistAvail;
 
     Valid validity;
 
@@ -327,11 +370,24 @@ protected:
     bool m_jpegIn;
 
     //Demosaic
+    int s_caEnabled;//similar to the lensfun stuff
     int m_caEnabled;
     int m_highlights;
+    QString s_lensfunName;//staging params filled at load and also when manually changed
+    int s_lensfunCa;      //These don't get written back
+    int s_lensfunVign;
+    int s_lensfunDist;
+    QString m_lensfunName;//main params get loaded from db. "" or -1 indicates autoselection via exif or prefs.
+    int m_lensfunCa;      //When the UI sets the s_ params, these get changed so the db gets the changes too.
+    int m_lensfunVign;    //On the same token, when the UI *resets*,
+    int m_lensfunDist;    // these have to go back to "" or -1, not to the default.
 
     int d_caEnabled; //d_'s are for default values
     int d_highlights;
+    QString d_lensfunName;//*not* a blank string, but actually the lens that is either exif-automatched or in prefs
+    int d_lensfunCa;      //*not* -1, but actually from prefs
+    int d_lensfunVign;    //They get filled a) at loading time, or b) when lens prefs are set or erased
+    int d_lensfunDist;
 
     //Prefilmulation
     float m_exposureComp;
@@ -431,6 +487,11 @@ protected:
     float getFocalLength(){return focalLength;}
     QString getMake(){return make;}
     QString getModel(){return model;}
+    QString getExifLensName(){return exifLensName;}
+    bool getAutoCaAvail(){return autoCaAvail;}
+    bool getLensfunCaAvail(){return lensfunCaAvail;}
+    bool getLensfunVignAvail(){return lensfunVignAvail;}
+    bool getLensfunDistAvail(){return lensfunDistAvail;}
 
     bool getPasteable(){return pasteable;}
 
@@ -438,6 +499,10 @@ protected:
     //Demosaic
     int getDefCaEnabled(){return d_caEnabled;}
     int getDefHighlights(){return d_highlights;}
+    QString getDefLensfunName(){return d_lensfunName;}
+    int getDefLensfunCa(){return d_lensfunCa;}
+    int getDefLensfunVign(){return d_lensfunVign;}
+    int getDefLensfunDist(){return d_lensfunDist;}
 
     //Prefilmulation
     float getDefExposureComp(){return d_exposureComp;}
@@ -489,8 +554,12 @@ protected:
     bool getTiffIn(){return m_tiffIn;}
     bool getJpegIn(){return m_jpegIn;}
     //Demosaic
-    int getCaEnabled(){return m_caEnabled;}
+    int getCaEnabled(){return s_caEnabled;}
     int getHighlights(){return m_highlights;}
+    QString getLensfunName(){return s_lensfunName;}
+    int getLensfunCa(){return s_lensfunCa;}
+    int getLensfunVign(){return s_lensfunVign;}
+    int getLensfunDist(){return s_lensfunDist;}
 
     //Prefilmulation
     float getExposureComp(){return m_exposureComp;}
@@ -548,6 +617,10 @@ protected:
     //Demosaic
     void setCaEnabled(int);
     void setHighlights(int);
+    void setLensfunName(QString);
+    void setLensfunCa(int);
+    void setLensfunVign(int);
+    void setLensfunDist(int);
 
     //Prefilmulation
     void setExposureComp(float);
@@ -610,6 +683,11 @@ signals:
     void focalLengthChanged();
     void makeChanged();
     void modelChanged();
+    void exifLensNameChanged();
+    void autoCaAvailChanged();
+    void lensfunCaAvailChanged();
+    void lensfunVignAvailChanged();
+    void lensfunDistAvailChanged();
 
     //Copy/pasteing
     void pasteableChanged();
@@ -621,9 +699,17 @@ signals:
     //Demosaic
     void caEnabledChanged();
     void highlightsChanged();
+    void lensfunNameChanged();
+    void lensfunCaChanged();
+    void lensfunVignChanged();
+    void lensfunDistChanged();
 
     void defCaEnabledChanged();
     void defHighlightsChanged();
+    void defLensfunNameChanged();
+    void defLensfunCaChanged();
+    void defLensfunVignChanged();
+    void defLensfunDistChanged();
 
     //Prefilmulation
     void exposureCompChanged();

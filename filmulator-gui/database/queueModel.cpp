@@ -107,7 +107,7 @@ void QueueModel::deQueue(const QString searchID)
     query.bindValue(0, sortedIndexRemoved);
     query.exec();
 
-    query.exec("COMMIT TRANSACTION");
+    query.exec("END TRANSACTION;");
 
     //Tell the model which row was removed
     beginRemoveRows(QModelIndex(),indexRemoved,indexRemoved);

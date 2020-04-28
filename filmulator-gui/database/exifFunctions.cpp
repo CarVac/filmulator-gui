@@ -196,15 +196,19 @@ QString nikonAperture(const unsigned int inputAperture)
     return "";
 }
 
-void identifyLens(const std::string fullFilename)
+QString exifLens(const std::string fullFilename)
 {
+    if (fullFilename.length() == 0)
+    {
+        return "";
+    }
     //Load the image in libraw
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
     const char *cstrfilename = fullFilename.c_str();
     if (0 != libraw->open_file(cstrfilename))
     {
         cout << "identifyLens: Could not read input file!" << endl;
-        return;//============================================================================change this later
+        return "";//============================================================================change this later
     }
 #define IDATA libraw->imgdata.idata
 #define LENS  libraw->imgdata.lens
@@ -225,22 +229,22 @@ void identifyLens(const std::string fullFilename)
     //(lens)fun stuff here!
 
     //find what the camera is
-    cout << "IDENTIFYING CAMERA ======================================" << endl;
+    //cout << "IDENTIFYING CAMERA ======================================" << endl;
     std::string camMake = IDATA.make;
-    cout << "Camera make:  " << camMake << endl;
+    //cout << "Camera make:  " << camMake << endl;
     std::string camModel = IDATA.model;
-    cout << "Camera model: " << camModel << endl;
+    //cout << "Camera model: " << camModel << endl;
 
     //find what the lens is
-    cout << "IDENTIFYING LENS ========================================" << endl;
+    //cout << "IDENTIFYING LENS ========================================" << endl;
     std::string lensModel = LENS.Lens;
-    cout << "LENS.Lens: " << lensModel << endl;;
+    //cout << "LENS.Lens: " << lensModel << endl;;
     if (lensModel.length() == 0)
     {
         lensModel = MAKER.Lens;
         if (lensModel.length() > 0)
         {
-            cout << "MAKER.Lens: " << lensModel << endl;
+            //cout << "MAKER.Lens: " << lensModel << endl;
         }
     }
     if (lensModel.length() == 0)
@@ -248,7 +252,7 @@ void identifyLens(const std::string fullFilename)
         lensModel = exifData["Exif.Panasonic.LensType"].toString();
         if (lensModel.length() > 0)
         {
-            cout << "Panasonic.LensType: " << lensModel << endl;
+            //cout << "Panasonic.LensType: " << lensModel << endl;
         }
     }
     if (lensModel.length() == 0)
@@ -257,7 +261,7 @@ void identifyLens(const std::string fullFilename)
         if (metadatum.toString().length() > 0)
         {
             lensModel = metadatum.print(&exifImage->exifData());
-            cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
+            //cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
         }
     }
     if (lensModel.length() == 0)
@@ -266,7 +270,7 @@ void identifyLens(const std::string fullFilename)
         if (metadatum.toString().length() > 0)
         {
             lensModel = metadatum.print(&exifImage->exifData());
-            cout << "Exif.Pentax.LensType: " << lensModel << endl;
+            //cout << "Exif.Pentax.LensType: " << lensModel << endl;
         }
     }
     if (lensModel.length() == 0)
@@ -275,11 +279,101 @@ void identifyLens(const std::string fullFilename)
         if (metadatum.toString().length() > 0)
         {
             lensModel = metadatum.print(&exifImage->exifData());
-            cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
+            //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
+        }
+    }
+    return QString::fromStdString(lensModel);
+}
+
+QString identifyLens(const std::string fullFilename)
+{
+    if (fullFilename.length() == 0)
+    {
+        return "";
+    }
+    //Load the image in libraw
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+    const char *cstrfilename = fullFilename.c_str();
+    if (0 != libraw->open_file(cstrfilename))
+    {
+        cout << "identifyLens: Could not read input file!" << endl;
+        return "";//============================================================================change this later
+    }
+#define IDATA libraw->imgdata.idata
+#define LENS  libraw->imgdata.lens
+#define MAKER libraw->imgdata.lens.makernotes
+
+    //Grab the exif data
+    auto exifImage = Exiv2::ImageFactory::open(fullFilename);
+    exifImage->readMetadata();
+    Exiv2::ExifData exifData = exifImage->exifData();
+
+    lfDatabase *ldb = new lfDatabase;
+    QDir dir = QDir::home();
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator/version_2");
+    std::string stdstring = dirstr.toStdString();
+    ldb->Load(stdstring.c_str());
+
+    //(lens)fun stuff here!
+
+    //find what the camera is
+    //cout << "IDENTIFYING CAMERA ======================================" << endl;
+    std::string camMake = IDATA.make;
+    //cout << "Camera make:  " << camMake << endl;
+    std::string camModel = IDATA.model;
+    //cout << "Camera model: " << camModel << endl;
+
+    //find what the lens is
+    //cout << "IDENTIFYING LENS ========================================" << endl;
+    std::string lensModel = LENS.Lens;
+    //cout << "LENS.Lens: " << lensModel << endl;;
+    if (lensModel.length() == 0)
+    {
+        lensModel = MAKER.Lens;
+        if (lensModel.length() > 0)
+        {
+            //cout << "MAKER.Lens: " << lensModel << endl;
+        }
+    }
+    if (lensModel.length() == 0)
+    {
+        lensModel = exifData["Exif.Panasonic.LensType"].toString();
+        if (lensModel.length() > 0)
+        {
+            //cout << "Panasonic.LensType: " << lensModel << endl;
+        }
+    }
+    if (lensModel.length() == 0)
+    {
+        Exiv2::Exifdatum metadatum = exifData["Exif.NikonLd3.LensIDNumber"];
+        if (metadatum.toString().length() > 0)
+        {
+            lensModel = metadatum.print(&exifImage->exifData());
+            //cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
+        }
+    }
+    if (lensModel.length() == 0)
+    {
+        Exiv2::Exifdatum metadatum = exifData["Exif.Pentax.LensType"];
+        if (metadatum.toString().length() > 0)
+        {
+            lensModel = metadatum.print(&exifImage->exifData());
+            //cout << "Exif.Pentax.LensType: " << lensModel << endl;
+        }
+    }
+    if (lensModel.length() == 0)
+    {
+        Exiv2::Exifdatum metadatum = exifData["Exif.PentaxDng.LensType"];
+        if (metadatum.toString().length() > 0)
+        {
+            lensModel = metadatum.print(&exifImage->exifData());
+            //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
         }
     }
 
     //identify the camera model in the database
+    /*
     cout << "SEARCHING CAMERA MODELS =================================" << endl;
     const lfCamera * camera = NULL;
     const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
@@ -298,15 +392,18 @@ void identifyLens(const std::string fullFilename)
         cout << "No matching cameras found in database." << endl;
     }
     lf_free(cameraList);
+    delete camera;
+    */
 
-    cout << "SEARCHING LENS MODELS ===================================" << endl;
-    const lfLens * lens = NULL;
+    QString lensName = "";
+    //cout << "SEARCHING LENS MODELS ===================================" << endl;
     if (lensModel.length() > 0)
     {
         const lfLens ** lensList = ldb->FindLenses(NULL, NULL, lensModel.c_str());
         if (lensList)
         {
-            lens = lensList[0];
+            lensName = QString(lensList[0]->Model);
+            /*
             int i = 0;
             while (lensList[i])
             {
@@ -315,11 +412,13 @@ void identifyLens(const std::string fullFilename)
                 cout << "Match score: " << lensList[i]->Score << endl;
                 i++;
             }
+            */
         } else {
-            cout << "No matching lenses found in database." << endl;
+            //cout << "No matching lenses found in database." << endl;
         }
         lf_free(lensList);
     }
 
     delete ldb;
+    return lensName;
 }

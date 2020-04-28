@@ -55,9 +55,10 @@ float nikonFocalLength(const unsigned int inputFL);
 /*Translates Nikon metadata aperture from its log representation to fno*/
 QString nikonAperture(const unsigned int inputAperture);
 
-/*Find the camera and lens model from image metadata, given the file
- * No output for now. That will change.
- * */
-void identifyLens(const std::string fullfilename);
+/*Find the camera and lens model from image metadata, given the file*/
+QString exifLens(const std::string fullfilename);
+
+/*Find a matching lens model from the lensfun database*/
+QString identifyLens(const std::string fullfilename);
 
 #endif // EXIFFUNCTIONS_H
