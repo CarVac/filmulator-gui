@@ -14,6 +14,11 @@ using std::unique_ptr;
 QDateTime exifUtcTime(Exiv2::ExifData exifData, const int cameraTZ)
 {
     QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
+    if (exifDateTime.length()==0)
+    {
+        //leica DNG seems to not have DateTime
+        exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTimeOriginal"].toString());
+    }
 
     QDateTime cameraDateTime = QDateTime::fromString(exifDateTime, "yyyy:MM:dd hh:mm:ss");
 
