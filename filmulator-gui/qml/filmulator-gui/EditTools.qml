@@ -890,22 +890,6 @@ SlimSplitView {
                 }
             }
         }
-        MouseArea {
-            id: wheelstealer
-            //This is to prevent scrolling from adjusting sliders.
-            anchors.fill: toolList
-            acceptedButtons: Qt.NoButton
-            onWheel: {
-                if (wheel.angleDelta.y > 0 && !toolList.atYBeginning) {
-                    //up
-                    toolList.flick(0,600);
-                }
-                else if (wheel.angleDelta.y < 0 && !toolList.atYEnd) {
-                    //down
-                    toolList.flick(0,-600);
-                }
-            }
-        }
     }
 
     Item {
