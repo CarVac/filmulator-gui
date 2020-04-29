@@ -17,6 +17,13 @@ ParameterManager::ParameterManager() : QObject(0)
     //Load the defaults, copy to the parameters, there's no filename yet.
     loadDefaults(CopyDefaults::loadToParams, "");
 
+    //these aren't initialized by loadDefaults
+    s_caEnabled = 0;
+    s_lensfunName = "";
+    s_lensfunCa = 0;
+    s_lensfunVign = 0;
+    s_lensfunDist = 0;
+
     aperture = "0.0";
     exposureTime = "0.0";
     filename = "";

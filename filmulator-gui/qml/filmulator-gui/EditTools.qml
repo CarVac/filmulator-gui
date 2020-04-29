@@ -109,7 +109,7 @@ SlimSplitView {
                 ToolSlider {
                     id: autoCASlider
                     title: qsTr("Auto CA correction")
-                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.")
+                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.\n\nNot available for non-Bayer photos.")
                     minimumValue: 0
                     maximumValue: 5
                     stepSize: 1
@@ -168,6 +168,68 @@ SlimSplitView {
                     }
                     Component.onCompleted: {
                         lensfunCASwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSwitch {
+                    id: lensfunVignSwitch
+                    text: qsTr("Profiled Vignetting")
+                    tooltipText: qsTr("Correct vignetting based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunVign == 1)
+                    defaultOn: (paramManager.defLensfunVign == 1)
+                    visible: paramManager.lensfunVignAvail
+                    onIsOnChanged: {
+                        paramManager.lensfunVign = isOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.lensfunVign = defaultOn ? 1 : 0
+                        paramManager.resetLensfunVign()
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        onLensfunVignChanged: {
+                            lensfunVignSwitch.isOn = (paramManager.lensfunVign == 1)
+                        }
+                        onDefLensfunVignChanged: {
+                            lensfunVignSwitch.defaultOn = (paramManager.defLensfunVign == 1)
+                        }
+                    }
+                    Component.onCompleted: {
+                        lensfunVignSwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSwitch {
+                    id: lensfunDistSwitch
+                    text: qsTr("Profiled Distortion")
+                    tooltipText: qsTr("Correct geometric distortion based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunDist == 1)
+                    defaultOn: (paramManager.defLensfunDist == 1)
+                    visible: paramManager.lensfunDistAvail
+                    onIsOnChanged: {
+                        paramManager.lensfunDist = isOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.lensfunDist = defaultOn ? 1 : 0
+                        paramManager.resetLensfunDist()
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        onLensfunDistChanged: {
+                            lensfunDistSwitch.isOn = (paramManager.lensfunDist == 1)
+                        }
+                        onDefLensfunDistChanged: {
+                            lensfunDistSwitch.defaultOn = (paramManager.defLensfunDist == 1)
+                        }
+                    }
+                    Component.onCompleted: {
+                        lensfunDistSwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }
