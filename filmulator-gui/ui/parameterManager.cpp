@@ -1563,6 +1563,28 @@ void ParameterManager::selectImage(const QString imageID)
     cout << "Default lens: " << d_lensfunName.toStdString() << endl;
 
     //Finally, we need to change the availability for the various lens corrections
+    //First is Auto CA Correct, which only works with Bayer CFAs.
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+    libraw->open_file(m_fullFilename.c_str());
+    bool isSraw = libraw->is_sraw();
+    cout << "Is sraw: " << isSraw << endl;
+    bool isWeird = libraw->COLOR(0,0)==6;
+    cout << "Is weird: " << isWeird << endl;
+    int maxXtrans = 0;
+    for (int i=0; i<6; i++)
+    {
+        for (int j=0; j<6; j++)
+        {
+            maxXtrans = max(maxXtrans,int(libraw->imgdata.idata.xtrans[i][j]));
+        }
+    }
+    bool isXtrans = maxXtrans > 0;
+    cout << "Is xtrans: " << isXtrans << endl;
+    autoCaAvail = !isSraw && !isWeird && !isXtrans;
+    cout << "Auto CA is available: " << autoCaAvail << endl;
+    emit autoCaAvailChanged();
+
+    //Then is lensfun, which depends on the camera and lens.
     updateAvailability();
 
     paramLocker.unlock();

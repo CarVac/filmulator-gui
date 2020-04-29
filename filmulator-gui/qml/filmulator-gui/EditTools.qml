@@ -108,14 +108,15 @@ SlimSplitView {
 
                 ToolSlider {
                     id: autoCASlider
-                    title: qsTr("Automatic CA correction")
-                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed, but higher is stronger.")
+                    title: qsTr("Auto CA correction")
+                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.")
                     minimumValue: 0
                     maximumValue: 5
                     stepSize: 1
                     tickmarksEnabled: true
                     value: paramManager.caEnabled
                     defaultValue: paramManager.defCaEnabled
+                    visible: paramManager.autoCaAvail
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
