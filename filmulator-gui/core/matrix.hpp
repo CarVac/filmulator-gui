@@ -23,6 +23,7 @@
 #include "math.h"
 #include <emmintrin.h>
 #include <iostream>
+#include <memory>
 #include <omp.h>
 
 #ifdef DOUT
@@ -40,6 +41,7 @@ class matrix
     private:
         T** ptr;
         T* data;
+        T* ua_data;//unaligned
         int num_rows;
         int num_cols;
         inline void slow_transpose_to(const matrix<T> &target) const;
@@ -171,10 +173,16 @@ matrix<T>::matrix(const int nrows, const int ncols)
     {
         ptr = nullptr;
         data = nullptr;
+        ua_data = nullptr;
     }
     else
     {
-        data = new T[nrows*ncols];
+        std::size_t ua_num_elements = num_rows*num_cols + 16;
+        ua_data = new T[ua_num_elements];
+        void * buffer = ua_data;
+        void * aligned_ptr = std::align(16, sizeof(T), buffer, ua_num_elements);
+        data = static_cast<T*>(aligned_ptr);
+        //data = new T[nrows*ncols];
         ptr = new T*[nrows];
         for(int row = 0; row < nrows; row++)
             ptr[row] = data + row*num_cols;
@@ -189,7 +197,13 @@ matrix<T>::matrix(const matrix<T> &toCopy)
 
     num_rows = toCopy.num_rows;
     num_cols = toCopy.num_cols;
-    data = new T[num_rows*num_cols];
+
+    std::size_t ua_num_elements = num_rows*num_cols + 16;
+    ua_data = new T[ua_num_elements];
+    void * buffer = ua_data;
+    void * aligned_ptr = std::align(16, sizeof(T), buffer, ua_num_elements);
+    data = static_cast<T*>(aligned_ptr);
+    //data = new T[num_rows*num_cols];
 
     ptr = new T*[num_rows];
     for(int row = 0; row < num_rows; row++)
@@ -205,8 +219,8 @@ matrix<T>::matrix(const matrix<T> &toCopy)
 template <class T>
 matrix<T>::~matrix()
 {
-    if(data)
-        delete [] data;
+    if(ua_data)
+        delete [] ua_data;
     if(ptr)
         delete [] ptr;
 }
@@ -221,13 +235,21 @@ void matrix<T>::set_size(const int nrows, const int ncols)
 
     num_rows = nrows;
     num_cols = ncols;
-    if(data)
-        delete [] data;
+    if(ua_data)
+        delete [] ua_data;
     if(ptr)
         delete [] ptr;
-    data = new (std::nothrow) T[nrows*ncols];
-    if (data == nullptr)
+    std::size_t ua_num_elements = num_rows*num_cols + 16;
+    ua_data = new (std::nothrow) T[ua_num_elements];
+    if (ua_data == nullptr)
         std::cout << "matrix::set_size memory could not be alloc'd" << std::endl;
+    void * buffer = ua_data;
+    void * aligned_ptr = std::align(16, sizeof(T), buffer, ua_num_elements);
+    data = static_cast<T*>(aligned_ptr);
+    //data = new (std::nothrow) T[nrows*ncols];
+    //if (data == nullptr)
+    //    std::cout << "matrix::set_size memory could not be alloc'd" << std::endl;
+
     ptr = new (std::nothrow) T*[nrows];
     for(int row = 0; row < nrows; row++)
         ptr[row] = data + row*num_cols;
@@ -278,7 +300,9 @@ template <class T> //template<class U>
 matrix<T>& matrix<T>::operator=(matrix<T> &&toMove)
 {
     if(this != &toMove) {
-        delete [] data;
+        delete [] ua_data;
+        ua_data = toMove.ua_data;
+        toMove.ua_data = nullptr;
         data = toMove.data;
         toMove.data = nullptr;
         delete [] ptr;
