@@ -267,9 +267,21 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             float rawMax = std::numeric_limits<float>::min();
 
             isSraw = image_processor->is_sraw();
+
             //Iridient X-Transformer creates full-color files that aren't sraw
             //They have 6666 as the cfa and all 0 for xtrans
-            isSraw = isSraw || (cfa[0][0]==6 && cfa[0][1]==6 && cfa[1][0]==6 && cfa[1][1]==6);
+            //However, Leica M Monochrom files are exactly the same!
+            //So we have to check if the white balance tag exists.
+            bool isWeird = (cfa[0][0]==6 && cfa[0][1]==6 && cfa[1][0]==6 && cfa[1][1]==6);
+            //cout << "is weird: " << isWeird << endl;
+            std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
+            //cout << "white balance: " << wb << endl;
+            bool isMonochrome = wb.length()==0;
+            //cout << "is monochrome: " << isMonochrome << endl;
+            isSraw = isSraw || (isWeird && !isMonochrome);
+            //cout << "is full color raw: " << isSraw << endl;
+
+
             isNikonSraw = image_processor->is_nikon_sraw();
             if (isSraw)
             {
