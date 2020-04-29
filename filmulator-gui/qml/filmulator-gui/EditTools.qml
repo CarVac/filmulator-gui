@@ -141,6 +141,37 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
+                ToolSwitch {
+                    id: lensfunCASwitch
+                    text: qsTr("Profiled CA")
+                    tooltipText: qsTr("Correct directional color fringing based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunCa == 1)
+                    defaultOn: (paramManager.defLensfunCa == 1)
+                    visible: paramManager.lensfunCaAvail
+                    onIsOnChanged: {
+                        paramManager.lensfunCa = isOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.lensfunCa = defaultOn ? 1 : 0
+                        paramManager.resetLensfunCa()
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        onLensfunCaChanged: {
+                            lensfunCASwitch.isOn = (paramManager.lensfunCa == 1)
+                        }
+                        onDefLensfunCaChanged: {
+                            lensfunCASwitch.defaultOn = (paramManager.defLensfunCa == 1)
+                        }
+                    }
+                    Component.onCompleted: {
+                        lensfunCASwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
                 ToolSlider {
                     id: highlightRecoverySlider
                     title: qsTr("Highlight Recovery")
