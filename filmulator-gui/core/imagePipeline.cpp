@@ -260,7 +260,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             image->readMetadata();
             exifData = image->exifData();
 
-
             raw_image.set_size(raw_height, raw_width);
 
             //copy raw data
@@ -268,6 +267,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             float rawMax = std::numeric_limits<float>::min();
 
             isSraw = image_processor->is_sraw();
+            //Iridient X-Transformer creates full-color files that aren't sraw
+            //They have 6666 as the cfa and all 0 for xtrans
+            isSraw = isSraw || (cfa[0][0]==6 && cfa[0][1]==6 && cfa[1][0]==6 && cfa[1][1]==6);
             isNikonSraw = image_processor->is_nikon_sraw();
             if (isSraw)
             {
