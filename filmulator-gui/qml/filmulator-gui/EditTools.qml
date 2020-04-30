@@ -121,16 +121,20 @@ SlimSplitView {
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
                             paramManager.caEnabled = value
+                            if (value > 0) {
+                                lensfunCASwitch.setByAutoCA = true
+                                lensfunCASwitch.isOn = false
+                            }
                         }
                     }
                     onResetPerfomed: paramManager.resetAutoCa()
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onHighlightsChanged: {
+                        onCaEnabledChanged: {
                             autoCASlider.value = paramManager.caEnabled
                         }
-                        onDefHighlightsChanged: {
+                        onDefCaEnabledChanged: {
                             autoCASlider.defaultValue = paramManager.defCaEnabled
                         }
                     }
@@ -148,12 +152,21 @@ SlimSplitView {
                     isOn: (paramManager.lensfunCa == 1)
                     defaultOn: (paramManager.defLensfunCa == 1)
                     visible: paramManager.lensfunCaAvail
+                    property bool setByAutoCA: false
                     onIsOnChanged: {
                         paramManager.lensfunCa = isOn ? 1 : 0
-                        paramManager.writeback()
+                        if (isOn) {
+                            autoCASlider.value = 0
+                        }
+                        if (!setByAutoCA) {
+                            paramManager.writeback()
+                        }
                     }
                     onResetToDefault: {
                         paramManager.lensfunCa = defaultOn ? 1 : 0
+                        if (isOn) {
+                            autoCASlider.value = 0
+                        }
                         paramManager.resetLensfunCa()
                         paramManager.writeback()
                     }

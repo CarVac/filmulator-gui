@@ -211,12 +211,6 @@ void ParameterManager::setCaEnabled(int caEnabled)
         QMutexLocker paramLocker(&paramMutex);
         s_caEnabled = caEnabled;
         m_caEnabled = caEnabled;
-        if (caEnabled > 0)
-        {
-            s_lensfunCa = 0; //mutually exclusive with lensfun CA correction
-            m_lensfunCa = 0;
-            emit lensfunCaChanged();
-        }
         validity = min(validity, Valid::load);
         paramLocker.unlock();
         emit caEnabledChanged();
@@ -266,12 +260,6 @@ void ParameterManager::setLensfunCa(int caEnabled)
         QMutexLocker paramLocker(&paramMutex);
         s_lensfunCa = caEnabled;
         m_lensfunCa = caEnabled;
-        if (caEnabled > 0)
-        {
-            s_caEnabled = 0; //mutually exclusive with auto CA correct
-            m_caEnabled = 0;
-            emit caEnabledChanged();
-        }
         validity = min(validity, Valid::load);
         paramLocker.unlock();
         emit lensfunCaChanged();
@@ -2209,7 +2197,7 @@ void ParameterManager::loadParams(QString imageID)
     if (temp_lensfunCa != m_caEnabled)
     {
         //cout << "ParameterManager::loadParams lensfunCa" << endl;
-        m_lensfunCa = temp_caEnabled;
+        m_lensfunCa = temp_lensfunCa;
         validity = min(validity, Valid::load);
     }
 
