@@ -43,8 +43,9 @@ steps:
       mkdir lensfun
       cd lensfun
       git clone https://github.com/lensfun/lensfun lf
-      cd lf
       echo "done clone"
+      cd lf
+      ls
       mkdir buildDir
       cd buildDir
       set HOME=.
