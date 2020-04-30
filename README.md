@@ -24,7 +24,7 @@ libexiv2
 libjpeg
 libraw
 librtprocess 0.10
-liblensfun 0.3.95
+liblensfun master (newer than 0.3.95)
 libcurl
 libarchive
 ```
@@ -79,8 +79,8 @@ If you want the UI to appear larger on a high-pixel density display, use the Use
 
 # Status
 
-If told to make a version number for it right now, I'd put it as 0.8.0.
+If told to make a version number for it right now, I'd put it as 0.9.0.
 
-Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the `Import` and `Organize` tabs need some UI massaging, as does the queue. Finally, the `Output` tab hasn't even been started yet.
+The editing functionality is nearly complete, missing only noise reduction. The library functionality may still be expanded and massaged, however.
 
 But in the meantime, feel free to play around. Report any new bugs or suggestions you may have either on the [subreddit](https://www.reddit.com/r/Filmulator/) or on [the pixls.us forum](https://discuss.pixls.us/c/software/filmulator)!
