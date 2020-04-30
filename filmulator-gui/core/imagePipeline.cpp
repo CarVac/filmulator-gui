@@ -690,6 +690,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 if (demosaicParam.lensfunDistortion)
                 {
                     modflags |= mod->EnableDistortionCorrection();
+                    modflags |= mod->EnableScaling(mod->GetAutoScale(false));
+                    cout << "Auto scale factor: " << mod->GetAutoScale(false) << endl;
                 }
 
                 //Now we actually perform the required processing.
@@ -713,7 +715,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     //ApplySubpixelGeometryDistortion
                     bool success = true;
                     int listWidth = width * 2 * 3;
-                    //#pragma omp parallel for
+                    #pragma omp parallel for
                     for (int row = 0; row < height; row++)
                     {
                         float positionList[listWidth];
@@ -727,10 +729,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                 {
                                     float coordX = positionList[listIndex+2*c];
                                     float coordY = positionList[listIndex+2*c+1];
-                                    int sX = floor(coordX)*3 + c; //startX
-                                    int eX = ceil(coordX)*3 + c;  //endX
-                                    int sY = floor(coordY);       //startY
-                                    int eY = ceil(coordY);        //endY
+                                    int sX = max(0, min(width-1,  int(floor(coordX))))*3 + c;//startX
+                                    int eX = max(0, min(width-1,  int(ceil(coordX))))*3 + c; //endX
+                                    int sY = max(0, min(height-1, int(floor(coordY))));      //startY
+                                    int eY = max(0, min(height-1, int(ceil(coordY))));       //endY
                                     float notUsed;
                                     float eWX = modf(coordX, &notUsed); //end weight X
                                     float eWY = modf(coordY, &notUsed); //end weight Y;
@@ -790,7 +792,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         //ApplyGeometryDistortion
                         bool success = true;
                         int listWidth = width * 2;
-                        //#pragma omp parallel for
+                        #pragma omp parallel for
                         for (int row = 0; row < height; row++)
                         {
                             float positionList[listWidth];
@@ -802,10 +804,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                     int listIndex = col * 2; //list index
                                     float coordX = positionList[listIndex];
                                     float coordY = positionList[listIndex+1];
-                                    int sX = floor(coordX)*3; //startX
-                                    int eX = ceil(coordX) *3;  //endX
-                                    int sY = floor(coordY); //startY
-                                    int eY = ceil(coordY) ;  //endY
+                                    int sX = max(0, min(width-1,  int(floor(coordX))))*3;//startX
+                                    int eX = max(0, min(width-1,  int(ceil(coordX))))*3; //endX
+                                    int sY = max(0, min(height-1, int(floor(coordY))));  //startY
+                                    int eY = max(0, min(height-1, int(ceil(coordY))));   //endY
                                     float notUsed;
                                     float eWX = modf(coordX, &notUsed); //end weight X
                                     float eWY = modf(coordY, &notUsed); //end weight Y;
@@ -813,10 +815,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                     float sWY = 1 - eWY;                //start weight Y;
                                     for (int c = 0; c < 3; c++)
                                     {
-                                        new_image(row, col*3 + c) = recovered_image(sY + c, sX + c) * sWY * sWX +
-                                                                    recovered_image(eY + c, sX + c) * eWY * sWX +
-                                                                    recovered_image(sY + c, eX + c) * sWY * eWX +
-                                                                    recovered_image(eY + c, eX + c) * eWY * eWX;
+                                        new_image(row, col*3 + c) = recovered_image(sY, sX + c) * sWY * sWX +
+                                                                    recovered_image(eY, sX + c) * eWY * sWX +
+                                                                    recovered_image(sY, eX + c) * sWY * eWX +
+                                                                    recovered_image(eY, eX + c) * eWY * eWX;
                                     }
                                 }
                             }
