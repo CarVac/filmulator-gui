@@ -117,8 +117,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 return emptyMatrix();
             }
 
-            //identifyLens(loadParam.fullFilename);
-
             //get dimensions
             raw_width  = RSIZE.width;
             raw_height = RSIZE.height;
@@ -664,11 +662,22 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         ldb->Load(stdstring.c_str());
 
         std::string camName = demosaicParam.cameraName.toStdString();
+        const lfCamera * camera = NULL;
         const lfCamera ** cameraList = ldb->FindCamerasExt(NULL,camName.c_str());
         if (cameraList)
         {
             const float cropFactor = cameraList[0]->CropFactor;
-            std::string lensName = demosaicParam.lensName.toStdString();
+
+            QString tempLensName = demosaicParam.lensName;
+            if (tempLensName.front() == "\\")
+            {
+                //if the lens name starts with a backslash, don't filter by camera
+                tempLensName.remove(0,1);
+            } else {
+                //if it doesn't start with a backslash, filter by camera
+                camera = cameraList[0];
+            }
+            std::string lensName = tempLensName.toStdString();
             const lfLens * lens = NULL;
             const lfLens ** lensList = NULL;
             lensList = ldb->FindLenses(NULL, NULL, lensName.c_str());

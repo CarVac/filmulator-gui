@@ -3254,9 +3254,16 @@ void ParameterManager::updateAvailability()
     const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
     if (cameraList)
     {
-        camera = cameraList[0];
+        //If the lens name starts with a backslash, don't filter by camera
+        QString temp_lensfunName = s_lensfunName;
+        if (temp_lensfunName.front() == "\\")
+        {
+            temp_lensfunName.remove(0,1);
+        } else {
+            camera = cameraList[0];
+        }
         const float cropFactor = cameraList[0]->CropFactor;
-        const std::string lensModel = s_lensfunName.toStdString();
+        const std::string lensModel = temp_lensfunName.toStdString();
         if (s_lensfunName.length() > 0)
         {
             const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());

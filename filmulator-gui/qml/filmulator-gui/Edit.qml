@@ -1801,7 +1801,7 @@ SlimSplitView {
                 id: lensFunMenuButton
                 x: 0 * uiScale
                 y: 0 * uiScale
-                tooltipText: qsTr("Select a lens model for lens corrections.")
+                tooltipText: qsTr("Select the lens that was used in order to use lens corrections.\n\nType the lens name in the box to the right. Normally it will only search lenses for the camera's mount, but if the first character is a backslash (\"\\\") then it will search lenses from all mounts.\n\nDouble-click a lens to select it.")
                 Image {
                     id: lensFunMenuButtonImage
                     width: 14 * uiScale
@@ -1849,7 +1849,7 @@ SlimSplitView {
                     font.pixelSize: 12.0 * uiScale
                     clip: true
                     visible: !lensfunBox.active
-                    text: (parent.selectedLens == "") ? "No lens selected" : parent.selectedLens
+                    text: (parent.selectedLens == "") ? "No lens selected" : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
                 }
 
                 MouseArea {
@@ -1927,7 +1927,8 @@ SlimSplitView {
                     radius: 5 * uiScale
                     color: (lensName === textEntryRect.selectedLens) ? Colors.darkGrayH : Colors.darkGrayL
                     property string lensMake: make
-                    property string lensName: model
+                    property string fullLensName: model
+                    property string lensName: fullLensName.charAt(0) === "\\" ? fullLensName.slice(1) : fullLensName
                     property int matchScore: score
                     Text {
                         id: lensNameText
@@ -1953,10 +1954,10 @@ SlimSplitView {
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
                         onClicked: {
-                            textEntryRect.selectedLens = parent.lensName
+                            textEntryRect.selectedLens = parent.fullLensName
                         }
                         onDoubleClicked: {
-                            textEntryRect.selectedLens = parent.lensName
+                            textEntryRect.selectedLens = parent.fullLensName
                             lensfunBox.active = false
                         }
                     }

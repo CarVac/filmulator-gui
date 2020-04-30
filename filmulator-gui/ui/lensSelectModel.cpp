@@ -28,11 +28,21 @@ LensSelectModel::LensSelectModel(QObject *parent) : QAbstractTableModel(parent)
     ldb->Load(stdstring.c_str());
 }
 
+//If the lensString begins with a backslash, we search all cameras
+//This lets you deal with adapted lenses.
 void LensSelectModel::update(QString cameraString, QString lensString)
 {
     beginResetModel();
     std::string camStr = cameraString.toStdString();
-    std::string lensStr = lensString.toStdString();
+
+    QString tempLensString = lensString;
+    bool searchAllMounts = false;
+    if (lensString.front() == "\\")
+    {
+        tempLensString.remove(0,1);
+        searchAllMounts = true;
+    }
+    std::string lensStr = tempLensString.toStdString();
 
     //clear all the data
     m_rowCount = 0;
@@ -42,7 +52,7 @@ void LensSelectModel::update(QString cameraString, QString lensString)
 
     const lfCamera * camera = NULL;
     const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camStr.c_str());
-    if (cameraList)
+    if (cameraList && !searchAllMounts)
     {
         camera = cameraList[0];
     }
@@ -57,7 +67,12 @@ void LensSelectModel::update(QString cameraString, QString lensString)
             while (lensList[i])
             {
                 makerList.push_back(QString(lensList[i]->Maker));
-                modelList.push_back(QString(lensList[i]->Model));
+                QString lensModel = lensList[i]->Model;
+                if (searchAllMounts)
+                {
+                    lensModel = lensModel.prepend("\\");
+                }
+                modelList.push_back(lensModel);
                 scoreList.push_back(lensList[i]->Score);
                 i++;
                 m_rowCount++;
