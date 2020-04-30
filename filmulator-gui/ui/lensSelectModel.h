@@ -17,7 +17,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QHash<int,QByteArray> roleNames() const;
 
-    Q_INVOKABLE void update(QString lens);
+    Q_INVOKABLE void update(QString camera, QString lens);
 
 private:
     QHash<int,QByteArray> m_roleNames;

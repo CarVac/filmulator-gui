@@ -3262,14 +3262,16 @@ void ParameterManager::updateAvailability()
 {
     cout << "Updating availability" << endl;
     std::string camModel = model.toStdString();
+    const lfCamera * camera = NULL;
     const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
     if (cameraList)
     {
+        camera = cameraList[0];
         const float cropFactor = cameraList[0]->CropFactor;
         const std::string lensModel = s_lensfunName.toStdString();
         if (s_lensfunName.length() > 0)
         {
-            const lfLens ** lensList = ldb->FindLenses(NULL, NULL, lensModel.c_str());
+            const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
             if (lensList)
             {
                 const int availableMods = lensList[0]->AvailableModifications(cropFactor);

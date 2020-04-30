@@ -1876,7 +1876,7 @@ SlimSplitView {
                     clip: true
                     visible: lensfunBox.active
                     onTextChanged: {
-                        lensModel.update(lensFilterBox.text)
+                        lensModel.update(paramManager.model, lensFilterBox.text)
                     }
                     Connections {
                         target: paramManager

@@ -28,9 +28,10 @@ LensSelectModel::LensSelectModel(QObject *parent) : QAbstractTableModel(parent)
     ldb->Load(stdstring.c_str());
 }
 
-void LensSelectModel::update(QString lensString)
+void LensSelectModel::update(QString cameraString, QString lensString)
 {
     beginResetModel();
+    std::string camStr = cameraString.toStdString();
     std::string lensStr = lensString.toStdString();
 
     //clear all the data
@@ -39,9 +40,17 @@ void LensSelectModel::update(QString lensString)
     modelList.clear();
     scoreList.clear();
 
+    const lfCamera * camera = NULL;
+    const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camStr.c_str());
+    if (cameraList)
+    {
+        camera = cameraList[0];
+    }
+    lf_free(cameraList);
+
     if (lensStr.length() > 0)
     {
-        const lfLens ** lensList = ldb->FindLenses(NULL, NULL, lensStr.c_str());
+        const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensStr.c_str());
         if (lensList)
         {
             int i = 0;
