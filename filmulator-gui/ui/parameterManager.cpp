@@ -3262,8 +3262,15 @@ void ParameterManager::updateAvailability()
             const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
             if (lensList)
             {
+                //Check if sensor is monochrome
+                auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
+                exifImage->readMetadata();
+                Exiv2::ExifData exifData = exifImage->exifData();
+                std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
+                bool isMonochrome = wb.length()==0;
+
                 const int availableMods = lensList[0]->AvailableModifications(cropFactor);
-                lensfunCaAvail   = availableMods & LF_MODIFY_TCA;
+                lensfunCaAvail   = (availableMods & LF_MODIFY_TCA) && !isMonochrome;
                 lensfunVignAvail = availableMods & LF_MODIFY_VIGNETTING;
                 lensfunDistAvail = availableMods & LF_MODIFY_DISTORTION;
                 emit lensfunCaAvailChanged();

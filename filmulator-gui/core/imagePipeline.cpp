@@ -279,7 +279,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //cout << "is weird: " << isWeird << endl;
             std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
             //cout << "white balance: " << wb << endl;
-            bool isMonochrome = wb.length()==0;
+            isMonochrome = wb.length()==0;
             //cout << "is monochrome: " << isMonochrome << endl;
             isSraw = isSraw || (isWeird && !isMonochrome);
             //cout << "is full color raw: " << isSraw << endl;
@@ -396,6 +396,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             maxValue = stealVictim->maxValue;
             isSraw = stealVictim->isSraw;
             isNikonSraw = stealVictim->isNikonSraw;
+            isMonochrome = stealVictim->isMonochrome;
             raw_width = stealVictim->raw_width;
             raw_height = stealVictim->raw_height;
             exifData = stealVictim->exifData;
@@ -511,7 +512,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
             }
-            else if (cfa[0][0] == 6)//monochrome but not sraw; no demosaicing
+            else if (isMonochrome)
             {
                 float scaleFactor = outputscale / inputscale;
                 for (int row = 0; row < raw_height; row++)
@@ -679,7 +680,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
 
                 int modflags = 0;
-                if (demosaicParam.lensfunCA)
+                if (demosaicParam.lensfunCA && !isMonochrome)
                 {
                     modflags |= mod->EnableTCACorrection();
                 }

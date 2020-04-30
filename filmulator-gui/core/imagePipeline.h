@@ -70,6 +70,7 @@ protected:
     float maxValue;
     bool isSraw;//Actually we should set this for all full-color raws (including X-Transformer)
     bool isNikonSraw;
+    bool isMonochrome;
 
     matrix<float> input_image;
     matrix<float> recovered_image;
