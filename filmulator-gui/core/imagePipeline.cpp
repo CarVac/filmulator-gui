@@ -1,5 +1,8 @@
 #include "imagePipeline.h"
 #include "../database/exifFunctions.h"
+#include <QDir>
+#include <QStandardPaths>
+
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
     cache = cacheIn;
@@ -651,6 +654,64 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             recovered_image = std::move(scaled_image);
         }
 
+        //Lensfun processing
+        lfDatabase * ldb = new lfDatabase;
+        QDir dir = QDir::home();
+        QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        dirstr.append("/filmulator/version_2");
+        std::string stdstring = dirstr.toStdString();
+        ldb->Load(stdstring.c_str());
+
+        std::string camName = demosaicParam.cameraName.toStdString();
+        const lfCamera ** cameraList = ldb->FindCamerasExt(NULL,camName.c_str());
+        if (cameraList)
+        {
+            const float cropFactor = cameraList[0]->CropFactor;
+            std::string lensName = demosaicParam.lensName.toStdString();
+            const lfLens * lens = NULL;
+            const lfLens ** lensList = NULL;
+            lensList = ldb->FindLenses(NULL, NULL, lensName.c_str());
+            if (lensList)
+            {
+                lens = lensList[0];
+
+                //Now we set up the modifier itself with the lens and processing flags
+                lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
+
+                int modflags = 0;
+                if (demosaicParam.lensfunCA)
+                {
+                    modflags |= mod->EnableTCACorrection();
+                }
+                if (demosaicParam.lensfunVignetting)
+                {
+                    modflags |= mod->EnableVignettingCorrection(demosaicParam.fnumber, 1000.0f);
+                }
+                if (demosaicParam.lensfunDistortion)
+                {
+                    modflags |= mod->EnableDistortionCorrection();
+                }
+
+                //Now we actually perform the required processing.
+                //First is vignetting.
+                if (demosaicParam.lensfunVignetting)
+                {
+                    bool success = true;
+                    #pragma omp parallel for
+                    for (int row = 0; row < height; row++)
+                    {
+                        success = mod->ApplyColorModification(recovered_image[row], 0.0, row, width, 1, LF_CR_3(RED, GREEN, BLUE), width);
+                    }
+                }
+
+                delete mod;
+            }
+            lf_free(lensList);
+        }
+        lf_free(cameraList);
+
+        //cleanup lensfun
+        delete ldb;
 
         valid = paramManager->markDemosaicComplete();
         updateProgress(valid, 0.0f);

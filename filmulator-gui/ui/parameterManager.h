@@ -58,6 +58,8 @@ struct DemosaicParams {
     bool lensfunCA;
     bool lensfunVignetting;
     bool lensfunDistortion;
+    float focalLength;
+    float fnumber;
 };
 
 struct PrefilmParams {
@@ -353,6 +355,7 @@ protected:
     int sensitivity;
     QString exposureTime;
     QString aperture;
+    float fnumber;
     float focalLength;
     QString make;
     QString model;

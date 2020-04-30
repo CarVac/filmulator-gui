@@ -165,9 +165,11 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     demParams.highlights = m_highlights;
     demParams.cameraName = model;
     demParams.lensName = s_lensfunName;//we use the staging ones because they're always populated
-    demParams.lensfunCA = s_lensfunCa;
-    demParams.lensfunVignetting = s_lensfunVign;
-    demParams.lensfunDistortion = s_lensfunDist;
+    demParams.lensfunCA = s_lensfunCa >= 1;
+    demParams.lensfunVignetting = s_lensfunVign >= 1;
+    demParams.lensfunDistortion = s_lensfunDist >= 1;
+    demParams.focalLength = focalLength;
+    demParams.fnumber = fnumber;
     std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
@@ -1420,14 +1422,14 @@ void ParameterManager::selectImage(const QString imageID)
 
     nameCol = rec.indexOf("FTaperture");
     if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
-    float numAperture = query.value(nameCol).toFloat();
-    if (numAperture >= 8)
+    fnumber = query.value(nameCol).toFloat();
+    if (fnumber >= 8)
     {
-        aperture = QString::number(numAperture,'f',0);
+        aperture = QString::number(fnumber,'f',0);
     }
-    else //numAperture < 8
+    else //fnumber < 8
     {
-        aperture = QString::number(numAperture,'f',1);
+        aperture = QString::number(fnumber,'f',1);
     }
     emit apertureChanged();
 
@@ -2737,14 +2739,14 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
 
     nameCol = rec.indexOf("FTaperture");
     if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
-    float numAperture = query.value(nameCol).toFloat();
-    if (numAperture >= 8)
+    fnumber = query.value(nameCol).toFloat();
+    if (fnumber >= 8)
     {
-        aperture = QString::number(numAperture,'f',0);
+        aperture = QString::number(fnumber,'f',0);
     }
-    else //numAperture < 8
+    else //fnumber < 8
     {
-        aperture = QString::number(numAperture,'f',1);
+        aperture = QString::number(fnumber,'f',1);
     }
     emit apertureChanged();
 
@@ -3277,9 +3279,6 @@ void ParameterManager::updateAvailability()
                 emit lensfunCaAvailChanged();
                 emit lensfunVignAvailChanged();
                 emit lensfunDistAvailChanged();
-                cout << "ca:   " << lensfunCaAvail << endl;
-                cout << "vign: " << lensfunVignAvail << endl;
-                cout << "dist: " << lensfunDistAvail << endl;
             } else {
                 //If there is no matching lens, we can't do any corrections
                 //This shouldn't really happen because either it'll be empty or
@@ -3311,7 +3310,6 @@ void ParameterManager::updateAvailability()
         emit lensfunDistAvailChanged();
     }
     lf_free(cameraList);
-    cout << "Finished updating availability" << endl;
 }
 
 void ParameterManager::setLensPreferences()
