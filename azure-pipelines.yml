@@ -49,7 +49,8 @@ steps:
       mkdir buildDir
       cd buildDir
       set HOME=.
-      %MSYS_BASH% -c "cmake --log-level=VERBOSE -G\"MSYS Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" > out.log 3>err.log"
+      #%MSYS_BASH% -c "cmake --log-level=DEBUG -G\"MSYS Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" .. > out.log 3>err.log"
+      cmake --log-level=DEBUG -G"MSYS Makefiles" -DCMAKE_INSTALL_PREFIX="/mingw64/" -DCMAKE_BUILD_TYPE="Release" ..
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install"
     displayName: build lensfun
