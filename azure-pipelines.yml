@@ -44,19 +44,17 @@ steps:
       cd lensfun
       git clone https://github.com/lensfun/lensfun lf
       echo "done clone"
-      cd lf
-      ls
       mkdir buildDir
       cd buildDir
       set HOME=.
-      #%MSYS_BASH% -c "cmake --log-level=DEBUG -G\"MSYS Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" .. > out.log 3>err.log"
-      %MSYS_BASH% -c "cmake --log-level=DEBUG -G\"MSYS Makefiles\" -DCMAKE_INCLUDE_PATH=\"/mingw64/include;/mingw64/usr/include\" -DCMAKE_PREFIX_PATH=\"/mingw64/usr/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ..
+      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install"
     displayName: build lensfun
   - script: |
       mkdir build
       pushd build
+      ls
       mkdir installed
       set INSTALLDIR=installed
       set HOME=.
