@@ -1,6 +1,11 @@
 #include "settings.h"
 #include <iostream>
 
+//for lensfun
+#include "../database/rawproc_lensfun/lensfun_dbupdate.h"
+#include <QDir>
+#include <QStandardPaths>
+
 using namespace std;
 
 Settings::Settings(QObject *parent) :
@@ -12,6 +17,8 @@ Settings::Settings(QObject *parent) :
     dirConfig = settings.value("photoDB/dirConfig", "/yyyy/MM/yyyy-MM-dd/").toString();
     cameraTZ = settings.value("photoDB/cameraTZ", 0).toInt();
     importTZ = settings.value("photoDB/importTZ", 0).toInt();
+    lensfunStatus = "";
+    updateStatus = "";
 }
 
 void Settings::setPhotoStorageDir(QString dirIn)
@@ -277,4 +284,79 @@ int Settings::getPreviewResolution()
     previewResolution = settings.value("edit/previewResolution", 1500).toInt();
     emit previewResolutionChanged();
     return previewResolution;
+}
+
+void Settings::checkLensfunStatus()
+{
+    QDir dir = QDir::home();
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator");
+
+    lensfunStatus = "Checking database version";
+    emit lensfunStatusChanged();
+
+    lf_db_return dbStatus = lensfun_dbcheck(2, dirstr.toStdString());
+
+    if (dbStatus == LENSFUN_DBUPDATE_NOVERSION)
+    {
+        lensfunStatus = "Database unavailable from server.";
+        emit lensfunStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_NODATABASE)
+    {
+        lensfunStatus = "No local database yet.";
+        emit lensfunStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_OLDVERSION)
+    {
+        lensfunStatus = "Updated database available.";
+        emit lensfunStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION)
+    {
+        lensfunStatus = "Database is up to date.";
+        emit lensfunStatusChanged();
+    }
+}
+void Settings::updateLensfun()
+{
+    QDir dir = QDir::home();
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator");
+
+    updateStatus = "Updating database";
+    emit updateStatusChanged();
+
+    lf_db_return dbStatus = lensfun_dbupdate(2, dirstr.toStdString());
+
+    if (dbStatus == LENSFUN_DBUPDATE_OK)
+    {
+        updateStatus = "Database updated successfully.";
+        emit updateStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION)
+    {
+        updateStatus = "Database is up to date.";
+        emit updateStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_NOVERSION)
+    {
+        updateStatus = "No database available from server.";
+        emit updateStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_INITFAILED)
+    {
+        updateStatus = "Database retrieve failed (init).";
+        emit updateStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_FILEOPENFAILED)
+    {
+        updateStatus = "Database retrieve failed (file).";
+        emit updateStatusChanged();
+    }
+    if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_RETRIEVEFAILED)
+    {
+        updateStatus = "Database retrieve failed (retrieve).";
+        emit updateStatusChanged();
+    }
 }

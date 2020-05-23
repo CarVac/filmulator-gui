@@ -2,6 +2,7 @@
 #define EXIFFUNCTIONS_H
 
 #include <exiv2/exiv2.hpp>
+#include <lensfun/lensfun.h>
 #include <QString>
 #include <QDateTime>
 
@@ -47,5 +48,17 @@ float exifFl(Exiv2::ExifData exifData);
  * TODO: others.
  * */
 int exifRating(Exiv2::ExifData exifData, Exiv2::XmpData xmpData);
+
+/*Translates Nikon metadata focal length from its log representation to mm*/
+float nikonFocalLength(const unsigned int inputFL);
+
+/*Translates Nikon metadata aperture from its log representation to fno*/
+QString nikonAperture(const unsigned int inputAperture);
+
+/*Find the camera and lens model from image metadata, given the file*/
+QString exifLens(const std::string fullfilename);
+
+/*Find a matching lens model from the lensfun database*/
+QString identifyLens(const std::string fullfilename);
 
 #endif // EXIFFUNCTIONS_H

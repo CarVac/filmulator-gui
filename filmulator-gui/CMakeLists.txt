@@ -4,7 +4,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 include(DefineCMakeDefaults)
 
-project(Filmulator VERSION 1.0.0 LANGUAGES CXX)
+project(Filmulator VERSION 0.9.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CompilerChecks.cmake)
@@ -24,11 +24,14 @@ find_package(Qt5Qml CONFIG REQUIRED)
 # find_package(Qt5LinguistTools CONFIG REQUIRED)
 
 find_package(rtprocess CONFIG REQUIRED)
-find_package(exiv2 REQUIRED)
+find_package(Exiv2 REQUIRED)
 find_package(libraw REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(LENSFUN REQUIRED)
+find_package(CURL REQUIRED)
+find_package(LibArchive REQUIRED)
 
 # Checks for config.h
 include(ConfigureChecks.cmake)
@@ -74,7 +77,9 @@ set(filmulator_SRCS
     database/sqlInsertion.cpp
     database/signalSwitchboard.cpp
     database/database.cpp
+    database/rawproc_lensfun/lensfun_dbupdate.cpp
     ui/filmImageProvider.cpp
+    ui/lensSelectModel.cpp
     ui/parameterManager.cpp
     ui/settings.cpp
     ui/thumbWriteWorker.cpp
@@ -121,6 +126,9 @@ target_include_directories(filmulator
         ${JPEG_INCLUDE_DIRS}
         ${TIFF_INCLUDE_DIR}
         ${RTPROCESS_INCLUDE_DIR}
+        ${LENSFUN_INCLUDE_DIR}
+        ${CURL_INCLUDE_DIRS}
+        ${LibArchive_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -134,6 +142,9 @@ target_link_libraries(filmulator
     ${LIBRAW_LIBRARIES}
     ${JPEG_LIBRARIES}
     ${TIFF_LIBRARIES}
+    ${LENSFUN_LIBRARY}
+    ${CURL_LIBRARIES}
+    ${LibArchive_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
     rtprocess::rtprocess
 )
@@ -159,6 +170,8 @@ if(APPLE)
     file(READ_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}" result2)
     file(COPY "${EXIV2_INCLUDE_DIR}/../lib/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
+
+    #NEEDS LENSFUN, CURL, and ARCHIVE ADDED TO MAC BUILD
 
     if(IS_SYMLINK "${JPEG_LIBRARY_RELEASE}")
         file(READ_SYMLINK "${JPEG_LIBRARY_RELEASE}" result)

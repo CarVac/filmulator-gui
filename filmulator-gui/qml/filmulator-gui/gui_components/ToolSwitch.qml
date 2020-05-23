@@ -62,7 +62,7 @@ Rectangle {
             width: 14 * uiScale
             height: 14 * uiScale
             anchors.centerIn: parent
-            source: "qrc:///icons/refresh.svg"
+            source: "qrc:///icons/refresh.png"
             antialiasing: true
         }
         action: Action {

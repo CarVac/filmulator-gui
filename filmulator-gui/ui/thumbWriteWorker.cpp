@@ -64,7 +64,7 @@ bool ThumbWriteWorker::writeThumb(QString searchID)
     cout << "Thumbnail being written to: " << outputFilename.toStdString() << endl;
 
     //Then we write.
-    imwrite_jpeg(gammaCurved, outputFilename.toStdString(), exifData, 95);
+    imwrite_jpeg(gammaCurved, outputFilename.toStdString(), exifData, 95, false);
 
     query.prepare("UPDATE SearchTable SET STthumbWritten = 1 WHERE STsearchID = ?;");
     query.bindValue(0, searchID);

@@ -24,6 +24,8 @@ class Settings : public QObject
     Q_PROPERTY(bool lowMemMode READ getLowMemMode WRITE setLowMemMode NOTIFY lowMemModeChanged)
     Q_PROPERTY(bool quickPreview READ getQuickPreview WRITE setQuickPreview NOTIFY quickPreviewChanged)
     Q_PROPERTY(int previewResolution READ getPreviewResolution WRITE setPreviewResolution NOTIFY previewResolutionChanged)
+    Q_PROPERTY(QString lensfunStatus READ getLensfunStatus NOTIFY lensfunStatusChanged)
+    Q_PROPERTY(QString updateStatus READ getUpdateStatus NOTIFY updateStatusChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
@@ -60,6 +62,11 @@ public:
     Q_INVOKABLE bool getLowMemMode();
     Q_INVOKABLE bool getQuickPreview();
     Q_INVOKABLE int getPreviewResolution();
+    Q_INVOKABLE QString getLensfunStatus() {return lensfunStatus;};
+    Q_INVOKABLE QString getUpdateStatus() {return updateStatus;};
+
+    Q_INVOKABLE void checkLensfunStatus();
+    Q_INVOKABLE void updateLensfun();
 
 protected:
     QString photoStorageDir;
@@ -78,6 +85,8 @@ protected:
     bool lowMemMode;
     bool quickPreview;
     int previewResolution;
+    QString lensfunStatus;
+    QString updateStatus;
 
 signals:
     void photoStorageDirChanged();
@@ -96,6 +105,8 @@ signals:
     void lowMemModeChanged();
     void quickPreviewChanged();
     void previewResolutionChanged();
+    void lensfunStatusChanged();
+    void updateStatusChanged();
 };
 
 #endif // SETTINGS_H

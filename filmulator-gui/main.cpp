@@ -11,6 +11,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QTranslator>
 #include "ui/filmImageProvider.h"
+#include "ui/lensSelectModel.h"
 #include "ui/settings.h"
 #include "database/importModel.h"
 #include "database/organizeModel.h"
@@ -99,6 +100,10 @@ int main(int argc, char *argv[])
                      queueModel, SLOT(enQueue(QString)));
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
+    //Prepare a model for the lensfun lens list.
+    LensSelectModel *lensModel = new LensSelectModel;
+    engine.rootContext()->setContextProperty("lensModel", lensModel);
+
     if (appdir)
     {
         QString qmlfile = appdir;
@@ -148,7 +153,7 @@ int main(int argc, char *argv[])
         qWarning("Error: your root item has to be a Window");
         return -1;
     }
-    window->setIcon(QIcon(":/icons/filmulator64icon.svg"));
+    window->setIcon(QIcon(":/icons/filmulator64icon.png"));
     window->show();
 
     return app.exec();

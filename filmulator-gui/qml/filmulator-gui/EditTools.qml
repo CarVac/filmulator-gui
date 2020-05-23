@@ -106,31 +106,143 @@ SlimSplitView {
                     }
                 }
 
+                ToolSlider {
+                    id: autoCASlider
+                    title: qsTr("Auto CA correction")
+                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.\n\nNot available for non-Bayer photos.")
+                    minimumValue: 0
+                    maximumValue: 5
+                    stepSize: 1
+                    tickmarksEnabled: true
+                    value: paramManager.caEnabled
+                    defaultValue: paramManager.defCaEnabled
+                    visible: paramManager.autoCaAvail
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.caEnabled = value
+                            if (value > 0) {
+                                lensfunCASwitch.setByAutoCA = true
+                                lensfunCASwitch.isOn = false
+                            }
+                        }
+                    }
+                    onResetPerfomed: paramManager.resetAutoCa()
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        onCaEnabledChanged: {
+                            autoCASlider.value = paramManager.caEnabled
+                        }
+                        onDefCaEnabledChanged: {
+                            autoCASlider.defaultValue = paramManager.defCaEnabled
+                        }
+                    }
+                    Component.onCompleted: {
+                        autoCASlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
                 ToolSwitch {
-                    id: caSwitch
-                    tooltipText: qsTr("Automatically correct directional color fringing.")
-                    text: qsTr("CA correction")
-                    isOn: paramManager.caEnabled
-                    defaultOn: paramManager.defCaEnabled
+                    id: lensfunCASwitch
+                    text: qsTr("Profiled CA")
+                    tooltipText: qsTr("Correct directional color fringing based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunCa == 1)
+                    defaultOn: (paramManager.defLensfunCa == 1)
+                    visible: paramManager.lensfunCaAvail
+                    property bool setByAutoCA: false
                     onIsOnChanged: {
-                        paramManager.caEnabled = isOn
-                        paramManager.writeback()
+                        paramManager.lensfunCa = isOn ? 1 : 0
+                        if (isOn) {
+                            autoCASlider.value = 0
+                        }
+                        if (!setByAutoCA) {
+                            paramManager.writeback()
+                        }
                     }
                     onResetToDefault: {
-                        paramManager.caEnabled = isOn
+                        paramManager.lensfunCa = defaultOn ? 1 : 0
+                        if (isOn) {
+                            autoCASlider.value = 0
+                        }
+                        paramManager.resetLensfunCa()
                         paramManager.writeback()
                     }
                     Connections {
                         target: paramManager
-                        onCaEnabledChanged: {
-                            caSwitch.isOn = paramManager.caEnabled
+                        onLensfunCaChanged: {
+                            lensfunCASwitch.isOn = (paramManager.lensfunCa == 1)
                         }
-                        onDefCaEnabledChanged: {
-                            caSwitch.defaultOn = paramManager.defCaEnabled
+                        onDefLensfunCaChanged: {
+                            lensfunCASwitch.defaultOn = (paramManager.defLensfunCa == 1)
                         }
                     }
                     Component.onCompleted: {
-                        caSwitch.tooltipWanted.connect(root.tooltipWanted)
+                        lensfunCASwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSwitch {
+                    id: lensfunVignSwitch
+                    text: qsTr("Profiled Vignetting")
+                    tooltipText: qsTr("Correct vignetting based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunVign == 1)
+                    defaultOn: (paramManager.defLensfunVign == 1)
+                    visible: paramManager.lensfunVignAvail
+                    onIsOnChanged: {
+                        paramManager.lensfunVign = isOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.lensfunVign = defaultOn ? 1 : 0
+                        paramManager.resetLensfunVign()
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        onLensfunVignChanged: {
+                            lensfunVignSwitch.isOn = (paramManager.lensfunVign == 1)
+                        }
+                        onDefLensfunVignChanged: {
+                            lensfunVignSwitch.defaultOn = (paramManager.defLensfunVign == 1)
+                        }
+                    }
+                    Component.onCompleted: {
+                        lensfunVignSwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSwitch {
+                    id: lensfunDistSwitch
+                    text: qsTr("Profiled Distortion")
+                    tooltipText: qsTr("Correct geometric distortion based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunDist == 1)
+                    defaultOn: (paramManager.defLensfunDist == 1)
+                    visible: paramManager.lensfunDistAvail
+                    onIsOnChanged: {
+                        paramManager.lensfunDist = isOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.lensfunDist = defaultOn ? 1 : 0
+                        paramManager.resetLensfunDist()
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        onLensfunDistChanged: {
+                            lensfunDistSwitch.isOn = (paramManager.lensfunDist == 1)
+                        }
+                        onDefLensfunDistChanged: {
+                            lensfunDistSwitch.defaultOn = (paramManager.defLensfunDist == 1)
+                        }
+                    }
+                    Component.onCompleted: {
+                        lensfunDistSwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }
@@ -788,22 +900,6 @@ SlimSplitView {
                     id: bottomSpacer
                     color: "#00000000"//transparent
                     height: 3 * uiScale
-                }
-            }
-        }
-        MouseArea {
-            id: wheelstealer
-            //This is to prevent scrolling from adjusting sliders.
-            anchors.fill: toolList
-            acceptedButtons: Qt.NoButton
-            onWheel: {
-                if (wheel.angleDelta.y > 0 && !toolList.atYBeginning) {
-                    //up
-                    toolList.flick(0,600);
-                }
-                else if (wheel.angleDelta.y < 0 && !toolList.atYEnd) {
-                    //down
-                    toolList.flick(0,-600);
                 }
             }
         }

@@ -12,8 +12,8 @@ ApplicationWindow {
     property int tempVisibility
     width: 1366 * uiScale
     height: 768 * uiScale
-    minimumHeight: 400 * uiScale
-    minimumWidth:700 * uiScale
+    minimumWidth: 1366 * uiScale
+    minimumHeight: 700 * uiScale
 
     signal tooltipWanted(string text, int x, int y)
     signal imageURL(string newURL)

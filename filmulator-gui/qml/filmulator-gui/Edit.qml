@@ -66,7 +66,7 @@ SlimSplitView {
         id: photoBox
         color: "black"
         Layout.fillWidth: true
-        property int backgroundColor: backgroundBrightnessSlider.value
+        property int backgroundColor: 0
         property bool loadingError: false
         property string errorText: ""
         Rectangle {//This is because before the image is loaded there's no background.
@@ -1631,85 +1631,6 @@ SlimSplitView {
             }
         }
 
-        Item {
-            id: backgroundColorBox
-            y: 0 * uiScale
-            width: 180 * uiScale
-            height: 30 * uiScale
-            anchors.right: crop.left
-            Text {
-                id: backgroundColorText
-                x: 0 * uiScale
-                y: 2 * uiScale
-                width: parent.width
-                color: "white"
-                text: qsTr("Background Brightness")
-                horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: 12.0 * uiScale
-            }
-
-            SlipperySlider {
-                id: backgroundBrightnessSlider
-                x: 40 * uiScale
-                y: 17 * uiScale
-                width: parent.width - 80 * uiScale
-                minimumValue: 0
-                maximumValue: 2
-                value: 0
-                stepSize: 1
-                tickmarksEnabled: true
-                uiScale: root.uiScale
-            }
-        }
-
-        ToolButton {
-            id: crop
-            anchors.right: rotateLeft.left
-            y: 0 * uiScale
-            width: 120 * uiScale
-            notDisabled: root.imageReady
-            text: root.cropping ? qsTr("Finish Crop") : qsTr("Crop")//Change to "Adjust crop" when a crop exists; change to "Accept crop" when cropping in progress
-            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
-            onTriggered: {
-                if (!root.cropping) {
-                    filmProvider.disableThumbnailWrite()
-                    root.requestingCropping = true
-                } else {
-                    filmProvider.enableThumbnailWrite()
-                    root.cancelCropping = false
-                    root.requestingCropping = false
-                }
-            }
-            Component.onCompleted: {
-                crop.tooltipWanted.connect(root.tooltipWanted)
-            }
-            uiScale: root.uiScale
-        }
-
-        ToolButton {
-            id: rotateLeft
-            anchors.right: rotateRight.left
-            y: 0 * uiScale
-            width: 90 * uiScale
-            text: qsTr("Rotate Left")
-            onTriggered: {
-                paramManager.rotateLeft()
-            }
-            uiScale: root.uiScale
-        }
-
-        ToolButton {
-            id: rotateRight
-            anchors.right: parent.right
-            y: 0 * uiScale
-            width: 90 * uiScale
-            text: qsTr("Rotate Right")
-            onTriggered: {
-                paramManager.rotateRight()
-            }
-            uiScale: root.uiScale
-        }
-
         FilmProgressBar {
             id: progressBar
             visible: true
@@ -1722,44 +1643,113 @@ SlimSplitView {
         }
         Text {
             id: apertureText
-            x: 200 * uiScale
+            x: 202 * uiScale
             y: 1 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("Width: ") + imageRect.displayWidth : " f/" + paramManager.aperture
+            text: "f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
         }
         Text {
             id: shutterText
-            x: 200 * uiScale
+            x: 202 * uiScale
             y: 15 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("Height: ") + imageRect.displayHeight : " " + paramManager.exposureTime + " s"
+            text: paramManager.exposureTime + " s"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
         }
         Text {
-            id: filenameText
-            x: 300 * uiScale
+            id: focallengthText
+            x: 270 * uiScale
             y: 1 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("H offset: ") + imageRect.displayHoffset : paramManager.filename
+            text: paramManager.focalLength.toFixed(1) + "mm"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: !root.cropping && !parent.loadingError
         }
         Text {
             id: isoText
+            x: 270 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: "ISO " + paramManager.sensitivity
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: !root.cropping && !parent.loadingError
+        }
+        Text {
+            id: filenameText
+            x: 340 * uiScale
+            y: 1 * uiScale
+            color: "white"
+            text: paramManager.filename
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: !root.cropping && !parent.loadingError
+            ToolTip {
+                id: fileInfoTooltip
+                anchors.fill: parent
+                tooltipText: paramManager.fullFilenameQstr
+                Component.onCompleted: {
+                    fileInfoTooltip.tooltipWanted.connect(root.tooltipWanted)
+                }
+            }
+        }
+        Text {
+            id: cameraText
+            x: 340 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: paramManager.model
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: !root.cropping && !parent.loadingError
+        }
+        Text {
+            id: cropWidthText
+            x: 202 * uiScale
+            y: 1 * uiScale
+            color: "white"
+            text: qsTr("Width: ") + imageRect.displayWidth
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.cropping && !parent.loadingError
+        }
+        Text {
+            id: cropHeightText
+            x: 202 * uiScale
+            y: 15 * uiScale
+            color: "white"
+            text: qsTr("Height: ") + imageRect.displayHeight
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.cropping && !parent.loadingError
+        }
+        Text {
+            id: hOffsetText
+            x: 300 * uiScale
+            y: 1 * uiScale
+            color: "white"
+            text: qsTr("H offset: ") + imageRect.displayHoffset
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.cropping && !parent.loadingError
+        }
+        Text {
+            id: vOffsetText
             x: 300 * uiScale
             y: 15 * uiScale
             color: "white"
-            text: root.cropping ? qsTr("V offset: ") + imageRect.displayVoffset : "ISO " + paramManager.sensitivity
+            text: qsTr("V offset: ") + imageRect.displayVoffset
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !parent.loadingError
+            visible: root.cropping && !parent.loadingError
         }
+
         Rectangle {
             id: errorBox
             x: 200 * uiScale
@@ -1794,6 +1784,339 @@ SlimSplitView {
                 verticalAlignment: Text.AlignVCenter
             }
         }
+
+        //right-aligned stuff
+
+        Rectangle {
+            id: lensfunBox
+            anchors.right: leftButtonSpacer.left
+            y: 0 * uiScale
+            width: 350 * uiScale
+            height: active ? 400 * uiScale : 30 * uiScale
+            radius: 5 * uiScale
+            property bool active: false
+            color: active ? Colors.darkGray : "black"
+
+            ToolButton {
+                id: lensFunMenuButton
+                x: 0 * uiScale
+                y: 0 * uiScale
+                tooltipText: qsTr("Select the lens that was used in order to use lens corrections.\n\nType the lens name in the box to the right. Normally it will only search lenses for the camera's mount, but if the first character is a backslash (\"\\\") then it will search lenses from all mounts.\n\nDouble-click a lens to select it.")
+                Image {
+                    id: lensFunMenuButtonImage
+                    width: 14 * uiScale
+                    height: 14 * uiScale
+                    anchors.centerIn: parent
+                    source: "qrc:///icons/uparrow.png"
+                    antialiasing: true
+                    rotation: lensfunBox.active ? 0 : 180
+                }
+                onTriggered: {
+                    lensfunBox.active = !lensfunBox.active
+                }
+                Component.onCompleted: {
+                    lensFunMenuButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+
+            Rectangle {
+                id: textEntryRect
+                color: "black"
+                x: 32 * uiScale
+                y: 3 * uiScale
+                width: parent.width - 36*uiScale
+                height: 24 * uiScale
+                property string selectedLens: paramManager.lensfunName
+                onSelectedLensChanged: {
+                    paramManager.lensfunName = selectedLens
+                    paramManager.writeback()
+                }
+                Connections {
+                    target: paramManager
+                    onLensfunNameChanged: {
+                        textEntryRect.selectedLens = paramManager.lensfunName
+                    }
+                }
+
+                Text {
+                    id: selectedLensText
+                    x: 3 * uiScale
+                    y: 3 * uiScale
+                    width: parent.width-2*x
+                    height: parent.height-2*y
+                    color: "white"
+                    font.pixelSize: 12.0 * uiScale
+                    clip: true
+                    visible: !lensfunBox.active
+                    text: (parent.selectedLens == "") ? "No lens selected" : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
+                }
+
+                MouseArea {
+                    id: textEntryMouseArea
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    enabled: !lensfunBox.active
+                    onClicked: {
+                        lensfunBox.active = true
+                        lensFilterBox.forceActiveFocus()
+                    }
+                }
+
+                TextInput {
+                    id: lensFilterBox
+                    x: 3 * uiScale
+                    y: 3 * uiScale
+                    width: parent.width - 2*x - 30 * uiScale
+                    height: parent.height - 2*y
+                    color: "white"
+                    selectByMouse: true
+                    cursorVisible: focus
+                    font.pixelSize: 12.0 * uiScale
+                    clip: true
+                    visible: lensfunBox.active
+                    onTextChanged: {
+                        lensModel.update(paramManager.model, lensFilterBox.text)
+                    }
+                    Connections {
+                        target: paramManager
+                        onExifLensNameChanged: {
+                            lensFilterBox.text = paramManager.exifLensName
+                        }
+                    }
+                }
+            }
+            ToolButton {
+                id: lensFunResetButton
+                x: parent.width - 30*uiScale
+                y: 0 * uiScale
+                visible: lensfunBox.active
+                tooltipText: qsTr("Reset selected lens back to default and sets search box back to EXIF-derived lens name.")
+                Image {
+                    width: 14 * uiScale
+                    height: 14 * uiScale
+                    anchors.centerIn: parent
+                    source: "qrc:///icons/refresh.png"
+                    antialiasing: true
+                }
+                onTriggered: {
+                    lensFilterBox.text = paramManager.exifLensName
+                    textEntryRect.selectedLens = paramManager.defLensfunName
+                    paramManager.resetLensfunName()
+                    paramManager.writeback()
+                }
+                Component.onCompleted: {
+                    lensFunResetButton.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+            ListView {
+                id: lensListBox
+                x: 3 * uiScale
+                y: 33 * uiScale
+                width: parent.width - 6*uiScale
+                height: parent.height - 66*uiScale
+                visible: lensfunBox.active
+                orientation: ListView.Vertical
+                spacing: 3 * uiScale
+                clip: true
+                delegate: Rectangle {
+                    id: lensListDelegate
+                    width: lensListBox.width - 6 * uiScale
+                    height: 40 * uiScale
+                    radius: 5 * uiScale
+                    color: (lensName === textEntryRect.selectedLens) ? Colors.darkGrayH : Colors.darkGrayL
+                    property string lensMake: make
+                    property string fullLensName: model
+                    property string lensName: fullLensName.charAt(0) === "\\" ? fullLensName.slice(1) : fullLensName
+                    property int matchScore: score
+                    Text {
+                        id: lensNameText
+                        x: 5 * uiScale
+                        y: 5 * uiScale
+                        width: parent.width - 10*uiScale
+                        height: 20 * uiScale
+                        color: "white"
+                        elide: Text.ElideMiddle
+                        text: (parent.lensMake.length===0) ? parent.lensName : (parent.lensName.startsWith(parent.lensMake) ? parent.lensName : (parent.lensMake + " " + parent.lensName))
+                    }
+                    Text {
+                        id: lensScoreText
+                        x: 5 * uiScale
+                        y: 20 * uiScale
+                        width: parent.width - 10*uiScale
+                        height: 20 * uiScale
+                        color: "white"
+                        text: qsTr("Search fit score: ") + parent.matchScore
+                    }
+                    MouseArea {
+                        id: lensSelectMouseArea
+                        anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton
+                        onClicked: {
+                            textEntryRect.selectedLens = parent.fullLensName
+                        }
+                        onDoubleClicked: {
+                            textEntryRect.selectedLens = parent.fullLensName
+                            lensfunBox.active = false
+                        }
+                    }
+                }
+
+                Component.onCompleted: {
+                    lensListBox.model = lensModel
+                }
+            }
+            ToolButton {
+                id: savePreferredLens
+                x: 0 * uiScale
+                y: parent.height - 30 * uiScale;
+                width: parent.width/2
+                visible: lensfunBox.active
+                text: qsTr("Remember preferred lens")
+                tooltipText: qsTr("Use the selected lens as default for all future photos taken with the same camera and lens combination.\n\nThis also remembers the currently selected lens corrections.")
+                onTriggered: {
+                    //store exif camera, exif lens name, and lensfun lens name in database, plus preferred corrections
+                    paramManager.setLensPreferences()
+                }
+                Component.onCompleted: {
+                    savePreferredLens.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+            ToolButton {
+                id: forgetPreferredLens
+                x: parent.width/2
+                y: parent.height - 30 * uiScale;
+                width: parent.width/2
+                visible: lensfunBox.active
+                text: qsTr("Forget preferred lens")
+                tooltipText: qsTr("Clear the default lens for photos taken with the same camera and lens combination.")
+                onTriggered: {
+                    //clear exif camera, exif lens name, and lensfun lens name in database
+                    paramManager.eraseLensPreferences()
+                }
+                Component.onCompleted: {
+                    forgetPreferredLens.tooltipWanted.connect(root.tooltipWanted)
+                }
+                uiScale: root.uiScale
+            }
+        }
+
+        Item {
+            id: leftButtonSpacer
+            anchors.right: backgroundBrightness.left
+            y: 0 * uiScale
+            width: 2 * uiScale
+            height: 2 * uiScale
+        }
+        ToolButton {
+            id: backgroundBrightness
+            anchors.right: crop.left
+            y: 0 * uiScale
+            tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: "qrc:///icons/brightness.png"
+                antialiasing: true
+            }
+            onTriggered: {
+                if (photoBox.backgroundColor == 0) {
+                    photoBox.backgroundColor = 1
+                } else if (photoBox.backgroundColor == 1) {
+                    photoBox.backgroundColor = 2
+                } else {
+                    photoBox.backgroundColor = 0
+                }
+            }
+            Component.onCompleted: {
+                backgroundBrightness.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
+            id: crop
+            anchors.right: rotateLeft.left
+            y: 0 * uiScale
+            notDisabled: root.imageReady
+            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: root.cropping ? "qrc:///icons/cropactive.png" : "qrc:///icons/crop.png"
+                antialiasing: true
+                opacity: crop.notDisabled ? 1 : 0.5
+            }
+            onTriggered: {
+                if (!root.cropping) {
+                    filmProvider.disableThumbnailWrite()
+                    root.requestingCropping = true
+                } else {
+                    filmProvider.enableThumbnailWrite()
+                    root.cancelCropping = false
+                    root.requestingCropping = false
+                }
+            }
+            Component.onCompleted: {
+                crop.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
+            id: rotateLeft
+            anchors.right: rotateRight.left
+            y: 0 * uiScale
+            tooltipText: qsTr("Rotate image 90 degrees left.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: "qrc:///icons/rotateleft.png"
+                antialiasing: true
+            }
+            onTriggered: {
+                paramManager.rotateLeft()
+            }
+            Component.onCompleted: {
+                rotateLeft.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
+            id: rotateRight
+            anchors.right: rightSpacer.left
+            y: 0 * uiScale
+            tooltipText: qsTr("Rotate image 90 degrees right.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: "qrc:///icons/rotateleft.png"
+                mirror: true
+                antialiasing: true
+            }
+            onTriggered: {
+                paramManager.rotateRight()
+            }
+            Component.onCompleted: {
+                rotateRight.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        Item {
+            id: rightSpacer
+            anchors.right: parent.right
+            y: 0 * uiScale
+            width: 2 * uiScale
+            height: 2 * uiScale
+        }
+
         Connections {
             target: paramManager
             onFileError: {

@@ -42,12 +42,12 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.exec("PRAGMA user_version;");
     query.next();
     const int oldVersion = query.value(0).toInt();
-    if (oldVersion > 11)//=================================================================version check here!
+    if (oldVersion > 12)//=================================================================version check here!
     {
         std::cout << "Newer database format. Aborting." << std::endl;
         return DBSuccess::failure;
     }
-    else if (oldVersion < 11)//============================================================version check here!
+    else if (oldVersion < 12)//============================================================version check here!
     {
         std::cout << "Backing up old database" << std::endl;
         QFile file(dir.absoluteFilePath("filmulatorDB"));
@@ -137,6 +137,10 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTbwGmult real,"                         //38
                "ProcTbwBmult real,"                         //39
                "ProcTtoeBoundary real"                      //40
+               "ProcTlensfunName varchar,"                  //41
+               "ProcTlensfunCa integer,"                    //42
+               "ProcTlensfunVign integer,"                  //43
+               "ProcTlensfunDist integer"                   //44
                ");"
                );
 
@@ -173,12 +177,16 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProfTtemperature real,"                     //27
                "ProfTtint real,"                            //28
                "ProfTvibrance real,"                        //29
-               "ProfTsaturation real,"                      //30
-               "ProfTmonochrome integer,"                   //31
+               "ProfTsaturation real,"                      //30 rotation and 4x crop params
+               "ProfTmonochrome integer,"                   //31 (+5 to match ProcessingTable)
                "ProfTbwRmult real,"                         //32
                "ProfTbwGmult real,"                         //33
                "ProfTbwBmult real,"                         //34
-               "ProfTtoeBoundary real"                      //35
+               "ProfTtoeBoundary real,"                     //35
+               "ProfTlensfunName varchar,"                 //36
+               "ProfTlensfunCa integer,"                    //37
+               "ProfTlensfunVign integer,"                  //38
+               "ProfTlensfunDist integer"                   //39
                ");"
                );
 
@@ -194,11 +202,25 @@ DBSuccess setupDB(QSqlDatabase *db)
                ");"
                );
 
+    //Next, we make a table that stores preferred lens corrections.
+    //These will override the ProcT values if absent
+    query.exec("CREATE TABLE IF NOT EXISTS LensPrefs ("
+               "ExifCamera varchar, "
+               "ExifLens varchar, "
+               "LensfunLens varchar, "
+               "LensfunCa integer, "
+               "LensfunVign integer, "
+               "LensfunDist integer, "
+               "AutoCa integer, "
+               "PRIMARY KEY (ExifCamera, ExifLens)"
+               ");"
+               );
+
     //Now we set the default Default profile.
     query.prepare("REPLACE INTO ProfileTable values "
-                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3
-                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3
+                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
     //Name of profile; must be unique.
     query.bindValue(0, "Default");
     //Initial Developer Concentration
@@ -252,7 +274,7 @@ DBSuccess setupDB(QSqlDatabase *db)
     //dcraw highlight recovery parameter
     query.bindValue(25, 0); //highlightRecovery
     //Automatic CA correct switch
-    query.bindValue(26, 0); //caEnabled
+    query.bindValue(26, -1); //caEnabled | -1 indicates use lens preferences
     //Color temperature WB adjustment
     query.bindValue(27, 5200.0f); //temperature
     //Magenta/green tint WB adjustment
@@ -269,8 +291,12 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.bindValue(34, 0.07f); //bwBmult
     //How much to offset the exposure tone curve to the right while maintaining the toe
     query.bindValue(35, 0.0f); //toeBoundary
+    query.bindValue(36, "NoLens"); //lensfun lens
+    query.bindValue(37, -1); //lensfun CA - negative 1 indicates use preferences
+    query.bindValue(38, -1); //lensfun vignetting
+    query.bindValue(39, -1); //lensfun distortion
 
-    //Well, orientation obviously doesn't get a preset.
+    //Well, orientation and crop obviously don't get presets.
     query.exec();
 
     //Because older versions would erroneously overwrite the file usage count on setting a new location, we need to set them all to 1
@@ -412,6 +438,26 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProfileTable SET ProfTtoeBoundary = 0;");
         versionString = "PRAGMA user_version = 11;";
         std::cout << "Upgrading from old db version 10" << std::endl;
+        [[fallthrough]];
+    case 11:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunName;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunCa;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunVign;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunDist;");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunName = \"NoLens\";");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunCa    = -1");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunVign  = -1");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunDist  = -1");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunName;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunCa;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunVign;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunDist;");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunName = \"NoLens\";");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunCa    = -1");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunVign  = -1");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunDist  = -1");
+        versionString = "PRAGMA user_version = 12;";
+        std::cout << "Upgrading from old db version 11" << std::endl;
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

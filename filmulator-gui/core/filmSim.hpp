@@ -29,7 +29,7 @@
 #include <setjmp.h>
 #include <exiv2/exiv2.hpp>
 #include "lut.hpp"
-#include "libraw/libraw.h"
+#include <libraw/libraw.h>
 #include "matrix.hpp"
 #include <sys/time.h>
 #include "interface.h"
@@ -154,7 +154,7 @@ bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
                   Exiv2::ExifData exifData);
 
 bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
-                  Exiv2::ExifData exifData, int quality);
+                  Exiv2::ExifData exifData, int quality, bool writeExif=true);
 
 //Applies the hardcoded post-filmulation tonecurve to the image.
 float default_tonecurve( float input );

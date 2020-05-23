@@ -45,7 +45,9 @@ SOURCES += main.cpp \
     database/sqlModel.cpp \
     database/sqlInsertion.cpp \
     database/signalSwitchboard.cpp \
+    database/rawproc_lensfun/lensfun_dbupdate.cpp \
     ui/filmImageProvider.cpp \
+    ui/lensSelectModel.cpp \
     ui/parameterManager.cpp \
     ui/settings.cpp \
     ui/thumbWriteWorker.cpp \
@@ -106,7 +108,9 @@ HEADERS += \
     database/signalSwitchboard.h \
     database/sqlInsertion.h \
     database/sqlModel.h \
+    database/rawproc_lensfun/lensfun_dbupdate.h \
     ui/filmImageProvider.h \
+    ui/lensSelectModel.h \
     ui/parameterManager.h \
     ui/settings.h \
     ui/thumbWriteWorker.h \
@@ -130,7 +134,7 @@ unix:!macx {
 QMAKE_LFLAGS += -fopenmp
 }
 
-LIBS += -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess
+LIBS += -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess -llensfun -lcurl -larchive
 macx: {
 LIBS += -L /opt/local/lib /opt/local/lib/libomp.dylib
 }

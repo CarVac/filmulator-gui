@@ -1,6 +1,9 @@
 #include "parameterManager.h"
 #include "../database/database.hpp"
-#include "QFile"
+#include "../database/exifFunctions.h"
+#include <QFile>
+#include <QDir>
+#include <QStandardPaths>
 
 using std::min;
 using std::cout;
@@ -14,10 +17,34 @@ ParameterManager::ParameterManager() : QObject(0)
     //Load the defaults, copy to the parameters, there's no filename yet.
     loadDefaults(CopyDefaults::loadToParams, "");
 
+    //these aren't initialized by loadDefaults
+    s_caEnabled = 0;
+    s_lensfunName = "";
+    s_lensfunCa = 0;
+    s_lensfunVign = 0;
+    s_lensfunDist = 0;
+
     aperture = "0.0";
     exposureTime = "0.0";
-    filename = "N/A";
+    filename = "";
+    fullFilenameQstr = "";
     sensitivity = 0;
+    focalLength = 0;
+    make = "";
+    model = "";
+    exifLensName = "";
+    autoCaAvail = true;
+    lensfunCaAvail = true;
+    lensfunVignAvail = true;
+    lensfunDistAvail = true;
+    m_lensfunName = "";
+
+    //initialize lensfun db
+    QDir dir = QDir::home();
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator/version_2");
+    std::string stdstring = dirstr.toStdString();
+    ldb->Load(stdstring.c_str());
 
     validity = Valid::none;
 
@@ -136,6 +163,13 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     DemosaicParams demParams;
     demParams.caEnabled = m_caEnabled;
     demParams.highlights = m_highlights;
+    demParams.cameraName = model;
+    demParams.lensName = s_lensfunName;//we use the staging ones because they're always populated
+    demParams.lensfunCA = s_lensfunCa >= 1;
+    demParams.lensfunVignetting = s_lensfunVign >= 1;
+    demParams.lensfunDistortion = s_lensfunDist >= 1;
+    demParams.focalLength = focalLength;
+    demParams.fnumber = fnumber;
     std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
@@ -170,11 +204,12 @@ Valid ParameterManager::markDemosaicComplete()
     return validity;
 }
 
-void ParameterManager::setCaEnabled(bool caEnabled)
+void ParameterManager::setCaEnabled(int caEnabled)
 {
     if (!justInitialized)
     {
         QMutexLocker paramLocker(&paramMutex);
+        s_caEnabled = caEnabled;
         m_caEnabled = caEnabled;
         validity = min(validity, Valid::load);
         paramLocker.unlock();
@@ -195,6 +230,71 @@ void ParameterManager::setHighlights(int highlights)
         emit highlightsChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setHighlights"));
+    }
+}
+
+//The lensfun parameters need staging params because when they're loaded from the
+// preferences or automatched, you *don't* want them to be written back to the database
+
+void ParameterManager::setLensfunName(QString lensName)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        s_lensfunName = lensName;
+        m_lensfunName = lensName;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        emit lensfunNameChanged();
+        //We need to check what lens corrections are available based on the camera and lens
+        updateAvailability();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setLensfunName"));
+    }
+}
+
+void ParameterManager::setLensfunCa(int caEnabled)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        s_lensfunCa = caEnabled;
+        m_lensfunCa = caEnabled;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        emit lensfunCaChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setLensfunCa"));
+    }
+}
+
+void ParameterManager::setLensfunVign(int vignEnabled)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        s_lensfunVign = vignEnabled;
+        m_lensfunVign = vignEnabled;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        emit lensfunVignChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setLensfunVign"));
+    }
+}
+
+void ParameterManager::setLensfunDist(int distEnabled)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        s_lensfunDist = distEnabled;
+        m_lensfunDist = distEnabled;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        emit lensfunDistChanged();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setLensfunDist"));
     }
 }
 
@@ -1106,10 +1206,14 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTbwRmult, "                        //37
                   "ProcTbwGmult, "                        //38
                   "ProcTbwBmult, "                        //39
-                  "ProcTtoeBoundary) "                    //40
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4
-                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+                  "ProcTtoeBoundary, "                    //40
+                  "ProcTlensfunName, "                    //41
+                  "ProcTlensfunCa, "                      //42
+                  "ProcTlensfunVign, "                    //43
+                  "ProcTlensfunDist) "                    //44
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4
+                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -1151,6 +1255,10 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(38, m_bwGmult);
     query.bindValue(39, m_bwBmult);
     query.bindValue(40, m_toeBoundary);
+    query.bindValue(41, m_lensfunName);
+    query.bindValue(42, m_lensfunCa);
+    query.bindValue(43, m_lensfunVign);
+    query.bindValue(44, m_lensfunDist);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -1237,7 +1345,7 @@ void ParameterManager::selectImage(const QString imageID)
     QSqlDatabase db = getDB();
     QSqlQuery query(db);
     query.prepare("SELECT \
-                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength \
+                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength,FTcameraMake,FTcameraModel \
                   FROM FileTable WHERE FTfileID = ?;");
     query.bindValue(0, QVariant(tempString));
     query.exec();
@@ -1251,6 +1359,7 @@ void ParameterManager::selectImage(const QString imageID)
     nameCol = rec.indexOf("FTfilePath");
     if (-1 == nameCol) { std::cout << "paramManager FTfilePath" << endl; }
     QString name = query.value(nameCol).toString();
+    fullFilenameQstr = name;
     m_fullFilename = name.toStdString();
     filename = name.right(name.size() - name.lastIndexOf(QString("/")) - 1);
 
@@ -1263,6 +1372,7 @@ void ParameterManager::selectImage(const QString imageID)
         return;
     } else {
         emit filenameChanged();
+        emit fullFilenameQstrChanged();
     }
 
     nameCol = rec.indexOf("FTsensitivity");
@@ -1300,14 +1410,14 @@ void ParameterManager::selectImage(const QString imageID)
 
     nameCol = rec.indexOf("FTaperture");
     if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
-    float numAperture = query.value(nameCol).toFloat();
-    if (numAperture >= 8)
+    fnumber = query.value(nameCol).toFloat();
+    if (fnumber >= 8)
     {
-        aperture = QString::number(numAperture,'f',0);
+        aperture = QString::number(fnumber,'f',0);
     }
-    else //numAperture < 8
+    else //fnumber < 8
     {
-        aperture = QString::number(numAperture,'f',1);
+        aperture = QString::number(fnumber,'f',1);
     }
     emit apertureChanged();
 
@@ -1315,6 +1425,20 @@ void ParameterManager::selectImage(const QString imageID)
     if (-1 == nameCol) { std::cout << "paramManager FTfocalLength" << endl; }
     focalLength = query.value(nameCol).toFloat();
     emit focalLengthChanged();
+
+    nameCol = rec.indexOf("FTcameraMake");
+    if (-1 == nameCol) { std::cout << "paramManager FTcameraMake" << endl; }
+    make = query.value(nameCol).toString();
+    emit makeChanged();
+
+    nameCol = rec.indexOf("FTcameraModel");
+    if (-1 == nameCol) { std::cout << "paramManager FTcameraModel" << endl; }
+    model = query.value(nameCol).toString();
+    emit modelChanged();
+
+    exifLensName = exifLens(m_fullFilename);
+    cout << "parammanager exifLensName: " << exifLensName.toStdString() << endl;
+    emit exifLensNameChanged();
 
     //Copy all of the processing parameters from the db into this param manager.
     //First we check and see if it's new or not.
@@ -1338,11 +1462,137 @@ void ParameterManager::selectImage(const QString imageID)
         loadDefaults(CopyDefaults::loadOnlyDefaults, m_fullFilename);
     }
 
+    //Now that we have the database params m_, we need to set the d_ and s_ params accordingly
+
+    //We need to fill the d_ parameters with what they'd be as default:
+    // whatever's preferred, or if there's no preference, automatched.
+    //The s_ params will be set here, but overwritten if the m_ params are set.
+
+    //First check and see if it's in the table
+    query.prepare("SELECT COUNT(*) FROM LensPrefs  WHERE ExifCamera = ? AND ExifLens = ?;");
+    query.bindValue(0, model);
+    query.bindValue(1, exifLensName);
+    query.exec();
+    query.first();
+    const bool hasPreferences = (query.value(0).toInt() > 0);
+    if (hasPreferences)
+    {
+        cout << "Has lens preferences" << endl;
+        query.prepare("SELECT LensfunLens, LensfunCa, LensfunVign, LensfunDist, AutoCa FROM LensPrefs  WHERE ExifCamera = ? AND ExifLens = ?;");
+        query.bindValue(0, model);
+        query.bindValue(1, exifLensName);
+        query.exec();
+        query.first();
+
+        rec = query.record();
+
+        nameCol = rec.indexOf("LensfunLens");
+        if (-1 == nameCol) { std::cout << "paramManager LensfunLens" << endl; }
+        d_lensfunName = query.value(nameCol).toString();
+        s_lensfunName = d_lensfunName;
+
+        nameCol = rec.indexOf("LensfunCa");
+        if (-1 == nameCol) { std::cout << "paramManager LensfunCa" << endl; }
+        d_lensfunCa = query.value(nameCol).toInt();
+        s_lensfunCa = d_lensfunCa;
+
+        nameCol = rec.indexOf("LensfunVign");
+        if (-1 == nameCol) { std::cout << "paramManager LensfunVign" << endl; }
+        d_lensfunVign = query.value(nameCol).toInt();
+        s_lensfunVign = d_lensfunVign;
+
+        nameCol = rec.indexOf("LensfunDist");
+        if (-1 == nameCol) { std::cout << "paramManager LensfunDist" << endl; }
+        d_lensfunDist = query.value(nameCol).toInt();
+        s_lensfunDist = d_lensfunDist;
+
+        nameCol = rec.indexOf("AutoCa");
+        if (-1 == nameCol) { std::cout << "paramManager AutoCa" << endl; }
+        d_caEnabled = query.value(nameCol).toInt();
+        s_caEnabled = d_caEnabled;
+    } else {
+        //No preferences
+        cout << "Has no lens preferences" << endl;
+        //If there's a match for the exif lens, use that
+        d_lensfunName = identifyLens(m_fullFilename);
+        s_lensfunName = d_lensfunName;
+        cout << "Found lens: " << d_lensfunName.toStdString() << endl;
+        //There are no global preferences, so we turn off all the corrections
+        d_caEnabled = 0;
+        s_caEnabled = 0;
+        d_lensfunCa = 0;
+        s_lensfunCa = 0;
+        d_lensfunVign = 0;
+        s_lensfunVign = 0;
+        d_lensfunDist = 0;
+        s_lensfunDist = 0;
+    }
+
+    //Now, if the m_ params are set, we overwrite the s_ params accordingly
+    if (m_lensfunName != "NoLens")
+    {
+        s_lensfunName = m_lensfunName;
+        cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
+        if (m_caEnabled > -1)
+        {
+            s_caEnabled = m_caEnabled;
+        }
+        if (m_lensfunCa > -1)
+        {
+            s_lensfunCa = m_lensfunCa;
+        }
+        if (m_lensfunVign > -1)
+        {
+            s_lensfunVign = m_lensfunVign;
+        }
+        if (m_lensfunDist > -1)
+        {
+            s_lensfunDist = m_lensfunDist;
+        }
+    } else {
+        //If there's no matching lens, disable all the lensfun corrections.
+        cout << "No lens found" << endl;
+        //s_caEnabled can stay whatever it was because it doesn't depend on lensfun
+        s_lensfunCa = 0;
+        s_lensfunVign = 0;
+        s_lensfunDist = 0;
+    }
+    cout << "Default lens: " << d_lensfunName.toStdString() << endl;
+
+    //Finally, we need to change the availability for the various lens corrections
+    //First is Auto CA Correct, which only works with Bayer CFAs.
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+    libraw->open_file(m_fullFilename.c_str());
+    bool isSraw = libraw->is_sraw();
+    cout << "Is sraw: " << isSraw << endl;
+    bool isWeird = libraw->COLOR(0,0)==6;
+    cout << "Is weird: " << isWeird << endl;
+    int maxXtrans = 0;
+    for (int i=0; i<6; i++)
+    {
+        for (int j=0; j<6; j++)
+        {
+            maxXtrans = max(maxXtrans,int(libraw->imgdata.idata.xtrans[i][j]));
+        }
+    }
+    bool isXtrans = maxXtrans > 0;
+    cout << "Is xtrans: " << isXtrans << endl;
+    autoCaAvail = !isSraw && !isWeird && !isXtrans;
+    cout << "Auto CA is available: " << autoCaAvail << endl;
+    emit autoCaAvailChanged();
+
+    //Then is lensfun, which depends on the camera and lens.
+    updateAvailability();
+
     paramLocker.unlock();
 
     //Emit that the things have changed.
     emit caEnabledChanged();
     emit highlightsChanged();
+    emit lensfunNameChanged();
+    emit lensfunCaChanged();
+    emit lensfunVignChanged();
+    emit lensfunDistChanged();
     emit exposureCompChanged();
     emit temperatureChanged();
     emit tintChanged();
@@ -1384,6 +1634,10 @@ void ParameterManager::selectImage(const QString imageID)
 
     emit defCaEnabledChanged();
     emit defHighlightsChanged();
+    emit defLensfunNameChanged();
+    emit defLensfunCaChanged();
+    emit defLensfunVignChanged();
+    emit defLensfunDistChanged();
     emit defExposureCompChanged();
     emit defTemperatureChanged();
     emit defTintChanged();
@@ -1455,17 +1709,15 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
         m_jpegIn = false;
     }
 
-    //First is caEnabled.
-    nameCol = rec.indexOf("ProfTcaEnabled");
-    if (-1 == nameCol) { std::cout << "paramManager ProfTcaEnabled" << endl; }
-    const bool temp_caEnabled = query.value(nameCol).toBool();
-    d_caEnabled = temp_caEnabled;
+    //First is caEnabled. See the lensfun stuff for explanation as to why we don't write d_
     if (copyDefaults == CopyDefaults::loadToParams)
     {
-        m_caEnabled = temp_caEnabled;
+        nameCol = rec.indexOf("ProfTcaEnabled");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTcaEnabled" << endl; }
+        m_caEnabled = query.value(nameCol).toInt();
     }
 
-    //Next is highlights (highlight recovery)
+    //Highlights (highlight recovery)
     nameCol = rec.indexOf("ProfThighlightRecovery");
     if (-1 == nameCol) { std::cout << "paramManager ProfThighlightRecovery" << endl; }
     const int temp_highlights = query.value(nameCol).toInt();
@@ -1473,6 +1725,33 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_highlights = temp_highlights;
+    }
+
+    //The lens correction parameters don't actually have the defaults loaded into the d_ params.
+    //If it's "loadtoparams" then we copy them only into the m_ params,
+    // so that they can be written back to the database.
+    //Otherwise, the m_ params are filled from the database by loadParams(),
+    // the d_ params are filled from the lens prefs or by automatching,
+    // and s_ params are filled from either database, lens prefs, or automatching in that order.
+    //So this is only needed if it's "loadtoparams", otherwise do nothing for lens corrections.
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        //Lensfun lens name
+        nameCol = rec.indexOf("ProfTlensfunName");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTlensfunName" << endl; }
+        m_lensfunName = query.value(nameCol).toString();
+        //Lensfun CA correction
+        nameCol = rec.indexOf("ProfTlensfunCa");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTlensfunCa" << endl; }
+        m_lensfunCa = query.value(nameCol).toInt();
+        //Lensfun vignetting correction
+        nameCol = rec.indexOf("ProfTlensfunVign");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTlensfunVign" << endl; }
+        m_lensfunVign = query.value(nameCol).toInt();
+        //Lensfun distortion correction
+        nameCol = rec.indexOf("ProfTlensfunDist");
+        if (-1 == nameCol) { std::cout << "paramManager ProfTlensfunDist" << endl; }
+        m_lensfunDist = query.value(nameCol).toInt();
     }
 
     //Exposure compensation
@@ -1836,7 +2115,7 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     }
     else
     {
-        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(absFilePath);
+        auto image = Exiv2::ImageFactory::open(absFilePath);
         image->readMetadata();
         Exiv2::ExifData exifData = image->exifData();
         d_rotation = exifDefaultRotation(exifData);
@@ -1878,10 +2157,10 @@ void ParameterManager::loadParams(QString imageID)
     query.first();
     rec = query.record();
 
-    //First is caEnabled.
+    //First is auto CA correct.
     nameCol = rec.indexOf("ProcTcaEnabled");
     if (-1 == nameCol) { std::cout << "paramManager ProcTcaEnabled" << endl; }
-    const bool temp_caEnabled = query.value(nameCol).toBool();
+    const int temp_caEnabled = query.value(nameCol).toInt();
     if (temp_caEnabled != m_caEnabled)
     {
         //cout << "ParameterManager::loadParams caEnabled" << endl;
@@ -1897,6 +2176,50 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams highlights" << endl;
         m_highlights = temp_highlights;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun lens name
+    nameCol = rec.indexOf("ProcTlensfunName");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunName" << endl; }
+    const QString temp_lensfunName = query.value(nameCol).toString();
+    if (temp_lensfunName != m_lensfunName)
+    {
+        //cout << "ParameterManager::loadParams lensfunName" << endl;
+        m_lensfunName = temp_lensfunName;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun CA correction
+    nameCol = rec.indexOf("ProcTlensfunCa");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunCa" << endl; }
+    const int temp_lensfunCa = query.value(nameCol).toInt();
+    if (temp_lensfunCa != m_caEnabled)
+    {
+        //cout << "ParameterManager::loadParams lensfunCa" << endl;
+        m_lensfunCa = temp_lensfunCa;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun vignetting correction
+    nameCol = rec.indexOf("ProcTlensfunVign");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunVign" << endl; }
+    const int temp_lensfunVign = query.value(nameCol).toInt();
+    if (temp_lensfunVign != m_lensfunVign)
+    {
+        //cout << "ParameterManager::loadParams lensfunVign" << endl;
+        m_lensfunVign = temp_lensfunVign;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun distortion correction
+    nameCol = rec.indexOf("ProcTlensfunDist");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunDist" << endl; }
+    const int temp_lensfunDist = query.value(nameCol).toInt();
+    if (temp_lensfunDist != m_lensfunDist)
+    {
+        //cout << "ParameterManager::loadParams lensfunDist" << endl;
+        m_lensfunDist = temp_lensfunDist;
         validity = min(validity, Valid::load);
     }
 
@@ -2322,6 +2645,9 @@ void ParameterManager::loadParams(QString imageID)
 //This clones parameters from another manager.
 //It's intended to be used for dual pipelines and dual parametermanagers
 //It's a slot that updates stuff when the other param manager gets edited.
+//The other param manager emits updateClone.
+//
+//This is very similar to selectImage but it doesn't have to worry about defaults at all
 void ParameterManager::cloneParams(ParameterManager * sourceParams)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
@@ -2348,7 +2674,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     QSqlDatabase db = getDB();
     QSqlQuery query(db);
     query.prepare("SELECT \
-                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength \
+                  FTfilePath,FTsensitivity,FTexposureTime,FTaperture,FTfocalLength,FTcameraMake,FTcameraModel \
                   FROM FileTable WHERE FTfileID = ?;");
     query.bindValue(0, QVariant(tempString));
     query.exec();
@@ -2401,14 +2727,14 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
 
     nameCol = rec.indexOf("FTaperture");
     if (-1 == nameCol) { std::cout << "paramManager FTaperture" << endl; }
-    float numAperture = query.value(nameCol).toFloat();
-    if (numAperture >= 8)
+    fnumber = query.value(nameCol).toFloat();
+    if (fnumber >= 8)
     {
-        aperture = QString::number(numAperture,'f',0);
+        aperture = QString::number(fnumber,'f',0);
     }
-    else //numAperture < 8
+    else //fnumber < 8
     {
-        aperture = QString::number(numAperture,'f',1);
+        aperture = QString::number(fnumber,'f',1);
     }
     emit apertureChanged();
 
@@ -2416,6 +2742,23 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     if (-1 == nameCol) { std::cout << "paramManager FTfocalLength" << endl; }
     focalLength = query.value(nameCol).toFloat();
     emit focalLengthChanged();
+
+    nameCol = rec.indexOf("FTcameraMake");
+    if (-1 == nameCol) { std::cout << "paramManager FTcameraMake" << endl; }
+    make = query.value(nameCol).toString();
+    emit makeChanged();
+
+    nameCol = rec.indexOf("FTcameraModel");
+    if (-1 == nameCol) { std::cout << "paramManager FTcameraModel" << endl; }
+    model = query.value(nameCol).toString();
+    emit modelChanged();
+
+    exifLensName = exifLens(m_fullFilename);
+    emit exifLensNameChanged();
+
+    //Now instead of loading the parameters from the database,
+    // which might not have been written back to yet, we
+    // copy from the sourceParams.
 
     //tiffIn should be false.
     const bool temp_tiffIn = sourceParams->getTiffIn();
@@ -2434,11 +2777,11 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     }
 
     //Then is caEnabled.
-    const bool temp_caEnabled = sourceParams->getCaEnabled();
-    if (temp_caEnabled != m_caEnabled)
+    const int temp_caEnabled = sourceParams->getCaEnabled();
+    if (temp_caEnabled != s_caEnabled)
     {
         //cout << "ParameterManager::cloneParams caEnabled" << endl;
-        m_caEnabled = temp_caEnabled;
+        s_caEnabled = temp_caEnabled;
         validity = min(validity, Valid::load);
     }
 
@@ -2448,6 +2791,42 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams highlights" << endl;
         m_highlights = temp_highlights;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun lens name
+    const QString temp_lensfunName = sourceParams->getLensfunName();
+    if (temp_lensfunName != s_lensfunName)
+    {
+        //cout << "ParameterManager::cloneParams lensfunName" << endl;
+        s_lensfunName = temp_lensfunName;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun CA correction
+    const int temp_lensfunCa = sourceParams->getLensfunCa();
+    if (temp_lensfunCa != s_lensfunCa)
+    {
+        //cout << "ParameterManager::cloneParams lensfunCa" << endl;
+        s_lensfunCa = temp_lensfunCa;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun vignetting correction
+    const int temp_lensfunVign = sourceParams->getLensfunVign();
+    if (temp_lensfunVign != s_lensfunVign)
+    {
+        //cout << "ParameterManager::cloneParams lensfunVign" << endl;
+        s_lensfunVign = temp_lensfunVign;
+        validity = min(validity, Valid::load);
+    }
+
+    //Lensfun distortion correction
+    const int temp_lensfunDist = sourceParams->getLensfunDist();
+    if (temp_lensfunDist != s_lensfunDist)
+    {
+        //cout << "ParameterManager::cloneParams lensfunDist" << endl;
+        s_lensfunDist = temp_lensfunDist;
         validity = min(validity, Valid::load);
     }
 
@@ -2830,6 +3209,9 @@ void ParameterManager::paramChangeWrapper(QString source)
 }
 
 //This is for copying and pasting.
+//TODO: think about what lens corrections means for copy/paste
+//probably:
+// copy on/off preferences, not correction parameters nor lens name
 void ParameterManager::copyAll(QString fromImageID)
 {
     std::cout << "copy all" << std::endl;
@@ -2864,3 +3246,119 @@ void ParameterManager::paste(QString toImageID)
     }
 }
 
+void ParameterManager::updateAvailability()
+{
+    cout << "Updating availability" << endl;
+    std::string camModel = model.toStdString();
+    const lfCamera * camera = NULL;
+    const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
+    if (cameraList)
+    {
+        //If the lens name starts with a backslash, don't filter by camera
+        QString temp_lensfunName = s_lensfunName;
+        if (temp_lensfunName.front() == "\\")
+        {
+            temp_lensfunName.remove(0,1);
+        } else {
+            camera = cameraList[0];
+        }
+        const float cropFactor = cameraList[0]->CropFactor;
+        const std::string lensModel = temp_lensfunName.toStdString();
+        if (s_lensfunName.length() > 0)
+        {
+            const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
+            if (lensList)
+            {
+                //Check if sensor is monochrome
+                auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
+                exifImage->readMetadata();
+                Exiv2::ExifData exifData = exifImage->exifData();
+                std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
+                bool isMonochrome = wb.length()==0;
+
+                const int availableMods = lensList[0]->AvailableModifications(cropFactor);
+                lensfunCaAvail   = (availableMods & LF_MODIFY_TCA) && !isMonochrome;
+                lensfunVignAvail = availableMods & LF_MODIFY_VIGNETTING;
+                lensfunDistAvail = availableMods & LF_MODIFY_DISTORTION;
+                emit lensfunCaAvailChanged();
+                emit lensfunVignAvailChanged();
+                emit lensfunDistAvailChanged();
+            } else {
+                //If there is no matching lens, we can't do any corrections
+                //This shouldn't really happen because either it'll be empty or
+                // there will be a real lens selected by the UI.
+                lensfunCaAvail = false;
+                lensfunVignAvail = false;
+                lensfunDistAvail = false;
+                emit lensfunCaAvailChanged();
+                emit lensfunVignAvailChanged();
+                emit lensfunDistAvailChanged();
+            }
+            lf_free(lensList);
+        } else {
+            //If there is no lens selected, we can't do any corrections
+            lensfunCaAvail = false;
+            lensfunVignAvail = false;
+            lensfunDistAvail = false;
+            emit lensfunCaAvailChanged();
+            emit lensfunVignAvailChanged();
+            emit lensfunDistAvailChanged();
+        }
+    } else {
+        //If we don't know the crop factor, we can't do any corrections
+        lensfunCaAvail = false;
+        lensfunVignAvail = false;
+        lensfunDistAvail = false;
+        emit lensfunCaAvailChanged();
+        emit lensfunVignAvailChanged();
+        emit lensfunDistAvailChanged();
+    }
+    lf_free(cameraList);
+}
+
+void ParameterManager::setLensPreferences()
+{
+    QSqlQuery query;
+    query.exec("BEGIN TRANSACTION;");
+
+    //First we delete anything matching
+    query.prepare("DELETE FROM LensPrefs WHERE ExifCamera = ? AND ExifLens = ?");
+    query.bindValue(0, model);
+    query.bindValue(1, exifLensName);
+    query.exec();
+
+    //Now we insert a fresh entry
+    query.prepare("INSERT INTO LensPrefs ("
+                  "ExifCamera, "
+                  "ExifLens, "
+                  "LensfunLens, "
+                  "LensfunCa, "
+                  "LensfunVign, "
+                  "LensfunDist, "
+                  "AutoCa) "
+                  "VALUES (?,?,?,?,?,?,?);");
+    query.bindValue(0, model);
+    query.bindValue(1, exifLensName);
+    query.bindValue(2, s_lensfunName);
+    query.bindValue(3, s_lensfunCa);
+    query.bindValue(4, s_lensfunVign);
+    query.bindValue(5, s_lensfunDist);
+    query.bindValue(6, s_caEnabled);
+    query.exec();
+
+    query.exec("END TRANSACTION;");
+}
+
+void ParameterManager::eraseLensPreferences()
+{
+    QSqlQuery query;
+    query.exec("BEGIN TRANSACTION;");
+
+    //All we do is delete anything matching
+    query.prepare("DELETE FROM LensPrefs WHERE ExifCamera = ? AND ExifLens = ?");
+    query.bindValue(0, model);
+    query.bindValue(1, exifLensName);
+    query.exec();
+
+    query.exec("END TRANSACTION;");
+}

@@ -23,9 +23,9 @@ steps:
   - script: |
       %MSYS_PAC% --noconfirm -Syu
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
-      tar gzip nano make diffutils intltool git cmake ^
+      tar gzip nano make diffutils intltool git cmake libcurl-devel glib2-devel msys2-runtime-devel ^
       mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
-      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5}
+      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,curl,libarchive}
     displayName: Install Dependencies
   - script: |
       mkdir librt
@@ -40,8 +40,21 @@ steps:
       %MSYS_BASH% -c "make install"
     displayName: build librtprocess
   - script: |
+      mkdir lensfun
+      cd lensfun
+      git clone https://github.com/lensfun/lensfun lf
+      echo "done clone"
+      mkdir buildDir
+      cd buildDir
+      set HOME=.
+      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      %MSYS_BASH% -c "make -j2"
+      %MSYS_BASH% -c "make install"
+    displayName: build lensfun
+  - script: |
       mkdir build
       pushd build
+      ls
       mkdir installed
       set INSTALLDIR=installed
       set HOME=.
@@ -51,12 +64,19 @@ steps:
       popd
     displayName: build filmulator
   - script: |
-      set listdll=libbz2-1.dll,libdouble-conversion.dll,libexiv2.dll,libexpat-1.dll,libfreetype-6.dll,libgcc_s_seh-1.dll,libglib-2.0-0.dll,libgomp-1.dll,libgraphite2.dll,libharfbuzz-0.dll,libiconv-2.dll,libicudt*.dll,libicuin*.dll,libicuuc*.dll,libintl-8.dll,libjasper-4.dll,libjpeg-8.dll,liblcms2-2.dll,liblzma-5.dll,libpcre-1.dll,libpcre2-16-0.dll,libpng16-16.dll,libraw_r-*.dll,librtprocess.dll,libstdc++-6.dll,libtiff-5.dll,libwinpthread-1.dll,libzstd.dll,zlib1.dll
+      set listdll=libarchive-13.dll,libbrotlicommon.dll,libbrotlidec.dll,libbz2-1.dll,libcrypto-1_1-x64.dll,libcurl-4.dll,libdouble-conversion.dll,libexiv2.dll,libexpat-1.dll,libfreetype-6.dll,libgcc_s_seh-1.dll,libglib-2.0-0.dll,libgomp-1.dll,libgraphite2.dll,libharfbuzz-0.dll,libiconv-2.dll,libicudt*.dll,libicuin*.dll,libicuuc*.dll,libidn2-0.dll,libintl-8.dll,libjasper-4.dll,libjpeg-8.dll,liblensfun.dll,liblcms2-2.dll,liblz4.dll,liblzma-5.dll,libnghttp2-14.dll,libpcre-1.dll,libpcre2-16-0.dll,libpng16-16.dll,libpsl-5.dll,libraw_r-*.dll,librtprocess.dll,libssh2-1.dll,libssl-1_1-x64.dll,libstdc++-6.dll,libtiff-5.dll,libunistring-2.dll,libwinpthread-1.dll,libzstd.dll,zlib1.dll
       cd build/installed/bin
       set PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem
       set HOME=.
       %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
-      %MSYS2_ROOT%/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe
+      #%MSYS_BASH% -c "/usr/bin/wget.exe http://tripleboot.org/Uploads/windeployqt64releaseonly.zip"
+      #%MSYS_BASH% -c "/usr/bin/unzip.exe windeployqt64releaseonly.zip"
+      #%MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /bin/windeployqtreleaseonly.exe"
+      #%MSYS_BASH% -c "/bin/windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #
+      #%MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #apparently removing --release might make it work with qt 5.14?
+      %MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --qmldir qml/filmulator-gui filmulator.exe"
     displayName: package dlls
   - script: |
       set HOME=.

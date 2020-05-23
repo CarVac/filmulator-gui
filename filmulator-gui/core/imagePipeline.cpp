@@ -1,4 +1,8 @@
 #include "imagePipeline.h"
+#include "../database/exifFunctions.h"
+#include <QDir>
+#include <QStandardPaths>
+
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
     cache = cacheIn;
@@ -95,6 +99,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #define RAW3  image_processor->imgdata.rawdata.color3_image
 #define RAW4  image_processor->imgdata.rawdata.color4_image
 #define RAWF  image_processor->imgdata.rawdata.float_image
+#define LENS  image_processor->imgdata.lens
+#define MAKER image_processor->imgdata.lens.makernotes
 
             if (image_processor->is_floating_point())
             {
@@ -125,17 +131,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //get color matrix
             for (int i = 0; i < 3; i++)
             {
-                cout << "camToRGB: ";
+                //cout << "camToRGB: ";
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
-                    cout << camToRGB[i][j] << " ";
+                    //cout << camToRGB[i][j] << " ";
                 }
-                cout << endl;
+                //cout << endl;
             }
             for (int i = 0; i < 3; i++)
             {
-                cout << "camToRGB4: ";
+                //cout << "camToRGB4: ";
                 for (int j = 0; j < 4; j++)
                 {
                     camToRGB4[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
@@ -149,9 +155,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     {
                         camToRGB4[i][j] = camToRGB4[i][1];
                     }
-                    cout << camToRGB4[i][j] << " ";
+                    //cout << camToRGB4[i][j] << " ";
                 }
-                cout << endl;
+                //cout << endl;
             }
             rCamMul = image_processor->imgdata.color.cam_mul[0];
             gCamMul = image_processor->imgdata.color.cam_mul[1];
@@ -180,17 +186,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             int blackRow = int(image_processor->imgdata.color.cblack[4]);
             int blackCol = int(image_processor->imgdata.color.cblack[5]);
 
-            cout << "BLACKPOINT" << endl;
-            cout << blackpoint << endl;
-            cout << "color channel blackpoints" << endl;
-            cout << rBlack << endl;
-            cout << gBlack << endl;
-            cout << bBlack << endl;
-            cout << g2Black << endl;
-            cout << "block-based blackpoint dimensions:" << endl;
-            cout << image_processor->imgdata.color.cblack[4] << endl;
-            cout << image_processor->imgdata.color.cblack[5] << endl;
-            cout << "block-based blackpoint: " << endl;
+            //cout << "BLACKPOINT" << endl;
+            //cout << blackpoint << endl;
+            //cout << "color channel blackpoints" << endl;
+            //cout << rBlack << endl;
+            //cout << gBlack << endl;
+            //cout << bBlack << endl;
+            //cout << g2Black << endl;
+            //cout << "block-based blackpoint dimensions:" << endl;
+            //cout << image_processor->imgdata.color.cblack[4] << endl;
+            //cout << image_processor->imgdata.color.cblack[5] << endl;
+            //cout << "block-based blackpoint: " << endl;
             uint maxBlockBlackpoint = 0;
             if (blackRow > 0 && blackCol > 0)
             {
@@ -199,12 +205,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int j = 0; j < blackCol; j++)
                     {
                         maxBlockBlackpoint = max(maxBlockBlackpoint, image_processor->imgdata.color.cblack[6 + i*blackCol + j]);
-                        cout << image_processor->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
+                        //cout << image_processor->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
                     }
-                    cout << endl;
+                    //cout << endl;
                 }
             }
-            cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
+            //cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
 
             //get white saturation values
             cout << "WHITE SATURATION ========================================================" << endl;
@@ -223,7 +229,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //bayer only for now
             for (unsigned int i=0; i<2; i++)
             {
-                cout << "bayer: ";
+                //cout << "bayer: ";
                 for (unsigned int j=0; j<2; j++)
                 {
                     cfa[i][j] = unsigned(image_processor->COLOR(int(i), int(j)));
@@ -231,30 +237,29 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     {
                         cfa[i][j] = 1;
                     }
-                    cout << cfa[i][j];
+                    //cout << cfa[i][j];
                 }
-                cout << endl;
+                //cout << endl;
             }
 
             //get xtrans color filter array
             maxXtrans = 0;
             for (int i=0; i<6; i++)
             {
-                cout << "xtrans: ";
+                //cout << "xtrans: ";
                 for (int j=0; j<6; j++)
                 {
                     xtrans[i][j] = uint(image_processor->imgdata.idata.xtrans[i][j]);
                     maxXtrans = max(maxXtrans,int(image_processor->imgdata.idata.xtrans[i][j]));
-                    cout << xtrans[i][j];
+                    //cout << xtrans[i][j];
                 }
-                cout << endl;
+                //cout << endl;
             }
 
             auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
             assert(image.get() != 0);
             image->readMetadata();
             exifData = image->exifData();
-
 
             raw_image.set_size(raw_height, raw_width);
 
@@ -263,6 +268,21 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             float rawMax = std::numeric_limits<float>::min();
 
             isSraw = image_processor->is_sraw();
+
+            //Iridient X-Transformer creates full-color files that aren't sraw
+            //They have 6666 as the cfa and all 0 for xtrans
+            //However, Leica M Monochrom files are exactly the same!
+            //So we have to check if the white balance tag exists.
+            bool isWeird = (cfa[0][0]==6 && cfa[0][1]==6 && cfa[1][0]==6 && cfa[1][1]==6);
+            //cout << "is weird: " << isWeird << endl;
+            std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
+            //cout << "white balance: " << wb << endl;
+            isMonochrome = wb.length()==0;
+            //cout << "is monochrome: " << isMonochrome << endl;
+            isSraw = isSraw || (isWeird && !isMonochrome);
+            //cout << "is full color raw: " << isSraw << endl;
+
+
             isNikonSraw = image_processor->is_nikon_sraw();
             if (isSraw)
             {
@@ -374,6 +394,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             maxValue = stealVictim->maxValue;
             isSraw = stealVictim->isSraw;
             isNikonSraw = stealVictim->isNikonSraw;
+            isMonochrome = stealVictim->isMonochrome;
             raw_width = stealVictim->raw_width;
             raw_height = stealVictim->raw_height;
             exifData = stealVictim->exifData;
@@ -489,7 +510,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
             }
-            else if (cfa[0][0] == 6)//monochrome but not sraw; no demosaicing
+            else if (isMonochrome)
             {
                 float scaleFactor = outputscale / inputscale;
                 for (int row = 0; row < raw_height; row++)
@@ -513,11 +534,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
                     }
                 }
-                if (demosaicParam.caEnabled)
+                if (demosaicParam.caEnabled > 0)
                 {
                     //we need to apply white balance and then remove it for Auto CA Correct to work properly
                     double fitparams[2][2][16];
-                    CA_correct(0, 0, raw_width, raw_height, true, 1, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
+                    CA_correct(0, 0, raw_width, raw_height, true, demosaicParam.caEnabled, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
                 }
                 amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
                 //matrix<float> normalized_image(raw_height, raw_width);
@@ -632,6 +653,198 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             recovered_image = std::move(scaled_image);
         }
 
+        //Lensfun processing
+        lfDatabase * ldb = new lfDatabase;
+        QDir dir = QDir::home();
+        QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+        dirstr.append("/filmulator/version_2");
+        std::string stdstring = dirstr.toStdString();
+        ldb->Load(stdstring.c_str());
+
+        std::string camName = demosaicParam.cameraName.toStdString();
+        const lfCamera * camera = NULL;
+        const lfCamera ** cameraList = ldb->FindCamerasExt(NULL,camName.c_str());
+        if (cameraList)
+        {
+            const float cropFactor = cameraList[0]->CropFactor;
+
+            QString tempLensName = demosaicParam.lensName;
+            if (tempLensName.front() == "\\")
+            {
+                //if the lens name starts with a backslash, don't filter by camera
+                tempLensName.remove(0,1);
+            } else {
+                //if it doesn't start with a backslash, filter by camera
+                camera = cameraList[0];
+            }
+            std::string lensName = tempLensName.toStdString();
+            const lfLens * lens = NULL;
+            const lfLens ** lensList = NULL;
+            lensList = ldb->FindLenses(NULL, NULL, lensName.c_str());
+            if (lensList)
+            {
+                lens = lensList[0];
+
+                //Now we set up the modifier itself with the lens and processing flags
+                lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
+
+                int modflags = 0;
+                if (demosaicParam.lensfunCA && !isMonochrome)
+                {
+                    modflags |= mod->EnableTCACorrection();
+                }
+                if (demosaicParam.lensfunVignetting)
+                {
+                    modflags |= mod->EnableVignettingCorrection(demosaicParam.fnumber, 1000.0f);
+                }
+                if (demosaicParam.lensfunDistortion)
+                {
+                    modflags |= mod->EnableDistortionCorrection();
+                    modflags |= mod->EnableScaling(mod->GetAutoScale(false));
+                    cout << "Auto scale factor: " << mod->GetAutoScale(false) << endl;
+                }
+
+                //Now we actually perform the required processing.
+                //First is vignetting.
+                if (demosaicParam.lensfunVignetting)
+                {
+                    bool success = true;
+                    #pragma omp parallel for
+                    for (int row = 0; row < height; row++)
+                    {
+                        success = mod->ApplyColorModification(recovered_image[row], 0.0f, row, width, 1, LF_CR_3(RED, GREEN, BLUE), width);
+                    }
+                }
+
+                //Next is CA, or distortion, or both.
+                matrix<float> new_image;
+                new_image.set_size(height, width*3);
+
+                if (demosaicParam.lensfunCA && demosaicParam.lensfunDistortion)
+                {
+                    //ApplySubpixelGeometryDistortion
+                    bool success = true;
+                    int listWidth = width * 2 * 3;
+                    #pragma omp parallel for
+                    for (int row = 0; row < height; row++)
+                    {
+                        float positionList[listWidth];
+                        success = mod->ApplySubpixelGeometryDistortion(0.0f, row, width, 1, positionList);
+                        if (success)
+                        {
+                            for (int col = 0; col < width; col++)
+                            {
+                                int listIndex = col * 2 * 3; //list index
+                                for (int c = 0; c < 3; c++)
+                                {
+                                    float coordX = positionList[listIndex+2*c];
+                                    float coordY = positionList[listIndex+2*c+1];
+                                    int sX = max(0, min(width-1,  int(floor(coordX))))*3 + c;//startX
+                                    int eX = max(0, min(width-1,  int(ceil(coordX))))*3 + c; //endX
+                                    int sY = max(0, min(height-1, int(floor(coordY))));      //startY
+                                    int eY = max(0, min(height-1, int(ceil(coordY))));       //endY
+                                    float notUsed;
+                                    float eWX = modf(coordX, &notUsed); //end weight X
+                                    float eWY = modf(coordY, &notUsed); //end weight Y;
+                                    float sWX = 1 - eWX;                //start weight X
+                                    float sWY = 1 - eWY;                //start weight Y;
+                                    new_image(row, col*3 + c) = recovered_image(sY, sX) * sWY * sWX +
+                                                                recovered_image(eY, sX) * eWY * sWX +
+                                                                recovered_image(sY, eX) * sWY * eWX +
+                                                                recovered_image(eY, eX) * eWY * eWX;
+                                }
+                            }
+                        }
+                    }
+                    recovered_image = std::move(new_image);
+                } else {
+                    if (demosaicParam.lensfunCA)
+                    {
+                        cout << "apply lensfun ca" << endl;
+                        //ApplySubpixelDistortion
+                        bool success = true;
+                        int listWidth = width * 2 * 3;
+                        #pragma omp parallel for
+                        for (int row = 0; row < height; row++)
+                        {
+                            float positionList[listWidth];
+                            success = mod->ApplySubpixelDistortion(0.0f, row, width, 1, positionList);
+                            if (success)
+                            {
+                                for (int col = 0; col < width; col++)
+                                {
+                                    int listIndex = col * 2 * 3; //list index
+                                    for (int c = 0; c < 3; c++)
+                                    {
+                                        float coordX = positionList[listIndex+2*c];
+                                        float coordY = positionList[listIndex+2*c+1];
+                                        int sX = max(0, min(width-1,  int(floor(coordX))))*3 + c;//startX
+                                        int eX = max(0, min(width-1,  int(ceil(coordX))))*3 + c; //endX
+                                        int sY = max(0, min(height-1, int(floor(coordY))));      //startY
+                                        int eY = max(0, min(height-1, int(ceil(coordY))));       //endY
+                                        float notUsed;
+                                        float eWX = modf(coordX, &notUsed); //end weight X
+                                        float eWY = modf(coordY, &notUsed); //end weight Y;
+                                        float sWX = 1 - eWX;                //start weight X
+                                        float sWY = 1 - eWY;                //start weight Y;
+                                        new_image(row, col*3 + c) = recovered_image(sY, sX) * sWY * sWX +
+                                                                    recovered_image(eY, sX) * eWY * sWX +
+                                                                    recovered_image(sY, eX) * sWY * eWX +
+                                                                    recovered_image(eY, eX) * eWY * eWX;
+                                    }
+                                }
+                            }
+                        }
+                        recovered_image = std::move(new_image);
+                    }
+                    if (demosaicParam.lensfunDistortion)
+                    {
+                        //ApplyGeometryDistortion
+                        bool success = true;
+                        int listWidth = width * 2;
+                        #pragma omp parallel for
+                        for (int row = 0; row < height; row++)
+                        {
+                            float positionList[listWidth];
+                            success = mod->ApplyGeometryDistortion(0.0f, row, width, 1, positionList);
+                            if (success)
+                            {
+                                for (int col = 0; col < width; col++)
+                                {
+                                    int listIndex = col * 2; //list index
+                                    float coordX = positionList[listIndex];
+                                    float coordY = positionList[listIndex+1];
+                                    int sX = max(0, min(width-1,  int(floor(coordX))))*3;//startX
+                                    int eX = max(0, min(width-1,  int(ceil(coordX))))*3; //endX
+                                    int sY = max(0, min(height-1, int(floor(coordY))));  //startY
+                                    int eY = max(0, min(height-1, int(ceil(coordY))));   //endY
+                                    float notUsed;
+                                    float eWX = modf(coordX, &notUsed); //end weight X
+                                    float eWY = modf(coordY, &notUsed); //end weight Y;
+                                    float sWX = 1 - eWX;                //start weight X
+                                    float sWY = 1 - eWY;                //start weight Y;
+                                    for (int c = 0; c < 3; c++)
+                                    {
+                                        new_image(row, col*3 + c) = recovered_image(sY, sX + c) * sWY * sWX +
+                                                                    recovered_image(eY, sX + c) * eWY * sWX +
+                                                                    recovered_image(sY, eX + c) * sWY * eWX +
+                                                                    recovered_image(eY, eX + c) * eWY * eWX;
+                                    }
+                                }
+                            }
+                        }
+                        recovered_image = std::move(new_image);
+                    }
+                }
+
+                delete mod;
+            }
+            lf_free(lensList);
+        }
+        lf_free(cameraList);
+
+        //cleanup lensfun
+        delete ldb;
 
         valid = paramManager->markDemosaicComplete();
         updateProgress(valid, 0.0f);
