@@ -251,6 +251,16 @@ float sRGB_inverse_gamma(float c);
 //Gamma-compresses linear into sRGB. 0:1 values.
 float sRGB_forward_gamma(float c);
 
+//Linearizes gamma-curved sRGB floats.
+//Maintains the toe slope on the negative side.
+//Maintains the log/exp on the positive side.
+float sRGB_inverse_gamma_unclipped(float c);
+
+//Gamma-compresses linear into sRGB.
+//Maintains the toe slope on the negative side.
+//Maintains the log/exp on the positive side.
+float sRGB_forward_gamma_unclipped(float c);
+
 //Linearize L* curved XYZ coming from L*a*b*, 0:1 values
 float Lab_inverse_gamma(float c);
 

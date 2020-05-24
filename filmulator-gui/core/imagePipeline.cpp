@@ -568,6 +568,19 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         //Noise reduction
         matrix<float> denoised(input_image.nr(), input_image.nc());
 
+        #pragma omp parallel for
+        for (int row = 0; row < input_image.nr(); row++)
+        {
+            for (int col = 0; col < input_image.nc(); col++)
+            {
+                input_image(row, col) = sRGB_forward_gamma_unclipped(input_image(row, col)/65535.0f);
+            }
+        }
+
+        cout << "raw image min:  " << raw_image.min() << endl;
+        cout << "raw image max:  " << raw_image.max() << endl;
+        cout << "raw image mean: " << raw_image.mean() << endl;
+
         cout << "before conditioning min: " << input_image.min() << endl;
         cout << "before conditioning max: " << input_image.max() << endl;
         cout << "before conditioning mean: " << input_image.mean() << endl;
@@ -582,6 +595,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             for (int col = 0; col < input_image.nc(); col++)
             {
                 input_image(row, col) = (input_image(row, col) + offset)/scale;
+                if (isnan(input_image(row,col)))
+                {
+                    input_image(row,col) = 0.0f;
+                }
             }
         }
 
@@ -589,9 +606,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         cout << "before NR max: " << input_image.max() << endl;
         cout << "before NR mean: " << input_image.mean() << endl;
 
+        //======================================================================
         const int numClusters = 50;
-        const float clusterThreshold = 3e-3;
-        const float strength = 0.05;
+        const float clusterThreshold = 1e-5;
+        const float strength = 0.005;
+        //======================================================================
         kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised);
         input_image = std::move(denoised);
         cout << "after NR conditioned min: " << input_image.min() << endl;
@@ -602,7 +621,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         {
             for (int col = 0; col < input_image.nc(); col++)
             {
-                input_image(row, col) = scale*input_image(row, col) - offset;
+                input_image(row, col) = sRGB_inverse_gamma_unclipped(scale*input_image(row, col) - offset)*65535.0f;
             }
         }
 

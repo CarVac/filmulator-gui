@@ -75,6 +75,35 @@ float sRGB_forward_gamma(float c)
     }
 }
 
+//Linearizes gamma-curved sRGB, but unbounded.
+//Reference: http://www.brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
+//http://stackoverflow.com/questions/6475373/optimizations-for-pow-with-const-non-integer-exponent
+float sRGB_inverse_gamma_unclipped(float c)
+{
+    if (c <= 0.04045)
+    {
+        return c / 12.92;
+    }
+    else
+    {
+        return pow((c+0.055)/1.055,2.4);
+    }
+}
+
+//Gamma-compresses linear into sRGB, but unbounded.
+//http://stackoverflow.com/questions/6475373/optimizations-for-pow-with-const-non-integer-exponent
+float sRGB_forward_gamma_unclipped(float c)
+{
+    if (c <= 0.0031308)
+    {
+        return c * 12.92;
+    }
+    else
+    {
+        return 1.055*pow(c,1/2.4) - 0.055;
+    }
+}
+
 //Linearize L* curved XYZ (coming from L*a*b*)
 //Reference: http://www.brucelindbloom.com/index.html?Eqn_Lab_to_XYZ.html
 float Lab_inverse_gamma(float c)

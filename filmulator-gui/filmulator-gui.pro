@@ -126,7 +126,7 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math
+QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing
 macx: {
 QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/opt/local/include
 }
