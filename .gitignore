@@ -2,3 +2,4 @@ Filmulator-Testing-2/Filmulator-Testing-2.pro.user
 *.so
 *.a
 build*/
+eigen*/

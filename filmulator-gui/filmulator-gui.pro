@@ -25,6 +25,13 @@ SOURCES += main.cpp \
     core/imwriteTiff.cpp \
     core/layerMix.cpp \
     core/mergeExps.cpp \
+    core/nlmeans/bisecting_kmeans.cpp \
+    core/nlmeans/calcC1chanT.cpp \
+    core/nlmeans/calcW_generic.cpp \
+    core/nlmeans/expandDims.cpp \
+    core/nlmeans/highDimBoxFilter.cpp \
+    core/nlmeans/kMeansNLMApprox.cpp \
+    core/nlmeans/splitCluster.cpp \
     core/outputFile.cpp \
     core/rotateImage.cpp \
     core/scale.cpp \
@@ -77,6 +84,7 @@ win32:LIBS += -L/usr/lib
 unix {
 script.extra = move_script; install -m 755 -p filmulator
 extra.path = /usr/bin
+INCLUDEPATH += ../eigen
 LIBS += -L/usr/local/lib
 }
 
@@ -96,6 +104,7 @@ HEADERS += \
     core/interface.h \
     core/lut.hpp \
     core/matrix.hpp \
+    core/nlmeans/nlmeans.hpp \
     database/backgroundQueue.h \
     database/basicSqlModel.h \
     database/dateHistogramModel.h \
@@ -117,7 +126,7 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math
+QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math
 macx: {
 QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/opt/local/include
 }

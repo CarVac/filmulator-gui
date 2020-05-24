@@ -2,6 +2,7 @@
 #include "../database/exifFunctions.h"
 #include <QDir>
 #include <QStandardPaths>
+#include "nlmeans/nlmeans.hpp"
 
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
@@ -564,6 +565,50 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
         cout << "ImagePipeline::processImage: Demosaic complete." << endl;
 
+        //Noise reduction
+        matrix<float> denoised(input_image.nr(), input_image.nc());
+
+        cout << "before conditioning min: " << input_image.min() << endl;
+        cout << "before conditioning max: " << input_image.max() << endl;
+        cout << "before conditioning mean: " << input_image.mean() << endl;
+
+        float offset = std::max(-input_image.min() + 1, 1.0f);
+        float scale = std::max(input_image.max() + offset, 1.0f);
+        cout << "offset: " << offset << endl;
+        cout << "scale:  " << scale  << endl;
+        #pragma omp parallel for
+        for (int row = 0; row < input_image.nr(); row++)
+        {
+            for (int col = 0; col < input_image.nc(); col++)
+            {
+                input_image(row, col) = (input_image(row, col) + offset)/scale;
+            }
+        }
+
+        cout << "before NR min: " << input_image.min() << endl;
+        cout << "before NR max: " << input_image.max() << endl;
+        cout << "before NR mean: " << input_image.mean() << endl;
+
+        const int numClusters = 50;
+        const float clusterThreshold = 3e-3;
+        const float strength = 0.05;
+        kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised);
+        input_image = std::move(denoised);
+        cout << "after NR conditioned min: " << input_image.min() << endl;
+        cout << "after NR conditioned max: " << input_image.max() << endl;
+        cout << "after NR conditioned mean: " << input_image.mean() << endl;
+        #pragma omp parallel for
+        for (int row = 0; row < input_image.nr(); row++)
+        {
+            for (int col = 0; col < input_image.nc(); col++)
+            {
+                input_image(row, col) = scale*input_image(row, col) - offset;
+            }
+        }
+
+        cout << "after NR min: " << input_image.min() << endl;
+        cout << "after NR max: " << input_image.max() << endl;
+        cout << "after NR mean: " << input_image.mean() << endl;
 
         if (LowQuality == quality)
         {
