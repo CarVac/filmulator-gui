@@ -7,7 +7,7 @@
 //S is the radius of the neighborhood over which we are averaging (neighborhood size (2S+1)^2)
 //We're going to column major order right now to match MATLAB, TODO: switch to row major
 //TODO: fixup int vs ptrdiff_t indexing.
-void highDimBoxFilter(float* const A, float* const W, float* const C1chanT, ptrdiff_t const numClusters, float* output){
+void highDimBoxFilter(float* __restrict const A, float* __restrict const W, float* __restrict const C1chanT, ptrdiff_t const numClusters, float* __restrict output){
 
     constexpr ptrdiff_t blockSize = 128;
     constexpr ptrdiff_t S = 8;
@@ -151,8 +151,12 @@ void highDimBoxFilter(float* const A, float* const W, float* const C1chanT, ptrd
                 ptrdiff_t output_idx = yIdx + xIdx*blockSize + chanIdx*blockSize*blockSize;
                 ptrdiff_t Wb_idx = yIdx + xIdx*blockSize;
                 ptrdiff_t B_idx = Wb_idx + chanIdx*blockSize*blockSize;
+                ptrdiff_t A_idx = yIdx + S + (xIdx+S)*expandedBlockSize + chanIdx*expandedBlockSize*expandedBlockSize;
 
-                output[output_idx] = B[B_idx] / (Wb[Wb_idx] + std::numeric_limits<float>::min());
+                //const bool smallW = Wb[Wb_idx] < 1e-9;
+                //output[output_idx] = (smallW ? A[A_idx] : B[B_idx]) / (smallW ? 1.0f : Wb[Wb_idx]);
+                const float eps = 1e-9;
+                output[output_idx] = (eps * A[A_idx] + B[B_idx]) / (eps + Wb[Wb_idx]);
             }
         }
     }

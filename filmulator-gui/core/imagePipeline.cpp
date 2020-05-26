@@ -381,7 +381,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         struct timeval imload_time;
         gettimeofday( &imload_time, nullptr );
 
-        matrix<float>& scaled_image = recovered_image;
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
             scaled_image = stealVictim->input_image;
@@ -410,224 +409,295 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 }
                 cout << endl;
             }
-        }
-        else if (loadParam.tiffIn)
-        {
-            if (imread_tiff(loadParam.fullFilename, input_image, exifData))
+        } else { //load from file
+            if (loadParam.tiffIn)
             {
-                cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
-                return emptyMatrix();
-            }
-        }
-        else if (loadParam.jpegIn)
-        {
-            if (imread_jpeg(loadParam.fullFilename, input_image, exifData))
-            {
-                cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
-                return emptyMatrix();
-            }
-        }
-        else if (isSraw)//already demosaiced
-        {
-            //We just need to scale to 65535, and apply camera WB
-            float inputscale = maxValue;
-            float outputscale = 65535.0;
-            float scaleFactor = outputscale / inputscale;
-            input_image.set_size(raw_height, raw_width*3);
-            if (isNikonSraw)
-            {
-                #pragma omp parallel for
-                for (int row = 0; row < raw_height; row++)
+                if (imread_tiff(loadParam.fullFilename, input_image, exifData))
                 {
-                    for (int col = 0; col < raw_width*3; col++)
+                    cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
+                    return emptyMatrix();
+                }
+            }
+            else if (loadParam.jpegIn)
+            {
+                if (imread_jpeg(loadParam.fullFilename, input_image, exifData))
+                {
+                    cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
+                    return emptyMatrix();
+                }
+            }
+            else if (isSraw)//already demosaiced
+            {
+                //We just need to scale to 65535, and apply camera WB
+                float inputscale = maxValue;
+                float outputscale = 65535.0;
+                float scaleFactor = outputscale / inputscale;
+                input_image.set_size(raw_height, raw_width*3);
+                if (isNikonSraw)
+                {
+                    #pragma omp parallel for
+                    for (int row = 0; row < raw_height; row++)
                     {
-                        int color = col % 3;
-                        input_image(row, col) = raw_image(row, col) * scaleFactor;
-
+                        for (int col = 0; col < raw_width*3; col++)
+                        {
+                            input_image(row, col) = raw_image(row, col) * scaleFactor;
+                        }
+                    }
+                }
+                else
+                {
+                    #pragma omp parallel for
+                    for (int row = 0; row < raw_height; row++)
+                    {
+                        for (int col = 0; col < raw_width*3; col++)
+                        {
+                            int color = col % 3;
+                            input_image(row, col) = raw_image(row, col) * scaleFactor * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        }
                     }
                 }
             }
-            else
+            else //raw
             {
+                matrix<float>   red(raw_height, raw_width);
+                matrix<float> green(raw_height, raw_width);
+                matrix<float>  blue(raw_height, raw_width);
+
+                double initialGain = 1.0;
+                float inputscale = maxValue;
+                float outputscale = 65535.0;
+                const int border = 4;//used for amaze
+                std::function<bool(double)> setProg = [](double) -> bool {return false;};
+
+                cout << "raw width:  " << raw_width << endl;
+                cout << "raw height: " << raw_height << endl;
+
+                //before demosaic, you want to apply raw white balance
+                //======================================================================
+                //TODO: If the camera white balance disagrees with some sort of AWB by a *lot*, use an awb instead
+                //======================================================================
+                matrix<float> premultiplied(raw_height, raw_width);
+
+                cout << "demosaic start" << timeDiff(timeRequested) << endl;
+                struct timeval demosaic_time;
+                gettimeofday(&demosaic_time, nullptr);
+
+                if (maxXtrans > 0)
+                {
+                    #pragma omp parallel for
+                    for (int row = 0; row < raw_height; row++)
+                    {
+                        for (int col = 0; col < raw_width; col++)
+                        {
+                            uint color = xtrans[uint(row) % 6][uint(col) % 6];
+                            premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        }
+                    }
+                    markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+                    //there's no inputscale for markesteijn so we need to scale
+                    float scaleFactor = outputscale / inputscale;
+                    #pragma omp parallel for
+                    for (int row = 0; row < red.nr(); row++)
+                    {
+                        for (int col = 0; col < red.nc(); col++)
+                        {
+                            red(row, col)   = red(row, col)   * scaleFactor;
+                            green(row, col) = green(row, col) * scaleFactor;
+                            blue(row, col)  = blue(row, col)  * scaleFactor;
+                        }
+                    }
+                }
+                else if (isMonochrome)
+                {
+                    float scaleFactor = outputscale / inputscale;
+                    for (int row = 0; row < raw_height; row++)
+                    {
+                        for (int col = 0; col < raw_width; col++)
+                        {
+                            red(row, col)   = raw_image(row, col) * scaleFactor;
+                            green(row, col) = raw_image(row, col) * scaleFactor;
+                            blue(row, col)  = raw_image(row, col) * scaleFactor;
+                        }
+                    }
+                }
+                else
+                {
+                    #pragma omp parallel for
+                    for (int row = 0; row < raw_height; row++)
+                    {
+                        for (int col = 0; col < raw_width; col++)
+                        {
+                            uint color = cfa[uint(row) & 1][uint(col) & 1];
+                            premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        }
+                    }
+                    if (demosaicParam.caEnabled > 0)
+                    {
+                        //we need to apply white balance and then remove it for Auto CA Correct to work properly
+                        double fitparams[2][2][16];
+                        CA_correct(0, 0, raw_width, raw_height, true, demosaicParam.caEnabled, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
+                    }
+                    amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                    //matrix<float> normalized_image(raw_height, raw_width);
+                    //normalized_image = premultiplied * (outputscale/inputscale);
+                    //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+                }
+                premultiplied.set_size(0, 0);
+                cout << "demosaic end: " << timeDiff(demosaic_time) << endl;
+
+                input_image.set_size(raw_height, raw_width*3);
                 #pragma omp parallel for
                 for (int row = 0; row < raw_height; row++)
                 {
-                    for (int col = 0; col < raw_width*3; col++)
+                    for (int col = 0; col < raw_width; col++)
                     {
-                        int color = col % 3;
-                        input_image(row, col) = raw_image(row, col) * scaleFactor * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
-
+                        input_image(row, col*3    ) =   red(row, col);
+                        input_image(row, col*3 + 1) = green(row, col);
+                        input_image(row, col*3 + 2) =  blue(row, col);
                     }
                 }
             }
-        }
-        else //raw
-        {
-            matrix<float>   red(raw_height, raw_width);
-            matrix<float> green(raw_height, raw_width);
-            matrix<float>  blue(raw_height, raw_width);
+            cout << "load time: " << timeDiff(imload_time) << endl;
 
-            double initialGain = 1.0;
-            float inputscale = maxValue;
-            float outputscale = 65535.0;
-            const int border = 4;//used for amaze
+            cout << "ImagePipeline::processImage: Demosaic complete." << endl;
+
+            //Recover highlights now
+            cout << "hlrecovery start:" << timeDiff(timeRequested) << endl;
+            struct timeval hlrecovery_time;
+            gettimeofday(&hlrecovery_time, nullptr);
+
+            int height = input_image.nr();
+            int width  = input_image.nc()/3;
+
+            //Now, recover highlights.
             std::function<bool(double)> setProg = [](double) -> bool {return false;};
+            //And return it back to a single layer
+            if (demosaicParam.highlights >= 2)
+            {
+                //For highlight recovery, we need to split up the image into three separate layers.
+                matrix<float> rChannel(height, width), gChannel(height, width), bChannel(height, width);
 
-            cout << "raw width:  " << raw_width << endl;
-            cout << "raw height: " << raw_height << endl;
+                #pragma omp parallel for
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
+                    {
+                        rChannel(row, col) = input_image(row, col*3    );
+                        gChannel(row, col) = input_image(row, col*3 + 1);
+                        bChannel(row, col) = input_image(row, col*3 + 2);
+                    }
+                }
 
-            //before demosaic, you want to apply raw white balance
-            //======================================================================
-            //TODO: If the camera white balance disagrees with some sort of AWB by a *lot*, use an awb instead
-            //======================================================================
-            matrix<float> premultiplied(raw_height, raw_width);
+                //We applied the camMul camera multipliers before applying white balance.
+                //Now we need to calculate the channel max and the raw clip levels.
+                //Channel max:
+                const float chmax[3] = {rChannel.max(), gChannel.max(), bChannel.max()};
+                //Max clip point:
+                const float clmax[3] = {65535.0f*rCamMul, 65535.0f*gCamMul, 65535.0f*bCamMul};
 
-            cout << "demosaic start" << timeDiff(timeRequested) << endl;
-            struct timeval demosaic_time;
-            gettimeofday(&demosaic_time, nullptr);
-
-            if (maxXtrans > 0)
+                HLRecovery_inpaint(width, height, rChannel, gChannel, bChannel, chmax, clmax, setProg);
+                #pragma omp parallel for
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
+                    {
+                        input_image(row, col*3    ) = rChannel(row, col);
+                        input_image(row, col*3 + 1) = gChannel(row, col);
+                        input_image(row, col*3 + 2) = bChannel(row, col);
+                    }
+                }
+            } else if (demosaicParam.highlights == 0)
             {
                 #pragma omp parallel for
-                for (int row = 0; row < raw_height; row++)
+                for (int row = 0; row < height; row++)
                 {
-                    for (int col = 0; col < raw_width; col++)
+                    for (int col = 0; col < width; col++)
                     {
-                        uint color = xtrans[uint(row) % 6][uint(col) % 6];
-                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        input_image(row, col*3    ) = min(input_image(row, col*3    ), 65535.0f);
+                        input_image(row, col*3 + 1) = min(input_image(row, col*3 + 1), 65535.0f);
+                        input_image(row, col*3 + 2) = min(input_image(row, col*3 + 2), 65535.0f);
                     }
                 }
-                markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
-                //there's no inputscale for markesteijn so we need to scale
-                float scaleFactor = outputscale / inputscale;
+            } else { //params = 1
+                //do nothing
+            }
+            cout << "hlrecovery duration: " << timeDiff(hlrecovery_time) << endl;
+
+            //Noise reduction
+            {
+                cout << "Noise reduction preprocessing start: " << timeDiff(timeRequested) << endl;
+                matrix<float> denoised(input_image.nr(), input_image.nc());
+
                 #pragma omp parallel for
-                for (int row = 0; row < red.nr(); row++)
+                for (int row = 0; row < input_image.nr(); row++)
                 {
-                    for (int col = 0; col < red.nc(); col++)
+                    for (int col = 0; col < input_image.nc(); col++)
                     {
-                        red(row, col)   = red(row, col)   * scaleFactor;
-                        green(row, col) = green(row, col) * scaleFactor;
-                        blue(row, col)  = blue(row, col)  * scaleFactor;
+                        input_image(row, col) = sRGB_forward_gamma_unclipped(input_image(row, col)/65535.0f);
                     }
                 }
-            }
-            else if (isMonochrome)
-            {
-                float scaleFactor = outputscale / inputscale;
-                for (int row = 0; row < raw_height; row++)
-                {
-                    for (int col = 0; col < raw_width; col++)
-                    {
-                        red(row, col)   = raw_image(row, col) * scaleFactor;
-                        green(row, col) = raw_image(row, col) * scaleFactor;
-                        blue(row, col)  = raw_image(row, col) * scaleFactor;
-                    }
-                }
-            }
-            else
-            {
+
+                cout << "raw image min:  " << raw_image.min() << endl;
+                cout << "raw image max:  " << raw_image.max() << endl;
+                cout << "raw image mean: " << raw_image.mean() << endl;
+
+                cout << "before conditioning min: " << input_image.min() << endl;
+                cout << "before conditioning max: " << input_image.max() << endl;
+                cout << "before conditioning mean: " << input_image.mean() << endl;
+
+                float offset = std::max(-input_image.min() + 0.001f, 0.001f);
+                float scale = std::max(input_image.max() + offset, 1.0f);// /5;
+                cout << "offset: " << offset << endl;
+                cout << "scale:  " << scale  << endl;
                 #pragma omp parallel for
-                for (int row = 0; row < raw_height; row++)
+                for (int row = 0; row < input_image.nr(); row++)
                 {
-                    for (int col = 0; col < raw_width; col++)
+                    for (int col = 0; col < input_image.nc(); col++)
                     {
-                        uint color = cfa[uint(row) & 1][uint(col) & 1];
-                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        input_image(row, col) = (input_image(row, col) + offset)/scale;
+                        if (isnan(input_image(row,col)))
+                        {
+                            input_image(row,col) = 0.0f;
+                        }
                     }
                 }
-                if (demosaicParam.caEnabled > 0)
+
+                cout << "before NR conditioned min: " << input_image.min() << endl;
+                cout << "before NR conditioned max: " << input_image.max() << endl;
+                cout << "before NR conditioned mean: " << input_image.mean() << endl;
+
+                //======================================================================
+                const int numClusters = 50;
+                const float clusterThreshold = 1e-5;
+                const float strength = 0.005;//0.05;
+                //======================================================================
+
+                cout << "Noise reduction preprocessing start: " << timeDiff(timeRequested) << endl;
+                struct timeval nrTime;
+                gettimeofday(&nrTime, nullptr);
+
+                kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised);
+
+                cout << "Noise reduction duration: " << timeDiff(nrTime) << endl;
+
+                input_image = std::move(denoised);
+                cout << "after NR conditioned min: " << input_image.min() << endl;
+                cout << "after NR conditioned max: " << input_image.max() << endl;
+                cout << "after NR conditioned mean: " << input_image.mean() << endl;
+                #pragma omp parallel for
+                for (int row = 0; row < input_image.nr(); row++)
                 {
-                    //we need to apply white balance and then remove it for Auto CA Correct to work properly
-                    double fitparams[2][2][16];
-                    CA_correct(0, 0, raw_width, raw_height, true, demosaicParam.caEnabled, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
+                    for (int col = 0; col < input_image.nc(); col++)
+                    {
+                        input_image(row, col) = sRGB_inverse_gamma_unclipped(scale*input_image(row, col) - offset)*65535.0f;
+                    }
                 }
-                amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-                //matrix<float> normalized_image(raw_height, raw_width);
-                //normalized_image = premultiplied * (outputscale/inputscale);
-                //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
-            }
-            premultiplied.set_size(0, 0);
-            cout << "demosaic end: " << timeDiff(demosaic_time) << endl;
 
-            input_image.set_size(raw_height, raw_width*3);
-            #pragma omp parallel for
-            for (int row = 0; row < raw_height; row++)
-            {
-                for (int col = 0; col < raw_width; col++)
-                {
-                    input_image(row, col*3    ) =   red(row, col);
-                    input_image(row, col*3 + 1) = green(row, col);
-                    input_image(row, col*3 + 2) =  blue(row, col);
-                }
+                cout << "after NR min: " << input_image.min() << endl;
+                cout << "after NR max: " << input_image.max() << endl;
+                cout << "after NR mean: " << input_image.mean() << endl;
             }
         }
-        cout << "load time: " << timeDiff(imload_time) << endl;
-
-        cout << "ImagePipeline::processImage: Demosaic complete." << endl;
-
-        //Noise reduction
-        matrix<float> denoised(input_image.nr(), input_image.nc());
-
-        #pragma omp parallel for
-        for (int row = 0; row < input_image.nr(); row++)
-        {
-            for (int col = 0; col < input_image.nc(); col++)
-            {
-                input_image(row, col) = sRGB_forward_gamma_unclipped(input_image(row, col)/65535.0f);
-            }
-        }
-
-        cout << "raw image min:  " << raw_image.min() << endl;
-        cout << "raw image max:  " << raw_image.max() << endl;
-        cout << "raw image mean: " << raw_image.mean() << endl;
-
-        cout << "before conditioning min: " << input_image.min() << endl;
-        cout << "before conditioning max: " << input_image.max() << endl;
-        cout << "before conditioning mean: " << input_image.mean() << endl;
-
-        float offset = std::max(-input_image.min() + 1, 1.0f);
-        float scale = std::max(input_image.max() + offset, 1.0f);
-        cout << "offset: " << offset << endl;
-        cout << "scale:  " << scale  << endl;
-        #pragma omp parallel for
-        for (int row = 0; row < input_image.nr(); row++)
-        {
-            for (int col = 0; col < input_image.nc(); col++)
-            {
-                input_image(row, col) = (input_image(row, col) + offset)/scale;
-                if (isnan(input_image(row,col)))
-                {
-                    input_image(row,col) = 0.0f;
-                }
-            }
-        }
-
-        cout << "before NR min: " << input_image.min() << endl;
-        cout << "before NR max: " << input_image.max() << endl;
-        cout << "before NR mean: " << input_image.mean() << endl;
-
-        //======================================================================
-        const int numClusters = 50;
-        const float clusterThreshold = 1e-5;
-        const float strength = 0.005;
-        //======================================================================
-        kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised);
-        input_image = std::move(denoised);
-        cout << "after NR conditioned min: " << input_image.min() << endl;
-        cout << "after NR conditioned max: " << input_image.max() << endl;
-        cout << "after NR conditioned mean: " << input_image.mean() << endl;
-        #pragma omp parallel for
-        for (int row = 0; row < input_image.nr(); row++)
-        {
-            for (int col = 0; col < input_image.nc(); col++)
-            {
-                input_image(row, col) = sRGB_inverse_gamma_unclipped(scale*input_image(row, col) - offset)*65535.0f;
-            }
-        }
-
-        cout << "after NR min: " << input_image.min() << endl;
-        cout << "after NR max: " << input_image.max() << endl;
-        cout << "after NR mean: " << input_image.mean() << endl;
 
         if (LowQuality == quality)
         {
@@ -654,68 +724,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             }
         }
 
-        //Recover highlights now
-        cout << "hlrecovery start:" << timeDiff (timeRequested) << endl;
-        struct timeval hlrecovery_time;
-        gettimeofday(&hlrecovery_time, nullptr);
-
         int height = scaled_image.nr();
         int width  = scaled_image.nc()/3;
-
-        //Now, recover highlights.
-        std::function<bool(double)> setProg = [](double) -> bool {return false;};
-        //And return it back to a single layer
-        if (demosaicParam.highlights >= 2)
-        {
-            recovered_image.set_size(height, width*3);
-            //For highlight recovery, we need to split up the image into three separate layers.
-            matrix<float> rChannel(height, width), gChannel(height, width), bChannel(height, width);
-
-            #pragma omp parallel for
-            for (int row = 0; row < height; row++)
-            {
-                for (int col = 0; col < width; col++)
-                {
-                    rChannel(row, col) = scaled_image(row, col*3    );
-                    gChannel(row, col) = scaled_image(row, col*3 + 1);
-                    bChannel(row, col) = scaled_image(row, col*3 + 2);
-                }
-            }
-
-            //We applied the camMul camera multipliers before applying white balance.
-            //Now we need to calculate the channel max and the raw clip levels.
-            //Channel max:
-            const float chmax[3] = {rChannel.max(), gChannel.max(), bChannel.max()};
-            //Max clip point:
-            const float clmax[3] = {65535.0f*rCamMul, 65535.0f*gCamMul, 65535.0f*bCamMul};
-
-            HLRecovery_inpaint(width, height, rChannel, gChannel, bChannel, chmax, clmax, setProg);
-            #pragma omp parallel for
-            for (int row = 0; row < height; row++)
-            {
-                for (int col = 0; col < width; col++)
-                {
-                    recovered_image(row, col*3    ) = rChannel(row, col);
-                    recovered_image(row, col*3 + 1) = gChannel(row, col);
-                    recovered_image(row, col*3 + 2) = bChannel(row, col);
-                }
-            }
-        } else if (demosaicParam.highlights == 0)
-        {
-            recovered_image.set_size(height, width*3);
-            #pragma omp parallel for
-            for (int row = 0; row < height; row++)
-            {
-                for (int col = 0; col < width; col++)
-                {
-                    recovered_image(row, col*3    ) = min(scaled_image(row, col*3    ), 65535.0f);
-                    recovered_image(row, col*3 + 1) = min(scaled_image(row, col*3 + 1), 65535.0f);
-                    recovered_image(row, col*3 + 2) = min(scaled_image(row, col*3 + 2), 65535.0f);
-                }
-            }
-        } else {
-            recovered_image = std::move(scaled_image);
-        }
 
         //Lensfun processing
         lfDatabase * ldb = new lfDatabase;
@@ -776,7 +786,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     #pragma omp parallel for
                     for (int row = 0; row < height; row++)
                     {
-                        success = mod->ApplyColorModification(recovered_image[row], 0.0f, row, width, 1, LF_CR_3(RED, GREEN, BLUE), width);
+                        success = mod->ApplyColorModification(scaled_image[row], 0.0f, row, width, 1, LF_CR_3(RED, GREEN, BLUE), width);
                     }
                 }
 
@@ -812,15 +822,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                     float eWY = modf(coordY, &notUsed); //end weight Y;
                                     float sWX = 1 - eWX;                //start weight X
                                     float sWY = 1 - eWY;                //start weight Y;
-                                    new_image(row, col*3 + c) = recovered_image(sY, sX) * sWY * sWX +
-                                                                recovered_image(eY, sX) * eWY * sWX +
-                                                                recovered_image(sY, eX) * sWY * eWX +
-                                                                recovered_image(eY, eX) * eWY * eWX;
+                                    new_image(row, col*3 + c) = scaled_image(sY, sX) * sWY * sWX +
+                                                                scaled_image(eY, sX) * eWY * sWX +
+                                                                scaled_image(sY, eX) * sWY * eWX +
+                                                                scaled_image(eY, eX) * eWY * eWX;
                                 }
                             }
                         }
                     }
-                    recovered_image = std::move(new_image);
+                    scaled_image = std::move(new_image);
                 } else {
                     if (demosaicParam.lensfunCA)
                     {
@@ -851,15 +861,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                         float eWY = modf(coordY, &notUsed); //end weight Y;
                                         float sWX = 1 - eWX;                //start weight X
                                         float sWY = 1 - eWY;                //start weight Y;
-                                        new_image(row, col*3 + c) = recovered_image(sY, sX) * sWY * sWX +
-                                                                    recovered_image(eY, sX) * eWY * sWX +
-                                                                    recovered_image(sY, eX) * sWY * eWX +
-                                                                    recovered_image(eY, eX) * eWY * eWX;
+                                        new_image(row, col*3 + c) = scaled_image(sY, sX) * sWY * sWX +
+                                                                    scaled_image(eY, sX) * eWY * sWX +
+                                                                    scaled_image(sY, eX) * sWY * eWX +
+                                                                    scaled_image(eY, eX) * eWY * eWX;
                                     }
                                 }
                             }
                         }
-                        recovered_image = std::move(new_image);
+                        scaled_image = std::move(new_image);
                     }
                     if (demosaicParam.lensfunDistortion)
                     {
@@ -889,15 +899,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                     float sWY = 1 - eWY;                //start weight Y;
                                     for (int c = 0; c < 3; c++)
                                     {
-                                        new_image(row, col*3 + c) = recovered_image(sY, sX + c) * sWY * sWX +
-                                                                    recovered_image(eY, sX + c) * eWY * sWX +
-                                                                    recovered_image(sY, eX + c) * sWY * eWX +
-                                                                    recovered_image(eY, eX + c) * eWY * eWX;
+                                        new_image(row, col*3 + c) = scaled_image(sY, sX + c) * sWY * sWX +
+                                                                    scaled_image(eY, sX + c) * eWY * sWX +
+                                                                    scaled_image(sY, eX + c) * sWY * eWX +
+                                                                    scaled_image(eY, eX + c) * eWY * eWX;
                                     }
                                 }
                             }
                         }
-                        recovered_image = std::move(new_image);
+                        scaled_image = std::move(new_image);
                     }
                 }
 
@@ -926,7 +936,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
 
         //Here we apply the exposure compensation and white balance and color conversion matrix.
-        whiteBalance(recovered_image,
+        whiteBalance(scaled_image,
                      pre_film_image,
                      prefilmParam.temperature,
                      prefilmParam.tint,
@@ -937,7 +947,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
         if (NoCache == cache)
         {
-            recovered_image.set_size( 0, 0 );
+            scaled_image.set_size( 0, 0 );
             cacheEmpty = true;
         }
         else

@@ -2,7 +2,7 @@
 #include "nlmeans.hpp"
 
 
-void kMeansNLMApprox(float* const I, const int maxClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* output) {
+void kMeansNLMApprox(float* __restrict const I, const int maxClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* __restrict output) {
 
 	constexpr int radius = 1;
 	constexpr int patchSize = (2 * radius + 1) * (2 * radius + 1);

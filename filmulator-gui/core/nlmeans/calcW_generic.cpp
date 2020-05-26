@@ -5,9 +5,9 @@
 
 //Aguide is called p in the paper, W is called c_k, centers is called mu_k
 //requires W be set to 0
-void calcW(float* const Aguide_ptr, float* const centers_ptr,
+void calcW(float* __restrict const Aguide_ptr, float* __restrict const centers_ptr,
            ptrdiff_t rangeDims, ptrdiff_t numClusters, float const h,
-           float* W_ptr){
+           float* __restrict W_ptr){
 
     constexpr ptrdiff_t expandedBlockSize = 144;
 

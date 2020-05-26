@@ -8,7 +8,7 @@
 
 //X is in points major, dimensions minor order
 //Returns center locations (clusters major). Will always return at least two clusters
-std::vector<float> bisecting_kmeans(float* const X, const int numPoints, const int numDimensions, const int k, const std::optional<float> threshold){
+std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoints, const int numDimensions, const int k, const std::optional<float> threshold){
 
     std::vector<clusterInfo> currentClusters;
     

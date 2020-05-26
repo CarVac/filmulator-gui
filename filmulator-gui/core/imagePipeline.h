@@ -73,7 +73,7 @@ protected:
     bool isMonochrome;
 
     matrix<float> input_image;
-    matrix<float> recovered_image;
+    matrix<float> scaled_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
     matrix<float> filmulated_image;
