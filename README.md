@@ -44,13 +44,13 @@ Then run `make` and run `make install` as root.
 
 ## Building on MacOS:
 
-You'll need to know the locations of a couple things in order to build this. They're not hard to find, just use Finder's search functionality to find them. Wherever they are, we need the real dynamic libraries (.dylib), not the symbolic links that point somewhere else. That's important!  We need:
+You'll need to know the locations of a couple things in order to build this. They're not hard to find, just use Finder's search functionality to find them. Wherever they are, we need the real dynamic libraries (.dylib), not the symbolic links that point to them. That's important! If you find a symbolic link, follow it to get the real dynamic library.  We need:
 
 libomp.dylib: it should be somewhere like /opt/local/lib/libomp.dylib. If you installed from homebrew, that's probably where it is. Replace wherever it is into `-DOpenMP_libomp_LIBRARY=` and `-fopenmp` below.
 
 libarchive.dylib: If you installed from homebrew, it probably needs to be /usr/local/Cellar/libarchive/3.4.3/include like below. Put this path into `-DLibArchive_INCLUDE_DIR`.
 
-librtprocess: This needs to point towards the .dylib file for librtprocess. If you installed librtprocess from source, it probably in /opt/local/lib/librtprocess.0.0.1.dylib like below. Wherever it is, put it into `-Dlibrtprocess_dylib`.
+librtprocess: This needs to point towards the .dylib file for librtprocess. If you installed librtprocess from source, it's probably in /opt/local/lib/librtprocess.0.0.1.dylib like below. Wherever it is, put it into `-Dlibrtprocess_dylib`.
 
 QT: If you installed this from homebrew, it's probably at /usr/local/Cellar/qt/5.13.1/. Wherever it is, put it in the `export QT=` command below.
 
