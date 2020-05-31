@@ -221,7 +221,8 @@ if(APPLE)
 
     #LIBCURL is a symlink
     file(READ_SYMLINK "${CURL_LIBRARIES}" libcurlresult)
-    file(COPY "${CURL_INCLUDE_DIR}/../lib/${libcurlresult}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+    get_filename_component(libcurl_dir "${CURL_LIBRARIES}" DIRECTORY)
+    file(COPY "${libcurl_dir}/${libcurlresult}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${libcurlresult}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/libcurl.dylib")
 
     #LENSFUN is a symlink
