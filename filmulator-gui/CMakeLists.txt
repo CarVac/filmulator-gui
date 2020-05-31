@@ -215,8 +215,11 @@ if(APPLE)
     endif()
 
     #LibArchive is a symlink
-    file(READ_SYMLINK "${LibArchive_INCLUDE_DIR}/../lib/libarchive.dylib" libarchiveresult)
-    file(COPY "${LibArchive_INCLUDE_DIR}/../lib/${libarchiveresult}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+    #file(READ_SYMLINK "${LibArchive_INCLUDE_DIR}/../lib/libarchive.dylib" libarchiveresult)
+    file(READ_SYMLINK "${LibArchive_LIBRARY}" libarchiveresult)
+    get_filename_component(libarchive_dir "${LibArchive_LIBRARY}" DIRECTORY)
+    #file(COPY "${LibArchive_INCLUDE_DIR}/../lib/${libarchiveresult}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
+    file(COPY "${libarchive_dir}/${libarchiveresult}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${libarchiveresult}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/libarchive.dylib")
 
     #LIBCURL is a symlink
