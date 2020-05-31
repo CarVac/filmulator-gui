@@ -46,7 +46,7 @@ Then run `make` and run `make install` as root.
 
 You'll need to know the locations of a couple things in order to build this. They're not hard to find, just use Finder's search functionality to find them. Wherever they are, we need the real dynamic libraries (.dylib), not the symbolic links that point somewhere else. That's important!  We need:
 
-libomp.dylib: it should be somewhere like /opt/local/lib/libomp.dylib. If you installed from homebrew, that's probably where it is. `Replace wherever it is into -DOpenMP_libomp_LIBRARY=` and `-fopenmp` below.
+libomp.dylib: it should be somewhere like /opt/local/lib/libomp.dylib. If you installed from homebrew, that's probably where it is. Replace wherever it is into `-DOpenMP_libomp_LIBRARY=` and `-fopenmp` below.
 
 libarchive.dylib: If you installed from homebrew, it probably needs to be /usr/local/Cellar/libarchive/3.4.3/include like below. Put this path into `-DLibArchive_INCLUDE_DIR`.
 
@@ -55,7 +55,7 @@ librtprocess: This needs to point towards the .dylib file for librtprocess. If y
 QT: If you installed this from homebrew, it's probably at /usr/local/Cellar/qt/5.13.1/. Wherever it is, put it in the `export QT=` command below.
 
 
-Once you have all those figured out, the following commands should build the Filmulator application on macOS. 
+Once you have all those figured out, the following commands, edited according to your locations detailed above, should build the Filmulator application on macOS. 
 
 1. `cd ~/filmulator-gui/filmulator-gui`
 2. `mkdir build && cd build`
