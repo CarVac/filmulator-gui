@@ -191,22 +191,17 @@ if(APPLE)
     if (IS_SYMLINK "${EXIV2_LIBRARY}")
         file(READ_SYMLINK "${EXIV2_LIBRARY}" result)
 	get_filename_component(exiv2_dir "${EXIV2_LIBRARY}" DIRECTORY)
-        message(STATUS "exiv2_dir=${exiv2_dir}")
-        message(STATUS "result=${result}")
 
         if (IS_SYMLINK "${exiv2_dir}/${result}") # this is the most likely situation,
 						 # assuming its from homebrew
             file(READ_SYMLINK "${exiv2_dir}/${result}" result2)
 	    get_filename_component(exiv2_dir2 "${result2}" DIRECTORY)
-	    message(STATUS "exiv2_dir2=${exiv2_dir2}")
-	    message(STATUS "result2=${result2}")
 
 	    # at this point we need a dirty, greasy hack... read_symlink appears
 	    # to return the wrong thing. so because we fixed the FindExiv2.cmake
 	    # file to actually return a real version number, we can make it ourselves...
 
 	    get_filename_component(exiv2_dir2 "${exiv2_dir}/${result}" DIRECTORY)
-	    message(STATUS "exiv2_dir2/libexiv2.EXIV2_VERSION.dylib=${exiv2_dir2}/libexiv2.${EXIV2_VERSION}.dylib")
 	    file(COPY "${exiv2_dir2}/libexiv2.${EXIV2_VERSION}.dylib" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/")
 	    file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/libexiv2.${EXIV2_VERSION}.dylib" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/libexiv2.dylib")
 
@@ -219,11 +214,8 @@ if(APPLE)
 	file(COPY "${EXIV2_LIBRARY}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/")
     endif()
 
-    #NEEDS LENSFUN, CURL, and ARCHIVE ADDED TO MAC BUILD
-    
     #LibArchive is a symlink
     file(READ_SYMLINK "${LibArchive_INCLUDE_DIR}/../lib/libarchive.dylib" libarchiveresult)
-    message(STATUS "libarchiveresult=${libarchiveresult}")
     file(COPY "${LibArchive_INCLUDE_DIR}/../lib/${libarchiveresult}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${libarchiveresult}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/libarchive.dylib")
 
@@ -232,14 +224,10 @@ if(APPLE)
     file(COPY "${CURL_INCLUDE_DIR}/../lib/${libcurlresult}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${libcurlresult}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/libcurl.dylib")
 
-    #LENSFUN
-    #message(STATUS "LENSFUN_LIBRARY=${LENSFUN_LIBRARY}")
+    #LENSFUN is a symlink
     file(READ_SYMLINK "${LENSFUN_LIBRARY}" liblensfunresult)
     get_filename_component(liblensfun_dir "${LENSFUN_LIBRARY}" DIRECTORY)
-    #message(STATUS "liblensfunresult=${liblensfunresult}")
-    #message(STATUS "liblensfun_dir=${liblensfun_dir}")
     file(READ_SYMLINK "${liblensfun_dir}/${liblensfunresult}" liblensfunresult2)
-    #message(STATUS "liblensfunresult=${liblensfunresult2}")
     file(COPY "${liblensfun_dir}/${liblensfunresult2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${liblensfunresult2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/liblensfun.dylib")
     
@@ -247,13 +235,9 @@ if(APPLE)
     if(IS_SYMLINK "${JPEG_LIBRARY_RELEASE}")
         file(READ_SYMLINK "${JPEG_LIBRARY_RELEASE}" result)
 	get_filename_component(libjpeg_dir "${JPEG_LIBRARY_RELEASE}" DIRECTORY)
-	message(STATUS "JPEG_LIBRARY_RELEASE=${JPEG_LIBRARY_RELEASE}")
-	message(STATUS "result=${result}")
         if(IS_SYMLINK "${libjpeg_dir}/${result}")
             file(READ_SYMLINK "${libjpeg_dir}/${result}" result2)
-	    message(STATUS "result=${result2}")
 	    get_filename_component(libjpeg_dir2 "${libjpeg_dir}/${result}" DIRECTORY)
-	    message(STATUS "libjpeg_dir2=${libjpeg_dir2}")
             file(COPY "${libjpeg_dir2}/${result2}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
             file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result2}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/libjpeg.dylib")
         endif()
@@ -261,7 +245,6 @@ if(APPLE)
 
     if(IS_SYMLINK "${TIFF_LIBRARY_RELEASE}")
         file(READ_SYMLINK "${TIFF_LIBRARY_RELEASE}" result)
-	message(STATUS "result=${result}")
 	get_filename_component(libtiff_dir "${TIFF_LIBRARY_RELEASE}" DIRECTORY)
         if(IS_SYMLINK "${libtiff_dir}/${result}")
 	    file(READ_SYMLINK "${libtiff_dir}/${result}" result2)
@@ -273,7 +256,6 @@ if(APPLE)
 
     file(COPY "${librtprocess_dylib}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
     get_filename_component(librtprocess_name "${librtprocess_dylib}" NAME)
-    #message(STATUS "librtprocess_name=${librtprocess_name}")
     file(RENAME "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${librtprocess_name}" "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/librtprocess.0.dylib")
     file(COPY "${OpenMP_libomp_LIBRARY}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
 
