@@ -44,15 +44,24 @@ Then run `make` and run `make install` as root.
 
 ## Building on MacOS:
 
-Use the following commands to build the Filmulator application on macOS. 
+You'll need to know the locations of a couple things in order to build this. They're not hard to find, just use Finder's search functionality to find them. Wherever they are, we need the real dynamic libraries (.dylib), not the symbolic links that point somewhere else. That's important!  We need:
+
+libomp.dylib: it should be somewhere like /opt/local/lib/libomp.dylib. If you installed from homebrew, that's probably where it is. Replace wherever it is into `-DOpenMP_libomp_LIBRARY=` and `-fopenmp` below.
+
+libarchive.dylib: If you installed from homebrew, it probably needs to be /usr/local/Cellar/libarchive/3.4.3/include like below. Put this path into `-DLibArchive_INCLUDE_DIR`.
+
+librtprocess: This needs to point towards the .dylib file for librtprocess. If you installed librtprocess from source, it probably in /opt/local/lib/librtprocess.0.0.1.dylib like below. Wherever it is, put it into `-Dlibrtprocess_dylib`.
+
+QT: If you installed this from homebrew, it's probably at /usr/local/Cellar/qt/5.13.1/. Wherever it is, put it in the `export QT=` command below.
+
+
+Once you have all those figured out, the following commands, edited according to your locations detailed above, should build the Filmulator application on macOS. 
 
 1. `cd ~/filmulator-gui/filmulator-gui`
 2. `mkdir build && cd build`
-3. `export QT=~/Qt/5.12.3/clang_64`
-4. `cmake -DCMAKE_BUILD_TYPE="RELEASE" -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS=-I/opt/local/include -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp /opt/local/lib/libomp.dylib -I/opt/local/include" -DOpenMP_CXX_LIB_NAMES="libomp" -DOpenMP_libomp_LIBRARY=/opt/local/lib/libomp.dylib -DCMAKE_INSTALL_PREFIX=/opt/local -DCMAKE_SHARED_LINKER_FLAGS=-L/opt/local/lib -DCMAKE_PREFIX_PATH=$(echo $QT/lib/cmake/* | sed -Ee 's$ $;$g') -G "Unix Makefiles" -DCMAKE_VERBOSE_MAKEFILE=1 ..`
+3. `export QT=/usr/local/Cellar/qt/5.13.1`
+4. `cmake -DCMAKE_BUILD_TYPE="RELEASE" -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS=-I/opt/local/include -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp /opt/local/lib/libomp/libomp.dylib -I/opt/local/include" -DOpenMP_CXX_LIB_NAMES="libomp" -DOpenMP_libomp_LIBRARY=/opt/local/lib/libomp/libomp.dylib -DCMAKE_INSTALL_PREFIX=/opt/local -DCMAKE_SHARED_LINKER_FLAGS=-L/opt/local/lib -DCMAKE_PREFIX_PATH=$(echo $QT/lib/cmake/* | sed -Ee 's$ $;$g') -G "Unix Makefiles" -DCMAKE_VERBOSE_MAKEFILE=1 -DLibArchive_INCLUDE_DIR=/usr/local/Cellar/libarchive/3.4.3/include -Dlibrtprocess_dylib=/opt/local/lib/librtprocess.0.0.1.dylib ..`
 5. `make -j8 install`
-
-> **_NOTE:_**  The location of QT and libomp may vary on your system.
 
 # Using Filmulator
 

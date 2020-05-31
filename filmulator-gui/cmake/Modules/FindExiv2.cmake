@@ -59,7 +59,7 @@ if (EXIV2_INCLUDE_DIR AND NOT EXIV2_VERSION)
         endif()
     endif()
 
-    if (NOT EXIV2_MAJOR_FOUND AND EXISTS ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h)
+    if (EXIV2_MAJOR_FOUND LESS 0 AND EXISTS ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h)
         file(READ ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h EXIV2_VERSION_CONTENT)
     endif()
 
