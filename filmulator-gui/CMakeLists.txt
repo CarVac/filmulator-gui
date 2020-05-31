@@ -133,7 +133,7 @@ target_include_directories(filmulator
         ${LibArchive_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
-    message(STATUS "EXIV2_VERSION=${EXIV2_VERSION}")
+    #message(STATUS "EXIV2_VERSION=${EXIV2_VERSION}")
 
 target_link_libraries(filmulator
     Qt5::Core
@@ -249,8 +249,6 @@ if(APPLE)
 	get_filename_component(libjpeg_dir "${JPEG_LIBRARY_RELEASE}" DIRECTORY)
 	message(STATUS "JPEG_LIBRARY_RELEASE=${JPEG_LIBRARY_RELEASE}")
 	message(STATUS "result=${result}")
-	#file(COPY "${libjpeg_dir}/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
-	#if(IS_SYMLINK "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks/${result}")
         if(IS_SYMLINK "${libjpeg_dir}/${result}")
             file(READ_SYMLINK "${libjpeg_dir}/${result}" result2)
 	    message(STATUS "result=${result2}")
@@ -265,7 +263,6 @@ if(APPLE)
         file(READ_SYMLINK "${TIFF_LIBRARY_RELEASE}" result)
 	message(STATUS "result=${result}")
 	get_filename_component(libtiff_dir "${TIFF_LIBRARY_RELEASE}" DIRECTORY)
-	#file(COPY "${TIFF_INCLUDE_DIR}/../lib/${result}" DESTINATION "${CMAKE_SOURCE_DIR}/build/Filmulator.app/Contents/Frameworks")
         if(IS_SYMLINK "${libtiff_dir}/${result}")
 	    file(READ_SYMLINK "${libtiff_dir}/${result}" result2)
 	    get_filename_component(libtiff_dir2 "${libtiff_dir}/${result}" DIRECTORY)
