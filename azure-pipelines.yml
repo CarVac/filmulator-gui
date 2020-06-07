@@ -44,15 +44,14 @@ steps:
       cd lensfun
       git clone https://github.com/lensfun/lensfun lf
       echo "done clone"
-      #sed -i '/FIND_PACKAGE(GLIB2/d' ./lf/CMakeLists.txt
+      # sed -i '/FIND_PACKAGE(GLIB2/d' ./lf/CMakeLists.txt
       mkdir buildDir
       cd buildDir
       set HOME=.
-      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/mingw64/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/mingw64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/mingw64/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/mingw64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install >lensfunout.log"
-      cat lensfunout.log
     displayName: build lensfun
   - script: |
       mkdir build
