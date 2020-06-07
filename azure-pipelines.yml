@@ -44,7 +44,7 @@ steps:
       cd lensfun
       git clone https://github.com/lensfun/lensfun lf
       echo "done clone"
-      %MSYS_BASH% -c "sed -i '/FIND_PACKAGE(GLIB2/d' ./CMakeLists.txt"
+      sed -i '/FIND_PACKAGE(GLIB2/d' ./CMakeLists.txt
       mkdir buildDir
       cd buildDir
       set HOME=.
