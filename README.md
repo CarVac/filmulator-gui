@@ -24,7 +24,7 @@ libexiv2
 libjpeg
 libraw
 librtprocess 0.10
-liblensfun 0.3.95 or newer
+liblensfun 0.3.95 (must be exact)
 libcurl
 libarchive
 ```
