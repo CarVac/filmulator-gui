@@ -39,6 +39,7 @@ script:
     #build lensfun
   - git clone https://github.com/lensfun/lensfun.git
   - cd lensfun
+  - git checkout b7c7e49a3601690f3225b99a0acbe7272fe68bfa
   - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE="Release" ..

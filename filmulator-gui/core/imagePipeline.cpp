@@ -686,20 +686,25 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 lens = lensList[0];
 
                 //Now we set up the modifier itself with the lens and processing flags
-                lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
+                //lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
+                //The above version is for master. v0.3.95 is different.
+                lfModifier * mod = new lfModifier(cropFactor, width, height, LF_PF_F32);
 
                 int modflags = 0;
                 if (demosaicParam.lensfunCA && !isMonochrome)
                 {
-                    modflags |= mod->EnableTCACorrection();
+                    //modflags |= mod->EnableTCACorrection();
+                    modflags |= mod->EnableTCACorrection(lens, demosaicParam.focalLength);
                 }
                 if (demosaicParam.lensfunVignetting)
                 {
-                    modflags |= mod->EnableVignettingCorrection(demosaicParam.fnumber, 1000.0f);
+                    //modflags |= mod->EnableVignettingCorrection(demosaicParam.fnumber, 1000.0f);
+                    modflags |= mod->EnableVignettingCorrection(lens, demosaicParam.focalLength, demosaicParam.fnumber, 1000.0f);
                 }
                 if (demosaicParam.lensfunDistortion)
                 {
-                    modflags |= mod->EnableDistortionCorrection();
+                    //modflags |= mod->EnableDistortionCorrection();
+                    modflags |= mod->EnableDistortionCorrection(lens, demosaicParam.focalLength);
                     modflags |= mod->EnableScaling(mod->GetAutoScale(false));
                     cout << "Auto scale factor: " << mod->GetAutoScale(false) << endl;
                 }
