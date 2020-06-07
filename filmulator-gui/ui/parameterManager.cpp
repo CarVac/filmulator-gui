@@ -3276,10 +3276,28 @@ void ParameterManager::updateAvailability()
                 std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
                 bool isMonochrome = wb.length()==0;
 
-                const int availableMods = lensList[0]->AvailableModifications(cropFactor);
-                lensfunCaAvail   = (availableMods & LF_MODIFY_TCA) && !isMonochrome;
-                lensfunVignAvail = availableMods & LF_MODIFY_VIGNETTING;
-                lensfunDistAvail = availableMods & LF_MODIFY_DISTORTION;
+                auto calibrationSet = lensList[0]->GetCalibrationSets();
+
+                int i = 0;
+                while (calibrationSet[i])
+                {
+                    auto c = calibrationSet[i];
+                    const float r = cropFactor / c->Attributes.CropFactor;
+                    if ((r >= 0.96) || (cropFactor < 1e-6f))
+                    {
+                        lensfunCaAvail   = (c->HasTCA() && !isMonochrome);
+                        lensfunVignAvail = (c->HasVignetting());
+                        lensfunDistAvail = (c->HasDistortion());
+                    }
+                    i++;
+                }
+
+                //The latter function is only available in lensfun master, not lensfun 3.95
+                // So I duplicated its functionality above.
+                //const int availableMods = lensList[0]->AvailableModifications(cropFactor);
+                //lensfunCaAvail   = (availableMods & LF_MODIFY_TCA) && !isMonochrome;
+                //lensfunVignAvail = availableMods & LF_MODIFY_VIGNETTING;
+                //lensfunDistAvail = availableMods & LF_MODIFY_DISTORTION;
                 emit lensfunCaAvailChanged();
                 emit lensfunVignAvailChanged();
                 emit lensfunDistAvailChanged();
