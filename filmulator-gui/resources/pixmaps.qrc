@@ -7,5 +7,6 @@
         <file>refresh.png</file>
         <file>rotateleft.png</file>
         <file>uparrow.png</file>
+        <file>errortriangle.png</file>
     </qresource>
 </RCC>

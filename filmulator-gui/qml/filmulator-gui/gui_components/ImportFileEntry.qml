@@ -39,37 +39,25 @@ Rectangle {
         }
     }
 
-    onErroneousChanged: {
-        if (erroneous) {
-            pulseColor.start
-        } else {
-            pulseColor.complete()
-        }
-    }
-
     Rectangle {
         id: textEntryRect
         color: "black"
-        SequentialAnimation on color {
-            id: pulseColor
-            running: root.erroneous
-            loops: Animation.Infinite
-            ColorAnimation {
-                from: "black"
-                to: Colors.darkOrange
-                duration: 1000
-            }
-            ColorAnimation {
-                from: Colors.darkOrange
-                to: "black"
-                duration: 1000
-            }
-        }
-
         width: parent.width - 2*__padding
         height: 25 * uiScale
         x: __padding
         y: 25 * uiScale + __padding
+
+        Image {
+            id: errorIcon
+            width: 20 * uiScale
+            height: 20 * uiScale
+            x: parent.width - width - __padding
+            y: 4 * uiScale
+            source: "qrc:///icons/errortriangle.png"
+            antialiasing: true
+            visible: root.erroneous
+        }
+
         TextInput {
             id: textEntryBox
             x: __padding

@@ -1754,33 +1754,31 @@ SlimSplitView {
             id: errorBox
             x: 200 * uiScale
             y: 0 * uiScale
-            width: parent.width - (200 * uiScale)
+            width: parent.width - ((200 + 14*4 + 2) * uiScale)
             height: Math.ceil(30 * uiScale)
             color: "black"
-            SequentialAnimation on color {
-                id: pulseColor
-                running: true
-                loops: Animation.Infinite
-                ColorAnimation {
-                    from: "black"
-                    to: Colors.darkOrange
-                    duration: 1000
-                }
-                ColorAnimation {
-                    from: Colors.darkOrange
-                    to: "black"
-                    duration: 1000
-                }
-            }
             visible: parent.loadingError
+
+            Image {
+                id: errorIcon
+                width: 25 * uiScale
+                height: 25 * uiScale
+                x: 2 * uiScale
+                y: 4 * uiScale
+                source: "qrc:///icons/errortriangle.png"
+                antialiasing: true
+            }
+
             Text {
                 id: errorTextInfo
-                anchors.fill: parent
+                x: 28 * uiScale
+                y: 0 * uiScale
+                width: parent.width - x
+                height: parent.height
                 text: qsTr("Error: ") + photoBox.errorText + qsTr(" is not accessible.")
                 color: "white"
                 font.pixelSize: 12.0 * uiScale
                 elide: Text.ElideMiddle
-                horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
         }
@@ -1794,6 +1792,7 @@ SlimSplitView {
             width: 350 * uiScale
             height: active ? 400 * uiScale : 30 * uiScale
             radius: 5 * uiScale
+            visible: !photoBox.loadingError
             property bool active: false
             color: active ? Colors.darkGray : "black"
 
