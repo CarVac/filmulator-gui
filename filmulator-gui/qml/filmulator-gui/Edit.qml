@@ -127,19 +127,19 @@ SlimSplitView {
 
                     Connections {
                         target: settings
-                        onMipmapViewChanged: topImage.mipmap = settings.getMipmapView()
+                        function onMipmapViewChanged() { topImage.mipmap = settings.getMipmapView() }
                     }
 
                     property string state: "nl"//not loaded
 
                     Connections {
                         target: paramManager
-                        onImageIndexChanged: {
+                        function onImageIndexChanged() {
                             //this happens when paramManager.selectImage is performed and the selected image changed
                             topImage.state = "lt"//loading thumbnail
                             //selectImage still emits update image via paramChargeWrapper so we don't need to do any more
                         }
-                        onUpdateImage: {
+                        function onUpdateImage(newImage) {
                             if (newImage) {//If this comes from paramManager.selectImage, then we want to cancel crop.
                                 cancelCropping = true
                                 requestingCropping = false
@@ -266,7 +266,7 @@ SlimSplitView {
                     }
                     Connections {
                         target: settings
-                        onMipmapViewChanged: bottomImage.mipmap = settings.getMipmapView()
+                        function onMipmapViewChanged() { bottomImage.mipmap = settings.getMipmapView() }
                     }
                 }
                 MouseArea {
@@ -414,7 +414,7 @@ SlimSplitView {
                         ]
                         Connections {
                             target: imageRect
-                            onAspectTextChanged: {
+                            function onAspectTextChanged() {
                                 if (imageRect.aspectText == "") {
                                     aspectBox.state = "notVisible"
                                 } else {
@@ -697,7 +697,7 @@ SlimSplitView {
                     }
                     Connections {
                         target: root
-                        onCroppingChanged: {
+                        function onCroppingChanged() {
                             if (cropping) {
                                 cropDrag.updatePosition()
                                 if (root.imageReady) {
@@ -712,7 +712,7 @@ SlimSplitView {
                                 cropDrag.visible = false
                             }
                         }
-                        onImageReadyChanged: {
+                        function onImageReadyChanged() {
                             if (cropping) {
                                 cropDrag.enabled = true//only needed for quick preview
                             }
@@ -1637,7 +1637,7 @@ SlimSplitView {
             value: filmProvider.progress
             Connections {
                 target: filmProvider
-                onProgressChanged: progressBar.value = filmProvider.progress
+                function onProgressChanged() { progressBar.value = filmProvider.progress }
             }
             uiScale: root.uiScale
         }
@@ -1833,7 +1833,7 @@ SlimSplitView {
                 }
                 Connections {
                     target: paramManager
-                    onLensfunNameChanged: {
+                    function onLensfunNameChanged() {
                         textEntryRect.selectedLens = paramManager.lensfunName
                     }
                 }
@@ -1879,7 +1879,7 @@ SlimSplitView {
                     }
                     Connections {
                         target: paramManager
-                        onExifLensNameChanged: {
+                        function onExifLensNameChanged() {
                             lensFilterBox.text = paramManager.exifLensName
                         }
                     }
@@ -2118,11 +2118,11 @@ SlimSplitView {
 
         Connections {
             target: paramManager
-            onFileError: {
+            function onFileError() {
                 photoBox.errorText = paramManager.getFullFilenameQstr()
                 photoBox.loadingError = true
             }
-            onFilenameChanged: {
+            function onFilenameChanged() {
                 photoBox.loadingError = false
                 photoBox.errorText = ""
             }

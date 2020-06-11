@@ -76,7 +76,7 @@ Item {
                 cache: false
                 Connections {
                     target: filmProvider
-                    onThumbnailDone: {
+                    function onThumbnailDone() {
                         if (__waitingForThumb) {
                             //console.log('thumb received')
                             //thumb.cache = false

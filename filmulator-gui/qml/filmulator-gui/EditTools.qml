@@ -38,7 +38,7 @@ SlimSplitView {
             onWidthChanged: requestPaint()
             Connections {
                 target: filmProvider
-                onHistFinalChanged: mainHistoCanvas.requestPaint()
+                function onHistFinalChanged() { mainHistoCanvas.requestPaint() }
             }
 
             onPaint: Script.generateHistogram(1,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
@@ -91,7 +91,7 @@ SlimSplitView {
                         onWidthChanged: requestPaint();
                         Connections {
                             target: filmProvider
-                            onHistPreFilmChanged: rawHistoCanvas.requestPaint()
+                            function onHistPreFilmChanged() { rawHistoCanvas.requestPaint() }
                         }
 
                         onPaint: Script.generateHistogram(4,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
@@ -131,10 +131,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onCaEnabledChanged: {
+                        function onCaEnabledChanged() {
                             autoCASlider.value = paramManager.caEnabled
                         }
-                        onDefCaEnabledChanged: {
+                        function onDefCaEnabledChanged() {
                             autoCASlider.defaultValue = paramManager.defCaEnabled
                         }
                     }
@@ -172,10 +172,10 @@ SlimSplitView {
                     }
                     Connections {
                         target: paramManager
-                        onLensfunCaChanged: {
+                        function onLensfunCaChanged() {
                             lensfunCASwitch.isOn = (paramManager.lensfunCa == 1)
                         }
-                        onDefLensfunCaChanged: {
+                        function onDefLensfunCaChanged() {
                             lensfunCASwitch.defaultOn = (paramManager.defLensfunCa == 1)
                         }
                     }
@@ -203,10 +203,10 @@ SlimSplitView {
                     }
                     Connections {
                         target: paramManager
-                        onLensfunVignChanged: {
+                        function onLensfunVignChanged() {
                             lensfunVignSwitch.isOn = (paramManager.lensfunVign == 1)
                         }
-                        onDefLensfunVignChanged: {
+                        function onDefLensfunVignChanged() {
                             lensfunVignSwitch.defaultOn = (paramManager.defLensfunVign == 1)
                         }
                     }
@@ -234,10 +234,10 @@ SlimSplitView {
                     }
                     Connections {
                         target: paramManager
-                        onLensfunDistChanged: {
+                        function onLensfunDistChanged() {
                             lensfunDistSwitch.isOn = (paramManager.lensfunDist == 1)
                         }
-                        onDefLensfunDistChanged: {
+                        function onDefLensfunDistChanged() {
                             lensfunDistSwitch.defaultOn = (paramManager.defLensfunDist == 1)
                         }
                     }
@@ -266,10 +266,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onHighlightsChanged: {
+                        function onHighlightsChanged() {
                             highlightRecoverySlider.value = paramManager.highlights
                         }
-                        onDefHighlightsChanged: {
+                        function onDefHighlightsChanged() {
                             highlightRecoverySlider.defaultValue = paramManager.defHighlights
                         }
                     }
@@ -295,10 +295,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onTemperatureChanged: {
+                        function onTemperatureChanged() {
                             temperatureSlider.value = Math.log(paramManager.temperature)
                         }
-                        onDefTemperatureChanged: {
+                        function onDefTemperatureChanged() {
                             temperatureSlider.defaultValue = Math.log(paramManager.defTemperature)
                         }
                     }
@@ -323,10 +323,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onTintChanged: {
+                        function onTintChanged() {
                             tintSlider.value = Math.log(paramManager.tint)
                         }
-                        onDefTintChanged: {
+                        function onDefTintChanged() {
                             tintSlider.defaultValue = Math.log(paramManager.defTint);
                         }
                     }
@@ -354,10 +354,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onExposureCompChanged: {
+                        function onExposureCompChanged() {
                             exposureCompSlider.value = paramManager.exposureComp
                         }
-                        onDefExposureCompChanged: {
+                        function onDefExposureCompChanged() {
                             exposureCompSlider.defaultValue = paramManager.defExposureComp
                         }
                     }
@@ -386,7 +386,7 @@ SlimSplitView {
                         onWidthChanged: requestPaint();
                         Connections {
                             target: filmProvider
-                            onHistPreFilmChanged: preFilmHistoCanvas.requestPaint()
+                            function onHistPreFilmChanged() { preFilmHistoCanvas.requestPaint() }
                         }
 
                         onPaint: Script.generateHistogram(2,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
@@ -430,10 +430,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onToeBoundaryChanged: {
+                        function onToeBoundaryChanged() {
                             toeSlider.value = Math.sqrt(paramManager.toeBoundary)
                         }
-                        onDefToeBoundaryChanged: {
+                        function onDefToeBoundaryChanged() {
                             toeSlider.defaultValue = Math.sqrt(paramManager.defToeBoundary)
                         }
                     }
@@ -458,10 +458,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onRolloffBoundaryChanged: {
+                        function onRolloffBoundaryChanged() {
                             rolloffSlider.value = paramManager.rolloffBoundary
                         }
-                        onDefRolloffBoundaryChanged: {
+                        function onDefRolloffBoundaryChanged() {
                             rolloffSlider.defaultValue = paramManager.defRolloffBoundary
                         }
                     }
@@ -488,10 +488,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onFilmAreaChanged: {
+                        function onFilmAreaChanged() {
                             filmSizeSlider.value = Math.log(Math.sqrt(paramManager.filmArea))
                         }
-                        onDefFilmAreaChanged: {
+                        function onDefFilmAreaChanged() {
                             filmSizeSlider.defaultValue = Math.log(Math.sqrt(paramManager.defFilmArea))
                         }
                     }
@@ -516,10 +516,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onLayerMixConstChanged: {
+                        function onLayerMixConstChanged() {
                             filmDramaSlider.value = 100*paramManager.layerMixConst
                         }
-                        onDefLayerMixConstChanged: {
+                        function onDefLayerMixConstChanged() {
                             filmDramaSlider.defaultValue = 100*paramManager.defLayerMixConst
                         }
                     }
@@ -545,10 +545,10 @@ SlimSplitView {
                     }
                     Connections {
                         target: paramManager
-                        onAgitateCountChanged: {
+                        function onAgitateCountChanged() {
                             overdriveSwitch.isOn = (paramManager.agitateCount == 0)
                         }
-                        onDefAgitateCountChanged: {
+                        function onDefAgitateCountChanged() {
                             overdriveSwitch.defaultOn = (paramManager.defAgitateCount == 0)
                         }
                     }
@@ -577,7 +577,7 @@ SlimSplitView {
                         onWidthChanged: requestPaint();
                         Connections {
                             target: filmProvider
-                            onHistPostFilmChanged: postFilmHistoCanvas.requestPaint()
+                            function onHistPostFilmChanged() { postFilmHistoCanvas.requestPaint() }
                         }
 
                         onPaint: Script.generateHistogram(3,this.getContext('2d'),width,height,padding,lineWidth,root.uiScale)
@@ -623,10 +623,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onBlackpointChanged: {
+                        function onBlackpointChanged() {
                             blackpointSlider.value = Math.sqrt(paramManager.blackpoint*1000)
                         }
-                        onDefBlackpointChanged: {
+                        function onDefBlackpointChanged() {
                             blackpointSlider.defaultValue = Math.sqrt(paramManager.defBlackpoint*1000)
                         }
                     }
@@ -651,10 +651,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onWhitepointChanged: {
+                        function onWhitepointChanged() {
                             whitepointSlider.value = paramManager.whitepoint
                         }
-                        onDefWhitepointChanged: {
+                        function onDefWhitepointChanged() {
                             whitepointSlider.defaultValue = paramManager.defWhitepoint
                         }
                     }
@@ -679,10 +679,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onShadowsYChanged: {
+                        function onShadowsYChanged() {
                             shadowBrightnessSlider.value = paramManager.shadowsY
                         }
-                        onDefShadowsYChanged: {
+                        function onDefShadowsYChanged() {
                             shadowBrightnessSlider.defaultValue = paramManager.defShadowsY
                         }
                     }
@@ -707,10 +707,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onHighlightsYChanged: {
+                        function onHighlightsYChanged() {
                             highlightBrightnessSlider.value = paramManager.highlightsY
                         }
-                        onDefHighlightsYChanged: {
+                        function onDefHighlightsYChanged() {
                             highlightBrightnessSlider.defaultValue = paramManager.defHighlightsY
                         }
                     }
@@ -736,10 +736,10 @@ SlimSplitView {
                     }
                     Connections {
                         target: paramManager
-                        onMonochromeChanged: {
+                        function onMonochromeChanged() {
                             monochromeSwitch.isOn = paramManager.monochrome
                         }
-                        onDefMonochromeChanged: {
+                        function onDefMonochromeChanged() {
                             monochromeSwitch.defaultOn = paramManager.defMonochrome
                         }
                     }
@@ -766,10 +766,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onVibranceChanged: {
+                        function onVibranceChanged() {
                             vibranceSlider.value = paramManager.vibrance
                         }
-                        onDefVibranceChanged: {
+                        function onDefVibranceChanged() {
                             vibranceSlider.defaultValue = paramManager.defVibrance
                         }
                     }
@@ -796,10 +796,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onSaturationChanged: {
+                        function onSaturationChanged() {
                             saturationSlider.value = paramManager.saturation
                         }
-                        onDefSaturationChanged: {
+                        function onDefSaturationChanged() {
                             saturationSlider.defaultValue = paramManager.defSaturation
                         }
                     }
@@ -825,10 +825,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onBwRmultChanged: {
+                        function onBwRmultChanged() {
                             bwRmultSlider.value = paramManager.bwRmult
                         }
-                        onDefBwRmultChanged: {
+                        function onDefBwRmultChanged() {
                             bwRmultSlider.defaultValue = paramManager.defBwRmult
                         }
                     }
@@ -854,10 +854,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onBwGmultChanged: {
+                        function onBwGmultChanged() {
                             bwGmultSlider.value = paramManager.bwGmult
                         }
-                        onDefBwGmultChanged: {
+                        function onDefBwGmultChanged() {
                             bwGmultSlider.defaultValue = paramManager.defBwGmult
                         }
                     }
@@ -883,10 +883,10 @@ SlimSplitView {
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        onBwBmultChanged: {
+                        function onBwBmultChanged() {
                             bwBmultSlider.value = paramManager.bwBmult
                         }
-                        onDefBwBmultChanged: {
+                        function onDefBwBmultChanged() {
                             bwBmultSlider.defaultValue = paramManager.defBwBmult
                         }
                     }
@@ -950,10 +950,10 @@ SlimSplitView {
     }
     Connections {
         target: paramManager
-        onFileError: {
+        function onFileError() {
             root.imageError = true
         }
-        onFilenameChanged: {
+        function onFilenameChanged() {
             root.imageError = false
         }
     }
