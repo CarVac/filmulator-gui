@@ -127,7 +127,7 @@ SlimSplitView {
                             }
                         }
                     }
-                    onResetPerfomed: paramManager.resetAutoCa()
+                    onResetPerformed: paramManager.resetAutoCa()
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager

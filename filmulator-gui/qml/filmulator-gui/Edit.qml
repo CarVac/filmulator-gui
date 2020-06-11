@@ -231,6 +231,7 @@ SlimSplitView {
                         }
                         else if (topImage.status == Image.Error) {
                             root.imageReady = false
+                            console.log("top image errored")
                             //Increment the image index
                             var num = (topImage.index + 1) % 1000000//1 in a million
                             topImage.index = num;

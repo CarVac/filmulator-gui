@@ -1043,6 +1043,7 @@ void ParameterManager::setHighlightsY(float highlightsY)
 {
     if (!justInitialized)
     {
+        cout << "highlights Y changed" << endl;
         QMutexLocker paramLocker(&paramMutex);
         m_highlightsY = highlightsY;
         validity = min(validity, Valid::blackwhite);
@@ -3256,11 +3257,14 @@ void ParameterManager::updateAvailability()
     {
         //If the lens name starts with a backslash, don't filter by camera
         QString temp_lensfunName = s_lensfunName;
-        if (temp_lensfunName.front() == "\\")
+        if (temp_lensfunName.length() > 0)
         {
-            temp_lensfunName.remove(0,1);
-        } else {
-            camera = cameraList[0];
+            if (temp_lensfunName.front() == "\\")
+            {
+                temp_lensfunName.remove(0,1);
+            } else {
+                camera = cameraList[0];
+            }
         }
         const float cropFactor = cameraList[0]->CropFactor;
         const std::string lensModel = temp_lensfunName.toStdString();

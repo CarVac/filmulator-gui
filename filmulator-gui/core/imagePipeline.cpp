@@ -654,6 +654,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
 
         //Lensfun processing
+        cout << "lensfun start" << endl;
         lfDatabase * ldb = new lfDatabase;
         QDir dir = QDir::home();
         QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -669,18 +670,21 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             const float cropFactor = cameraList[0]->CropFactor;
 
             QString tempLensName = demosaicParam.lensName;
-            if (tempLensName.front() == "\\")
+            if (tempLensName.length() > 0)
             {
-                //if the lens name starts with a backslash, don't filter by camera
-                tempLensName.remove(0,1);
-            } else {
-                //if it doesn't start with a backslash, filter by camera
-                camera = cameraList[0];
+                if (tempLensName.front() == "\\")
+                {
+                    //if the lens name starts with a backslash, don't filter by camera
+                    tempLensName.remove(0,1);
+                } else {
+                    //if it doesn't start with a backslash, filter by camera
+                    camera = cameraList[0];
+                }
             }
             std::string lensName = tempLensName.toStdString();
             const lfLens * lens = NULL;
             const lfLens ** lensList = NULL;
-            lensList = ldb->FindLenses(NULL, NULL, lensName.c_str());
+            lensList = ldb->FindLenses(camera, NULL, lensName.c_str());
             if (lensList)
             {
                 lens = lensList[0];
