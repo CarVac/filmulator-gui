@@ -6,17 +6,17 @@ dist: xenial
 before_install:
     # C++14
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    # Qt 5.10.1
-    - sudo add-apt-repository ppa:beineri/opt-qt-5.12.3-xenial -y
+    # Qt 5.14.2
+    - sudo add-apt-repository ppa:beineri/opt-qt-5.14.2-xenial -y
     - sudo apt-get update -qq
     
 install: 
     # C++14
     - sudo apt-get -y install g++-9
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
-    # Qt 5.12.3
-    - sudo apt-get -y install qt512base qt512declarative qt512quickcontrols qt512quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcurl4-openssl-dev libarchive-dev
-    - source /opt/qt512/bin/qt512-env.sh
+    # Qt 5.14.2
+    - sudo apt-get -y install qt514base qt514declarative qt514quickcontrols qt514quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcurl4-openssl-dev libarchive-dev
+    - source /opt/qt514/bin/qt514-env.sh
 
 script:
     #build libraw
