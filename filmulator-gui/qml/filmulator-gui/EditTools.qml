@@ -426,6 +426,8 @@ SlimSplitView {
                     valueText: (value*value/65535).toFixed(6)
                     onValueChanged: {
                         paramManager.toeBoundary = value*value
+                        //The parameter manager won't notify anything else that the param has changed, so we need to manually update the consumer
+                        toeLine.x = Qt.binding(function() {return preFilmHistoCanvas.padding + paramManager.toeBoundary/65535*(preFilmHistoCanvas.width-2*preFilmHistoCanvas.padding)})
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
@@ -454,6 +456,8 @@ SlimSplitView {
                     valueText: (value/65535).toFixed(6)
                     onValueChanged: {
                         paramManager.rolloffBoundary = value
+                        //The parameter manager won't notify anything else that the param has changed, so we need to manually update the consumer
+                        rolloffLine.x = Qt.binding(function() {return preFilmHistoCanvas.padding + paramManager.rolloffBoundary/65535*(preFilmHistoCanvas.width-2*preFilmHistoCanvas.padding)})
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
@@ -619,6 +623,9 @@ SlimSplitView {
                     valueText: (value*value/2).toFixed(5)
                     onValueChanged: {
                         paramManager.blackpoint = value*value/1000
+                        //The parameter manager won't notify anything else that the param has changed, so we need to manually update the consumers
+                        blackpointLine.x = Qt.binding(function() {return postFilmHistoCanvas.padding + paramManager.blackpoint/.0025*(postFilmHistoCanvas.width-2*postFilmHistoCanvas.padding)})
+                        whitepointLine.x = Qt.binding(function() {return postFilmHistoCanvas.padding + (paramManager.blackpoint+paramManager.whitepoint)/.0025*(postFilmHistoCanvas.width-2*postFilmHistoCanvas.padding)})
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
@@ -647,6 +654,8 @@ SlimSplitView {
                     valueText: (value*500).toFixed(5)// 1000/2
                     onValueChanged: {
                         paramManager.whitepoint = value
+                        //The parameter manager won't notify anything else that the param has changed, so we need to manually update the consumer
+                        whitepointLine.x = Qt.binding(function() {return postFilmHistoCanvas.padding + (paramManager.blackpoint+paramManager.whitepoint)/.0025*(postFilmHistoCanvas.width-2*postFilmHistoCanvas.padding)})
                     }
                     onEditComplete: paramManager.writeback()
                     Connections {
