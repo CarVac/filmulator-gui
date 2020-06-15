@@ -24,7 +24,7 @@ libexiv2
 libjpeg
 libraw
 librtprocess 0.10
-liblensfun 0.3.95 (must be exact)
+liblensfun 0.3.95 exactly for Linux and Windows, and the latest git version for MacOS
 libcurl
 libarchive
 ```
