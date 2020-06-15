@@ -427,7 +427,10 @@ QString identifyLens(const std::string fullFilename)
     }
 
     cout << "before ldb free" << endl;
-    delete ldb;
+    if (ldb != NULL)
+    {
+        delete ldb;
+    }
     cout << "after ldb free" << endl;
     return lensName;
 }
