@@ -98,6 +98,7 @@ if(APPLE)
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
+    target_compile_definitions(filmulator PRIVATE LF_GIT)
 elseif(WIN32)
     add_executable(filmulator WIN32
         ${filmulator_SRCS}

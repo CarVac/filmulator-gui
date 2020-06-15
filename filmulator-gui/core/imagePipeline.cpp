@@ -690,25 +690,36 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 lens = lensList[0];
 
                 //Now we set up the modifier itself with the lens and processing flags
-                //lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
-                //The above version is for master. v0.3.95 is different.
+#ifdef LF_GIT
+                lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
+#else //lensfun v0.3.95
                 lfModifier * mod = new lfModifier(cropFactor, width, height, LF_PF_F32);
+#endif
 
                 int modflags = 0;
                 if (demosaicParam.lensfunCA && !isMonochrome)
                 {
-                    //modflags |= mod->EnableTCACorrection();
+#ifdef LF_GIT
+                    modflags |= mod->EnableTCACorrection();
+#else //lensfun v0.3.95
                     modflags |= mod->EnableTCACorrection(lens, demosaicParam.focalLength);
+#endif
                 }
                 if (demosaicParam.lensfunVignetting)
                 {
-                    //modflags |= mod->EnableVignettingCorrection(demosaicParam.fnumber, 1000.0f);
+#ifdef LF_GIT
+                    modflags |= mod->EnableVignettingCorrection(demosaicParam.fnumber, 1000.0f);
+#else //lensfun v0.3.95
                     modflags |= mod->EnableVignettingCorrection(lens, demosaicParam.focalLength, demosaicParam.fnumber, 1000.0f);
+#endif
                 }
                 if (demosaicParam.lensfunDistortion)
                 {
-                    //modflags |= mod->EnableDistortionCorrection();
+#ifdef LF_GIT
+                    modflags |= mod->EnableDistortionCorrection();
+#else //lensfun v0.3.95
                     modflags |= mod->EnableDistortionCorrection(lens, demosaicParam.focalLength);
+#endif
                     modflags |= mod->EnableScaling(mod->GetAutoScale(false));
                     cout << "Auto scale factor: " << mod->GetAutoScale(false) << endl;
                 }
