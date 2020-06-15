@@ -846,7 +846,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
 
-                delete mod;
+                if (mod != NULL)
+                {
+                    delete mod;
+                }
             }
             lf_free(lensList);
         }
