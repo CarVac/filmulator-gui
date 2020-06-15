@@ -1280,7 +1280,6 @@ unsigned int gcd(unsigned int u, unsigned int v)
 //If there is no ProcTable stuff for the image, it will load from defaults and write to the db.
 void ParameterManager::selectImage(const QString imageID)
 {
-    cout << "ParamManager selecting image " << imageID.toStdString() << endl;
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
     disableParamChange();//Prevent aborting of computation.
 
