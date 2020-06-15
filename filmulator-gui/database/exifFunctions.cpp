@@ -287,6 +287,12 @@ QString exifLens(const std::string fullFilename)
             //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
         }
     }
+
+    if (ldb != NULL)
+    {
+        delete ldb;
+    }
+
     return QString::fromStdString(lensModel);
 }
 

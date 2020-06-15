@@ -853,7 +853,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         lf_free(cameraList);
 
         //cleanup lensfun
-        delete ldb;
+        if (ldb != NULL)
+        {
+            delete ldb;
+        }
 
         valid = paramManager->markDemosaicComplete();
         updateProgress(valid, 0.0f);
