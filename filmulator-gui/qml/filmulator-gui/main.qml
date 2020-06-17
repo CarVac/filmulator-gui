@@ -12,7 +12,7 @@ ApplicationWindow {
     property int tempVisibility
     width: 1366 * uiScale
     height: 768 * uiScale
-    minimumWidth: 1366 * uiScale
+    minimumWidth: 1200 * uiScale
     minimumHeight: 700 * uiScale
 
     signal tooltipWanted(string text, int x, int y)

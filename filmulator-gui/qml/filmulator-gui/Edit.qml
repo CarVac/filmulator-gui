@@ -1686,6 +1686,7 @@ SlimSplitView {
             id: filenameText
             x: 340 * uiScale
             y: 1 * uiScale
+            width: lensfunBox.x - x
             color: "white"
             text: paramManager.filename
             font.pixelSize: 12.0 * uiScale
@@ -1704,6 +1705,7 @@ SlimSplitView {
             id: cameraText
             x: 340 * uiScale
             y: 15 * uiScale
+            width: lensfunBox.x - x
             color: "white"
             text: paramManager.model
             font.pixelSize: 12.0 * uiScale
