@@ -1349,9 +1349,9 @@ void ParameterManager::selectImage(const QString imageID)
         if (expTime > 0.5)
         {
             exposureTime = QString::number(expTime, 'f', 1);
-        }
-        else
-        {
+        } else if (expTime < 0.1 && expTime > 0) { //some phones have weird fractional shutter speeds
+            exposureTime = QString("1/%1").arg(round(1.0/expTime));
+        } else {
             exposureTime = QString("%1/%2").arg(numerator).arg(denominator);
         }
     }
