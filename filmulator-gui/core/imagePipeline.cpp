@@ -277,7 +277,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //cout << "is weird: " << isWeird << endl;
             std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
             //cout << "white balance: " << wb << endl;
-            isMonochrome = wb.length()==0;
+            isMonochrome = isWeird && wb.length()==0;
             //cout << "is monochrome: " << isMonochrome << endl;
             isSraw = isSraw || (isWeird && !isMonochrome);
             //cout << "is full color raw: " << isSraw << endl;
