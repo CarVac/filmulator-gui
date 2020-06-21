@@ -61,7 +61,7 @@ Rectangle {
             id: textEntryBox
             x: __padding
             y: __padding * 1.25
-            width: parent.width - x - (root.erroneous ? errorIcon.width : 0)
+            width: parent.width - x - (root.erroneous ? __padding + errorIcon.width : 0)
             height: parent.height - y
             color: "white"
             selectByMouse: true
