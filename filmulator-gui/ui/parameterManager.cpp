@@ -117,7 +117,6 @@ void ParameterManager::setTiffIn(bool tiffIn)
         m_tiffIn = tiffIn;
         validity = min(validity, Valid::none);
         paramLocker.unlock();
-        emit tiffInChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setTiff"));
     }
@@ -131,7 +130,6 @@ void ParameterManager::setJpegIn(bool jpegIn)
         m_jpegIn = jpegIn;
         validity = min(validity, Valid::none);
         paramLocker.unlock();
-        emit jpegInChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setJpeg"));
     }
@@ -213,7 +211,6 @@ void ParameterManager::setCaEnabled(int caEnabled)
         m_caEnabled = caEnabled;
         validity = min(validity, Valid::load);
         paramLocker.unlock();
-        emit caEnabledChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setCaEnabled"));
     }
@@ -227,7 +224,6 @@ void ParameterManager::setHighlights(int highlights)
         m_highlights = highlights;
         validity = min(validity, Valid::load);
         paramLocker.unlock();
-        emit highlightsChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setHighlights"));
     }
@@ -245,7 +241,6 @@ void ParameterManager::setLensfunName(QString lensName)
         m_lensfunName = lensName;
         validity = min(validity, Valid::load);
         paramLocker.unlock();
-        emit lensfunNameChanged();
         //We need to check what lens corrections are available based on the camera and lens
         updateAvailability();
         QMutexLocker signalLocker(&signalMutex);
@@ -262,7 +257,6 @@ void ParameterManager::setLensfunCa(int caEnabled)
         m_lensfunCa = caEnabled;
         validity = min(validity, Valid::load);
         paramLocker.unlock();
-        emit lensfunCaChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLensfunCa"));
     }
@@ -277,7 +271,6 @@ void ParameterManager::setLensfunVign(int vignEnabled)
         m_lensfunVign = vignEnabled;
         validity = min(validity, Valid::load);
         paramLocker.unlock();
-        emit lensfunVignChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLensfunVign"));
     }
@@ -292,7 +285,6 @@ void ParameterManager::setLensfunDist(int distEnabled)
         m_lensfunDist = distEnabled;
         validity = min(validity, Valid::load);
         paramLocker.unlock();
-        emit lensfunDistChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLensfunDist"));
     }
@@ -363,7 +355,6 @@ void ParameterManager::setExposureComp(float exposureComp)
         m_exposureComp = exposureComp;
         validity = min(validity, Valid::demosaic);
         paramLocker.unlock();
-        emit exposureCompChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setExposureComp"));
     }
@@ -377,7 +368,6 @@ void ParameterManager::setTemperature(float temperature)
         m_temperature = temperature;
         validity = min(validity, Valid::demosaic);
         paramLocker.unlock();
-        emit temperatureChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setTemperature"));
     }
@@ -391,7 +381,6 @@ void ParameterManager::setTint(float tint)
         m_tint = tint;
         validity = min(validity, Valid::demosaic);
         paramLocker.unlock();
-        emit tintChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setTint"));
     }
@@ -478,7 +467,6 @@ void ParameterManager::setInitialDeveloperConcentration(float initialDeveloperCo
         m_initialDeveloperConcentration = initialDeveloperConcentration;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit initialDeveloperConcentrationChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setInitialDeveloperConcentration"));
     }
@@ -492,7 +480,6 @@ void ParameterManager::setReservoirThickness(float reservoirThickness)
         m_reservoirThickness = reservoirThickness;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit reservoirThicknessChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setReservoirThickness"));
     }
@@ -506,7 +493,6 @@ void ParameterManager::setActiveLayerThickness(float activeLayerThickness)
         m_activeLayerThickness = activeLayerThickness;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit activeLayerThicknessChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setActiveLayerThickness"));
     }
@@ -520,7 +506,6 @@ void ParameterManager::setCrystalsPerPixel(float crystalsPerPixel)
         m_crystalsPerPixel = crystalsPerPixel;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit crystalsPerPixelChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setCrystalsPerPixel"));
     }
@@ -534,7 +519,6 @@ void ParameterManager::setInitialCrystalRadius(float initialCrystalRadius)
         m_initialCrystalRadius = initialCrystalRadius;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit initialCrystalRadiusChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setInitialCrystalRadius"));
     }
@@ -548,7 +532,6 @@ void ParameterManager::setInitialSilverSaltDensity(float initialSilverSaltDensit
         m_initialSilverSaltDensity = initialSilverSaltDensity;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit initialSilverSaltDensityChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setInitialSilverSaltDensity"));
     }
@@ -562,7 +545,6 @@ void ParameterManager::setDeveloperConsumptionConst(float developerConsumptionCo
         m_developerConsumptionConst = developerConsumptionConst;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit developerConsumptionConstChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setDeveloperConsumptionConst"));
     }
@@ -576,7 +558,6 @@ void ParameterManager::setCrystalGrowthConst(float crystalGrowthConst)
         m_crystalGrowthConst = crystalGrowthConst;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit crystalGrowthConstChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setCrystalGrowthConst"));
     }
@@ -590,7 +571,6 @@ void ParameterManager::setSilverSaltConsumptionConst(float silverSaltConsumption
         m_silverSaltConsumptionConst = silverSaltConsumptionConst;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit silverSaltConsumptionConstChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setSilverSaltConsumptionConst"));
     }
@@ -604,7 +584,6 @@ void ParameterManager::setTotalDevelopmentTime(float totalDevelopmentTime)
         m_totalDevelopmentTime = totalDevelopmentTime;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit totalDevelopmentTimeChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setTotalDevelopmentTime"));
     }
@@ -618,7 +597,6 @@ void ParameterManager::setAgitateCount(int agitateCount)
         m_agitateCount = agitateCount;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit agitateCountChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setAgitateCount"));
     }
@@ -632,7 +610,6 @@ void ParameterManager::setDevelopmentSteps(int developmentSteps)
         m_developmentSteps = developmentSteps;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit developmentStepsChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setDevelopmentSteps"));
     }
@@ -646,7 +623,6 @@ void ParameterManager::setFilmArea(float filmArea)
         m_filmArea = filmArea;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit filmAreaChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setFilmArea"));
     }
@@ -660,7 +636,6 @@ void ParameterManager::setSigmaConst(float sigmaConst)
         m_sigmaConst = sigmaConst;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit sigmaConstChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setSigmaConst"));
     }
@@ -674,7 +649,6 @@ void ParameterManager::setLayerMixConst(float layerMixConst)
         m_layerMixConst = layerMixConst;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit layerMixConstChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLayerMixConst"));
     }
@@ -688,7 +662,6 @@ void ParameterManager::setLayerTimeDivisor(float layerTimeDivisor)
         m_layerTimeDivisor = layerTimeDivisor;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit layerTimeDivisorChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLayerTimeDivisor"));
     }
@@ -702,7 +675,6 @@ void ParameterManager::setRolloffBoundary(float rolloffBoundary)
         m_rolloffBoundary = rolloffBoundary;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit rolloffBoundaryChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setRolloffBoundary"));
     }
@@ -716,7 +688,6 @@ void ParameterManager::setToeBoundary(float toeBoundary)
         m_toeBoundary = toeBoundary;
         validity = min(validity, Valid::prefilmulation);
         paramLocker.unlock();
-        emit toeBoundaryChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setToeBoundary"));
     }
@@ -790,7 +761,6 @@ void ParameterManager::setBlackpoint(float blackpoint)
         m_blackpoint = blackpoint;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit blackpointChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setBlackpoint"));
     }
@@ -804,7 +774,6 @@ void ParameterManager::setWhitepoint(float whitepoint)
         m_whitepoint = whitepoint;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit whitepointChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setWhitepoint"));
     }
@@ -818,7 +787,6 @@ void ParameterManager::setCropHeight(float cropHeight)
         m_cropHeight = cropHeight;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit cropHeightChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setCropHeight"));
     }
@@ -832,7 +800,6 @@ void ParameterManager::setCropAspect(float cropAspect)
         m_cropAspect = cropAspect;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit cropHeightChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setCropAspect"));
     }
@@ -846,7 +813,6 @@ void ParameterManager::setCropVoffset(float cropVoffset)
         m_cropVoffset = cropVoffset;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit cropHeightChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setCropVoffset"));
     }
@@ -860,7 +826,6 @@ void ParameterManager::setCropHoffset(float cropHoffset)
         m_cropHoffset = cropHoffset;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit cropHeightChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setCropHoffset"));
     }
@@ -874,7 +839,6 @@ void ParameterManager::setRotation(int rotation)
         m_rotation = rotation;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit rotationChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setRotation"));
     }
@@ -893,7 +857,6 @@ void ParameterManager::rotateRight()
         m_rotation = rotation;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit rotationChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("rotateRight"));
         writeback();//Normally the slider has to call this when released, but this isn't a slider.
@@ -913,7 +876,6 @@ void ParameterManager::rotateLeft()
         m_rotation = rotation;
         validity = min(validity, Valid::filmulation);
         paramLocker.unlock();
-        emit rotationChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("rotateLeft"));
         writeback();//Normally the slider has to call this when released, but this isn't a slider.
@@ -1005,7 +967,6 @@ void ParameterManager::setShadowsX(float shadowsX)
         m_shadowsX = shadowsX;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit shadowsXChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setShadowsX"));
     }
@@ -1019,7 +980,6 @@ void ParameterManager::setShadowsY(float shadowsY)
         m_shadowsY = shadowsY;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit shadowsYChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setShadowsY"));
     }
@@ -1033,7 +993,6 @@ void ParameterManager::setHighlightsX(float highlightsX)
         m_highlightsX = highlightsX;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit highlightsXChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setHighlightsX"));
     }
@@ -1043,11 +1002,11 @@ void ParameterManager::setHighlightsY(float highlightsY)
 {
     if (!justInitialized)
     {
+        cout << "highlights Y changed" << endl;
         QMutexLocker paramLocker(&paramMutex);
         m_highlightsY = highlightsY;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit highlightsYChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setHighlightsY"));
     }
@@ -1061,7 +1020,6 @@ void ParameterManager::setVibrance(float vibrance)
         m_vibrance = vibrance;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit vibranceChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setVibrance"));
     }
@@ -1075,7 +1033,6 @@ void ParameterManager::setSaturation(float saturation)
         m_saturation = saturation;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit saturationChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setSaturation"));
     }
@@ -1089,7 +1046,6 @@ void ParameterManager::setMonochrome(bool monochrome)
         m_monochrome = monochrome;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit monochromeChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setMonochrome"));
     }
@@ -1103,7 +1059,6 @@ void ParameterManager::setBwRmult(float Rmult)
         m_bwRmult = Rmult;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit bwRmultChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setBwRmult"));
     }
@@ -1117,7 +1072,6 @@ void ParameterManager::setBwGmult(float Gmult)
         m_bwGmult = Gmult;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit bwGmultChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setBwGmult"));
     }
@@ -1131,7 +1085,6 @@ void ParameterManager::setBwBmult(float Bmult)
         m_bwBmult = Bmult;
         validity = min(validity, Valid::blackwhite);
         paramLocker.unlock();
-        emit bwBmultChanged();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setBwBmult"));
     }
@@ -1396,9 +1349,9 @@ void ParameterManager::selectImage(const QString imageID)
         if (expTime > 0.5)
         {
             exposureTime = QString::number(expTime, 'f', 1);
-        }
-        else
-        {
+        } else if (expTime < 0.1 && expTime > 0) { //some phones have weird fractional shutter speeds
+            exposureTime = QString("1/%1").arg(round(1.0/expTime));
+        } else {
             exposureTime = QString("%1/%2").arg(numerator).arg(denominator);
         }
     }
@@ -3256,11 +3209,14 @@ void ParameterManager::updateAvailability()
     {
         //If the lens name starts with a backslash, don't filter by camera
         QString temp_lensfunName = s_lensfunName;
-        if (temp_lensfunName.front() == "\\")
+        if (temp_lensfunName.length() > 0)
         {
-            temp_lensfunName.remove(0,1);
-        } else {
-            camera = cameraList[0];
+            if (temp_lensfunName.front() == "\\")
+            {
+                temp_lensfunName.remove(0,1);
+            } else {
+                camera = cameraList[0];
+            }
         }
         const float cropFactor = cameraList[0]->CropFactor;
         const std::string lensModel = temp_lensfunName.toStdString();
@@ -3276,10 +3232,28 @@ void ParameterManager::updateAvailability()
                 std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
                 bool isMonochrome = wb.length()==0;
 
-                const int availableMods = lensList[0]->AvailableModifications(cropFactor);
-                lensfunCaAvail   = (availableMods & LF_MODIFY_TCA) && !isMonochrome;
-                lensfunVignAvail = availableMods & LF_MODIFY_VIGNETTING;
-                lensfunDistAvail = availableMods & LF_MODIFY_DISTORTION;
+                auto calibrationSet = lensList[0]->GetCalibrationSets();
+
+                int i = 0;
+                while (calibrationSet[i])
+                {
+                    auto c = calibrationSet[i];
+                    const float r = cropFactor / c->Attributes.CropFactor;
+                    if ((r >= 0.96) || (cropFactor < 1e-6f))
+                    {
+                        lensfunCaAvail   = (c->HasTCA() && !isMonochrome);
+                        lensfunVignAvail = (c->HasVignetting());
+                        lensfunDistAvail = (c->HasDistortion());
+                    }
+                    i++;
+                }
+
+                //The latter function is only available in lensfun master, not lensfun 3.95
+                // So I duplicated its functionality above.
+                //const int availableMods = lensList[0]->AvailableModifications(cropFactor);
+                //lensfunCaAvail   = (availableMods & LF_MODIFY_TCA) && !isMonochrome;
+                //lensfunVignAvail = availableMods & LF_MODIFY_VIGNETTING;
+                //lensfunDistAvail = availableMods & LF_MODIFY_DISTORTION;
                 emit lensfunCaAvailChanged();
                 emit lensfunVignAvailChanged();
                 emit lensfunDistAvailChanged();

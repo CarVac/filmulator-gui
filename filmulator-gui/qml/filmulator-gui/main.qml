@@ -12,7 +12,7 @@ ApplicationWindow {
     property int tempVisibility
     width: 1366 * uiScale
     height: 768 * uiScale
-    minimumWidth: 1366 * uiScale
+    minimumWidth: 1200 * uiScale
     minimumHeight: 700 * uiScale
 
     signal tooltipWanted(string text, int x, int y)
@@ -100,7 +100,7 @@ ApplicationWindow {
                                 visible: (value > 0 && value < 1)
                                 Connections {
                                     target: importModel
-                                    onProgressChanged: importTabProgress.value = importModel.progress
+                                    function onProgressChanged() { importTabProgress.value = importModel.progress }
                                 }
                                 uiScale: root.uiScale
                             }
@@ -297,7 +297,7 @@ ApplicationWindow {
                 uiScale: root.uiScale
                 Connections {
                     target: root
-                    onImageURL: {
+                    function onImageURL(newURL) {
                         //This is for telling the queue to grab the same image as the main editor
                         // so that the queue matches what you see in the editor.
                         if (!root.cropping) {

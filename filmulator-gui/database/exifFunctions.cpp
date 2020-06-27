@@ -203,6 +203,7 @@ QString nikonAperture(const unsigned int inputAperture)
 
 QString exifLens(const std::string fullFilename)
 {
+    cout << "exifLens called" << endl;
     if (fullFilename.length() == 0)
     {
         return "";
@@ -223,15 +224,6 @@ QString exifLens(const std::string fullFilename)
     auto exifImage = Exiv2::ImageFactory::open(fullFilename);
     exifImage->readMetadata();
     Exiv2::ExifData exifData = exifImage->exifData();
-
-    lfDatabase *ldb = new lfDatabase;
-    QDir dir = QDir::home();
-    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    dirstr.append("/filmulator/version_2");
-    std::string stdstring = dirstr.toStdString();
-    ldb->Load(stdstring.c_str());
-
-    //(lens)fun stuff here!
 
     //find what the camera is
     //cout << "IDENTIFYING CAMERA ======================================" << endl;
@@ -287,6 +279,7 @@ QString exifLens(const std::string fullFilename)
             //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
         }
     }
+
     return QString::fromStdString(lensModel);
 }
 
@@ -398,7 +391,7 @@ QString identifyLens(const std::string fullFilename)
     lf_free(cameraList);
 
     QString lensName = "";
-    //cout << "SEARCHING LENS MODELS ===================================" << endl;
+    cout << "SEARCHING LENS MODELS ===================================" << endl;
     if (lensModel.length() > 0)
     {
         const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
@@ -421,11 +414,14 @@ QString identifyLens(const std::string fullFilename)
             }
             */
         } else {
-            //cout << "No matching lenses found in database." << endl;
+            cout << "No matching lenses found in database." << endl;
         }
         lf_free(lensList);
     }
 
-    delete ldb;
+    if (ldb != NULL)
+    {
+        delete ldb;
+    }
     return lensName;
 }

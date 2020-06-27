@@ -278,7 +278,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //cout << "is weird: " << isWeird << endl;
             std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
             //cout << "white balance: " << wb << endl;
-            isMonochrome = wb.length()==0;
+            isMonochrome = isWeird && wb.length()==0;
             //cout << "is monochrome: " << isMonochrome << endl;
             isSraw = isSraw || (isWeird && !isMonochrome);
             //cout << "is full color raw: " << isSraw << endl;
@@ -728,6 +728,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         int width  = scaled_image.nc()/3;
 
         //Lensfun processing
+        cout << "lensfun start" << endl;
         lfDatabase * ldb = new lfDatabase;
         QDir dir = QDir::home();
         QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -743,37 +744,56 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             const float cropFactor = cameraList[0]->CropFactor;
 
             QString tempLensName = demosaicParam.lensName;
-            if (tempLensName.front() == "\\")
+            if (tempLensName.length() > 0)
             {
-                //if the lens name starts with a backslash, don't filter by camera
-                tempLensName.remove(0,1);
-            } else {
-                //if it doesn't start with a backslash, filter by camera
-                camera = cameraList[0];
+                if (tempLensName.front() == "\\")
+                {
+                    //if the lens name starts with a backslash, don't filter by camera
+                    tempLensName.remove(0,1);
+                } else {
+                    //if it doesn't start with a backslash, filter by camera
+                    camera = cameraList[0];
+                }
             }
             std::string lensName = tempLensName.toStdString();
             const lfLens * lens = NULL;
             const lfLens ** lensList = NULL;
-            lensList = ldb->FindLenses(NULL, NULL, lensName.c_str());
+            lensList = ldb->FindLenses(camera, NULL, lensName.c_str());
             if (lensList)
             {
                 lens = lensList[0];
 
                 //Now we set up the modifier itself with the lens and processing flags
+#ifdef LF_GIT
                 lfModifier * mod = new lfModifier(lens, demosaicParam.focalLength, cropFactor, width, height, LF_PF_F32);
+#else //lensfun v0.3.95
+                lfModifier * mod = new lfModifier(cropFactor, width, height, LF_PF_F32);
+#endif
 
                 int modflags = 0;
                 if (demosaicParam.lensfunCA && !isMonochrome)
                 {
+#ifdef LF_GIT
                     modflags |= mod->EnableTCACorrection();
+#else //lensfun v0.3.95
+                    modflags |= mod->EnableTCACorrection(lens, demosaicParam.focalLength);
+#endif
                 }
                 if (demosaicParam.lensfunVignetting)
                 {
+#ifdef LF_GIT
                     modflags |= mod->EnableVignettingCorrection(demosaicParam.fnumber, 1000.0f);
+#else //lensfun v0.3.95
+                    modflags |= mod->EnableVignettingCorrection(lens, demosaicParam.focalLength, demosaicParam.fnumber, 1000.0f);
+#endif
                 }
                 if (demosaicParam.lensfunDistortion)
                 {
+#ifdef LF_GIT
                     modflags |= mod->EnableDistortionCorrection();
+#else //lensfun v0.3.95
+                    modflags |= mod->EnableDistortionCorrection(lens, demosaicParam.focalLength);
+#endif
                     modflags |= mod->EnableScaling(mod->GetAutoScale(false));
                     cout << "Auto scale factor: " << mod->GetAutoScale(false) << endl;
                 }
@@ -911,14 +931,20 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
 
-                delete mod;
+                if (mod != NULL)
+                {
+                    delete mod;
+                }
             }
             lf_free(lensList);
         }
         lf_free(cameraList);
 
         //cleanup lensfun
-        delete ldb;
+        if (ldb != NULL)
+        {
+            delete ldb;
+        }
 
         valid = paramManager->markDemosaicComplete();
         updateProgress(valid, 0.0f);

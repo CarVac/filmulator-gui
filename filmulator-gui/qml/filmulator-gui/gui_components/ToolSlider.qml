@@ -36,7 +36,7 @@ Rectangle {
 
     signal tooltipWanted(string text, int coordX, int coordY)
 
-    signal resetPerfomed()
+    signal resetPerformed()
     signal editComplete()
 
     //handler for limiting updates.

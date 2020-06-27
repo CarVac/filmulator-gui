@@ -556,7 +556,7 @@ Item {
         //Once we get incremental updates, this should also probably go away.
         Connections {
             target: queueModel
-            onQueueChanged: {
+            function onQueueChanged() {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
@@ -566,7 +566,7 @@ Item {
         //This one will have to go away when we get proper updates.
         Connections {
             target: importModel
-            onImportChanged: {
+            function onImportChanged() {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos

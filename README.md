@@ -24,14 +24,14 @@ libexiv2
 libjpeg
 libraw
 librtprocess 0.10
-liblensfun master (newer than 0.3.95)
+liblensfun 0.3.95 exactly for Linux and Windows, and the latest git version for MacOS
 libcurl
 libarchive
 eigen3
 ```
 We highly encourage you to compile libraw yourself to ensure you have support for recent cameras.
 
-It also requires Qt 5.12 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
+It also requires Qt 5.14 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
 
 Download Eigen3 and unpack it in the git root directory in a folder named simply `eigen`.
 
@@ -49,13 +49,13 @@ Then run `make` and run `make install` as root.
 
 ## Building on MacOS:
 
-You'll need to know the locations of a couple things in order to build this. They're not hard to find, just use Finder's search functionality to find them. Wherever they are, we need the real dynamic libraries (.dylib), not the symbolic links that point somewhere else. That's important!  We need:
+You'll need to know the locations of a couple things in order to build this. They're not hard to find, just use Finder's search functionality to find them. Wherever they are, we need the real dynamic libraries (.dylib), not the symbolic links that point to them. That's important! If you find a symbolic link, follow it to get the real dynamic library.  We need:
 
 libomp.dylib: it should be somewhere like /opt/local/lib/libomp.dylib. If you installed from homebrew, that's probably where it is. Replace wherever it is into `-DOpenMP_libomp_LIBRARY=` and `-fopenmp` below.
 
 libarchive.dylib: If you installed from homebrew, it probably needs to be /usr/local/Cellar/libarchive/3.4.3/include like below. Put this path into `-DLibArchive_INCLUDE_DIR`.
 
-librtprocess: This needs to point towards the .dylib file for librtprocess. If you installed librtprocess from source, it probably in /opt/local/lib/librtprocess.0.0.1.dylib like below. Wherever it is, put it into `-Dlibrtprocess_dylib`.
+librtprocess: This needs to point towards the .dylib file for librtprocess. If you installed librtprocess from source, it's probably in /opt/local/lib/librtprocess.0.0.1.dylib like below. Wherever it is, put it into `-Dlibrtprocess_dylib`.
 
 Qt: If you installed this from homebrew, it's probably at /usr/local/Cellar/qt/5.13.1/. Wherever it is, put it in the `export QT=` command below.
 

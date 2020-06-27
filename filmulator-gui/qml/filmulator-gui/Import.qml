@@ -142,7 +142,7 @@ Rectangle {
             }
             Connections {
                 target: importModel
-                onInvalidFileChanged: {
+                function onInvalidFileChanged() {
                     sourceFileEntry.invalid = importModel.invalidFile
                 }
             }
@@ -390,7 +390,7 @@ Rectangle {
             tooltipText: importModel.progressFrac
             Connections {
                 target: importModel
-                onProgressChanged: importProgress.value = importModel.progress
+                function onProgressChanged() { importProgress.value = importModel.progress }
             }
             Component.onCompleted: {
                 importProgress.tooltipWanted.connect(root.tooltipWanted)

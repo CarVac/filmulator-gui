@@ -93,7 +93,7 @@ SlimSplitView {
 
                     Connections {
                         target: organizeModel
-                        onCaptureDateChanged: {
+                        function onCaptureDateChanged() {
                             if (!calendarRect.notCompleted) {
                                 var newDate = organizeModel.getSelectedDate()
                                 calendarRect.selectedDate = newDate
@@ -428,7 +428,7 @@ SlimSplitView {
                     }
                     Connections {
                         target: organizeModel
-                        onCaptureDateChanged: {
+                        function onCaptureDateChanged() {
                             sel = organizeModel.isDateSelected(theDate)
                         }
                     }
@@ -436,7 +436,7 @@ SlimSplitView {
 
                 Connections {
                     target: dateHistoModel
-                    onDateHistoModelChanged: {
+                    function onDateHistoModelChanged() {
                         var xPos = dateHistoView.contentX
                         organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
                         dateHistoView.contentX = xPos
@@ -444,7 +444,7 @@ SlimSplitView {
                 }
                 Connections {
                     target: importModel
-                    onSearchTableChanged: {
+                    function onSearchTableChanged() {
                         var xPos = dateHistoView.contentX
                         organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
                         dateHistoView.contentX = xPos
@@ -453,7 +453,7 @@ SlimSplitView {
                 }
                 Connections {
                     target: queueModel
-                    onSearchTableChanged: {
+                    function onSearchTableChanged() {
                         var xPos = dateHistoView.contentX
                         organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
                         dateHistoView.contentX = xPos
@@ -515,7 +515,7 @@ SlimSplitView {
 
                 Connections {
                     target: importModel
-                    onSearchTableChanged: {
+                    function onSearchTableChanged() {
                         var yPos = gridView.contentY
                         organizeModel.setOrganizeQuery()
                         gridView.contentY = yPos
@@ -523,7 +523,7 @@ SlimSplitView {
                 }
                 Connections {
                     target: queueModel
-                    onSearchTableChanged: {
+                    function onSearchTableChanged() {
                         var yPos = gridView.contentY
                         organizeModel.setOrganizeQuery()
                         gridView.contentY = yPos
@@ -532,7 +532,7 @@ SlimSplitView {
 
                 Connections {
                     target: organizeModel
-                    onOrganizeFilterChanged: {
+                    function onOrganizeFilterChanged() {
                         var yPos = gridView.contentY
                         organizeModel.setOrganizeQuery()
                         gridView.contentY = yPos
