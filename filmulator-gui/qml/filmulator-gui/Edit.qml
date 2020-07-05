@@ -229,6 +229,12 @@ SlimSplitView {
                                 root.cropping = false
                             }
                         }
+                        else if (photoBox.loadingError) {//the source file is not available
+                            //This needed to be added in case you click on an unavailable image before any image is loaded
+                            root.imageReady = false
+                            console.log("file is unavailable")
+                            //doing nothing here seems to work fine
+                        }
                         else if (topImage.status == Image.Error) {
                             root.imageReady = false
                             console.log("top image errored")
@@ -2122,7 +2128,7 @@ SlimSplitView {
         Connections {
             target: paramManager
             function onFileError() {
-                photoBox.errorText = paramManager.getFullFilenameQstr()
+                photoBox.errorText = paramManager.fullFilenameQstr
                 photoBox.loadingError = true
             }
             function onFilenameChanged() {
