@@ -13,7 +13,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
     tableName = "SearchTable";
 
     //Set up the files that it accepts as raw files on directory import
-    rawNameFilters << "*.cr2" << "*.cr3" << "*.nef" << "*.dng" << "*.rw2" << "*.iiq" << "*.arw" << "*.pef" << "*.raf" << "*.orf" << "*.srw";
+    rawNameFilters << "*.CR2" << "*.cr2" << "*.CR3" << "*.cr3" << "*.NEF" << "*.nef" << "*.DNG" << "*.dng" << "*.RW2" << "*.rw2" << "*.IIQ" << "*.iiq" << "*.ARW" << "*.arw" << "*.PEF" << "*.pef" << "*.RAF" << "*.raf" << "*.ORF" << "*.orf" << "*.SRW" << "*.srw";
 
     //Set up the files that it'll show in the file picker
     dirNameFilters << "Raw image files (*.cr2 *.cr3 *.nef *.dng *.rw2 *.iiq *.arw *.pef *.raf *.orf *.srw)";// << "All files (*)";
