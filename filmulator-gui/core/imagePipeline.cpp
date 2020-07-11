@@ -283,8 +283,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 basicExifData["Exif.Photo.DateTimeOriginal"] = exifDateTimeString(OTHER.timestamp);
                 basicExifData["Exif.Photo.DateTimeDigitized"] = exifDateTimeString(OTHER.timestamp);
                 basicExifData["Exif.Photo.ExposureTime"] = rationalTv(OTHER.shutter);
-                basicExifData["Exif.Photo.Fnumber"] = rationalAvFL(OTHER.aperture);
-                basicExifData["Exif.Photo.ISOspeed"] = int(round(OTHER.iso_speed));
+                basicExifData["Exif.Photo.FNumber"] = rationalAvFL(OTHER.aperture);
+                basicExifData["Exif.Photo.ISOSpeed"] = int(round(OTHER.iso_speed));
                 basicExifData["Exif.Photo.FocalLength"] = rationalAvFL(OTHER.focal_len);
 
                 exifData = basicExifData;
