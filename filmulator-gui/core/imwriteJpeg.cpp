@@ -141,9 +141,10 @@ bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
     if (writeExif)
     {
         exifData["Exif.Image.Orientation"] = uint16_t(1);//set all images to unrotated
-        exifData["Exif.Image.ImageWidth"] = output.nr();
-        exifData["Exif.Image.ImageLength"] = output.nc()/3;
+        exifData["Exif.Image.ImageWidth"] = output.nc()/3;
+        exifData["Exif.Image.ImageLength"] = output.nr();
         exifData["Exif.Photo.ColorSpace"] = 1;
+        exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
 
         auto image = Exiv2::ImageFactory::open(outputfilename.c_str());
         assert(image.get() != 0);

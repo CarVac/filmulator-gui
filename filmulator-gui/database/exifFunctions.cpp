@@ -11,105 +11,264 @@ using std::max;
 using std::min;
 using std::unique_ptr;
 
-QDateTime exifUtcTime(Exiv2::ExifData exifData, const int cameraTZ)
+#define IDATA libraw->imgdata.idata
+#define LENS  libraw->imgdata.lens
+#define MAKER libraw->imgdata.lens.makernotes
+#define OTHER libraw->imgdata.other
+#define SIZES libraw->imgdata.sizes
+
+QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
 {
-    QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
-    if (exifDateTime.length()==0)
+    const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+    const char *cstrfilename = fullFilename.c_str();
+    if (0 != libraw->open_file(cstrfilename))
     {
-        //leica DNG seems to not have DateTime
-        exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTimeOriginal"].toString());
+        cout << "exifLocalDateString: Could not read input file!" << endl;
+        return QDateTime();
     }
 
-    QDateTime cameraDateTime = QDateTime::fromString(exifDateTime, "yyyy:MM:dd hh:mm:ss");
+    QDateTime cameraDateTime;
+    if (!isCR3) //we can use exiv2
+    {
+        //Grab the exif data
+        auto exifImage = Exiv2::ImageFactory::open(fullFilename);
+        exifImage->readMetadata();
+        Exiv2::ExifData exifData = exifImage->exifData();
 
-    cameraDateTime.setUtcOffset(cameraTZ);
+        QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
+        if (exifDateTime.length()==0)
+        {
+            //leica DNG seems to not have DateTime
+            exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTimeOriginal"].toString());
+        }
+
+        cameraDateTime = QDateTime::fromString(exifDateTime, "yyyy:MM:dd hh:mm:ss");
+    } else { //we have to rely on libraw for CR3
+        cameraDateTime = QDateTime::fromTime_t(OTHER.timestamp);
+    }
+
+    cameraDateTime.setOffsetFromUtc(cameraTZ);
 
     return cameraDateTime;
 }
 
-QString exifLocalDateString(Exiv2::ExifData exifData,
-                             const int cameraTZ,
-                             const int importTZ,
-                             const QString dirConfig)
+QString exifLocalDateString(const std::string fullFilename,
+                            const int cameraTZ,
+                            const int importTZ,
+                            const QString dirConfig)
 {
     QDateTime captureLocalDateTime =
-            QDateTime::fromTime_t(exifUtcTime(exifData, cameraTZ).toTime_t());
+            QDateTime::fromTime_t(exifUtcTime(fullFilename, cameraTZ).toTime_t());
 
-    captureLocalDateTime.setUtcOffset(importTZ);
+    captureLocalDateTime.setOffsetFromUtc(importTZ);
 
     return captureLocalDateTime.toString(dirConfig);
 }
 
-int exifDefaultRotation(Exiv2::ExifData exifData)
+std::string exifDateTimeString(time_t time)
 {
-    int exifOrientation;
-    try
+    return QDateTime::fromTime_t(time).toString("yyyy:MM:dd hh:mm::ss").toStdString();
+}
+
+int exifDefaultRotation(const std::string fullFilename)
+{
+    const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+    const char *cstrfilename = fullFilename.c_str();
+    if (0 != libraw->open_file(cstrfilename))
     {
-        exifOrientation = (int) exifData["Exif.Image.Orientation"].value().toLong();
-    }
-    catch (...)
-    {
-        exifOrientation = 0;
-    }
-    switch(exifOrientation)
-    {
-    case 3://upside down
-    {
-        return 2;
-    }
-    case 6://right side down
-    {
-        return 3;
-    }
-    case 8://left side down
-    {
-        return 1;
-    }
-    default:
-    {
+        cout << "exifLocalDateString: Could not read input file!" << endl;
         return 0;
     }
-    }
-}
 
-QString exifMake(Exiv2::ExifData exifData)
-{
-    return QString::fromStdString(exifData["Exif.Image.Make"].toString());
-}
-
-QString exifModel(Exiv2::ExifData exifData)
-{
-    return QString::fromStdString(exifData["Exif.Image.Model"].toString());
-}
-
-float exifIso(Exiv2::ExifData exifData)
-{
-    return exifData ["Exif.Photo.ISOSpeedRatings"].toFloat();
-}
-
-QString exifTv(Exiv2::ExifData exifData)
-{
-    return QString::fromStdString(exifData["Exif.Photo.ExposureTime"].toString());
-}
-
-float exifAv(Exiv2::ExifData exifData)
-{
-    return exifData["Exif.Photo.FNumber"].toFloat();
-}
-
-float exifFl(Exiv2::ExifData exifData)
-{
-    return exifData["Exif.Photo.FocalLength"].toFloat();
-}
-
-int exifRating(Exiv2::ExifData exifData, Exiv2::XmpData xmpData)
-{
-    std::string maker = exifData["Exif.Image.Make"].toString();
-    if (maker.compare("Canon") == 0)
+    if (!isCR3) // we can use exiv2
     {
-        return min(5,max(0,(int) xmpData["Xmp.xmp.Rating"].toLong()));
+        //Grab the exif data
+        auto exifImage = Exiv2::ImageFactory::open(fullFilename);
+        exifImage->readMetadata();
+        Exiv2::ExifData exifData = exifImage->exifData();
+
+        int exifOrientation;
+        try
+        {
+            exifOrientation = (int) exifData["Exif.Image.Orientation"].value().toLong();
+        }
+        catch (...)
+        {
+            exifOrientation = 0;
+        }
+        switch(exifOrientation)
+        {
+        case 3://upside down
+        {
+            return 2;
+        }
+        case 6://right side down
+        {
+            return 3;
+        }
+        case 8://left side down
+        {
+            return 1;
+        }
+        default:
+        {
+            return 0;
+        }
+        }
+    } else { //we need to use libraw
+        int exifOrientation = SIZES.flip;
+        switch (exifOrientation)
+        {
+        case 3://upside down
+            return 2;
+        case 5://needs counterclockwise rotation; left side down?
+            return 1;
+        case 6://needs clockwise rotation; right side down?
+            return 3;
+        default:
+            return 0;
+        }
     }
-    return 0;
+}
+
+//Returns greatest common denominator. From wikipedia.
+unsigned int gcd(unsigned int u, unsigned int v)
+{
+    // simple cases (termination)
+    if (u == v) { return u; }
+
+    if (u == 0) { return v; }
+
+    if (v == 0) { return u; }
+
+    // look for factors of 2
+    if (~u & 1) // u is even
+    {
+        if (v & 1) // v is odd
+        {
+            return gcd(u >> 1, v);
+        }
+        else // both u and v are even
+        {
+            return gcd(u >> 1, v >> 1) << 1;
+        }
+    }
+
+    if (~v & 1) // u is odd, v is even
+    {
+        return gcd(u, v >> 1);
+    }
+
+    // reduce larger argument
+    if (u > v)
+    {
+        return gcd((u - v) >> 1, v);
+    }
+
+    return gcd((v - u) >> 1, u);
+}
+
+QString fractionalTv(const float shutterSpeed)
+{
+    if (shutterSpeed == 0)
+    {
+        return QString("0/1");
+    }
+    //Two methods we'll have compete with one another
+
+    // Multiply shutter speed by 6000 then round, then GCD with 6000
+    int multNumerator = round(shutterSpeed*6000);
+    int multDenominator = 6000;
+    int multDivisor = gcd(multNumerator, multDenominator);
+    multNumerator /= multDivisor;
+    multDenominator /= multDivisor;
+    float multError = abs(float(multDenominator)/(shutterSpeed*float(multNumerator))-1);
+
+    // Divide 6000 by shutter speed, then GCD with 6000
+    int divNumerator = 6000;
+    int divDenominator = round(6000.0f/shutterSpeed);
+    int divDivisor = gcd(divNumerator, divDenominator);
+    divNumerator /= divDivisor;
+    divDenominator /= divDivisor;
+    float divError = abs(float(divDenominator)/(shutterSpeed*float(divNumerator))-1);
+
+    if (multError < divError)
+    {
+        return QString("%1/%2").arg(multNumerator).arg(multDenominator);
+    } else {
+        return QString("%1/%2").arg(divNumerator).arg(divDenominator);
+    }
+}
+
+Exiv2::Rational rationalTv(const float shutterSpeed)
+{
+    if (shutterSpeed == 0)
+    {
+        return Exiv2::Rational(0, 1);
+    }
+    //Two methods we'll have compete with one another
+
+    // Multiply shutter speed by 6000 then round, then GCD with 6000
+    int multNumerator = round(shutterSpeed*6000);
+    int multDenominator = 6000;
+    int multDivisor = gcd(multNumerator, multDenominator);
+    multNumerator /= multDivisor;
+    multDenominator /= multDivisor;
+    float multError = abs(float(multDenominator)/(shutterSpeed*float(multNumerator))-1);
+
+    // Divide 6000 by shutter speed, then GCD with 6000
+    int divNumerator = 6000;
+    int divDenominator = round(6000.0f/shutterSpeed);
+    int divDivisor = gcd(divNumerator, divDenominator);
+    divNumerator /= divDivisor;
+    divDenominator /= divDivisor;
+    float divError = abs(float(divDenominator)/(shutterSpeed*float(divNumerator))-1);
+
+    if (multError < divError)
+    {
+        return Exiv2::Rational(multNumerator, multDenominator);
+    } else {
+        return Exiv2::Rational(divNumerator, divDenominator);
+    }
+}
+
+Exiv2::Rational rationalAvFL(const float floatIn)
+{
+    if (floatIn < 0.01)
+    {
+        return Exiv2::Rational(0, 1);
+    }
+
+    int numerator = round(floatIn*100);
+    int denominator = 100;
+    int divisor = gcd(numerator, denominator);
+    numerator /= divisor;
+    denominator /= divisor;
+    return Exiv2::Rational(numerator, denominator);
+}
+
+int exifRating(const std::string fullFilename)
+{
+    if (QString::fromStdString(fullFilename).endsWith(".cr3",Qt::CaseInsensitive))
+    {
+        return 0;
+    } else {
+        auto image = Exiv2::ImageFactory::open(fullFilename); //CHANGE ME
+        image->readMetadata();
+        Exiv2::ExifData exifData = image->exifData();
+        Exiv2::XmpData xmpData = image->xmpData();
+
+        std::string maker = exifData["Exif.Image.Make"].toString();
+        if (maker.compare("Canon") == 0)
+        {
+            return min(5,max(0,(int) xmpData["Xmp.xmp.Rating"].toLong()));
+        }
+        return 0;
+    }
 }
 
 float nikonFocalLength(const unsigned int inputFL)
@@ -203,27 +362,21 @@ QString nikonAperture(const unsigned int inputAperture)
 
 QString exifLens(const std::string fullFilename)
 {
-    cout << "exifLens called" << endl;
     if (fullFilename.length() == 0)
     {
         return "";
     }
+
+    const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+
     //Load the image in libraw
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
     const char *cstrfilename = fullFilename.c_str();
     if (0 != libraw->open_file(cstrfilename))
     {
-        cout << "identifyLens: Could not read input file!" << endl;
-        return "";//============================================================================change this later
+        cout << "exifLens: Could not read input file!" << endl;
+        return "";
     }
-#define IDATA libraw->imgdata.idata
-#define LENS  libraw->imgdata.lens
-#define MAKER libraw->imgdata.lens.makernotes
-
-    //Grab the exif data
-    auto exifImage = Exiv2::ImageFactory::open(fullFilename);
-    exifImage->readMetadata();
-    Exiv2::ExifData exifData = exifImage->exifData();
 
     //find what the camera is
     //cout << "IDENTIFYING CAMERA ======================================" << endl;
@@ -244,42 +397,49 @@ QString exifLens(const std::string fullFilename)
             //cout << "MAKER.Lens: " << lensModel << endl;
         }
     }
-    if (lensModel.length() == 0)
+    if (!isCR3) //we can't check stuff needing exiv2 if it's CR3
     {
-        lensModel = exifData["Exif.Panasonic.LensType"].toString();
-        if (lensModel.length() > 0)
-        {
-            //cout << "Panasonic.LensType: " << lensModel << endl;
-        }
-    }
-    if (lensModel.length() == 0)
-    {
-        Exiv2::Exifdatum metadatum = exifData["Exif.NikonLd3.LensIDNumber"];
-        if (metadatum.toString().length() > 0)
-        {
-            lensModel = metadatum.print(&exifImage->exifData());
-            //cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
-        }
-    }
-    if (lensModel.length() == 0)
-    {
-        Exiv2::Exifdatum metadatum = exifData["Exif.Pentax.LensType"];
-        if (metadatum.toString().length() > 0)
-        {
-            lensModel = metadatum.print(&exifImage->exifData());
-            //cout << "Exif.Pentax.LensType: " << lensModel << endl;
-        }
-    }
-    if (lensModel.length() == 0)
-    {
-        Exiv2::Exifdatum metadatum = exifData["Exif.PentaxDng.LensType"];
-        if (metadatum.toString().length() > 0)
-        {
-            lensModel = metadatum.print(&exifImage->exifData());
-            //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
-        }
-    }
+        //Grab the exif data
+        auto exifImage = Exiv2::ImageFactory::open(fullFilename);
+        exifImage->readMetadata();
+        Exiv2::ExifData exifData = exifImage->exifData();
 
+        if (lensModel.length() == 0)
+        {
+            lensModel = exifData["Exif.Panasonic.LensType"].toString();
+            if (lensModel.length() > 0)
+            {
+                //cout << "Panasonic.LensType: " << lensModel << endl;
+            }
+        }
+        if (lensModel.length() == 0)
+        {
+            Exiv2::Exifdatum metadatum = exifData["Exif.NikonLd3.LensIDNumber"];
+            if (metadatum.toString().length() > 0)
+            {
+                lensModel = metadatum.print(&exifImage->exifData());
+                //cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
+            }
+        }
+        if (lensModel.length() == 0)
+        {
+            Exiv2::Exifdatum metadatum = exifData["Exif.Pentax.LensType"];
+            if (metadatum.toString().length() > 0)
+            {
+                lensModel = metadatum.print(&exifImage->exifData());
+                //cout << "Exif.Pentax.LensType: " << lensModel << endl;
+            }
+        }
+        if (lensModel.length() == 0)
+        {
+            Exiv2::Exifdatum metadatum = exifData["Exif.PentaxDng.LensType"];
+            if (metadatum.toString().length() > 0)
+            {
+                lensModel = metadatum.print(&exifImage->exifData());
+                //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
+            }
+        }
+    }
     return QString::fromStdString(lensModel);
 }
 
@@ -289,22 +449,17 @@ QString identifyLens(const std::string fullFilename)
     {
         return "";
     }
+
+    const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+
     //Load the image in libraw
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
     const char *cstrfilename = fullFilename.c_str();
     if (0 != libraw->open_file(cstrfilename))
     {
         cout << "identifyLens: Could not read input file!" << endl;
-        return "";//============================================================================change this later
+        return "";
     }
-#define IDATA libraw->imgdata.idata
-#define LENS  libraw->imgdata.lens
-#define MAKER libraw->imgdata.lens.makernotes
-
-    //Grab the exif data
-    auto exifImage = Exiv2::ImageFactory::open(fullFilename);
-    exifImage->readMetadata();
-    Exiv2::ExifData exifData = exifImage->exifData();
 
     lfDatabase *ldb = new lfDatabase;
     QDir dir = QDir::home();
@@ -334,39 +489,47 @@ QString identifyLens(const std::string fullFilename)
             //cout << "MAKER.Lens: " << lensModel << endl;
         }
     }
-    if (lensModel.length() == 0)
+    if (!isCR3) //we can't check stuff neding exiv2 if it's CR3
     {
-        lensModel = exifData["Exif.Panasonic.LensType"].toString();
-        if (lensModel.length() > 0)
+        //Grab the exif data
+        auto exifImage = Exiv2::ImageFactory::open(fullFilename);
+        exifImage->readMetadata();
+        Exiv2::ExifData exifData = exifImage->exifData();
+
+        if (lensModel.length() == 0)
         {
-            //cout << "Panasonic.LensType: " << lensModel << endl;
+            lensModel = exifData["Exif.Panasonic.LensType"].toString();
+            if (lensModel.length() > 0)
+            {
+                //cout << "Panasonic.LensType: " << lensModel << endl;
+            }
         }
-    }
-    if (lensModel.length() == 0)
-    {
-        Exiv2::Exifdatum metadatum = exifData["Exif.NikonLd3.LensIDNumber"];
-        if (metadatum.toString().length() > 0)
+        if (lensModel.length() == 0)
         {
-            lensModel = metadatum.print(&exifImage->exifData());
-            //cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
+            Exiv2::Exifdatum metadatum = exifData["Exif.NikonLd3.LensIDNumber"];
+            if (metadatum.toString().length() > 0)
+            {
+                lensModel = metadatum.print(&exifImage->exifData());
+                //cout << "Exif.NikonLd3.LensIDNumber: " << lensModel << endl;
+            }
         }
-    }
-    if (lensModel.length() == 0)
-    {
-        Exiv2::Exifdatum metadatum = exifData["Exif.Pentax.LensType"];
-        if (metadatum.toString().length() > 0)
+        if (lensModel.length() == 0)
         {
-            lensModel = metadatum.print(&exifImage->exifData());
-            //cout << "Exif.Pentax.LensType: " << lensModel << endl;
+            Exiv2::Exifdatum metadatum = exifData["Exif.Pentax.LensType"];
+            if (metadatum.toString().length() > 0)
+            {
+                lensModel = metadatum.print(&exifImage->exifData());
+                //cout << "Exif.Pentax.LensType: " << lensModel << endl;
+            }
         }
-    }
-    if (lensModel.length() == 0)
-    {
-        Exiv2::Exifdatum metadatum = exifData["Exif.PentaxDng.LensType"];
-        if (metadatum.toString().length() > 0)
+        if (lensModel.length() == 0)
         {
-            lensModel = metadatum.print(&exifImage->exifData());
-            //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
+            Exiv2::Exifdatum metadatum = exifData["Exif.PentaxDng.LensType"];
+            if (metadatum.toString().length() > 0)
+            {
+                lensModel = metadatum.print(&exifImage->exifData());
+                //cout << "Exif.PentaxDng.LensType: " << lensModel << endl;
+            }
         }
     }
 

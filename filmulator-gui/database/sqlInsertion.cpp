@@ -8,10 +8,15 @@
 using std::cout;
 using std::endl;
 
+#define IDATA libraw->imgdata.idata
+#define LENS  libraw->imgdata.lens
+#define MAKER libraw->imgdata.lens.makernotes
+#define OTHER libraw->imgdata.other
+#define SIZES libraw->imgdata.sizes
+
 /*This function inserts info on a raw file into the database.*/
 void fileInsert(const QString hash,
-                const QString filePathName,
-                Exiv2::ExifData exifData)
+                const QString fullFilename)
 {
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
@@ -28,30 +33,37 @@ void fileInsert(const QString hash,
         query.prepare("UPDATE FileTable "
                       "SET FTfilePath = ? "
                       "WHERE (FTfileID = ?);");
-        query.bindValue(0, filePathName);
+        query.bindValue(0, fullFilename);
         query.bindValue(1, hash);
         query.exec();
     }
     else
     {
+        std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+        const char *cstrfilename = fullFilename.toStdString().c_str();
+        if (0 != libraw->open_file(cstrfilename))
+        {
+            cout << "exifLocalDateString: Could not read input file!" << endl;
+        }
+
         query.prepare("INSERT INTO FileTable values (?,?,?,?,?,?,?,?,?);");
                                                    //0 1 2 3 4 5 6 7 8
         //Hash of the file:
         query.bindValue(0, hash);
         //Full path to the new location of the file:
-        query.bindValue(1, filePathName);
+        query.bindValue(1, fullFilename);
         //Camera manufacturer
-        query.bindValue(2, exifMake(exifData));
+        query.bindValue(2, QString(IDATA.make));
         //Camera model
-        query.bindValue(3, exifModel(exifData));
+        query.bindValue(3, QString(IDATA.model));
         //ISO sensitivity
-        query.bindValue(4, exifIso(exifData));
+        query.bindValue(4, OTHER.iso_speed);
         //Exposure time
-        query.bindValue(5, exifTv(exifData));
+        query.bindValue(5, fractionalTv(OTHER.shutter));
         //Aperture number
-        query.bindValue(6, exifAv(exifData));
+        query.bindValue(6, OTHER.aperture);
         //Focal length
-        query.bindValue(7, exifFl(exifData));
+        query.bindValue(7, OTHER.focal_len);
         //Initialize a counter at 0 for number of times it has been referenced.
         // We only do this for new imports into the database.
         query.bindValue(8, 0);
@@ -65,8 +77,7 @@ QString createNewProfile(const QString fileHash,
                          const QString fileName,
                          const QDateTime captureTime,
                          const QDateTime importStartTime,
-                         Exiv2::ExifData exifData,
-                         Exiv2::XmpData xmpData)
+                         const std::string fullFilename)
 {
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
@@ -119,7 +130,7 @@ QString createNewProfile(const QString fileHash,
     query.bindValue(4, fileHash);
     //rating
     //TODO: write function to get rating
-    query.bindValue(5, exifRating(exifData, xmpData));
+    query.bindValue(5, exifRating(fullFilename));
 
     //latitude
     //TODO: figure something out here to either grab from the exif or get user input.

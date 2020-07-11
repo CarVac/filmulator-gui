@@ -1237,43 +1237,6 @@ void ParameterManager::writeToDB(QString imageID)
     emit updateTableOut("QueueTable", 0);//0 means edit
 }
 
-//Returns greatest common denominator. From wikipedia.
-unsigned int gcd(unsigned int u, unsigned int v)
-{
-    // simple cases (termination)
-    if (u == v) { return u; }
-
-    if (u == 0) { return v; }
-
-    if (v == 0) { return u; }
-
-    // look for factors of 2
-    if (~u & 1) // u is even
-    {
-        if (v & 1) // v is odd
-        {
-            return gcd(u >> 1, v);
-        }
-        else // both u and v are even
-        {
-            return gcd(u >> 1, v >> 1) << 1;
-        }
-    }
-
-    if (~v & 1) // u is odd, v is even
-    {
-        return gcd(u, v >> 1);
-    }
-
-    // reduce larger argument
-    if (u > v)
-    {
-        return gcd((u - v) >> 1, v);
-    }
-
-    return gcd((v - u) >> 1, u);
-}
-
 //selectImage deals with selection from qml.
 //It accepts the searchID (the md5 with the instance number appended).
 //It loads the default parameters, and commands the parameters to be loaded.
@@ -2068,10 +2031,7 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     }
     else
     {
-        auto image = Exiv2::ImageFactory::open(absFilePath);
-        image->readMetadata();
-        Exiv2::ExifData exifData = image->exifData();
-        d_rotation = exifDefaultRotation(exifData);
+        d_rotation = exifDefaultRotation(absFilePath);
         if (copyDefaults == CopyDefaults::loadToParams)
         {
             m_rotation = d_rotation;
@@ -3226,11 +3186,16 @@ void ParameterManager::updateAvailability()
             if (lensList)
             {
                 //Check if sensor is monochrome
-                auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
-                exifImage->readMetadata();
-                Exiv2::ExifData exifData = exifImage->exifData();
-                std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
-                bool isMonochrome = wb.length()==0;
+                const bool isCR3 = fullFilenameQstr.endsWith(".cr3", Qt::CaseInsensitive);
+                bool isMonochrome = false;
+                if (!isCR3) //no CR3 cameras are monochrome
+                {
+                    auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
+                    exifImage->readMetadata();
+                    Exiv2::ExifData exifData = exifImage->exifData();
+                    std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
+                    isMonochrome = wb.length()==0;
+                }
 
                 auto calibrationSet = lensList[0]->GetCalibrationSets();
 

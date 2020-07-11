@@ -66,6 +66,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
     BlackWhiteParams blackWhiteParam;
     FilmlikeCurvesParams curvesParam;
 
+    isCR3 = false;
+
     updateProgress(valid, 0.0f);
     switch (valid)
     {
@@ -79,6 +81,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         {
             return emptyMatrix();
         }
+
+        isCR3 = QString::fromStdString(loadParam.fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+        cout << "processImage this is a CR3!" << endl;
 
         if (!loadParam.tiffIn && !loadParam.jpegIn && !((HighQuality == quality) && stealData))
         {
@@ -99,8 +104,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #define RAW3  image_processor->imgdata.rawdata.color3_image
 #define RAW4  image_processor->imgdata.rawdata.color4_image
 #define RAWF  image_processor->imgdata.rawdata.float_image
+#define IDATA image_processor->imgdata.idata
 #define LENS  image_processor->imgdata.lens
 #define MAKER image_processor->imgdata.lens.makernotes
+#define OTHER image_processor->imgdata.other
+#define SIZES image_processor->imgdata.sizes
 
             if (image_processor->is_floating_point())
             {
@@ -256,10 +264,31 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 //cout << endl;
             }
 
-            auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
-            assert(image.get() != 0);
-            image->readMetadata();
-            exifData = image->exifData();
+            if (!isCR3)//we can't use exiv2 on CR3 yet
+            {
+                auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
+                assert(image.get() != 0);
+                image->readMetadata();
+                exifData = image->exifData();
+            } else {
+                //We need to fabricate fresh exif data from what libraw gives us
+                Exiv2::ExifData basicExifData;
+
+                basicExifData["Exif.Image.Orientation"] = uint16_t(1);
+                basicExifData["Exif.Image.ImageWidth"] = vibrance_saturation_image.nc()/3;
+                basicExifData["Exif.Image.ImageLength"] = vibrance_saturation_image.nr();
+                basicExifData["Exif.Image.Make"] = IDATA.make;
+                basicExifData["Exif.Image.Model"] = IDATA.model;
+                basicExifData["Exif.Image.DateTime"] = exifDateTimeString(OTHER.timestamp);
+                basicExifData["Exif.Photo.DateTimeOriginal"] = exifDateTimeString(OTHER.timestamp);
+                basicExifData["Exif.Photo.DateTimeDigitized"] = exifDateTimeString(OTHER.timestamp);
+                basicExifData["Exif.Photo.ExposureTime"] = rationalTv(OTHER.shutter);
+                basicExifData["Exif.Photo.Fnumber"] = rationalAvFL(OTHER.aperture);
+                basicExifData["Exif.Photo.ISOspeed"] = int(round(OTHER.iso_speed));
+                basicExifData["Exif.Photo.FocalLength"] = rationalAvFL(OTHER.focal_len);
+
+                exifData = basicExifData;
+            }
 
             raw_image.set_size(raw_height, raw_width);
 
@@ -275,9 +304,13 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //So we have to check if the white balance tag exists.
             bool isWeird = (cfa[0][0]==6 && cfa[0][1]==6 && cfa[1][0]==6 && cfa[1][1]==6);
             //cout << "is weird: " << isWeird << endl;
-            std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
+            bool noWB = false;
+            if (!isCR3)//we can't use exiv2 on CR3 yet and no CR3 cameras are monochrome
+            {
+                noWB = exifData["Exif.Photo.WhiteBalance"].toString().length()==0;
+            }
             //cout << "white balance: " << wb << endl;
-            isMonochrome = isWeird && wb.length()==0;
+            isMonochrome = isWeird && noWB;
             //cout << "is monochrome: " << isMonochrome << endl;
             isSraw = isSraw || (isWeird && !isMonochrome);
             //cout << "is full color raw: " << isSraw << endl;
@@ -395,9 +428,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             isSraw = stealVictim->isSraw;
             isNikonSraw = stealVictim->isNikonSraw;
             isMonochrome = stealVictim->isMonochrome;
+            isCR3 = stealVictim->isCR3;
             raw_width = stealVictim->raw_width;
             raw_height = stealVictim->raw_height;
-            exifData = stealVictim->exifData;
             //copy color matrix
             //get color matrix
             for (int i = 0; i < 3; i++)
