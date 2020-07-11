@@ -4,6 +4,7 @@
 #include <memory>
 #include <QStandardPaths>
 #include <QDir>
+#include <cmath>
 
 using std::cout;
 using std::endl;
