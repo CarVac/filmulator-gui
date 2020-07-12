@@ -40,10 +40,13 @@ void fileInsert(const QString hash,
     else
     {
         std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
-        const char *cstrfilename = fullFilename.toStdString().c_str();
-        if (0 != libraw->open_file(cstrfilename))
+        std::string filenameStr = fullFilename.toStdString();
+        const char *cstr = filenameStr.c_str();
+        int libraw_error = libraw->open_file(cstr);
+        if (0 != libraw_error)
         {
             cout << "exifLocalDateString: Could not read input file!" << endl;
+            cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;;
         }
 
         query.prepare("INSERT INTO FileTable values (?,?,?,?,?,?,?,?,?);");
