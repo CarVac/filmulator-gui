@@ -26,7 +26,7 @@
 
 int main(int argc, char *argv[])
 {
-    cout << "creating qapplication" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating qapplication" << endl;
     //It cannot properly fall back to Qt Widgets versions of the dialogs if
     // we use a QGuiApplication, which only supports QML stuff.
     //QGuiApplication app(argc, argv);
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     QFont sansFont("Sans Serif",9);
     app.setFont(sansFont);
 
-    cout << "creating qqmlapplicationengine" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() <<  "creating qqmlapplicationengine" << endl;
     QQmlApplicationEngine engine;
 
     QTranslator translator;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
     //Prepare database connection.
     //This should create a new db file if there was none.
-    cout << "connecting to database" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "connecting to database" << endl;
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     if(setupDB(&db) == DBSuccess::failure)
     {
@@ -62,19 +62,19 @@ int main(int argc, char *argv[])
     SignalSwitchboard *switchboard = new SignalSwitchboard;
 
     //Create a settings object for persistent settings.
-    cout << "creating settings object" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating settings object" << endl;
     Settings *settingsObj = new Settings;
     engine.rootContext()->setContextProperty("settings", settingsObj);
 
     //Prepare an object for managing the processing parameters.
-    cout << "creating parametermanager" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating parametermanager" << endl;
     ParameterManager *paramManager = new ParameterManager;
     engine.rootContext()->setContextProperty("paramManager",paramManager);
     QObject::connect(paramManager, SIGNAL(updateTableOut(QString, int)),
                      switchboard, SLOT(updateTableIn(QString, int)));
 
     //Prepare an image provider object.
-    cout << "creating filmimageprovider" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating filmimageprovider" << endl;
     FilmImageProvider *filmProvider = new FilmImageProvider(paramManager);
     //Connect it as an image provider so that qml can get the photos
     engine.addImageProvider(QLatin1String("filmy"), filmProvider);
@@ -84,12 +84,12 @@ int main(int argc, char *argv[])
     qRegisterMetaType<QFileInfo>();
 
     //Prepare a model for importing.
-    cout << "creating importmodel" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating importmodel" << endl;
     ImportModel *importModel = new ImportModel;
     engine.rootContext()->setContextProperty("importModel", importModel);
 
     //Prepare a model for the organize view.
-    cout << "creating organizemodel" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating organizemodel" << endl;
     OrganizeModel *organizeModel = new OrganizeModel;
     engine.rootContext()->setContextProperty("organizeModel", organizeModel);
     engine.rootContext()->setContextProperty("dateHistoModel", organizeModel->dateHistogram);
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
                      switchboard, SLOT(updateTableIn(QString,int)));
 
     //Prepare a model for the queue view.
-    cout << "creating queuemodel" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating queuemodel" << endl;
     QueueModel *queueModel = new QueueModel;
     queueModel->setQueueQuery();
     QObject::connect(switchboard, SIGNAL(updateTableOut(QString, int)),
@@ -111,11 +111,11 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("queueModel", queueModel);
 
     //Prepare a model for the lensfun lens list.
-    cout << "creating lensselectmodel" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating lensselectmodel" << endl;
     LensSelectModel *lensModel = new LensSelectModel;
     engine.rootContext()->setContextProperty("lensModel", lensModel);
 
-    cout << "loading qml file" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading qml file" << endl;
 
     if (appdir)
     {
@@ -127,15 +127,17 @@ int main(int argc, char *argv[])
 #endif
         if (QFile(qmlfile).exists())
         {
-            //cout << "loading UI from copy in appdir directory" << endl;
+            cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading UI from copy in appdir directory" << endl;
             engine.load(qmlfile);
+            cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "done loading UI from copy in appdir directory" << endl;
         }
     } 
     else if (QFile(app.applicationDirPath() + "/qml/filmulator-gui/main.qml").exists())
     {
-        //cout << "loading UI from copy in directory" << endl;
-        //cout << app.applicationDirPath().toStdString() << "/qml/filmulator-gui/main.qml" << endl;
+        cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading UI from copy in directory" << endl;
+        cout << app.applicationDirPath().toStdString() << "/qml/filmulator-gui/main.qml" << endl;
         engine.load(app.applicationDirPath() + "/qml/filmulator-gui/main.qml");
+        cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "done loading UI from copy in directory" << endl;
     }
     /*
 #if defined(Q_OS_MACX)
@@ -150,17 +152,19 @@ int main(int argc, char *argv[])
     */
     else if (QFile(QString(FILMULATOR_DATADIR) + "/qml/filmulator-gui/main.qml").exists())//when using cmake
     {
-        //cout << "loading ui from datadir" << endl;
-        //cout << FILMULATOR_DATADIR << "/qml/filmulator-gui/main.qml" << endl;
+        cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading ui from datadir" << endl;
+        cout << FILMULATOR_DATADIR << "/qml/filmulator-gui/main.qml" << endl;
         engine.load(QString(FILMULATOR_DATADIR) + "/qml/filmulator-gui/main.qml");
+        cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "done loading ui from datadir" << endl;
     }
     else
     {
+        cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "missing QML file" << endl;
         qWarning("QML UI file missing");
         return -1;
     }
 
-    cout << "creating window" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating window" << endl;
 
     QObject *topLevel = engine.rootObjects().value(0);
     QQuickWindow *window = qobject_cast<QQuickWindow *>(topLevel);
@@ -170,9 +174,9 @@ int main(int argc, char *argv[])
     }
     window->setIcon(QIcon(":/icons/filmulator64icon.png"));
 
-    cout << "showing window" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "showing window" << endl;
     window->show();
 
-    cout << "return" << endl;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "return" << endl;
     return app.exec();
 }
