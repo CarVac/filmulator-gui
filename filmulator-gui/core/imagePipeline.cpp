@@ -83,7 +83,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
 
         isCR3 = QString::fromStdString(loadParam.fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
-        cout << "processImage this is a CR3!" << endl;
+        if (isCR3)
+        {
+            cout << "processImage this is a CR3!" << endl;
+        }
 
         if (!loadParam.tiffIn && !loadParam.jpegIn && !((HighQuality == quality) && stealData))
         {
