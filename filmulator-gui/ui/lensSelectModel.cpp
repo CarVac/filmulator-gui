@@ -25,7 +25,22 @@ LensSelectModel::LensSelectModel(QObject *parent) : QAbstractTableModel(parent)
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/version_2");
     std::string stdstring = dirstr.toStdString();
+
+    ldb = lf_db_create();
+    if (!ldb)
+    {
+        cout << "Failed to create database!" << endl;
+    }
+
     ldb->Load(stdstring.c_str());
+}
+
+LensSelectModel::~LensSelectModel()
+{
+    if (ldb != NULL)
+    {
+        lf_db_destroy(ldb);
+    }
 }
 
 //If the lensString begins with a backslash, we search all cameras

@@ -10,7 +10,7 @@ class LensSelectModel : public QAbstractTableModel
 
 public:
     explicit LensSelectModel(QObject *parent = 0);
-    virtual ~LensSelectModel() {};
+    ~LensSelectModel();
 
     QVariant data(const QModelIndex &index, int role) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -23,7 +23,7 @@ private:
     QHash<int,QByteArray> m_roleNames;
     int m_rowCount;
 
-    lfDatabase *ldb = new lfDatabase;
+    lfDatabase *ldb;
     std::vector<QString> makerList;
     std::vector<QString> modelList;
     std::vector<int> scoreList;

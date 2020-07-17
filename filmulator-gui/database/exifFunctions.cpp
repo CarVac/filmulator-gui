@@ -462,7 +462,7 @@ QString identifyLens(const std::string fullFilename)
         return "";
     }
 
-    lfDatabase *ldb = new lfDatabase;
+    lfDatabase *ldb = lf_db_create();
     QDir dir = QDir::home();
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/version_2");
@@ -585,7 +585,7 @@ QString identifyLens(const std::string fullFilename)
 
     if (ldb != NULL)
     {
-        delete ldb;
+        lf_db_destroy(ldb);
     }
     return lensName;
 }

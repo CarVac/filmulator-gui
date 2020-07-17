@@ -691,7 +691,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
         //Lensfun processing
         cout << "lensfun start" << endl;
-        lfDatabase * ldb = new lfDatabase;
+        lfDatabase *ldb = lf_db_create();
         QDir dir = QDir::home();
         QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
         dirstr.append("/filmulator/version_2");
@@ -905,7 +905,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         //cleanup lensfun
         if (ldb != NULL)
         {
-            delete ldb;
+            lf_db_destroy(ldb);
         }
 
         valid = paramManager->markDemosaicComplete();

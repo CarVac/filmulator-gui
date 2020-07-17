@@ -49,7 +49,7 @@ ParameterManager::ParameterManager() : QObject(0)
     cout << "ParamManager directory string: " << stdstring << endl;
 
     cout << "ParamManager initializing lensfun db" << endl;
-    ldb = std::make_unique<lfDatabase>();
+    ldb = lf_db_create();
     if (!ldb)
     {
         cout << "Failed to create database!" << endl;
@@ -63,6 +63,14 @@ ParameterManager::ParameterManager() : QObject(0)
 
     pasteable = false;
     pasteSome = false;
+}
+
+ParameterManager::~ParameterManager()
+{
+    if (ldb != NULL)
+    {
+        lf_db_destroy(ldb);
+    }
 }
 
 std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()

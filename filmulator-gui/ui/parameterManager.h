@@ -243,6 +243,7 @@ class ParameterManager : public QObject
 
 public:
     ParameterManager();
+    ~ParameterManager();
 
     Q_INVOKABLE void rotateRight();
     Q_INVOKABLE void rotateLeft();
@@ -328,8 +329,7 @@ protected:
     QMutex signalMutex;
 
     //We need a lensfun database for looking up various things
-    std::unique_ptr<lfDatabase> ldb = std::make_unique<lfDatabase>();
-
+    lfDatabase *ldb;
     //Refresh lens correction availability
     void updateAvailability();
 
