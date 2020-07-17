@@ -69,7 +69,9 @@ int main(int argc, char *argv[])
     //Prepare an object for managing the processing parameters.
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating parametermanager" << endl;
     ParameterManager *paramManager = new ParameterManager;
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "assigning parametermanager property" << endl;
     engine.rootContext()->setContextProperty("paramManager",paramManager);
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "connecting parametermanager" << endl;
     QObject::connect(paramManager, SIGNAL(updateTableOut(QString, int)),
                      switchboard, SLOT(updateTableIn(QString, int)));
 

@@ -14,6 +14,8 @@ ParameterManager::ParameterManager() : QObject(0)
     justInitialized = true;
     paramChangeEnabled = true;
 
+    cout << "ParamManager load defaults to params" << endl;
+
     //Load the defaults, copy to the parameters, there's no filename yet.
     loadDefaults(CopyDefaults::loadToParams, "");
 
@@ -39,12 +41,16 @@ ParameterManager::ParameterManager() : QObject(0)
     lensfunDistAvail = true;
     m_lensfunName = "";
 
+    cout << "ParamManager initializing lensfun db" << endl;
+
     //initialize lensfun db
     QDir dir = QDir::home();
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/version_2");
     std::string stdstring = dirstr.toStdString();
     ldb->Load(stdstring.c_str());
+
+    cout << "ParamManager done initializing lensfun" << endl;
 
     validity = Valid::none;
 
