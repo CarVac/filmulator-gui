@@ -48,6 +48,7 @@ ParameterManager::ParameterManager() : QObject(0)
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/version_2");
     std::string stdstring = dirstr.toStdString();
+    cout << "ParamManager directory string: " << stdstring << endl;
     ldb->Load(stdstring.c_str());
 
     cout << "ParamManager done initializing lensfun" << endl;
