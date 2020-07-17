@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
 
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading qml file" << endl;
 
+    /*
     if (appdir)
     {
         QString qmlfile = appdir;
@@ -139,17 +140,6 @@ int main(int argc, char *argv[])
         engine.load(app.applicationDirPath() + "/qml/filmulator-gui/main.qml");
         cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "done loading UI from copy in directory" << endl;
     }
-    /*
-#if defined(Q_OS_MACX)
-    else if (QFile("$HOME/filmulator-gui/filmulator-gui/Filmulator.app/Contents/Resources/qml/filmulator-gui/main.qml").exists())
-#else
-    else if (QFile("qml/filmulator-gui/main.qml").exists())
-#endif
-    {
-        cout << "loading UI from copy in directory" << endl;
-        engine.load("qml/filmulator-gui/main.qml");
-    }
-    */
     else if (QFile(QString(FILMULATOR_DATADIR) + "/qml/filmulator-gui/main.qml").exists())//when using cmake
     {
         cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading ui from datadir" << endl;
@@ -163,6 +153,9 @@ int main(int argc, char *argv[])
         qWarning("QML UI file missing");
         return -1;
     }
+    */
+    //We're trying to use the QML compiler here
+    engine.load("qrc:///qml/qml/filmulator-gui/main.qml");
 
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating window" << endl;
 

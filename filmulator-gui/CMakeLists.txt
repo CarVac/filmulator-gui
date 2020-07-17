@@ -21,6 +21,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 find_package(Qt5Quick CONFIG REQUIRED)
 find_package(Qt5Sql CONFIG REQUIRED)
 find_package(Qt5Qml CONFIG REQUIRED)
+find_package(Qt5QuickCompiler CONFIG REQUIRED)
 # find_package(Qt5LinguistTools CONFIG REQUIRED)
 
 # find a bunch of packages
@@ -89,7 +90,9 @@ set(filmulator_SRCS
     qtquick2applicationviewer/qtquick2applicationviewer.cpp
 )
 
-qt5_add_resources(filmulator_RSCS
+#qt5_add_resources(filmulator_RSCS
+qtquick_compiler_add_resources(filmulator_RSCS
+    qml.qrc
     resources/pixmaps.qrc
 )
 

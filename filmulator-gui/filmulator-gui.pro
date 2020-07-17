@@ -141,9 +141,12 @@ LIBS += -L /opt/local/lib /opt/local/lib/libomp.dylib
 
 QT += sql core quick qml widgets
 
+CONFIG += qtquickcompiler
+
 INSTALLS += desktop extra
 
 RESOURCES += \
+    qml.qrc \
     resources/pixmaps.qrc
     
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
