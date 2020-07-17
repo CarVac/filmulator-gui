@@ -41,14 +41,20 @@ ParameterManager::ParameterManager() : QObject(0)
     lensfunDistAvail = true;
     m_lensfunName = "";
 
-    cout << "ParamManager initializing lensfun db" << endl;
-
     //initialize lensfun db
     QDir dir = QDir::home();
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator/version_2");
     std::string stdstring = dirstr.toStdString();
     cout << "ParamManager directory string: " << stdstring << endl;
+
+    cout << "ParamManager initializing lensfun db" << endl;
+    ldb = std::make_unique<lfDatabase>();
+    if (!ldb)
+    {
+        cout << "Failed to create database!" << endl;
+    }
+
     ldb->Load(stdstring.c_str());
 
     cout << "ParamManager done initializing lensfun" << endl;
