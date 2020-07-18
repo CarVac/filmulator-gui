@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtQuick.Dialogs 1.3
+//import QtQuick.Dialogs 1.3
+import Qt.labs.platform 1.0
 import "../colors.js" as Colors
 import "."
 
@@ -109,9 +110,15 @@ Rectangle {
     }
     FileDialog {
         id: fileDialog
-        selectMultiple: true
+        fileMode: FileDialog.OpenFiles
         onAccepted: {
-            root.enteredText = fileUrls.toString()//.substring(7)
+            //root.enteredText = fileUrls.toString()//.substring(7)
+            for (var i=0; i < files.length; i++) {
+                root.enteredText += files[i].toString()
+                if (i < files.length-1) {
+                    root.enteredText += ","
+                }
+            }
         }
     }
 
