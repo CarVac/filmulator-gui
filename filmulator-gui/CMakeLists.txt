@@ -112,6 +112,7 @@ else()
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
+    target_compile_definitions(filmulator PRIVATE LF_GIT)
 endif()
 
 target_compile_options(filmulator
