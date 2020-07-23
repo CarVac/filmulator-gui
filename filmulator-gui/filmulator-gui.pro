@@ -84,11 +84,11 @@ LIBS += -L/usr/local/lib
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
-OTHER_FILES += \
-    qml/filmulator-gui/colors.js\
-    qml/filmulator-gui/generateHistogram.js \
-    qml/filmulator-gui/getRoot.js\
-    filmulator
+#OTHER_FILES += \
+#    qml/filmulator-gui/colors.js\
+#    qml/filmulator-gui/generateHistogram.js \
+#    qml/filmulator-gui/getRoot.js\
+#    filmulator
 
 HEADERS += \
     core/filmSim.hpp \
