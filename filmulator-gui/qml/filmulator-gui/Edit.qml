@@ -148,7 +148,7 @@ SlimSplitView {
                             //Irrespective of that
                             if (topImage.state == "lt") {//a NEW image has been selected
                                 //load thumbnail into top image
-                                var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
+                                var thumbPath = (Qt.platform.os == "windows" ? 'file:///' : 'file://') + organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
                                 topImage.source = thumbPath
                             }
                             else {//not a new image; probably just a slider move
