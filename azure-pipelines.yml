@@ -25,10 +25,11 @@ steps:
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
       tar gzip nano make diffutils intltool git cmake libcurl-devel glib2-devel msys2-runtime-devel ^
       mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
-      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,curl,libarchive,lensfun}
+      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,curl,libarchive} #,lensfun}
     displayName: Install Dependencies
   - script: |
       mkdir librt
+      ls
       cd librt
       git clone https://github.com/CarVac/librtprocess lrt
       echo "done clone"
@@ -39,6 +40,21 @@ steps:
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install"
     displayName: build librtprocess
+  - script: |
+      mkdir lensfun
+      ls
+      cd lensfun
+      git clone https://github.com/lensfun/lensfun lf
+      echo "done clone"
+      mkdir buildDir
+      cd buildDir
+      set HOME=.t
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/mingw64/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/mingw64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      cat out.log
+      %MSYS_BASH% -c "make -j2"
+      %MSYS_BASH% -c "make install>lensfunout.log"
+      cat lensfunout.log
+    displayName: build lensfun
   - script: |
       mkdir build
       pushd build
