@@ -180,7 +180,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     loadParams.tiffIn = m_tiffIn;
 
     DemosaicParams demParams;
-    demParams.caEnabled = m_caEnabled;
+    demParams.caEnabled = s_caEnabled;
     demParams.highlights = m_highlights;
     demParams.cameraName = model;
     demParams.lensName = s_lensfunName;//we use the staging ones because they're always populated
