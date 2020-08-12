@@ -31,11 +31,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
 
     //Grab EXIF data from the file.
     const std::string abspath = infoIn.absoluteFilePath().toStdString();
-    auto image = Exiv2::ImageFactory::open(abspath);
-    image->readMetadata();
-    Exiv2::ExifData exifData = image->exifData();
-    Exiv2::XmpData xmpData = image->xmpData();
-
+    //We don't do this anymore because exiv2 doesn't support cr3 currently
 
     //Load data into the hash function.
     while (!file.atEnd())
@@ -72,7 +68,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     //Set up the main directory to insert the file, and the full file path.
     //This is based on what time it was in the timezone of photo capture.
     QString outputPath = photoDir;
-    outputPath.append(exifLocalDateString(exifData, cameraTZ, importTZ, dirConfig));
+    outputPath.append(exifLocalDateString(abspath, cameraTZ, importTZ, dirConfig));
     QString outputPathName = outputPath;
     outputPathName.append(filename);
     //Create the directory.
@@ -84,7 +80,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
 
     //Sets up the backup directory.
     QString backupPath = backupDir;
-    backupPath.append(exifLocalDateString(exifData, cameraTZ, importTZ, dirConfig));
+    backupPath.append(exifLocalDateString(abspath, cameraTZ, importTZ, dirConfig));
     QString backupPathName = backupPath;
     backupPathName.append(filename);
 
@@ -222,7 +218,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                     outputFile.remove(outputPathName);
                 } else {
                     //success
-                    fileInsert(hashString, outputPathName, exifData);
+                    fileInsert(hashString, outputPathName);
                 }
                 if (attempts > 6)
                 {
@@ -234,17 +230,16 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         else
         {
             //If it's being imported in place, then we don't copy the file.
-            fileInsert(hashString, infoIn.absoluteFilePath(), exifData);
+            fileInsert(hashString, infoIn.absoluteFilePath());
         }
 
         //Now create a profile and a search table entry, and a thumbnail.
         QString STsearchID;
         STsearchID = createNewProfile(hashString,
                                       filename,
-                                      exifUtcTime(exifData, cameraTZ),
+                                      exifUtcTime(abspath, cameraTZ),
                                       importStartTime,
-                                      exifData,
-                                      xmpData);
+                                      abspath);
 
         //Request that we enqueue the image.
         cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
@@ -297,7 +292,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                     outputFile.remove(outputPathName);
                 } else {
                     //success
-                    fileInsert(hashString, outputPathName, exifData);
+                    fileInsert(hashString, outputPathName);
                 }
                 if (attempts > 6)
                 {
@@ -310,7 +305,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         //If we want to update the location of the file.
         if (replaceLocation)
         {
-            fileInsert(hashString, infoIn.absoluteFilePath(), exifData);
+            fileInsert(hashString, infoIn.absoluteFilePath());
             cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
 
             QString STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));

@@ -21,6 +21,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 find_package(Qt5Quick CONFIG REQUIRED)
 find_package(Qt5Sql CONFIG REQUIRED)
 find_package(Qt5Qml CONFIG REQUIRED)
+find_package(Qt5QuickCompiler CONFIG REQUIRED)
 # find_package(Qt5LinguistTools CONFIG REQUIRED)
 
 # find a bunch of packages
@@ -94,7 +95,9 @@ set(filmulator_SRCS
     qtquick2applicationviewer/qtquick2applicationviewer.cpp
 )
 
-qt5_add_resources(filmulator_RSCS
+#qt5_add_resources(filmulator_RSCS
+qtquick_compiler_add_resources(filmulator_RSCS
+    qml.qrc
     resources/pixmaps.qrc
 )
 
@@ -105,7 +108,7 @@ if(APPLE)
     )
     target_compile_definitions(filmulator PRIVATE LF_GIT)
 elseif(WIN32)
-    add_executable(filmulator WIN32
+    add_executable(filmulator # WIN32 # comment out WIN32 to get a terminal window
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
@@ -114,6 +117,7 @@ else()
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
+    target_compile_definitions(filmulator PRIVATE LF_GIT)
 endif()
 
 target_compile_options(filmulator

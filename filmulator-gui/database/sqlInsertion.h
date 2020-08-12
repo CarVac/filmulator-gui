@@ -11,13 +11,12 @@
 #include <QDir>
 
 void fileInsert(const QString hash,
-                const QString filePathName,
-                Exiv2::ExifData exifData);
+                const QString fullFilename);
+
 QString createNewProfile(const QString fileHash,
                          const QString fileName,
                          const QDateTime captureTime,
                          const QDateTime importTime,
-                         Exiv2::ExifData exifData,
-                         Exiv2::XmpData xmpData);
+                         const std::string fullFilename);
 
 #endif // SQLINSERTION_H

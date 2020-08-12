@@ -148,7 +148,7 @@ SlimSplitView {
                             //Irrespective of that
                             if (topImage.state == "lt") {//a NEW image has been selected
                                 //load thumbnail into top image
-                                var thumbPath = organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
+                                var thumbPath = (Qt.platform.os == "windows" ? 'file:///' : 'file://') + organizeModel.thumbDir() + '/' + paramManager.imageIndex.slice(0,4) + '/' + paramManager.imageIndex + '.jpg'
                                 topImage.source = thumbPath
                             }
                             else {//not a new image; probably just a slider move
@@ -228,6 +228,12 @@ SlimSplitView {
                             } else {
                                 root.cropping = false
                             }
+                        }
+                        else if (photoBox.loadingError) {//the source file is not available
+                            //This needed to be added in case you click on an unavailable image before any image is loaded
+                            root.imageReady = false
+                            console.log("file is unavailable")
+                            //doing nothing here seems to work fine
                         }
                         else if (topImage.status == Image.Error) {
                             root.imageReady = false
@@ -2122,7 +2128,7 @@ SlimSplitView {
         Connections {
             target: paramManager
             function onFileError() {
-                photoBox.errorText = paramManager.getFullFilenameQstr()
+                photoBox.errorText = paramManager.fullFilenameQstr
                 photoBox.loadingError = true
             }
             function onFilenameChanged() {

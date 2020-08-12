@@ -92,11 +92,11 @@ LIBS += -L/usr/local/lib
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
-OTHER_FILES += \
-    qml/filmulator-gui/colors.js\
-    qml/filmulator-gui/generateHistogram.js \
-    qml/filmulator-gui/getRoot.js\
-    filmulator
+#OTHER_FILES += \
+#    qml/filmulator-gui/colors.js\
+#    qml/filmulator-gui/generateHistogram.js \
+#    qml/filmulator-gui/getRoot.js\
+#    filmulator
 
 HEADERS += \
     core/filmSim.hpp \
@@ -126,7 +126,7 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing
+QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math -DLF_GIT
 macx: {
 QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/opt/local/include
 }
@@ -135,7 +135,7 @@ QMAKE_CXXFLAGS += -fopenmp
 }
 
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -std=c++14 -O3
+QMAKE_LFLAGS += -std=c++17 -O3
 macx: {
 QMAKE_LFLAGS += -lomp
 }
@@ -150,9 +150,12 @@ LIBS += -L /opt/local/lib /opt/local/lib/libomp.dylib
 
 QT += sql core quick qml widgets
 
+CONFIG += qtquickcompiler
+
 INSTALLS += desktop extra
 
 RESOURCES += \
+    qml.qrc \
     resources/pixmaps.qrc
     
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
