@@ -52,7 +52,7 @@ steps:
       mkdir buildDir
       cd buildDir
       set HOME=.
-      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/mingw64/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/mingw64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/msys64/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/msys64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install>lensfunout.log"
