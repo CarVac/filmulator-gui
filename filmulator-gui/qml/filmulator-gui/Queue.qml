@@ -592,6 +592,39 @@ Item {
         height: 15*uiScale
 
         Rectangle {
+            id: scrollbarBackground
+            color: Colors.darkGray
+            opacity: 0
+
+            y: parent.height-height - 1 * uiScale
+            height: 3 * uiScale
+
+            x: 0
+            width: parent.width
+            z: -1
+
+            transitions: Transition {
+                NumberAnimation {
+                    property: "height"
+                    duration: 200
+                }
+                NumberAnimation {
+                    property: "opacity"
+                    duration: 200
+                }
+            }
+            states: State {
+                name: "hovered"
+                when: scrollbarMouseArea.containsMouse || scrollbarMouseArea.pressed
+                PropertyChanges {
+                    target: scrollbarBackground
+                    height: 12 * uiScale
+                    opacity: 0.5
+                }
+            }
+        }
+
+        Rectangle {
             id: scrollbar
             color: scrollbarMouseArea.pressed ? Colors.medOrange : scrollbarMouseArea.containsMouse ? Colors.weakOrange : Colors.middleGray
             radius: 1.5*uiScale
