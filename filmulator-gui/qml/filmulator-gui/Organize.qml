@@ -359,11 +359,14 @@ SlimSplitView {
 
             GridView {
                 id: dateHistoView
-                anchors.fill: parent
+                x: 0
+                y: 0
+                width: parent.width
+                height: parent.height - 5*uiScale
                 flow: GridView.FlowTopToBottom
                 layoutDirection: Qt.LeftToRight
                 cellWidth: 5 * uiScale
-                cellHeight: dateHistogram.height
+                cellHeight: height
 
                 boundsBehavior: Flickable.StopAtBounds
                 flickDeceleration: 6000 * uiScale
@@ -387,7 +390,7 @@ SlimSplitView {
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
                     property bool sel: organizeModel.isDateSelected(theDate)//selectedDate == theDate
-                    height: dateHistogram.height
+                    height: dateHistoView.height
                     color: (1===themonth%2) ? (sel ? Colors.darkOrangeH : Colors.darkGrayH) : (sel ? Colors.darkOrangeL : Colors.darkGrayL)
                     clip: true
                     Text {
@@ -476,6 +479,133 @@ SlimSplitView {
                     positionViewAtEnd()
                 }
             }
+
+            Item {
+                id: scrollbarHolderDateHisto
+                x: 0
+                y: parent.height-15*uiScale
+                width: parent.width
+                height: 15*uiScale
+
+                Rectangle {
+                    id: scrollbarBackgroundDateHisto
+                    color: Colors.darkGray
+                    opacity: 0
+
+                    y: parent.height-height - 1 * uiScale
+                    height: 3 * uiScale
+
+                    x: 0
+                    width: parent.width
+                    z: -1
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "height"
+                            duration: 200
+                        }
+                        NumberAnimation {
+                            property: "opacity"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed
+                        PropertyChanges {
+                            target: scrollbarBackgroundDateHisto
+                            height: 12 * uiScale
+                            opacity: 0.5
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: scrollbarDateHisto
+                    color: scrollbarMouseAreaDateHisto.pressed ? Colors.medOrange : scrollbarMouseAreaDateHisto.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    radius: 1.5*uiScale
+
+                    y: parent.height-height - 1 * uiScale
+                    height: 3 * uiScale
+
+                    x: 1 * uiScale + (0.99*dateHistoView.visibleArea.xPosition) * (parent.width - 2*uiScale)
+                    width: (0.99*dateHistoView.visibleArea.widthRatio + 0.01) * (parent.width - 2*uiScale)
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "height"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed
+                        PropertyChanges {
+                            target: scrollbarDateHisto
+                            height: 12 * uiScale
+                        }
+                    }
+                }
+                MouseArea {
+                    id: scrollbarMouseAreaDateHisto
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 10
+                        dateHistoView.flickDeceleration = deceleration * uiScale
+                        dateHistoView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                        var velocity = dateHistoView.horizontalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 100
+                        if (wheel.angleDelta.y > 0 && !dateHistoView.atXBeginning && !root.dragging) {
+                            //Leftward; up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                            dateHistoView.flick(1,0)
+                            dateHistoView.flick(newVelocity, 0)
+                        } else if (wheel.angleDelta.y < 0 && !dateHistoView.atXEnd && !root.dragging) {
+                            //Rightward; down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                            dateHistoView.flick(-1,0)
+                            dateHistoView.flick(newVelocity, 0)
+                        }
+                    }
+
+                    property bool overDragThresh: false
+                    property real pressX
+                    property real viewX
+                    onPositionChanged: {
+                        if (pressed) {
+                            var deltaX = mouse.x - pressX
+                            var scrollWidth = scrollbarMouseAreaDateHisto.width - scrollbarDateHisto.width - 2*uiScale
+                            var relativeDelta = deltaX / scrollWidth
+                            var scrollMargin = dateHistoView.contentWidth - dateHistoView.width
+                            dateHistoView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
+                        }
+                    }
+
+                    onPressed: {
+                        preventStealing = true
+                        dateHistoView.cancelFlick()
+                        pressX = mouse.x
+                        viewX = dateHistoView.contentX
+                    }
+                    onReleased: {
+                        preventStealing = false
+                    }
+                }
+            }
+
             MouseArea {
                 id: wheelstealerDateHisto
                 anchors.fill: parent
