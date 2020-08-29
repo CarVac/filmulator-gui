@@ -497,7 +497,6 @@ SlimSplitView {
 
                     x: 0
                     width: parent.width
-                    z: -1
 
                     transitions: Transition {
                         NumberAnimation {
@@ -648,7 +647,10 @@ SlimSplitView {
 
             GridView {
                 id: gridView
-                anchors.fill: parent
+                x: 0
+                y: 0
+                width: parent.width - 5*uiScale
+                height: parent.height
 
                 cellWidth: 320 * uiScale
                 cellHeight: 320 * uiScale
@@ -726,6 +728,133 @@ SlimSplitView {
                     gridView.model = organizeModel
                 }
             }
+
+            Item {
+                id: scrollbarHolderGridView
+                x: parent.width - 15*uiScale
+                y: 0
+                width: 15*uiScale
+                height: parent.height
+
+                Rectangle {
+                    id: scrollbarBackgroundGridView
+                    color: Colors.darkGray
+                    opacity: 0
+
+                    x: parent.width-width - 1*uiScale
+                    width: 3 * uiScale
+
+                    y: 0
+                    height: parent.height
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "width"
+                            duration: 200
+                        }
+                        NumberAnimation {
+                            property: "opacity"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaGridView.containsMouse || scrollbarMouseAreaGridView.pressed
+                        PropertyChanges {
+                            target: scrollbarBackgroundGridView
+                            width: 12 * uiScale
+                            opacity: 0.5
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: scrollbarGridView
+                    color: scrollbarMouseAreaGridView.pressed ? Colors.medOrange : scrollbarMouseAreaGridView.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    radius: 1.5*uiScale
+
+                    x: parent.width-width - 1 * uiScale
+                    width: 3 * uiScale
+
+                    y: 1 * uiScale + (0.99*gridView.visibleArea.yPosition) * (parent.height - 2*uiScale)
+                    height: (0.99*gridView.visibleArea.heightRatio + 0.01) * (parent.height - 2*uiScale)
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "width"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaGridView.containsMouse || scrollbarMouseAreaGridView.pressed
+                        PropertyChanges {
+                            target: scrollbarGridView
+                            width: 12 * uiScale
+                        }
+                    }
+                }
+                MouseArea {
+                    id: scrollbarMouseAreaGridView
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 10
+                        gridView.flickDeceleration = deceleration * uiScale
+                        gridView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                        var velocity = gridView.verticalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 100
+                        if (wheel.angleDelta.y > 0 && !gridView.atXBeginning && !root.dragging) {
+                            //Leftward; up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, gridView.maximumFlickVelocity)
+                            gridView.flick(0,1)
+                            gridView.flick(0, newVelocity)
+                        } else if (wheel.angleDelta.y < 0 && !gridView.atXEnd && !root.dragging) {
+                            //Rightward; down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, gridView.maximumFlickVelocity)
+                            gridView.flick(0,-1)
+                            gridView.flick(0, newVelocity)
+                        }
+                    }
+
+                    property bool overDragThresh: false
+                    property real pressY
+                    property real viewY
+                    onPositionChanged: {
+                        if (pressed) {
+                            var deltaY = mouse.y - pressY
+                            var scrollHeight = scrollbarMouseAreaGridView.height - scrollbarGridView.height - 2*uiScale
+                            var relativeDelta = deltaY / scrollHeight
+                            var scrollMargin = gridView.contentHeight - gridView.height
+                            gridView.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
+                        }
+                    }
+
+                    onPressed: {
+                        preventStealing = true
+                        gridView.cancelFlick()
+                        pressY = mouse.y
+                        viewY = gridView.contentY
+                    }
+                    onReleased: {
+                        preventStealing = false
+                    }
+                }
+            }
+
+
             MouseArea {
                 id: wheelstealer
                 //Custom scrolling implementation because the default flickable one sucks.

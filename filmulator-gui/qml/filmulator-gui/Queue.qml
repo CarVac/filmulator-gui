@@ -601,7 +601,6 @@ Item {
 
             x: 0
             width: parent.width
-            z: -1
 
             transitions: Transition {
                 NumberAnimation {

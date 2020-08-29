@@ -54,7 +54,7 @@ SlimSplitView {
         Layout.fillHeight: true
         Flickable {
             id: toolList
-            width: parent.width
+            width: parent.width - 3 * uiScale
             height: parent.height
             flickableDirection: Qt.Vertical
             clip: true
@@ -75,7 +75,7 @@ SlimSplitView {
                 id: toolLayout
                 spacing: 0 * uiScale
                 x: 3 * uiScale
-                width: toolListItem.width - 6 * uiScale
+                width: toolList.width - 6 * uiScale
 
                 Rectangle {
                     id: topSpacer
@@ -923,6 +923,132 @@ SlimSplitView {
                 }
             }
         }
+
+        Item {
+            id: scrollbarHolderToolList
+            x: parent.width - 10*uiScale
+            y: 0
+            width: 10*uiScale
+            height: parent.height
+
+            Rectangle {
+                id: scrollbarBackgroundToolList
+                color: Colors.darkGray
+                opacity: 0
+
+                x: parent.width-width - 1*uiScale
+                width: 3 * uiScale
+
+                y: 0
+                height: parent.height
+
+                transitions: Transition {
+                    NumberAnimation {
+                        property: "width"
+                        duration: 200
+                    }
+                    NumberAnimation {
+                        property: "opacity"
+                        duration: 200
+                    }
+                }
+                states: State {
+                    name: "hovered"
+                    when: scrollbarMouseAreaToolList.containsMouse || scrollbarMouseAreaToolList.pressed
+                    PropertyChanges {
+                        target: scrollbarBackgroundToolList
+                        width: 8 * uiScale
+                        opacity: 0.5
+                    }
+                }
+            }
+
+            Rectangle {
+                id: scrollbarToolList
+                color: scrollbarMouseAreaToolList.pressed ? Colors.medOrange : scrollbarMouseAreaToolList.containsMouse ? Colors.weakOrange : Colors.middleGray
+                radius: 1.5*uiScale
+
+                x: parent.width-width - 1 * uiScale
+                width: 3 * uiScale
+
+                y: 1 * uiScale + (0.99*toolList.visibleArea.yPosition) * (parent.height - 2*uiScale)
+                height: (0.99*toolList.visibleArea.heightRatio + 0.01) * (parent.height - 2*uiScale)
+
+                transitions: Transition {
+                    NumberAnimation {
+                        property: "width"
+                        duration: 200
+                    }
+                }
+                states: State {
+                    name: "hovered"
+                    when: scrollbarMouseAreaToolList.containsMouse || scrollbarMouseAreaToolList.pressed
+                    PropertyChanges {
+                        target: scrollbarToolList
+                        width: 8 * uiScale
+                    }
+                }
+            }
+            MouseArea {
+                id: scrollbarMouseAreaToolList
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: Qt.LeftButton
+                onWheel: {
+                    //See the Queue.qml file for the math behind this.
+
+                    //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    toolList.flickDeceleration = deceleration * uiScale
+                    toolList.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = toolList.verticalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
+                    if (wheel.angleDelta.y > 0 && !toolList.atXBeginning && !root.dragging) {
+                        //Leftward; up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, toolList.maximumFlickVelocity)
+                        toolList.flick(0,1)
+                        toolList.flick(0, newVelocity)
+                    } else if (wheel.angleDelta.y < 0 && !toolList.atXEnd && !root.dragging) {
+                        //Rightward; down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, toolList.maximumFlickVelocity)
+                        toolList.flick(0,-1)
+                        toolList.flick(0, newVelocity)
+                    }
+                }
+
+                property bool overDragThresh: false
+                property real pressY
+                property real viewY
+                onPositionChanged: {
+                    if (pressed) {
+                        var deltaY = mouse.y - pressY
+                        var scrollHeight = scrollbarMouseAreaToolList.height - scrollbarToolList.height - 2*uiScale
+                        var relativeDelta = deltaY / scrollHeight
+                        var scrollMargin = toolList.contentHeight - toolList.height
+                        toolList.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
+                    }
+                }
+
+                onPressed: {
+                    preventStealing = true
+                    toolList.cancelFlick()
+                    pressY = mouse.y
+                    viewY = toolList.contentY
+                }
+                onReleased: {
+                    preventStealing = false
+                }
+            }
+        }
+
         MouseArea {
             id: wheelstealer
             //Custom scrolling implementation because the default flickable one sucks.
