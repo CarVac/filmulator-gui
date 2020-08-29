@@ -57,7 +57,10 @@ Item {
 
     GridView { //There is a bug in ListView that makes scrolling not smooth.
         id: listView
-        anchors.fill: parent
+        x: 0
+        y: 0
+        width: parent.width
+        height: parent.height - 10*uiScale
         flow: GridView.FlowTopToBottom
         layoutDirection: Qt.LeftToRight
         cacheBuffer: 10
@@ -67,6 +70,13 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 6000 * uiScale
         maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+        onMovingChanged: { //reset params after mouse scrolling
+            if (!moving) {
+                flickDeceleration = 6000 * uiScale
+                maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+            }
+        }
 
         displaced: Transition {
             NumberAnimation {
@@ -148,7 +158,7 @@ Item {
                     id: queueDelegate
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: delegateRoot.verticalCenter
-                    dim: root.height
+                    dim: listView.height
                     rootDir: organizeModel.thumbDir()
 
                     selectedID: paramManager.imageIndex
@@ -574,6 +584,128 @@ Item {
         }
     }
 
+    Item {
+        id: scrollbarHolder
+        x: 0
+        y: parent.height-15*uiScale
+        width: parent.width
+        height: 15*uiScale
+
+        Rectangle {
+            id: scrollbar
+            color: scrollbarMouseArea.pressed ? Colors.medOrange : scrollbarMouseArea.containsMouse ? Colors.weakOrange : Colors.middleGray
+            radius: 1.5*uiScale
+
+            y: parent.height-height - 1 * uiScale
+            height: 3 * uiScale
+
+            x: 1 * uiScale + (0.99*listView.visibleArea.xPosition) * (parent.width - 2*uiScale)
+            width: (0.99*listView.visibleArea.widthRatio + 0.01) * (parent.width - 2*uiScale)
+
+            transitions: Transition {
+                NumberAnimation {
+                    property: "height"
+                    duration: 200
+                }
+            }
+            states: State {
+                name: "hovered"
+                when: scrollbarMouseArea.containsMouse || scrollbarMouseArea.pressed
+                PropertyChanges {
+                    target: scrollbar
+                    height: 12 * uiScale
+                }
+            }
+        }
+        MouseArea {
+            id: scrollbarMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton
+            onWheel: {
+                //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                //Set the scroll deceleration and max speed higher for wheel scrolling.
+                //It should be reset when the view stops moving.
+                //For now, this is 10x higher than standard.
+                var deceleration = 6000 * 10
+                listView.flickDeceleration = deceleration * uiScale
+                listView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                var velocity = listView.horizontalVelocity/uiScale
+                var newVelocity = velocity
+
+                var distance = 100
+                if (wheel.angleDelta.y > 0 && !listView.atXBeginning && !root.dragging) {
+                    //Leftward; up on the scroll wheel.
+
+                    //This formula makes each click of the wheel advance the 'target' a fixed distance.
+                    //We use the angle delta to handle multi-size scrolling like smooth scrolling touchpads.
+                    //We scale by uiScale.
+
+                    //If we're stopped or already moving leftward, add to the flick velocity. If we're moving rightward, then stop.
+
+                    //How much to add to the flick velocity?
+                    //First, we want to know where it'll stop currently, which is
+                    //d = at^2 + bt + c
+                    //when
+                    //  a, the acceleration, is -deceleration (-D)
+                    //  b, the initial velocity, is velocity (V)
+                    //  c is 0
+                    //and t is the value where velocity is 0
+                    //0 = 2at + b
+                    //t = -b/2a
+                    //and thus, plugging that t into the first equation,
+                    //d = b^2/(4a) - b^2/(2a) = - b^2/(4a)
+                    //d1 = V1^2 / (4D)
+                    //Now we want to increase that by an increment.
+                    //d2 = d1 + delta = V2^2 / (4D)
+                    //V1^2/(4D) + delta = V2^2/(4D)
+                    //V2 = sqrt((V1^2/(4D) + delta) * 4D)
+
+                    newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+
+                    //limit to the max flick velocity
+                    newVelocity = Math.min(newVelocity, listView.maximumFlickVelocity)
+
+                    //the flick logic sometimes sends the view flying like crazy if it's already moving quickly
+                    //so we set it to something low (nonzero so that deceleration won't get reset)
+                    listView.flick(1,0)
+
+                    listView.flick(newVelocity, 0)
+                } else if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
+                    //Rightward; down on the scroll wheel.
+                    newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                    newVelocity = -Math.min(newVelocity, listView.maximumFlickVelocity)
+                    listView.flick(-1,0)
+                    listView.flick(newVelocity, 0)
+                }
+            }
+
+            property bool overDragThresh: false
+            property real pressX
+            property real viewX
+            onPositionChanged: {
+                if (pressed) {
+                    var deltaX = mouse.x - pressX
+                    var scrollWidth = scrollbarMouseArea.width - scrollbar.width - 2*uiScale
+                    var relativeDelta = deltaX / scrollWidth
+                    var scrollMargin = listView.contentWidth - listView.width
+                    listView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
+                }
+            }
+
+            onPressed: {
+                preventStealing = true
+                listView.cancelFlick()
+                pressX = mouse.x
+                viewX = listView.contentX
+            }
+            onReleased: {
+                preventStealing = false
+            }
+        }
+    }
+
     //Custom scrolling implementation.
     //It's disabled while you drag an image.
     MouseArea {
@@ -581,18 +713,29 @@ Item {
         anchors.fill: listView
         acceptedButtons: Qt.NoButton
         onWheel: {
-            var velocity = listView.horizontalVelocity
+            //Set the scroll deceleration and max speed higher for wheel scrolling.
+            //It should be reset when the view stops moving.
+            //For now, this is 10x higher than standard.
+            var deceleration = 6000 * 10
+            listView.flickDeceleration = deceleration * uiScale
+            listView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+            var velocity = listView.horizontalVelocity/uiScale
+            var newVelocity = velocity
+
+            var distance = 100
             if (wheel.angleDelta.y > 0 && !listView.atXBeginning && !root.dragging) {
                 //Leftward; up on the scroll wheel.
-
-                //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                //We use the angle delta to handle multi-size scrolling like smooth scrolling touchpads.
-                //We scale by uiScale.
-                listView.flick(uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)), 0)
-            }
-            if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
+                newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                newVelocity = Math.min(newVelocity, listView.maximumFlickVelocity)
+                listView.flick(1,0)
+                listView.flick(newVelocity, 0)
+            } else if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
                 //Rightward; down on the scroll wheel.
-                listView.flick(uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/(-120)): (velocity == 0 ? -500 : 0)), 0)
+                newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                newVelocity = -Math.min(newVelocity, listView.maximumFlickVelocity)
+                listView.flick(-1,0)
+                listView.flick(newVelocity, 0)
             }
         }
     }

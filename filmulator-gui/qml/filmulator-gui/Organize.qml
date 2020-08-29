@@ -364,8 +364,17 @@ SlimSplitView {
                 layoutDirection: Qt.LeftToRight
                 cellWidth: 5 * uiScale
                 cellHeight: dateHistogram.height
-                boundsBehavior: Flickable.StopAtBounds
 
+                boundsBehavior: Flickable.StopAtBounds
+                flickDeceleration: 6000 * uiScale
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
 
                 delegate: Rectangle {
                     id: dateHistoDelegate
@@ -467,6 +476,39 @@ SlimSplitView {
                     positionViewAtEnd()
                 }
             }
+            MouseArea {
+                id: wheelstealerDateHisto
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                onWheel: {
+                    //See the Queue.qml file for the math behind this.
+
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    dateHistoView.flickDeceleration = deceleration * uiScale
+                    dateHistoView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = dateHistoView.horizontalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
+                    if (wheel.angleDelta.y > 0 && !dateHistoView.atXBeginning && !root.dragging) {
+                        //Leftward; up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                        dateHistoView.flick(1,0)
+                        dateHistoView.flick(newVelocity, 0)
+                    } else if (wheel.angleDelta.y < 0 && !dateHistoView.atXEnd && !root.dragging) {
+                        //Rightward; down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                        dateHistoView.flick(-1,0)
+                        dateHistoView.flick(newVelocity, 0)
+                    }
+                }
+            }
         }
 
         Rectangle {
@@ -481,10 +523,18 @@ SlimSplitView {
                 cellWidth: 320 * uiScale
                 cellHeight: 320 * uiScale
 
+                clip: true
+
                 boundsBehavior: Flickable.StopAtBounds
                 flickDeceleration: 6000 * uiScale
-                maximumFlickVelocity: 50000 * Math.sqrt(uiScale)
-                clip: true
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
 
                 delegate: OrganizeDelegate {
                     id: organizeDelegate
@@ -552,18 +602,31 @@ SlimSplitView {
                 anchors.fill: gridView
                 acceptedButtons: Qt.NoButton
                 onWheel: {
-                    var velocity = gridView.verticalVelocity
+                    //See the Queue.qml file for the math behind this.
+
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    gridView.flickDeceleration = deceleration * uiScale
+                    gridView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = gridView.verticalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
                     if (wheel.angleDelta.y > 0 && !gridView.atYBeginning) {
-                        //up
-                        //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                        //It uses the angle delta to handle smooth scrolling touchpads.
-                        gridView.flick(0, uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)))
-                        //It's not 1,000,000 (1000 squared) because it feels slightly sluggish at that level.
-                        //And 1000 isn't higher because otherwise a single scroll click is too far.
-                    }
-                    else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
-                        //down
-                        gridView.flick(0, uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0)))
+                        //up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, gridView.maximumFlickVelocity)
+                        gridView.flick(0,1)
+                        gridView.flick(0, newVelocity)
+                    } else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
+                        //down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, gridView.maximumFlickVelocity)
+                        gridView.flick(0,-1)
+                        gridView.flick(0, newVelocity)
                     }
                 }
             }

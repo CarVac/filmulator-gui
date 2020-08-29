@@ -59,7 +59,18 @@ SlimSplitView {
             flickableDirection: Qt.Vertical
             clip: true
             contentHeight: toolLayout.height
+
             boundsBehavior: Flickable.StopAtBounds
+            flickDeceleration: 6000 * uiScale
+            maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+            onMovingChanged: { //reset params after mouse scrolling
+                if (!moving) {
+                    flickDeceleration = 6000 * uiScale
+                    maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                }
+            }
+
             ColumnLayout {
                 id: toolLayout
                 spacing: 0 * uiScale
@@ -909,6 +920,40 @@ SlimSplitView {
                     id: bottomSpacer
                     color: "#00000000"//transparent
                     height: 3 * uiScale
+                }
+            }
+        }
+        MouseArea {
+            id: wheelstealer
+            //Custom scrolling implementation because the default flickable one sucks.
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton
+            onWheel: {
+                //See the Queue.qml file for the math behind this.
+
+                //Set the scroll deceleration and max speed higher for wheel scrolling.
+                //It should be reset when the view stops moving.
+                //For now, this is 10x higher than standard.
+                var deceleration = 6000 * 2
+                toolList.flickDeceleration = deceleration * uiScale
+                toolList.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*2)
+
+                var velocity = toolList.verticalVelocity/uiScale
+                var newVelocity = velocity
+
+                var distance = 30 //the tool list is relatively short so it needs less scrolling
+                if (wheel.angleDelta.y > 0 && !toolList.atYBeginning) {
+                    //up on the scroll wheel.
+                    newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                    newVelocity = Math.min(newVelocity, toolList.maximumFlickVelocity)
+                    toolList.flick(0,1)
+                    toolList.flick(0, newVelocity)
+                } else if (wheel.angleDelta.y < 0 && !toolList.atYEnd) {
+                    //down on the scroll wheel.
+                    newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                    newVelocity = -Math.min(newVelocity, toolList.maximumFlickVelocity)
+                    toolList.flick(0,-1)
+                    toolList.flick(0, newVelocity)
                 }
             }
         }
