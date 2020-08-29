@@ -1928,6 +1928,18 @@ SlimSplitView {
                 orientation: ListView.Vertical
                 spacing: 3 * uiScale
                 clip: true
+
+                boundsBehavior: Flickable.StopAtBounds
+                flickDeceleration: 6000 * uiScale
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
+
                 delegate: Rectangle {
                     id: lensListDelegate
                     width: lensListBox.width - 6 * uiScale
@@ -1967,6 +1979,164 @@ SlimSplitView {
                         onDoubleClicked: {
                             textEntryRect.selectedLens = parent.fullLensName
                             lensfunBox.active = false
+                        }
+                    }
+                }
+                Item {
+                    id: scrollbarHolderLensListBox
+                    x: parent.width - 10*uiScale
+                    y: 0
+                    width: 10*uiScale
+                    height: parent.height
+
+                    Rectangle {
+                        id: scrollbarBackgroundLensListBox
+                        color: Colors.darkGray
+                        opacity: 0
+
+                        x: parent.width-width - 1*uiScale
+                        width: 3 * uiScale
+
+                        y: 0
+                        height: parent.height
+
+                        transitions: Transition {
+                            NumberAnimation {
+                                property: "width"
+                                duration: 200
+                            }
+                            NumberAnimation {
+                                property: "opacity"
+                                duration: 200
+                            }
+                        }
+                        states: State {
+                            name: "hovered"
+                            when: scrollbarMouseAreaLensListBox.containsMouse || scrollbarMouseAreaLensListBox.pressed
+                            PropertyChanges {
+                                target: scrollbarBackgroundLensListBox
+                                width: 8 * uiScale
+                                opacity: 0.5
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        id: scrollbarLensListBox
+                        color: scrollbarMouseAreaLensListBox.pressed ? Colors.medOrange : scrollbarMouseAreaLensListBox.containsMouse ? Colors.weakOrange : Colors.middleGray
+                        radius: 1.5*uiScale
+
+                        x: parent.width-width - 1 * uiScale
+                        width: 3 * uiScale
+
+                        y: 1 * uiScale + (0.99*lensListBox.visibleArea.yPosition) * (parent.height - 2*uiScale)
+                        height: (0.99*lensListBox.visibleArea.heightRatio + 0.01) * (parent.height - 2*uiScale)
+
+                        transitions: Transition {
+                            NumberAnimation {
+                                property: "width"
+                                duration: 200
+                            }
+                        }
+                        states: State {
+                            name: "hovered"
+                            when: scrollbarMouseAreaLensListBox.containsMouse || scrollbarMouseAreaLensListBox.pressed
+                            PropertyChanges {
+                                target: scrollbarLensListBox
+                                width: 8 * uiScale
+                            }
+                        }
+                    }
+                    MouseArea {
+                        id: scrollbarMouseAreaLensListBox
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton
+                        onWheel: {
+                            //See the Queue.qml file for the math behind this.
+
+                            //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                            //Set the scroll deceleration and max speed higher for wheel scrolling.
+                            //It should be reset when the view stops moving.
+                            //For now, this is 10x higher than standard.
+                            var deceleration = 6000 * 10
+                            lensListBox.flickDeceleration = deceleration * uiScale
+                            lensListBox.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                            var velocity = lensListBox.verticalVelocity/uiScale
+                            var newVelocity = velocity
+
+                            var distance = 100
+                            if (wheel.angleDelta.y > 0 && !lensListBox.atXBeginning && !root.dragging) {
+                                //Leftward; up on the scroll wheel.
+                                newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                                newVelocity = Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                                lensListBox.flick(0,1)
+                                lensListBox.flick(0, newVelocity)
+                            } else if (wheel.angleDelta.y < 0 && !lensListBox.atXEnd && !root.dragging) {
+                                //Rightward; down on the scroll wheel.
+                                newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                                newVelocity = -Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                                lensListBox.flick(0,-1)
+                                lensListBox.flick(0, newVelocity)
+                            }
+                        }
+
+                        property bool overDragThresh: false
+                        property real pressY
+                        property real viewY
+                        onPositionChanged: {
+                            if (pressed) {
+                                var deltaY = mouse.y - pressY
+                                var scrollHeight = scrollbarMouseAreaLensListBox.height - scrollbarLensListBox.height - 2*uiScale
+                                var relativeDelta = deltaY / scrollHeight
+                                var scrollMargin = lensListBox.contentHeight - lensListBox.height
+                                lensListBox.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
+                            }
+                        }
+
+                        onPressed: {
+                            preventStealing = true
+                            lensListBox.cancelFlick()
+                            pressY = mouse.y
+                            viewY = lensListBox.contentY
+                        }
+                        onReleased: {
+                            preventStealing = false
+                        }
+                    }
+                }
+                MouseArea {
+                    id: wheelStealer
+                    //Custom scrolling implementation because the default flickable one sucks.
+                    anchors.fill: lensListBox
+                    acceptedButtons: Qt.NoButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 2
+                        lensListBox.flickDeceleration = deceleration * uiScale
+                        lensListBox.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*2)
+
+                        var velocity = lensListBox.verticalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 30 //the tool list is relatively short so it needs less scrolling
+                        if (wheel.angleDelta.y > 0 && !lensListBox.atYBeginning) {
+                            //up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                            lensListBox.flick(0,1)
+                            lensListBox.flick(0, newVelocity)
+                        } else if (wheel.angleDelta.y < 0 && !lensListBox.atYEnd) {
+                            //down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                            lensListBox.flick(0,-1)
+                            lensListBox.flick(0, newVelocity)
                         }
                     }
                 }
