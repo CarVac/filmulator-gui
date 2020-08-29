@@ -60,7 +60,7 @@ Item {
         x: 0
         y: 0
         width: parent.width
-        height: parent.height - 10*uiScale
+        height: parent.height - 5*uiScale
         flow: GridView.FlowTopToBottom
         layoutDirection: Qt.LeftToRight
         cacheBuffer: 10
@@ -110,8 +110,8 @@ Item {
 
             delegate: MouseArea {
                 id: delegateRoot
-                width: root.height
-                height: root.height
+                width: listView.height
+                height: listView.height
 
                 property int visualIndex: DelegateModel.itemsIndex
                 property int oldVisualIndex
