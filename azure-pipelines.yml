@@ -61,6 +61,8 @@ steps:
       ls "D:/a/msys64/usr/lib" | grep glib
       mkdir buildDir
       cd buildDir
+      mkdir apps
+      mkdir apps/lensfun
       pwd
       set HOME=.
       %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
