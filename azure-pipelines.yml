@@ -41,16 +41,17 @@ steps:
       %MSYS_BASH% -c "make install"
     displayName: build librtprocess
   - script: |
+      pwd
       mkdir lensfun
       ls
       cd lensfun
+      pwd
       git clone https://github.com/lensfun/lensfun lf
       echo "done clone"
       sed -i '/FIND_PACKAGE(GLIB2/d' ./lf/CMakeLists.txt
       ls D:/a/msys64/usr/include/glib-2.0/
       sed -i 's/typedef signed long gint64/typedef signed long long gint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
       sed -i 's/typedef unsigned long guint64/typedef unsigned long long guint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
-      cat "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
       echo "edit glib2 to fix a type size mismatch"
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glib/glibconfig.h"
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glibconfig.h"
@@ -60,6 +61,7 @@ steps:
       ls "D:/a/msys64/usr/lib" | grep glib
       mkdir buildDir
       cd buildDir
+      pwd
       set HOME=.
       %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
