@@ -49,6 +49,7 @@ steps:
       sed -i '/FIND_PACKAGE(GLIB2/d' ./lf/CMakeLists.txt
       ls D:/a/msys64/usr/include/glib-2.0/
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glib/glibconfig.h"
+      echo "copied glibconfig"
       ls "D:/a/msys64/usr/include/glib-2.0/glib/"
       mkdir buildDir
       cd buildDir
