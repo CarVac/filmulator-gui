@@ -51,7 +51,7 @@ steps:
       sed -i 's/typedef signed long gint64/typedef signed long long gint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
       sed -i 's/typedef unsigned long guint64/typedef unsigned long long guint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
       cat "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
-      echo "edit glib2"
+      echo "edit glib2 to fix a type size mismatch"
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glib/glibconfig.h"
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glibconfig.h"
       echo "copied glibconfig"
@@ -61,7 +61,8 @@ steps:
       mkdir buildDir
       cd buildDir
       set HOME=.
-      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      #%MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install>lensfunout.log"
