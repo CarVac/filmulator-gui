@@ -79,7 +79,7 @@ steps:
       cat out.log
       echo "building"
       %MSYS_BASH% -c "make -j2"
-      cat cmake_install.cmake
+      cat --number cmake_install.cmake
       echo "installing"
       %MSYS_BASH% -c "make install>lensfunout.log"
       cat lensfunout.log
