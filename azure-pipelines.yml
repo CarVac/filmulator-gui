@@ -48,8 +48,9 @@ steps:
       echo "done clone"
       sed -i '/FIND_PACKAGE(GLIB2/d' ./lf/CMakeLists.txt
       ls D:/a/msys64/usr/include/glib-2.0/
-      sed -i 's/typedef signed long gint64/typedef signed long long gint64' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
-      sed -i 's/typedef unsigned long guint64/typedef unsigned long long guint64' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
+      sed -i 's/typedef signed long gint64/typedef signed long long gint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
+      sed -i 's/typedef unsigned long guint64/typedef unsigned long long guint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
+      cat "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
       echo "edit glib2"
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glib/glibconfig.h"
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glibconfig.h"
