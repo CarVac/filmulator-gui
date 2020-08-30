@@ -72,9 +72,12 @@ steps:
       cd ..
       pwd
       set HOME=.
+      echo "running cmake"
       %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
+      echo "building"
       %MSYS_BASH% -c "make -j2"
+      echo "installing"
       %MSYS_BASH% -c "make install>lensfunout.log"
       cat lensfunout.log
       cd apps/lensfun
