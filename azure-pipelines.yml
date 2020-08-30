@@ -56,10 +56,12 @@ steps:
       cp "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/usr/include/glib-2.0/glibconfig.h"
       echo "copied glibconfig"
       ls "D:/a/msys64/usr/include/glib-2.0/"
+      echo "looking in /usr/lib"
+      ls "D:/a/msys64/usr/lib" | grep glib
       mkdir buildDir
       cd buildDir
       set HOME=.
-      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install>lensfunout.log"
