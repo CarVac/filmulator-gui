@@ -107,6 +107,7 @@ elseif(WIN32)
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
+    target_compile_definitions(filmulator PRIVATE LF_GIT)
 else()
     add_executable(filmulator
         ${filmulator_SRCS}
