@@ -77,6 +77,9 @@ steps:
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install>lensfunout.log"
       cat lensfunout.log
+      cd apps/lensfun
+      pwd
+      cd ../..
     displayName: build lensfun
   - script: |
       mkdir build
