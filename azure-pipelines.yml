@@ -61,9 +61,12 @@ steps:
       ls "D:/a/msys64/usr/lib" | grep glib
       mkdir buildDir
       cd buildDir
+      echo "making apps dir"
       mkdir apps
+      echo "entering apps dir"
       cd apps
       pwd
+      echo "making lensfun dir"
       mkdir lensfun
       ls
       cd ..
