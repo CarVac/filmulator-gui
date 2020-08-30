@@ -107,6 +107,8 @@ elseif(WIN32)
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
+    INCLUDE_DIRECTORIES(SYSTEM ${GLIB2_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${GLIB2_LIBRARY_DIRS})
     target_compile_definitions(filmulator PRIVATE LF_GIT)
 else()
     add_executable(filmulator
