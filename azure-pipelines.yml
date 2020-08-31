@@ -75,18 +75,15 @@ steps:
       pwd
       set HOME=.
       echo "running cmake"
-      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DBUILD_STATIC=on -DINSTALL_HELPER_SCRIPTS=off -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      %MSYS_BASH% -c "cmake -G\"MSYS Makefiles\" -DINSTALL_HELPER_SCRIPTS=off -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
       echo "building"
       %MSYS_BASH% -c "make -j2"
-      cat --number cmake_install.cmake
-      echo "installing"
-      %MSYS_BASH% -c "make install>lensfunout.log"
-      cat lensfunout.log
-      cat install_manifest.txt
-      cd apps/lensfun
-      pwd
-      cd ../..
+      #cat --number cmake_install.cmake
+      #echo "installing"
+      #%MSYS_BASH% -c "make install>lensfunout.log"
+      #cat lensfunout.log
+      #cat install_manifest.txt
     displayName: build lensfun
   - script: |
       mkdir build
@@ -95,13 +92,13 @@ steps:
       mkdir installed
       set INSTALLDIR=installed
       set HOME=.
-      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"%INSTALLDIR%\" -DCMAKE_BUILD_TYPE=\"Release\" -DCMAKE_PREFIX_PATH=\"/mingw64/lib/cmake/\" -DCMAKE_LIBRARY_PATH=\"/mingw64/lib/\" -DCMAKE_INCLUDE_PATH=\"/mingw64/include/\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" ../filmulator-gui >output.log 2>err.log"
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"%INSTALLDIR%\" -DCMAKE_BUILD_TYPE=\"Release\" -DCMAKE_PREFIX_PATH=\"/mingw64/lib/cmake/\" -DCMAKE_LIBRARY_PATH=\"/mingw64/lib/\" -DCMAKE_INCLUDE_PATH=\"/mingw64/include/\" ../filmulator-gui >output.log 2>err.log"
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install"
       popd
     displayName: build filmulator
   - script: |
-      set listdll=libarchive-13.dll,libbrotlicommon.dll,libbrotlidec.dll,libbz2-1.dll,libcrypto-1_1-x64.dll,libcurl-4.dll,libdouble-conversion.dll,libexiv2.dll,libexpat-1.dll,libfreetype-6.dll,libgcc_s_seh-1.dll,msys-glib-2.0-0.dll,libglib-2.0-0.dll,libgomp-1.dll,libgraphite2.dll,libharfbuzz-0.dll,libiconv-2.dll,libicudt*.dll,libicuin*.dll,libicuuc*.dll,libidn2-0.dll,libintl-8.dll,libjasper-4.dll,libjpeg-8.dll,liblcms2-2.dll,liblz4.dll,liblzma-5.dll,libnghttp2-14.dll,libpcre-1.dll,libpcre2-16-0.dll,libpng16-16.dll,libpsl-5.dll,libraw_r-*.dll,librtprocess.dll,libssh2-1.dll,libssl-1_1-x64.dll,libstdc++-6.dll,libtiff-5.dll,libunistring-2.dll,libwinpthread-1.dll,libzstd.dll,zlib1.dll
+      set listdll=libarchive-13.dll,libbrotlicommon.dll,libbrotlidec.dll,libbz2-1.dll,libcrypto-1_1-x64.dll,libcurl-4.dll,libdouble-conversion.dll,libexiv2.dll,libexpat-1.dll,libfreetype-6.dll,libgcc_s_seh-1.dll,libglib-2.0-0.dll,libgomp-1.dll,libgraphite2.dll,libharfbuzz-0.dll,libiconv-2.dll,libicudt*.dll,libicuin*.dll,libicuuc*.dll,libidn2-0.dll,libintl-8.dll,libjasper-4.dll,libjpeg-8.dll,liblcms2-2.dll,liblensfun.dll,liblz4.dll,liblzma-5.dll,libnghttp2-14.dll,libpcre-1.dll,libpcre2-16-0.dll,libpng16-16.dll,libpsl-5.dll,libraw_r-*.dll,librtprocess.dll,libssh2-1.dll,libssl-1_1-x64.dll,libstdc++-6.dll,libtiff-5.dll,libunistring-2.dll,libwinpthread-1.dll,libzstd.dll,zlib1.dll
       cd build/installed/bin
       set PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem
       set HOME=.
