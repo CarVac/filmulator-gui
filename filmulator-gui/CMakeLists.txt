@@ -103,6 +103,7 @@ if(APPLE)
     )
     target_compile_definitions(filmulator PRIVATE LF_GIT)
 elseif(WIN32)
+    link_libraries("-static")
     add_executable(filmulator # WIN32 # comment out WIN32 to get a terminal window
         ${filmulator_SRCS}
         ${filmulator_RSCS}
