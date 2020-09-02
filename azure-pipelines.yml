@@ -79,11 +79,6 @@ steps:
       cat out.log
       echo "building"
       %MSYS_BASH% -c "make -j2"
-      # cat --number cmake_install.cmake
-      # echo "installing"
-      # %MSYS_BASH% -c "make install>lensfunout.log"
-      # cat lensfunout.log
-      # cat install_manifest.txt
     displayName: build lensfun
   - script: |
       mkdir build
