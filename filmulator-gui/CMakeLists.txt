@@ -103,7 +103,7 @@ if(APPLE)
     )
     target_compile_definitions(filmulator PRIVATE LF_GIT)
 elseif(WIN32)
-    link_libraries("-static")
+    #link_libraries("-static")
     add_executable(filmulator # WIN32 # comment out WIN32 to get a terminal window
         ${filmulator_SRCS}
         ${filmulator_RSCS}
@@ -142,6 +142,7 @@ target_include_directories(filmulator
         ${GLIB2_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+#glib2 needed for static lensfun on windows above and below
 
 target_link_libraries(filmulator
     Qt5::Core
