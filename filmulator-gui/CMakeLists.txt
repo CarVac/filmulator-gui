@@ -107,6 +107,7 @@ elseif(WIN32)
         ${filmulator_SRCS}
         ${filmulator_RSCS}
     )
+    target_link_directories(filmulator PRIVATE ${GLIB2_LIBRARY_DIRS})
     target_compile_definitions(filmulator PRIVATE LF_GIT)
 else()
     add_executable(filmulator
@@ -137,6 +138,7 @@ target_include_directories(filmulator
         ${LENSFUN_INCLUDE_DIR}
         ${CURL_INCLUDE_DIRS}
         ${LibArchive_INCLUDE_DIRS}
+        ${GLIB2_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -154,6 +156,7 @@ target_link_libraries(filmulator
     ${CURL_LIBRARIES}
     ${LibArchive_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
+    ${GLIB2_LIBRARIES}
     rtprocess::rtprocess
 )
 

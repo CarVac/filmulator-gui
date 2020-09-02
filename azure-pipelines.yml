@@ -79,6 +79,10 @@ steps:
       cat out.log
       echo "building"
       %MSYS_BASH% -c "make -j2"
+      cat --number cmake_install.cmake
+      echo "installing"
+      %MSYS_BASH% -c "make install>lensfunout.log"
+      cat lensfunout.log
     displayName: build lensfun
   - script: |
       mkdir build
@@ -87,7 +91,7 @@ steps:
       mkdir installed
       set INSTALLDIR=installed
       set HOME=.
-      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DBUILD_STATIC=on -DCMAKE_INSTALL_PREFIX=\"%INSTALLDIR%\" -DCMAKE_BUILD_TYPE=\"Release\" -DCMAKE_PREFIX_PATH=\"/mingw64/lib/cmake/\" -DCMAKE_LIBRARY_PATH=\"/mingw64/lib/\" -DCMAKE_INCLUDE_PATH=\"/mingw64/include/\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" ../filmulator-gui >output.log 2>err.log"
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DBUILD_STATIC=on -DCMAKE_INSTALL_PREFIX=\"%INSTALLDIR%\" -DCMAKE_BUILD_TYPE=\"Release\" -DCMAKE_PREFIX_PATH=\"/mingw64/lib/cmake/\" -DCMAKE_LIBRARY_PATH=\"/mingw64/lib/\" -LENSFUN_-DCMAKE_INCLUDE_PATH=\"/mingw64/include/\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" ../filmulator-gui >output.log 2>err.log"
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install"
       popd
