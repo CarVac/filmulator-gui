@@ -103,7 +103,9 @@ if(APPLE)
     )
     target_compile_definitions(filmulator PRIVATE LF_GIT)
 elseif(WIN32)
-    #link_libraries("-static")
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+    SET(BUILD_SHARED_LIBS_OFF)
+    SET(CMAKE_EXE_LINKER_FLAGS "-static")
     add_executable(filmulator # WIN32 # comment out WIN32 to get a terminal window
         ${filmulator_SRCS}
         ${filmulator_RSCS}
@@ -144,6 +146,25 @@ target_include_directories(filmulator
 )
 #glib2 needed for static lensfun on windows above and below
 
+if(WIN32)
+target_link_libraries(filmulator -static
+    Qt5::Core
+    Qt5::Sql
+    Qt5::Widgets
+    Qt5::Quick
+    Qt5::Qml
+    ${EXIV2_LIBRARIES}
+    ${LIBRAW_LIBRARIES}
+    ${JPEG_LIBRARIES}
+    ${TIFF_LIBRARIES}
+    ${LENSFUN_LIBRARY}
+    ${CURL_LIBRARIES}
+    ${LibArchive_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
+    ${GLIB2_LIBRARIES}
+    rtprocess::rtprocess
+)
+else()
 target_link_libraries(filmulator
     Qt5::Core
     Qt5::Sql
@@ -161,6 +182,7 @@ target_link_libraries(filmulator
     ${GLIB2_LIBRARIES}
     rtprocess::rtprocess
 )
+endif()
 
     # let's see where all this stuff is...
     #message(STATUS "EXIV2_VERSION=${EXIV2_VERSION}")
