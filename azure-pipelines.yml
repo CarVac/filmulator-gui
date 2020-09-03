@@ -56,6 +56,7 @@ steps:
       sed -i 's/typedef unsigned long guint64/typedef unsigned long long guint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
       echo "edit glib2 to fix a type size mismatch"
       cp "D:/a/msys64/mingw64/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/mingw64/include/glib-2.0/glib/glibconfig.h"
+      cp "D:/a/msys64/mingw64/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/mingw64/include/glib-2.0/glibconfig.h"
       echo "copied glibconfig"
       ls "D:/a/msys64/usr/include/glib-2.0/"
       echo "looking in /usr/lib"
