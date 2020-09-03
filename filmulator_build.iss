@@ -4,7 +4,7 @@
 #define MyAppName "Filmulator"
 #define MyAppVersion "0.9"
 #define MyAppPublisher "Filmulator"
-#define MyAppURL "https;//github.com/CarVac/filmulator-gui"
+#define MyAppURL "https://filmulator.org"
 #define MyAppExeName "filmulator.exe"
 
 [Setup]
