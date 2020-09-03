@@ -75,7 +75,7 @@ steps:
       pwd
       set HOME=.
       echo "running cmake"
-      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DBUILD_STATIC=off -DINSTALL_HELPER_SCRIPTS=off -DGLIB2_INCLUDE_DIRS=\"/mingw64/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/mingw64/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DGLIB2_DLL=\"/mingw64/bin/libglib-2.0-0.dll\"-DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DBUILD_STATIC=off -DINSTALL_HELPER_SCRIPTS=off -DGLIB2_INCLUDE_DIRS=\"/mingw64/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/mingw64/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DGLIB2_DLL=\"/mingw64/bin/libglib-2.0-0.dll\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
       cat out.log
       echo "building"
       %MSYS_BASH% -c "make -j2"
