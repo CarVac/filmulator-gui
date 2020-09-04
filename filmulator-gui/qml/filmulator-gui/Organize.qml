@@ -362,7 +362,7 @@ SlimSplitView {
             GridView {
                 id: dateHistoView
                 x: 0
-                y: 0
+                y: 5 * uiScale
                 width: parent.width
                 height: parent.height - 5*uiScale
                 flow: GridView.FlowTopToBottom
@@ -485,48 +485,16 @@ SlimSplitView {
             Item {
                 id: scrollbarHolderDateHisto
                 x: 0
-                y: parent.height-15*uiScale
+                y: 0
                 width: parent.width
                 height: 15*uiScale
-
-                Rectangle {
-                    id: scrollbarBackgroundDateHisto
-                    color: Colors.darkGray
-                    opacity: 0
-
-                    y: parent.height-height - 1 * uiScale
-                    height: 3 * uiScale
-
-                    x: 0
-                    width: parent.width
-
-                    transitions: Transition {
-                        NumberAnimation {
-                            property: "height"
-                            duration: 200
-                        }
-                        NumberAnimation {
-                            property: "opacity"
-                            duration: 200
-                        }
-                    }
-                    states: State {
-                        name: "hovered"
-                        when: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed
-                        PropertyChanges {
-                            target: scrollbarBackgroundDateHisto
-                            height: 12 * uiScale
-                            opacity: 0.5
-                        }
-                    }
-                }
 
                 Rectangle {
                     id: scrollbarDateHisto
                     color: scrollbarMouseAreaDateHisto.pressed ? Colors.medOrange : scrollbarMouseAreaDateHisto.containsMouse ? Colors.weakOrange : Colors.middleGray
                     radius: 1.5*uiScale
 
-                    y: parent.height-height - 1 * uiScale
+                    y: 1 * uiScale
                     height: 3 * uiScale
 
                     x: 1 * uiScale + (0.99*dateHistoView.visibleArea.xPosition) * (parent.width - 2*uiScale)
