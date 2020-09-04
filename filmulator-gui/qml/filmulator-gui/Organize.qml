@@ -249,6 +249,7 @@ SlimSplitView {
                                             var dayStr = (model.day < 10) ? ("0" + model.day) : ("" + model.day)
                                             var captureTimeString = model.year + "/" + monthStr + "/" + dayStr
                                             organizeModel.setMinMaxCaptureTimeString(captureTimeString)
+                                            gridView.returnToBounds()
                                             settings.organizeCaptureDate = new Date(model.year, model.month, model.day)
                                         }
                                     }
@@ -260,6 +261,7 @@ SlimSplitView {
                                             var dayStr = (model.day < 10) ? ("0" + model.day) : ("" + model.day)
                                             var captureTimeString = model.year + "/" + monthStr + "/" + dayStr
                                             organizeModel.setMinMaxCaptureTimeString(captureTimeString)
+                                            gridView.returnToBounds()
                                             settings.organizeCaptureDate = new Date(model.year, model.month, model.day)
                                         }
                                         filterListFlick.interactive = true
