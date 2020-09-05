@@ -54,6 +54,27 @@ ApplicationWindow {
                 property real recty: 28.5
                 property real rectheight: 54
 
+                Action {
+                    id: firstTabAction
+                    shortcut: "Ctrl+1"
+                    onTriggered: tabs.currentIndex = 0
+                }
+                Action {
+                    id: secondTabAction
+                    shortcut: "Ctrl+2"
+                    onTriggered: tabs.currentIndex = 1
+                }
+                Action {
+                    id: thirdTabAction
+                    shortcut: "Ctrl+3"
+                    onTriggered: tabs.currentIndex = 2
+                }
+                Action {
+                    id: fourthTabAction
+                    shortcut: "Ctrl+4"
+                    onTriggered: tabs.currentIndex = 3
+                }
+
                 TabButton {
                     id: importButton
                     text: qsTr("Import")
@@ -400,7 +421,7 @@ ApplicationWindow {
     //Global keyboard shortcut handling
     Action {
         id: fullscreenAction
-        shortcut: "f11"
+        shortcut: StandardKey.FullScreen
         onTriggered: {
             if (root.visibility !== 5) {
                 root.tempVisibility = root.visibility
