@@ -362,9 +362,9 @@ SlimSplitView {
             GridView {
                 id: dateHistoView
                 x: 0
-                y: 5 * uiScale
+                y: 0
                 width: parent.width
-                height: parent.height - 5*uiScale
+                height: parent.height
                 flow: GridView.FlowTopToBottom
                 layoutDirection: Qt.LeftToRight
                 cellWidth: 5 * uiScale
