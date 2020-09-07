@@ -20,7 +20,7 @@ void OrganizeModel::setMinCaptureTime(QDate captureTimeIn)
     }
     //We want the beginning of the day.
     QDateTime tempTime = QDateTime(captureTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = tempTime.toTime_t();
+    minCaptureTime_i = tempTime.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
 
     if (changed)
@@ -40,7 +40,7 @@ void OrganizeModel::setMaxCaptureTime(QDate captureTimeIn)
     }
     //We want the end of the day.
     QDateTime tempTime = QDateTime(captureTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    maxCaptureTime_i = tempTime.toTime_t();
+    maxCaptureTime_i = tempTime.toSecsSinceEpoch();
     emit maxCaptureTimeChanged();
 
     if (changed)
@@ -55,8 +55,8 @@ void OrganizeModel::setMinMaxCaptureTime(QDate captureTimeIn)
     maxCaptureTime = captureTimeIn;
     QDateTime morning = QDateTime(captureTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     QDateTime evening = QDateTime(captureTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = morning.toTime_t();
-    maxCaptureTime_i = evening.toTime_t();
+    minCaptureTime_i = morning.toSecsSinceEpoch();
+    maxCaptureTime_i = evening.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
     emit maxCaptureTimeChanged();
     emit captureDateChanged();
@@ -69,8 +69,8 @@ void OrganizeModel::setMinMaxCaptureTimeString(QString captureTimeIn)
     maxCaptureTime = startCaptureTime;//QDate::fromString(captureTimeIn,"yyyy/MM/dd");
     QDateTime morning = QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     QDateTime evening = QDateTime(maxCaptureTime, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = morning.toTime_t();
-    maxCaptureTime_i = evening.toTime_t();
+    minCaptureTime_i = morning.toSecsSinceEpoch();
+    maxCaptureTime_i = evening.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
     emit maxCaptureTimeChanged();
     emit captureDateChanged();
@@ -100,8 +100,8 @@ void OrganizeModel::extendMinMaxCaptureTimeString(QString captureTimeIn)
     }
     QDateTime morning = QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     QDateTime evening = QDateTime(maxCaptureTime, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = morning.toTime_t();
-    maxCaptureTime_i = evening.toTime_t();
+    minCaptureTime_i = morning.toSecsSinceEpoch();
+    maxCaptureTime_i = evening.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
     emit maxCaptureTimeChanged();
     emit captureDateChanged();
@@ -146,7 +146,7 @@ void OrganizeModel::setMinImportTime(QDate importTimeIn)
     }
     //We want the beginning of the day.
     QDateTime tempTime = QDateTime(importTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    minImportTime_i = tempTime.toTime_t();
+    minImportTime_i = tempTime.toSecsSinceEpoch();
     emit minImportTimeChanged();
 
     if (changed)
@@ -166,7 +166,7 @@ void OrganizeModel::setMaxImportTime(QDate importTimeIn)
     }
     //We want the end of the day.
     QDateTime tempTime = QDateTime(importTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    maxImportTime_i = tempTime.toTime_t();
+    maxImportTime_i = tempTime.toSecsSinceEpoch();
     emit maxImportTimeChanged();
 
     if (changed)
@@ -186,7 +186,7 @@ void OrganizeModel::setMinProcessedTime(QDate processedTimeIn)
     }
     //We want the beginning of the day.
     QDateTime tempTime = QDateTime(processedTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    minProcessedTime_i = tempTime.toTime_t();
+    minProcessedTime_i = tempTime.toSecsSinceEpoch();
     emit minProcessedTimeChanged();
 
     if (changed)
@@ -206,7 +206,7 @@ void OrganizeModel::setMaxProcessedTime(QDate processedTimeIn)
     }
     //We want the end of the day.
     QDateTime tempTime = QDateTime(processedTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    maxProcessedTime_i = tempTime.toTime_t();
+    maxProcessedTime_i = tempTime.toSecsSinceEpoch();
     emit maxProcessedTimeChanged();
 
     if (changed)

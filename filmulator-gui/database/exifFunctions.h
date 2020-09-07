@@ -16,7 +16,7 @@ QString exifLocalDateString(const std::string fullFilename,
                              const QString dirConfig);
 
 /*Returns yyyy:MM::dd hh:mm:ss from time_t*/
-std::string exifDateTimeString(time_t time);
+std::string exifDateTimeString(qint64 time);
 
 /*Returns the orientation of the image according to the camera.
  * 0 = normal

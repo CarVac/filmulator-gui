@@ -47,7 +47,7 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
 
         cameraDateTime = QDateTime::fromString(exifDateTime, "yyyy:MM:dd hh:mm:ss");
     } else { //we have to rely on libraw for CR3
-        cameraDateTime = QDateTime::fromTime_t(OTHER.timestamp);
+        cameraDateTime.setSecsSinceEpoch(OTHER.timestamp);
     }
 
     cameraDateTime.setOffsetFromUtc(cameraTZ);
@@ -60,17 +60,19 @@ QString exifLocalDateString(const std::string fullFilename,
                             const int importTZ,
                             const QString dirConfig)
 {
-    QDateTime captureLocalDateTime =
-            QDateTime::fromTime_t(exifUtcTime(fullFilename, cameraTZ).toTime_t());
+    QDateTime captureLocalDateTime;
+    captureLocalDateTime.setSecsSinceEpoch(exifUtcTime(fullFilename, cameraTZ).toSecsSinceEpoch());
 
     captureLocalDateTime.setOffsetFromUtc(importTZ);
 
     return captureLocalDateTime.toString(dirConfig);
 }
 
-std::string exifDateTimeString(time_t time)
+std::string exifDateTimeString(qint64 time)
 {
-    return QDateTime::fromTime_t(time).toString("yyyy:MM:dd hh:mm::ss").toStdString();
+    QDateTime returnTime;
+    returnTime.setSecsSinceEpoch(time);
+    return returnTime.toString("yyyy:MM:dd hh:mm::ss").toStdString();
 }
 
 int exifDefaultRotation(const std::string fullFilename)

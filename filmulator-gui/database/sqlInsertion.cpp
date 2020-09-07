@@ -124,7 +124,7 @@ QString createNewProfile(const QString fileHash,
     searchID.append(QString("%1").arg(increment, 4, 10, QLatin1Char('0')));
     query.bindValue(0, searchID);
     //captureTime (unix time)
-    query.bindValue(1, captureTime.toTime_t());
+    query.bindValue(1, captureTime.toSecsSinceEpoch());
     //name (of instance)
     query.bindValue(2, "");
     //filename
@@ -142,12 +142,12 @@ QString createNewProfile(const QString fileHash,
     query.bindValue(7, 0);
     QDateTime now = QDateTime::currentDateTime();
     //importTime (unix time)
-    query.bindValue(8, now.toTime_t());
+    query.bindValue(8, now.toSecsSinceEpoch());
     //lastProcessedTime (unix time)
     //It's the same as above, since we're making a new one.
-    query.bindValue(9, now.toTime_t());
+    query.bindValue(9, now.toSecsSinceEpoch());
     //importStartTime (unix time): lets us group together import batches.
-    query.bindValue(10, importStartTime.toTime_t());
+    query.bindValue(10, importStartTime.toSecsSinceEpoch());
     //thumbWritten
     query.bindValue(11, 0);
     //bigThumbWritten (the preview)

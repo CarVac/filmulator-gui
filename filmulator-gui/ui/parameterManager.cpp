@@ -1240,7 +1240,7 @@ void ParameterManager::writeToDB(QString imageID)
                   "STthumbWritten = 0, "
                   "STbigThumbWritten = 0 "
                   "WHERE STsearchID = ?;");
-    query.bindValue(0, QVariant(now.toTime_t()));
+    query.bindValue(0, QVariant(now.toSecsSinceEpoch()));
     query.bindValue(1, imageID);
     query.exec();
     //Write that it's been edited to the QueueTable

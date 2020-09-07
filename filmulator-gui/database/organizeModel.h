@@ -112,12 +112,12 @@ protected:
     QDate maxImportTime;
     QDate minProcessedTime;
     QDate maxProcessedTime;
-    unsigned int minCaptureTime_i;
-    unsigned int maxCaptureTime_i;
-    unsigned int minImportTime_i;
-    unsigned int maxImportTime_i;
-    unsigned int minProcessedTime_i;
-    unsigned int maxProcessedTime_i;
+    qint64 minCaptureTime_i;
+    qint64 maxCaptureTime_i;
+    qint64 minImportTime_i;
+    qint64 maxImportTime_i;
+    qint64 minProcessedTime_i;
+    qint64 maxProcessedTime_i;
     int minRating;
     int maxRating;
     int m_timeZone = 0;
