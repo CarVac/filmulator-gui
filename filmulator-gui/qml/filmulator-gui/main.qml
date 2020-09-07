@@ -1,7 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
-import QtQuick.Dialogs 1.3
 import "gui_components"
 import "colors.js" as Colors
 
@@ -54,25 +53,21 @@ ApplicationWindow {
                 property real recty: 28.5
                 property real rectheight: 54
 
-                Action {
-                    id: firstTabAction
-                    shortcut: "Ctrl+1"
-                    onTriggered: tabs.currentIndex = 0
+                Shortcut {
+                    sequence: "Ctrl+1"
+                    onActivated: tabs.currentIndex = 0
                 }
-                Action {
-                    id: secondTabAction
-                    shortcut: "Ctrl+2"
-                    onTriggered: tabs.currentIndex = 1
+                Shortcut {
+                    sequence: "Ctrl+2"
+                    onActivated: tabs.currentIndex = 1
                 }
-                Action {
-                    id: thirdTabAction
-                    shortcut: "Ctrl+3"
-                    onTriggered: tabs.currentIndex = 2
+                Shortcut {
+                    sequence: "Ctrl+3"
+                    onActivated: tabs.currentIndex = 2
                 }
-                Action {
-                    id: fourthTabAction
-                    shortcut: "Ctrl+4"
-                    onTriggered: tabs.currentIndex = 3
+                Shortcut {
+                    sequence: "Ctrl+4"
+                    onActivated: tabs.currentIndex = 3
                 }
 
                 TabButton {
@@ -419,10 +414,10 @@ ApplicationWindow {
     }
 
     //Global keyboard shortcut handling
-    Action {
+    Shortcut {
         id: fullscreenAction
-        shortcut: StandardKey.FullScreen
-        onTriggered: {
+        sequence: StandardKey.FullScreen
+        onActivated: {
             if (root.visibility !== 5) {
                 root.tempVisibility = root.visibility
                 root.visibility = 5//"FullScreen"
