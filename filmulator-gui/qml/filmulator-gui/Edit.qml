@@ -2210,6 +2210,22 @@ SlimSplitView {
                     photoBox.backgroundColor = 0
                 }
             }
+
+            Shortcut {
+                sequence: "b"
+                onActivated: {
+                    if (root.onEditTab) {
+                        if (photoBox.backgroundColor == 0) {
+                            photoBox.backgroundColor = 1
+                        } else if (photoBox.backgroundColor == 1) {
+                            photoBox.backgroundColor = 2
+                        } else {
+                            photoBox.backgroundColor = 0
+                        }
+                    }
+                }
+            }
+
             Component.onCompleted: {
                 backgroundBrightness.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2242,7 +2258,6 @@ SlimSplitView {
             }
 
             Shortcut {
-                id: cropShortcut
                 sequence: "c"
                 onActivated: {
                     if (crop.notDisabled && root.onEditTab) {
