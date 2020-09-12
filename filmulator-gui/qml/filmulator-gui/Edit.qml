@@ -2346,6 +2346,7 @@ SlimSplitView {
         uiScale: root.uiScale
         imageReady: root.imageReady
         cropping: root.requestingCropping || root.cropping
+        onEditTab: root.onEditTab
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)
         }

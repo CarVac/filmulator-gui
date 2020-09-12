@@ -17,6 +17,7 @@ SlimSplitView {
     property bool imageReady
     property bool cropping
     property bool imageError
+    property bool onEditTab
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -1123,6 +1124,17 @@ SlimSplitView {
                 filmProvider.writeJpeg()
                 queueModel.markSaved(paramManager.imageIndex)
             }
+
+            Shortcut {
+                sequence: StandardKey.Save
+                onActivated: {
+                    if (saveJPEGButton.notDisabled && root.onEditTab) {
+                        filmProvider.writeJpeg()
+                        queueModel.markSaved(paramManager.imageIndex)
+                    }
+                }
+            }
+
             Component.onCompleted: {
                 saveJPEGButton.tooltipWanted.connect(root.tooltipWanted)
             }
