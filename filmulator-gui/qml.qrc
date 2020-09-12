@@ -20,7 +20,6 @@
         <file>qml/filmulator-gui/gui_components/SlimSplitView.qml</file>
         <file>qml/filmulator-gui/gui_components/SlipperySlider.qml</file>
         <file>qml/filmulator-gui/gui_components/ToolButton.qml</file>
-        <file>qml/filmulator-gui/gui_components/ToolCalendar.qml</file>
         <file>qml/filmulator-gui/gui_components/ToolRadioButton.qml</file>
         <file>qml/filmulator-gui/gui_components/ToolSlider.qml</file>
         <file>qml/filmulator-gui/gui_components/ToolSwitch.qml</file>
