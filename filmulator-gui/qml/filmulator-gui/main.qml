@@ -272,6 +272,7 @@ ApplicationWindow {
 
                 Edit {
                     id: editItem
+                    onEditTab: tabs.currentIndex == 2
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
                         editItem.imageURL.connect(root.imageURL)

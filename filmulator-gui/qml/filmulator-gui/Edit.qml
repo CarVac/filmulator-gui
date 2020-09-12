@@ -15,6 +15,7 @@ SlimSplitView {
     property bool cropping: false
     property bool cancelCropping: false
     property real cropMargin: 50//200
+    property bool onEditTab
 
     onRequestingCroppingChanged: {
         if (requestingCropping == true) {
@@ -2239,6 +2240,24 @@ SlimSplitView {
                     root.requestingCropping = false
                 }
             }
+
+            Shortcut {
+                id: cropShortcut
+                sequence: "c"
+                onActivated: {
+                    if (crop.notDisabled && root.onEditTab) {
+                        if (!root.cropping) {
+                            filmProvider.disableThumbnailWrite()
+                            root.requestingCropping = true
+                        } else {
+                            filmProvider.enableThumbnailWrite()
+                            root.cancelCropping = false
+                            root.requestingCropping = false
+                        }
+                    }
+                }
+            }
+
             Component.onCompleted: {
                 crop.tooltipWanted.connect(root.tooltipWanted)
             }
