@@ -773,10 +773,52 @@ Item {
     }
 
     Shortcut {
-        id: markDeletion
+        id: rateDelete
         sequence: "x"
         onActivated: {
             organizeModel.markDeletion(paramManager.imageIndex)
+        }
+    }
+    Shortcut {
+        id: rateZero
+        sequence: "0"
+        onActivated: {
+            organizeModel.setRating(paramManager.imageIndex, 0)
+        }
+    }
+    Shortcut {
+        id: rateOne
+        sequence: "1"
+        onActivated: {
+            organizeModel.setRating(paramManager.imageIndex, 1)
+        }
+    }
+    Shortcut {
+        id: rateTwo
+        sequence: "2"
+        onActivated: {
+            organizeModel.setRating(paramManager.imageIndex, 2)
+        }
+    }
+    Shortcut {
+        id: rateThree
+        sequence: "3"
+        onActivated: {
+            organizeModel.setRating(paramManager.imageIndex, 3)
+        }
+    }
+    Shortcut {
+        id: rateFour
+        sequence: "4"
+        onActivated: {
+            organizeModel.setRating(paramManager.imageIndex, 4)
+        }
+    }
+    Shortcut {
+        id: rateFive
+        sequence: "5"
+        onActivated: {
+            organizeModel.setRating(paramManager.imageIndex, 5)
         }
     }
 }
