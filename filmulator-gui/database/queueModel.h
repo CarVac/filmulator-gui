@@ -23,6 +23,9 @@ public:
     Q_INVOKABLE void batchEnqueue(const QString searchQuery);
     Q_INVOKABLE void batchForget();
 
+    Q_INVOKABLE QString getNext(const QString searchID);
+    Q_INVOKABLE QString getPrev(const QString searchID);
+
 public slots:
     Q_INVOKABLE void deQueue(const QString searchID);
     Q_INVOKABLE void enQueue(const QString searchID);

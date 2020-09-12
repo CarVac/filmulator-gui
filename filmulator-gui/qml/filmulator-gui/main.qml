@@ -309,6 +309,7 @@ ApplicationWindow {
 
             Queue {
                 id: queueItem
+                onEditTab: tabs.currentIndex == 2
                 anchors.fill: parent
                 uiScale: root.uiScale
                 Connections {

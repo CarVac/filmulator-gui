@@ -510,3 +510,62 @@ void QueueModel::markSaved(const QString searchID)
     query.exec();
     updateAll();
 }
+
+QString QueueModel::getPrev(const QString searchID)
+{
+    if (searchID == "")
+    {
+        return "";
+    }
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
+    query.exec("BEGIN TRANSACTION;");
+
+    query.prepare("SELECT QTsortedIndex FROM QueueTable WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    const int currentIndex = query.value(0).toInt();
+    if (currentIndex - 1 >= 0)
+    {
+        query.prepare("SELECT QTsearchID FROM QueueTable WHERE QTSortedIndex = ?;");
+        query.bindValue(0, currentIndex - 1);
+        query.exec();
+        query.next();
+        const QString newID = query.value(0).toString();
+        query.exec("END TRANSACTION;");
+        return newID;
+    } else {
+        query.exec("END TRANSACTION;");
+        return searchID;
+    }
+}
+QString QueueModel::getNext(const QString searchID)
+{
+    if (searchID == "")
+    {
+        return "";
+    }
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
+    query.exec("BEGIN TRANSACTION;");
+
+    query.prepare("SELECT QTsortedIndex FROM QueueTable WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    const int currentIndex = query.value(0).toInt();
+    if (currentIndex + 1 < maxIndex)
+    {
+        query.prepare("SELECT QTsearchID FROM QueueTable WHERE QTSortedIndex = ?;");
+        query.bindValue(0, currentIndex + 1);
+        query.exec();
+        query.next();
+        const QString newID = query.value(0).toString();
+        query.exec("END TRANSACTION;");
+        return newID;
+    } else {
+        query.exec("END TRANSACTION;");
+        return searchID;
+    }
+}

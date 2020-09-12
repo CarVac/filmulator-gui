@@ -20,6 +20,8 @@ Item {
     property real oldX
     property real newX
 
+    property bool onEditTab
+
     onDraggingChanged: {
         //Always reset it back to off when the state changes.
         wasDragScrolling = false
@@ -783,42 +785,78 @@ Item {
         id: rateZero
         sequence: "0"
         onActivated: {
-            organizeModel.setRating(paramManager.imageIndex, 0)
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 0)
+            }
         }
     }
     Shortcut {
         id: rateOne
         sequence: "1"
         onActivated: {
-            organizeModel.setRating(paramManager.imageIndex, 1)
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 1)
+            }
         }
     }
     Shortcut {
         id: rateTwo
         sequence: "2"
         onActivated: {
-            organizeModel.setRating(paramManager.imageIndex, 2)
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 2)
+            }
         }
     }
     Shortcut {
         id: rateThree
         sequence: "3"
         onActivated: {
-            organizeModel.setRating(paramManager.imageIndex, 3)
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 3)
+            }
         }
     }
     Shortcut {
         id: rateFour
         sequence: "4"
         onActivated: {
-            organizeModel.setRating(paramManager.imageIndex, 4)
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 4)
+            }
         }
     }
     Shortcut {
         id: rateFive
         sequence: "5"
         onActivated: {
-            organizeModel.setRating(paramManager.imageIndex, 5)
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 5)
+            }
+        }
+    }
+    Shortcut {
+        id: prevImage
+        sequence: StandardKey.MoveToPreviousChar
+        onActivated: {
+            if (!root.dragging) {
+                var newIndex = queueModel.getPrev(paramManager.imageIndex)
+                if (newIndex !== paramManager.imageIndex) {
+                    paramManager.selectImage(newIndex)
+                }
+            }
+        }
+    }
+    Shortcut {
+        id: nextImage
+        sequence: StandardKey.MoveToNextChar
+        onActivated: {
+            if (!root.dragging) {
+                var newIndex = queueModel.getNext(paramManager.imageIndex)
+                if (newIndex !== paramManager.imageIndex) {
+                    paramManager.selectImage(newIndex)
+                }
+            }
         }
     }
 }
