@@ -428,4 +428,19 @@ ApplicationWindow {
             }
         }
     }
+    Shortcut {
+        id: enterEater
+        sequence: StandardKey.InsertParagraphSeparator
+        onActivated: {
+            //do nothing
+            //this doesn't seem to be activated, but just in case...
+        }
+    }
+    Shortcut {
+        id: spaceEater
+        sequence: " "
+        onActivated: {
+            //do nothing
+        }
+    }
 }
