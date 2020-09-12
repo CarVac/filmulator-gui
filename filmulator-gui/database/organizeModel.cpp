@@ -178,6 +178,19 @@ void OrganizeModel::setRating(QString searchID, int rating)
     emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
 }
 
+void OrganizeModel::markDeletion(QString searchID)
+{
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    QSqlQuery query(db);
+    query.prepare("UPDATE SearchTable SET STrating = -1 - STrating WHERE STsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    emit updateTableOut("SearchTable", 0);//An edit made to the search table.
+    emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
+}
+
 QString OrganizeModel::getDateTimeString(int unixTimeIn)
 {
     QDateTime tempTime;

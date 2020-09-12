@@ -771,4 +771,12 @@ Item {
             }
         }
     }
+
+    Shortcut {
+        id: markDeletion
+        sequence: "x"
+        onActivated: {
+            organizeModel.markDeletion(paramManager.imageIndex)
+        }
+    }
 }
