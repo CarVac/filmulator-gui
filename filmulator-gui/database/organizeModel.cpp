@@ -181,7 +181,7 @@ void OrganizeModel::setRating(QString searchID, int rating)
 QString OrganizeModel::getDateTimeString(int unixTimeIn)
 {
     QDateTime tempTime;
-    tempTime.setSecsSinceEpoch(unixTimeIn);
     tempTime.setOffsetFromUtc(m_timeZone*3600);
+    tempTime.setSecsSinceEpoch(unixTimeIn);
     return tempTime.toString("ddd yyyy-MM-dd HH:mm:ss");
 }

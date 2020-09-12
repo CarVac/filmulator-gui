@@ -31,6 +31,7 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     }
 
     QDateTime cameraDateTime;
+    cameraDateTime.setOffsetFromUtc(cameraTZ);
     if (!isCR3) //we can use exiv2
     {
         //Grab the exif data
@@ -50,8 +51,6 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
         cameraDateTime.setSecsSinceEpoch(OTHER.timestamp);
     }
 
-    cameraDateTime.setOffsetFromUtc(cameraTZ);
-
     return cameraDateTime;
 }
 
@@ -61,9 +60,8 @@ QString exifLocalDateString(const std::string fullFilename,
                             const QString dirConfig)
 {
     QDateTime captureLocalDateTime;
-    captureLocalDateTime.setSecsSinceEpoch(exifUtcTime(fullFilename, cameraTZ).toSecsSinceEpoch());
-
     captureLocalDateTime.setOffsetFromUtc(importTZ);
+    captureLocalDateTime.setSecsSinceEpoch(exifUtcTime(fullFilename, cameraTZ).toSecsSinceEpoch());
 
     return captureLocalDateTime.toString(dirConfig);
 }
