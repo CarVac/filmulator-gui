@@ -33,7 +33,7 @@ public:
     Q_INVOKABLE static QString thumbDir();
     Q_INVOKABLE void setRating(QString searchID, int rating);
     Q_INVOKABLE void markDeletion(QString searchID);
-    Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
+    Q_INVOKABLE QString getDateTimeString(qint64 unixTimeIn);
     Q_INVOKABLE QDate getSelectedDate();
     Q_INVOKABLE QString getSelectedYMDString();
 

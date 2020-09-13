@@ -4,6 +4,7 @@
 #include <memory>
 #include <QStandardPaths>
 #include <QDir>
+#include <QTimeZone>
 #include <cmath>
 
 using std::cout;
@@ -31,7 +32,10 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     }
 
     QDateTime cameraDateTime;
-    cameraDateTime.setOffsetFromUtc(cameraTZ);
+    const int localTZ = QTimeZone::systemTimeZone().offsetFromUtc(QDateTime::currentDateTime());
+
+    //exiv2 and libraw read the image capture date as if the camera time zone is the computer time zone
+    cameraDateTime.setOffsetFromUtc(localTZ);
     if (!isCR3) //we can use exiv2
     {
         //Grab the exif data
@@ -51,6 +55,8 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
         cameraDateTime.setSecsSinceEpoch(OTHER.timestamp);
     }
 
+    //but we have the user input the actual camera time zone to correct this
+    cameraDateTime.setOffsetFromUtc(cameraTZ);
     return cameraDateTime;
 }
 

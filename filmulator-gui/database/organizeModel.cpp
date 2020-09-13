@@ -191,7 +191,7 @@ void OrganizeModel::markDeletion(QString searchID)
     emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
 }
 
-QString OrganizeModel::getDateTimeString(int unixTimeIn)
+QString OrganizeModel::getDateTimeString(qint64 unixTimeIn)
 {
     QDateTime tempTime;
     tempTime.setOffsetFromUtc(m_timeZone*3600);
