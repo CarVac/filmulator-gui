@@ -142,7 +142,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
 
     if (fileList.size() == 0)
     {
-        if (depth == 0)
+        if (depth == 0 && queue.size() > 0)
         {
             cout << "importDirectory_r starting worker" << endl;
             paused = false;
@@ -181,7 +181,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     emit progressChanged();
     emit progressFracChanged();
 
-    if (depth == 0)
+    if (depth == 0 && queue.size() > 0)
     {
         cout << "importDirectory_r starting worker" << endl;
         paused = false;
@@ -298,8 +298,11 @@ void ImportModel::importFileList(const QString name, const bool importInPlace, c
         {
             importFile(nameList.at(i), importInPlace, replaceLocation, false);
         }
-        paused = false;
-        startWorker(queue.front());
+        if (queue.size() > 0)
+        {
+            paused = false;
+            startWorker(queue.front());
+        }
     }
 }
 
