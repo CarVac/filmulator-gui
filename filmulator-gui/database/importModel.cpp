@@ -117,7 +117,7 @@ bool ImportModel::pathWritable(const QString dir)
     return false;
 }
 
-void ImportModel::importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation)
+void ImportModel::importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation, const int depth)
 {
     //This function reads in a directory and puts the raws into the database.
     if (dir.length() == 0)
@@ -132,7 +132,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     QFileInfoList dirList = directory.entryInfoList();
     for (int i=0; i < dirList.size(); i++)
     {
-        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace, replaceLocation);
+        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace, replaceLocation, depth + 1);
     }
 
     //Next, we filter for files.
@@ -142,6 +142,13 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
 
     if (fileList.size() == 0)
     {
+        if (depth == 0)
+        {
+            cout << "importDirectory_r starting worker" << endl;
+            paused = false;
+
+            startWorker(queue.front());
+        }
         return;
     }
 
@@ -174,9 +181,13 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     emit progressChanged();
     emit progressFracChanged();
 
-    paused = false;
+    if (depth == 0)
+    {
+        cout << "importDirectory_r starting worker" << endl;
+        paused = false;
 
-    startWorker(queue.front());
+        startWorker(queue.front());
+    }
 }
 
 QStringList ImportModel::getNameFilters()
