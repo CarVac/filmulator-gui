@@ -572,6 +572,7 @@ Item {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
+                listView.returnToBounds()
             }
         }
 
@@ -582,6 +583,7 @@ Item {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
+                listView.returnToBounds()
             }
         }
     }
