@@ -1,6 +1,4 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.12
 import "../colors.js" as Colors
 
 Item {
@@ -19,10 +17,11 @@ Item {
     property bool processed
     property bool exported
     property bool markedForOutput
+    property int rating
     property bool rightClicked: false
     property bool held
 
-    property string __thumbPath: rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
+    property string __thumbPath: (Qt.platform.os == "windows" ? 'file:///' : 'file://') + rootDir + '/' + searchID.slice(0,4) + '/' + searchID + '.jpg'
 
     property bool __current: searchID===selectedID
     property bool __waitingForThumb: false
@@ -77,7 +76,7 @@ Item {
                 cache: false
                 Connections {
                     target: filmProvider
-                    onThumbnailDone: {
+                    function onThumbnailDone() {
                         if (__waitingForThumb) {
                             //console.log('thumb received')
                             //thumb.cache = false
@@ -120,6 +119,82 @@ Item {
     }
     //Instead of another color to indicate output queueing,
     //just place another green rectangle over the center third of the processedSavedRect.
+
+    Rectangle {
+        id: forwardx
+        width: root.width * 0.05
+        height: root.width
+        anchors.centerIn: parent
+        color: "red"
+        rotation: 45
+        visible: rating < 0
+    }
+    Rectangle {
+        id: backwardX
+        width: root.width * 0.05
+        height: root.width
+        anchors.centerIn: parent
+        color: "red"
+        rotation: -45
+        visible: rating < 0
+    }
+
+    //Dots to show rating
+    Rectangle {
+        x: root.width * 0.1
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 1
+    }
+    Rectangle {
+        x: root.width * 0.2
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 2
+    }
+    Rectangle {
+        x: root.width * 0.3
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 3
+    }
+    Rectangle {
+        x: root.width * 0.4
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 4
+    }
+    Rectangle {
+        x: root.width * 0.5
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 5
+    }
 
     Component.onCompleted: {
         loadThumb.sourceComponent = thumbImage

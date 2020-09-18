@@ -1,0 +1,28 @@
+<RCC>
+    <qresource prefix="/qml">
+        <file>qml/filmulator-gui/colors.js</file>
+        <file>qml/filmulator-gui/Edit.qml</file>
+        <file>qml/filmulator-gui/EditTools.qml</file>
+        <file>qml/filmulator-gui/generateHistogram.js</file>
+        <file>qml/filmulator-gui/getRoot.js</file>
+        <file>qml/filmulator-gui/Import.qml</file>
+        <file>qml/filmulator-gui/main.qml</file>
+        <file>qml/filmulator-gui/Organize.qml</file>
+        <file>qml/filmulator-gui/Queue.qml</file>
+        <file>qml/filmulator-gui/Settings.qml</file>
+        <file>qml/filmulator-gui/gui_components/FilmProgressBar.qml</file>
+        <file>qml/filmulator-gui/gui_components/ImportDirEntry.qml</file>
+        <file>qml/filmulator-gui/gui_components/ImportFileEntry.qml</file>
+        <file>qml/filmulator-gui/gui_components/ImportTextEntry.qml</file>
+        <file>qml/filmulator-gui/gui_components/OrganizeDelegate.qml</file>
+        <file>qml/filmulator-gui/gui_components/QueueDelegate.qml</file>
+        <file>qml/filmulator-gui/gui_components/SlideySwitch.qml</file>
+        <file>qml/filmulator-gui/gui_components/SlimSplitView.qml</file>
+        <file>qml/filmulator-gui/gui_components/SlipperySlider.qml</file>
+        <file>qml/filmulator-gui/gui_components/ToolButton.qml</file>
+        <file>qml/filmulator-gui/gui_components/ToolRadioButton.qml</file>
+        <file>qml/filmulator-gui/gui_components/ToolSlider.qml</file>
+        <file>qml/filmulator-gui/gui_components/ToolSwitch.qml</file>
+        <file>qml/filmulator-gui/gui_components/ToolTip.qml</file>
+    </qresource>
+</RCC>

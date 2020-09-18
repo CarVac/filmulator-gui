@@ -22,13 +22,46 @@ libtiff
 libgomp
 libexiv2
 libjpeg
-libraw v0.18 or older
+libraw
+librtprocess 0.10
+liblensfun 0.3.95 exactly for Windows, and the latest git version for Linux and MacOS
+libcurl
+libarchive
 ```
-Some libraw package maintainers don't include the GPL demosaic packs, so we highly encourage you to compile it yourself.
+We highly encourage you to compile libraw yourself to ensure you have support for recent cameras.
 
-It also requires Qt 5.4 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
+It also requires Qt 5.14 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
 
 A note: Use a standalone git client to clone the repository initially, and then you can use Qt Creator's built-in git tools.
+
+## Building with CMake:
+
+Inside the `filmulator-gui` directory, create a build directory.
+
+Run `cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..` If you are using a binary release of Qt from them, use -DCMAKE\_PREFIX\_PATH=\[path to the qt dir and version and arch\] as an argument.
+
+Then run `make` and run `make install` as root.
+
+## Building on MacOS:
+
+You'll need to know the locations of a couple things in order to build this. They're not hard to find, just use Finder's search functionality to find them. Wherever they are, we need the real dynamic libraries (.dylib), not the symbolic links that point to them. That's important! If you find a symbolic link, follow it to get the real dynamic library.  We need:
+
+libomp.dylib: it should be somewhere like /opt/local/lib/libomp.dylib. If you installed from homebrew, that's probably where it is. Replace wherever it is into `-DOpenMP_libomp_LIBRARY=` and `-fopenmp` below.
+
+libarchive.dylib: If you installed from homebrew, it probably needs to be /usr/local/Cellar/libarchive/3.4.3/include like below. Put this path into `-DLibArchive_INCLUDE_DIR`.
+
+librtprocess: This needs to point towards the .dylib file for librtprocess. If you installed librtprocess from source, it's probably in /opt/local/lib/librtprocess.0.0.1.dylib like below. Wherever it is, put it into `-Dlibrtprocess_dylib`.
+
+QT: If you installed this from homebrew, it's probably at /usr/local/Cellar/qt/5.13.1/. Wherever it is, put it in the `export QT=` command below.
+
+
+Once you have all those figured out, the following commands, edited according to your locations detailed above, should build the Filmulator application on macOS. 
+
+1. `cd ~/filmulator-gui/filmulator-gui`
+2. `mkdir build && cd build`
+3. `export QT=/usr/local/Cellar/qt/5.13.1`
+4. `cmake -DCMAKE_BUILD_TYPE="RELEASE" -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_FLAGS=-I/opt/local/include -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp /opt/local/lib/libomp/libomp.dylib -I/opt/local/include" -DOpenMP_CXX_LIB_NAMES="libomp" -DOpenMP_libomp_LIBRARY=/opt/local/lib/libomp/libomp.dylib -DCMAKE_INSTALL_PREFIX=/opt/local -DCMAKE_SHARED_LINKER_FLAGS=-L/opt/local/lib -DCMAKE_PREFIX_PATH=$(echo $QT/lib/cmake/* | sed -Ee 's$ $;$g') -G "Unix Makefiles" -DCMAKE_VERBOSE_MAKEFILE=1 -DLibArchive_INCLUDE_DIR=/usr/local/Cellar/libarchive/3.4.3/include -Dlibrtprocess_dylib=/opt/local/lib/librtprocess.0.0.1.dylib ..`
+5. `make -j8 install`
 
 # Using Filmulator
 
@@ -55,8 +88,8 @@ If you want the UI to appear larger on a high-pixel density display, use the Use
 
 # Status
 
-If told to make a version number for it right now, I'd put it as 0.7.0.
+If told to make a version number for it right now, I'd put it as 0.9.0.
 
-Currently, the photo editor is mostly complete, although noise reduction and sharpening are currently missing. Both the `Import` and `Organize` tabs need some UI massaging, as does the queue. Finally, the `Output` tab hasn't even been started yet.
+The editing functionality is nearly complete, missing only noise reduction. The library functionality may still be expanded and massaged, however.
 
 But in the meantime, feel free to play around. Report any new bugs or suggestions you may have either on the [subreddit](https://www.reddit.com/r/Filmulator/) or on [the pixls.us forum](https://discuss.pixls.us/c/software/filmulator)!

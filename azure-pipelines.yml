@@ -1,0 +1,126 @@
+# C/C++ with GCC
+# Build your C/C++ project with GCC using make.
+# Add steps that publish test results, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/c-cpp/gcc
+
+trigger:
+- master
+- dev
+- testbuild
+
+pool:
+  vmImage: "vs2017-win2016"
+
+variables:
+  MSYS2_ROOT: $(System.Workfolder)/msys64
+  MSYS_PAC: $(System.Workfolder)/msys64/usr/bin/pacman.exe
+  MSYS_BASH: $(System.Workfolder)/msys64/usr/bin/bash.exe
+
+steps:
+  - script: |
+      choco install msys2 --params="/InstallDir:%MSYS2_ROOT% /NoUpdate /NoPath"
+    displayName: Install MSYS2
+  - script: |
+      %MSYS_PAC% --noconfirm -Syu
+      %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
+      tar gzip nano make diffutils intltool git cmake libcurl-devel glib2-devel msys2-runtime-devel ^
+      mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
+      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,curl,libarchive}
+    displayName: Install Dependencies
+  - script: |
+      mkdir librt
+      ls
+      cd librt
+      git clone https://github.com/CarVac/librtprocess lrt
+      echo "done clone"
+      mkdir buildDir
+      cd buildDir
+      set HOME=.
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lrt > out.log 2>err.log"
+      %MSYS_BASH% -c "make -j2"
+      %MSYS_BASH% -c "make install"
+    displayName: build librtprocess
+  - script: |
+      pwd
+      mkdir lensfun
+      ls
+      cd lensfun
+      pwd
+      git clone https://github.com/lensfun/lensfun lf
+      echo "done clone"
+      echo "editing cmakelists"
+      sed -i '/FIND_PACKAGE(GLIB2/d' ./lf/CMakeLists.txt
+      sed -i 's/scripts\" ON/scripts\" OFF/g' ./lf/CMakeLists.txt
+      ls D:/a/msys64/usr/include/glib-2.0/
+      sed -i 's/typedef signed long gint64/typedef signed long long gint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
+      sed -i 's/typedef unsigned long guint64/typedef unsigned long long guint64/g' "D:/a/msys64/usr/lib/glib-2.0/include/glibconfig.h"
+      echo "edit glib2 to fix a type size mismatch"
+      cp "D:/a/msys64/mingw64/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/mingw64/include/glib-2.0/glib/glibconfig.h"
+      cp "D:/a/msys64/mingw64/lib/glib-2.0/include/glibconfig.h" "D:/a/msys64/mingw64/include/glib-2.0/glibconfig.h"
+      echo "copied glibconfig"
+      ls "D:/a/msys64/usr/include/glib-2.0/"
+      echo "looking in /usr/lib"
+      ls "D:/a/msys64/usr/lib" | grep glib
+      mkdir buildDir
+      cd buildDir
+      echo "making apps dir"
+      mkdir apps
+      echo "entering apps dir"
+      cd apps
+      pwd
+      echo "making lensfun dir"
+      mkdir lensfun
+      ls
+      cd ..
+      pwd
+      set HOME=.
+      echo "running cmake"
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DBUILD_STATIC=off -DINSTALL_HELPER_SCRIPTS=off -DGLIB2_INCLUDE_DIRS=\"/mingw64/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"/mingw64/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" -DGLIB2_DLL=\"/mingw64/bin/libglib-2.0-0.dll\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lf > out.log 3>err.log"
+      cat out.log
+      echo "building"
+      %MSYS_BASH% -c "make -j2"
+      cat --number cmake_install.cmake
+      echo "installing"
+      %MSYS_BASH% -c "make install>lensfunout.log"
+      cat lensfunout.log
+    displayName: build lensfun
+  - script: |
+      mkdir build
+      pushd build
+      ls
+      mkdir installed
+      set INSTALLDIR=installed
+      set HOME=.
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"%INSTALLDIR%\" -DCMAKE_BUILD_TYPE=\"Release\" -DCMAKE_PREFIX_PATH=\"/mingw64/lib/cmake/\" -DCMAKE_LIBRARY_PATH=\"/mingw64/lib/\" -DCMAKE_INCLUDE_PATH=\"/mingw64/include/\" -DGLIB2_INCLUDE_DIRS=\"/usr/include/glib-2.0/\" -DGLIB2_LIBRARY_DIRS=\"D:/a/msys64/usr/lib/\" -DGLIB2_LIBRARIES=\"glib-2.0\" ../filmulator-gui >output.log 2>err.log"
+      cat output.log
+      %MSYS_BASH% -c "make -j2"
+      %MSYS_BASH% -c "make install"
+      popd
+    displayName: build filmulator
+  - script: |
+      set listdll=libarchive-13.dll,libbrotlicommon.dll,libbrotlidec.dll,libbz2-1.dll,libcrypto-1_1-x64.dll,libcurl-4.dll,libdouble-conversion.dll,libexiv2.dll,libexpat-1.dll,libfreetype-6.dll,libgcc_s_seh-1.dll,libglib-2.0-0.dll,libgomp-1.dll,libgraphite2.dll,libharfbuzz-0.dll,libiconv-2.dll,libicudt*.dll,libicuin*.dll,libicuuc*.dll,libidn2-0.dll,libintl-8.dll,libjasper-4.dll,libjpeg-8.dll,liblensfun.dll,liblcms2-2.dll,liblz4.dll,liblzma-5.dll,libnghttp2-14.dll,libpcre-1.dll,libpcre2-16-0.dll,libpng16-16.dll,libpsl-5.dll,libraw_r-*.dll,librtprocess.dll,libssh2-1.dll,libssl-1_1-x64.dll,libstdc++-6.dll,libtiff-5.dll,libunistring-2.dll,libwinpthread-1.dll,libzstd.dll,zlib1.dll
+      cd build/installed/bin
+      set PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem
+      set HOME=.
+      %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
+      #%MSYS_BASH% -c "/usr/bin/wget.exe http://tripleboot.org/Uploads/windeployqt64releaseonly.zip"
+      #%MSYS_BASH% -c "/usr/bin/unzip.exe windeployqt64releaseonly.zip"
+      #%MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /bin/windeployqtreleaseonly.exe"
+      #%MSYS_BASH% -c "/bin/windeployqt64releaseonly.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #
+      #%MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --release --qmldir qml/filmulator-gui filmulator.exe"
+      #apparently removing --release might make it work with qt 5.14?
+      %MSYS_BASH% -c "/mingw64/bin/windeployqt.exe --verbose 2 --qmldir qml/filmulator-gui filmulator.exe"
+    displayName: package dlls
+  - script: |
+      set HOME=.
+      %MSYS_BASH% -c "/bin/cp --verbose LICENSE.txt -t build/installed/bin"
+      %MSYS_BASH% -c "/bin/cp --verbose filmulator-gui/filmulator-gui80.ico -t build/installed/bin"
+      %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"
+      cd build/installed
+      iscc.exe "filmulator_build.iss"
+    displayName: generate installer
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'build/installed' 
+      artifactName: 'filmulator' 

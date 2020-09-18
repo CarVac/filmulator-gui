@@ -30,11 +30,14 @@ public:
     explicit OrganizeModel(QObject *parent = 0);
     Q_INVOKABLE void setOrganizeQuery();
     Q_INVOKABLE void setDateHistoQuery();
-    Q_INVOKABLE QString thumbDir();
+    Q_INVOKABLE static QString thumbDir();
     Q_INVOKABLE void setRating(QString searchID, int rating);
-    Q_INVOKABLE QString getDateTimeString(int unixTimeIn);
+    Q_INVOKABLE void markDeletion(QString searchID);
+    Q_INVOKABLE QString getDateTimeString(qint64 unixTimeIn);
     Q_INVOKABLE QDate getSelectedDate();
     Q_INVOKABLE QString getSelectedYMDString();
+
+    Q_INVOKABLE QString adaptableModelQuery(const bool searchIDOnly);
 
     DateHistogramModel *dateHistogram = new DateHistogramModel;
 
@@ -90,6 +93,8 @@ signals:
 
     void organizeFilterChanged();
 
+    void enqueueThis(const QString STsearchID);
+
     void updateTableOut(QString table, int operation);
 
 public slots:
@@ -108,12 +113,12 @@ protected:
     QDate maxImportTime;
     QDate minProcessedTime;
     QDate maxProcessedTime;
-    unsigned int minCaptureTime_i;
-    unsigned int maxCaptureTime_i;
-    unsigned int minImportTime_i;
-    unsigned int maxImportTime_i;
-    unsigned int minProcessedTime_i;
-    unsigned int maxProcessedTime_i;
+    qint64 minCaptureTime_i;
+    qint64 maxCaptureTime_i;
+    qint64 minImportTime_i;
+    qint64 maxImportTime_i;
+    qint64 minProcessedTime_i;
+    qint64 maxProcessedTime_i;
     int minRating;
     int maxRating;
     int m_timeZone = 0;

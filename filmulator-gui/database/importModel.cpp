@@ -1,5 +1,6 @@
 
 #include "importModel.h"
+#include "../database/database.hpp"
 #include <iostream>
 #include <math.h>
 
@@ -12,10 +13,10 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
     tableName = "SearchTable";
 
     //Set up the files that it accepts as raw files on directory import
-    rawNameFilters << "*.CR2" << "*.cr2" << "*.NEF" << "*.nef" << "*.DNG" << "*.dng" << "*.RW2" << "*.rw2" << "*.IIQ" << "*.iiq" << "*.ARW" << "*.arw" << "*.PEF" << "*.pef" << "*.RAF" << "*.raf" << "*.ORF" << "*.orf";
+    rawNameFilters << "*.CR2" << "*.cr2" << "*.CR3" << "*.cr3" << "*.NEF" << "*.nef" << "*.DNG" << "*.dng" << "*.RW2" << "*.rw2" << "*.IIQ" << "*.iiq" << "*.ARW" << "*.arw" << "*.PEF" << "*.pef" << "*.RAF" << "*.raf" << "*.ORF" << "*.orf" << "*.SRW" << "*.srw";
 
     //Set up the files that it'll show in the file picker
-    dirNameFilters << "Raw image files (*.CR2 *.cr2 *.NEF *.nef *.DNG *.dng *.RW2 *.rw2 *.IIQ *.iiq *.ARW *.arw *.PEF *.pef *.RAF *.raf *.ORF *.orf)";// << "All files (*)";
+    dirNameFilters << "Raw image files (*.cr2 *.cr3 *.nef *.dng *.rw2 *.iiq *.arw *.pef *.raf *.orf *.srw)";// << "All files (*)";
 
     //Set up the import worker thread
     ImportWorker *worker = new ImportWorker;
@@ -42,12 +43,17 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                     const bool)));
     connect(worker, SIGNAL(doneProcessing(bool)), this, SLOT(workerFinished(bool)));
     connect(worker, SIGNAL(enqueueThis(QString)), this, SLOT(enqueueRequested(QString)));
-    workerThread.start(QThread::LowPriority);
+
+    //set stack size to prevent stack overflow on macos
+    workerThread.setStackSize(2097152);
 }
 
 QSqlQuery ImportModel::modelQuery()
 {
-    return QSqlQuery(QString(""));
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    return QSqlQuery(QString(""), db);
 }
 
 //We want to scan for DCIM to warn people not to import in place from a memory card.
@@ -60,6 +66,10 @@ bool ImportModel::pathContainsDCIM(const QString dir, const bool notDirectory)
         return true;
     }
     else if (notDirectory)
+    {
+        return false;
+    }
+    else if (dir.length() < 4) // so that / itself doesn't lead to reading the whole filesystem
     {
         return false;
     }
@@ -107,19 +117,12 @@ bool ImportModel::pathWritable(const QString dir)
     return false;
 }
 
-void ImportModel::importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation)
+void ImportModel::importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation, const int depth)
 {
     //This function reads in a directory and puts the raws into the database.
     if (dir.length() == 0)
     {
-        emptyDir = true;
-        emit emptyDirChanged();
         return;
-    }
-    else
-    {
-        emptyDir = false;
-        emit emptyDirChanged();
     }
 
     //First, we call itself recursively on the folders within.
@@ -129,7 +132,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     QFileInfoList dirList = directory.entryInfoList();
     for (int i=0; i < dirList.size(); i++)
     {
-        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace, replaceLocation);
+        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace, replaceLocation, depth + 1);
     }
 
     //Next, we filter for files.
@@ -139,6 +142,13 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
 
     if (fileList.size() == 0)
     {
+        if (depth == 0 && queue.size() > 0)
+        {
+            cout << "importDirectory_r starting worker" << endl;
+            paused = false;
+
+            startWorker(queue.front());
+        }
         return;
     }
 
@@ -171,9 +181,13 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     emit progressChanged();
     emit progressFracChanged();
 
-    paused = false;
+    if (depth == 0 && queue.size() > 0)
+    {
+        cout << "importDirectory_r starting worker" << endl;
+        paused = false;
 
-    startWorker(queue.front());
+        startWorker(queue.front());
+    }
 }
 
 QStringList ImportModel::getNameFilters()
@@ -187,12 +201,19 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
 {
 
     //Check for "url://" at the beginning
+    //On Windows, for some reason there's an extra / that must be removed
+#ifdef Q_OS_WIN
+    const int count = name.startsWith("file://") ? 8 : 0;
+#else
     const int count = name.startsWith("file://") ? 7 : 0;
+#endif
 
     //Then check that it's a real file.
     const QFileInfo file = QFileInfo(name.mid(count));
     if (!file.isFile())
     {
+        cout << "File not found: " << name.toStdString() << endl;
+        cout << "# chars removed: " << count << endl;
         invalidFile = true;
         emit invalidFileChanged();
         return Validity::invalid;
@@ -211,6 +232,7 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
     //Now we tell the GUI the result:
     if (!isReadableFile)
     {
+        cout << "File " << file.fileName().toStdString() << " not readable file type" << endl;
         invalidFile = true;
         emit invalidFileChanged();
         return Validity::invalid;
@@ -276,8 +298,11 @@ void ImportModel::importFileList(const QString name, const bool importInPlace, c
         {
             importFile(nameList.at(i), importInPlace, replaceLocation, false);
         }
-        paused = false;
-        startWorker(queue.front());
+        if (queue.size() > 0)
+        {
+            paused = false;
+            startWorker(queue.front());
+        }
     }
 }
 
@@ -292,6 +317,7 @@ void ImportModel::workerFinished(bool changedST)
     if (queue.size() <= 0)
     {
         //cout << "ImportModel no more work; empty queue" << endl;
+        exitWorker();
         return;
     }
 
@@ -326,6 +352,10 @@ void ImportModel::enqueueRequested(const QString STsearchID)
 
 void ImportModel::startWorker(const importParams params)
 {
+    if (!workerThread.isRunning())
+    {
+        workerThread.start(QThread::LowPriority);
+    }
     const QFileInfo info = params.fileInfoParam;
     const int iTZ = params.importTZParam;
     const int cTZ = params.cameraTZParam;

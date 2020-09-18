@@ -35,12 +35,14 @@ public:
     void updateFilmProgress(float);
 
     Q_INVOKABLE float getHistFinalPoint(int index, int i){return getHistogramPoint(finalHist,index,i,LogY::no);}
+    Q_INVOKABLE float getHistRawPoint(int index, int i){return getHistogramPoint(rawHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
 
-    void updateHistPreFilm( const matrix<float> image, float maximum );
-    void updateHistPostFilm( const matrix<float> image, float maximum );
-    void updateHistFinal( const matrix<unsigned short> image);
+    void updateHistRaw(const matrix<float>& image, float maximum, unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans, bool isRGB, bool isMonochrome);
+    void updateHistPreFilm(const matrix<float>& image, float maximum);
+    void updateHistPostFilm(const matrix<float>& image, float maximum);
+    void updateHistFinal(const matrix<unsigned short>& image);
 
     Q_INVOKABLE void writeTiff();
     Q_INVOKABLE void writeJpeg();
@@ -48,9 +50,18 @@ public:
     Q_INVOKABLE void disableThumbnailWrite() {thumbnailWriteEnabled = false;}
     Q_INVOKABLE void enableThumbnailWrite() {thumbnailWriteEnabled = true;}
 
+    //clean up threads before exiting
+    Q_INVOKABLE void exitWorker()
+    {
+        if (workerThread.isRunning())
+        {
+            workerThread.exit();
+        }
+    }
+
 protected:
-    ImagePipeline pipeline = ImagePipeline(WithCache, WithHisto, HighQuality);
-    ImagePipeline quickPipe = ImagePipeline(WithCache, WithHisto, PreviewQuality);//for now it'll just be the 600 size
+    ImagePipeline pipeline;
+    ImagePipeline quickPipe;
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;
@@ -72,14 +83,15 @@ protected:
     matrix<unsigned short> last_image;
 
     Histogram finalHist;
+    Histogram rawHist;
     Histogram postFilmHist;
     Histogram preFilmHist;
 
     float getHistogramPoint(Histogram &hist, int index, int i, LogY isLog);
     QImage emptyImage();
 
-    void updateShortHistogram(Histogram &hist, const matrix<unsigned short> image );
-    void updateFloatHistogram(Histogram &hist, const matrix<float> image, float maximum );
+    void updateShortHistogram(Histogram &hist, const matrix<unsigned short>& image );
+    void updateFloatHistogram(Histogram &hist, const matrix<float>& image, float maximum );
     int histIndex(float value, float max);
     void zeroHistogram(Histogram &hist);
 
@@ -88,6 +100,7 @@ signals:
 
     //Notifications for the histograms
     void histFinalChanged();
+    void histRawChanged();
     void histPostFilmChanged();
     void histPreFilmChanged();
 

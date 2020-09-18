@@ -1,6 +1,5 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import "../colors.js" as Colors
 import "."
 
@@ -37,6 +36,7 @@ Rectangle {
 
     signal tooltipWanted(string text, int coordX, int coordY)
 
+    signal resetPerformed()
     signal editComplete()
 
     //handler for limiting updates.
@@ -103,19 +103,47 @@ Rectangle {
         height: 28 * uiScale
         x: root.width-width-__padding
         y: __padding
-        text: "[]"
+        Image {
+            width: 14 * uiScale
+            height: 14 * uiScale
+            anchors.centerIn: parent
+            source: "qrc:///icons/refresh.png"
+            antialiasing: true
+        }
         action: Action {
             onTriggered: {
                 slider.value = defaultValue
+
+                //Some tools need a special action taken when reset,
+                // like lens correction, which reset to a -1 database value
+                // while exposing a preferred value
+                root.resetPerformed()
 
                 //We have to pretend that the slider was changed
                 // so that it writes back to the database.
                 root.editComplete()
             }
         }
-        style: ToolButtonStyle {
-            uiScale: root.uiScale
-            notDisabled: root.changed
+        background: Rectangle {
+            implicitWidth: parent.width
+            implicitHeight: parent.width
+            border.width: 1 * uiScale
+            border.color: parent.pressed ? Colors.lightOrange : Colors.brightGray
+            radius: 5 * uiScale
+            gradient: Gradient {
+                GradientStop {color: reset.pressed ? "#000000" : "#222222"; position: 0.0}
+                GradientStop {color: reset.pressed ? "#161106" : "#111111"; position: 0.3}
+                GradientStop {color: reset.pressed ? "#161106" : "#111111"; position: 0.7}
+                GradientStop {color: reset.pressed ? "#272217" : "#000000"; position: 1.0}
+            }
+        }
+        contentItem: Text {
+            color: parent.pressed ? Colors.whiteOrange : "white"
+            anchors.centerIn: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: parent.text
+            font.pixelSize: 12.0 * uiScale
         }
     }
     MouseArea {
@@ -227,13 +255,8 @@ Rectangle {
                     }
                     oldAngle = newAngle
                     var revolutions = delta / (2 * Math.PI)
-                    value = value + revolutions * (maximumValue - minimumValue) / 8
-                    if (value > maximumValue) {
-                        value = maximumValue
-                    }
-                    if (value < minimumValue) {
-                        value = minimumValue
-                    }
+                    var newValue = value + revolutions * (maximumValue - minimumValue) / 8
+                    value = Math.max(Math.min(newValue,maximumValue),minimumValue)
                 }
             }
             onReleased: {

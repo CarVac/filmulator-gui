@@ -1,8 +1,10 @@
 #include "organizeModel.h"
+#include "../database/database.hpp"
 #include <iostream>
 #include <QStringList>
 #include <QDateTime>
 #include <QString>
+#include <QStandardPaths>
 
 using std::cout;
 using std::endl;
@@ -22,6 +24,13 @@ OrganizeModel::OrganizeModel(QObject *parent) :
 
 QSqlQuery OrganizeModel::modelQuery()
 {
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    return QSqlQuery(adaptableModelQuery(false), db);
+}
+
+QString OrganizeModel::adaptableModelQuery(const bool searchIDOnly)
+{
     //We can't use the inbuilt relational table stuff; we have to
     // make our own writing functionality, and instead of setting the table,
     // we have to make our own query.
@@ -33,7 +42,13 @@ QSqlQuery OrganizeModel::modelQuery()
 
     //First we will prepare a string to feed into the query.
     //We only really care about info in the searchtable.
-    std::string queryString = "SELECT * ";
+    std::string queryString = "SELECT ";
+    if (searchIDOnly)
+    {
+        queryString.append("STsearchID ");
+    }  else {
+        queryString.append("* ");
+    }
     queryString.append("FROM SearchTable ");
     queryString.append("WHERE ");
 
@@ -109,7 +124,7 @@ QSqlQuery OrganizeModel::modelQuery()
         queryString.append("SearchTable.STfilename DESC;");
     }
 
-    return QSqlQuery(QString::fromStdString(queryString));
+    return QString::fromStdString(queryString);
 }
 
 void OrganizeModel::setOrganizeQuery()
@@ -130,24 +145,56 @@ void OrganizeModel::setDateHistoQuery()
 
 QString OrganizeModel::thumbDir()
 {
-    QDir homeDir = QDir::home();
-    homeDir.cd(".local/share/filmulator/thumbs");
-    return homeDir.absolutePath();
+    QDir homeDir(QDir::homePath());
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator/thumbs");
+    if (homeDir.cd(dirstr))
+    {
+    } else {
+        if (homeDir.mkpath(dirstr))
+        {
+            if (homeDir.cd(dirstr))
+            {
+            } else {
+                cout << "cannot create thumb directory" << endl;
+            }
+        } else {
+        }
+    }
+    return dirstr;
 }
 
 void OrganizeModel::setRating(QString searchID, int rating)
 {
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    QSqlQuery query(db);
     query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
-    query.bindValue(0, QVariant(max(min(rating,5),0)));
+    query.bindValue(0, QVariant(max(min(rating,5),-5)));
     query.bindValue(1, searchID);
     query.exec();
     emit updateTableOut("SearchTable", 0);//An edit made to the search table.
     emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
 }
 
-QString OrganizeModel::getDateTimeString(int unixTimeIn)
+void OrganizeModel::markDeletion(QString searchID)
 {
-    QDateTime tempTime = QDateTime::fromTime_t(unixTimeIn, Qt::OffsetFromUTC, m_timeZone*3600);
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    QSqlQuery query(db);
+    query.prepare("UPDATE SearchTable SET STrating = -1 - STrating WHERE STsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    emit updateTableOut("SearchTable", 0);//An edit made to the search table.
+    emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
+}
+
+QString OrganizeModel::getDateTimeString(qint64 unixTimeIn)
+{
+    QDateTime tempTime;
+    tempTime.setOffsetFromUtc(m_timeZone*3600);
+    tempTime.setSecsSinceEpoch(unixTimeIn);
     return tempTime.toString("ddd yyyy-MM-dd HH:mm:ss");
 }

@@ -1,7 +1,6 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
-import QtQuick.Dialogs 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import Qt.labs.platform 1.0
 import "../colors.js" as Colors
 import "."
 
@@ -38,20 +37,33 @@ Rectangle {
             font.pixelSize: 12.0 * uiScale
         }
     }
+
     Rectangle {
         id: textEntryRect
-        color: root.erroneous ? Colors.lightOrange : "black"
+        color: "black"
         width: parent.width - 2*__padding
         height: 25 * uiScale
         x: __padding
         y: 25 * uiScale + __padding
+
+        Image {
+            id: errorIcon
+            width: 20 * uiScale
+            height: 20 * uiScale
+            x: parent.width - width - __padding
+            y: 4 * uiScale
+            source: "qrc:///icons/errortriangle.png"
+            antialiasing: true
+            visible: root.erroneous
+        }
+
         TextInput {
             id: textEntryBox
             x: __padding
             y: __padding * 1.25
-            width: parent.width - x
+            width: parent.width - x - (root.erroneous ? __padding + errorIcon.width : 0)
             height: parent.height - y
-            color: root.erroneous ? "black" : "white"
+            color: "white"
             selectByMouse: true
             cursorVisible: focus
             font.pixelSize: 12.0 * uiScale
@@ -72,14 +84,32 @@ Rectangle {
                 dirDialog.open()
             }
         }
-
-        style: ToolButtonStyle {uiScale: root.uiScale}
+        background: Rectangle {
+            implicitWidth: parent.width
+            implicitHeight: parent.width
+            border.width: 1 * uiScale
+            border.color: parent.pressed ? Colors.lightOrange : Colors.brightGray
+            radius: 5 * uiScale
+            gradient: Gradient {
+                GradientStop {color: openDirButton.pressed ? "#000000" : "#222222"; position: 0.0}
+                GradientStop {color: openDirButton.pressed ? "#161106" : "#111111"; position: 0.3}
+                GradientStop {color: openDirButton.pressed ? "#161106" : "#111111"; position: 0.7}
+                GradientStop {color: openDirButton.pressed ? "#272217" : "#000000"; position: 1.0}
+            }
+        }
+        contentItem: Text {
+            color: parent.pressed ? Colors.whiteOrange : "white"
+            anchors.centerIn: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: parent.text
+            font.pixelSize: 12.0 * uiScale
+        }
     }
-    FileDialog {
+    FolderDialog {
         id: dirDialog
-        selectFolder: true
         onAccepted: {
-            root.enteredText = fileUrl.toString().substring(7)
+            root.enteredText = folder.toString().substring(Qt.platform.os == "windows" ? 8 : 7)
         }
     }
 

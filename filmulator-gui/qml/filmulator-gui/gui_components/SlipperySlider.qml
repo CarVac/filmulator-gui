@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.12
 import "../colors.js" as Colors
 
 /*! This is a modified implementationof the Qt Quick Controls Slider, without any initial stiction.
@@ -19,6 +19,8 @@ Item {
     property real uiScale: 1
     width: 200
     height: 12 * uiScale
+
+    property bool sliderEnabled: true
 
     /*!
         \qmlproperty enumeration SlipperySlider::orientation
@@ -222,9 +224,9 @@ Item {
         width: parent.width
         height: 4 * uiScale
         gradient: Gradient {
-            GradientStop {color: Colors.brightOrange; position: 0.0}
-            GradientStop {color: Colors.medOrange;    position: 0.3}
-            GradientStop {color: Colors.medOrange;    position: 1.0}
+            GradientStop {color: slider.sliderEnabled ? Colors.brightOrange : Colors.brightGray; position: 0.0}
+            GradientStop {color: slider.sliderEnabled ? Colors.medOrange    : Colors.middleGray; position: 0.3}
+            GradientStop {color: slider.sliderEnabled ? Colors.medOrange    : Colors.middleGray; position: 1.0}
         }
         Row {
             id: tickmarkLayout
@@ -281,6 +283,7 @@ Item {
 
     MouseArea {
         id: mouseArea
+        enabled: parent.sliderEnabled
 
         anchors.fill: slider
         hoverEnabled: true

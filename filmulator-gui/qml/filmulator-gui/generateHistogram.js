@@ -1,6 +1,7 @@
 function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale)
 {
     var histFunc;
+    var drawLuma = true;
     switch (histNumber)
     {
     case 1:
@@ -11,6 +12,10 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
         break;
     case 3:
         histFunc = function(a,b) {return filmProvider.getHistPostFilmPoint(a,b);};
+        break;
+    case 4:
+        histFunc = function(a,b) {return filmProvider.getHistRawPoint(a,b);};
+        drawLuma = false;
     }
 
     ctx.save();
@@ -23,26 +28,30 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
     var endx = width - padding;
     var graphwidth = endx - startx;
     var starty = height - padding;
-    var endy = padding+1*uiScale;
+    var endy = padding;
     var graphheight = starty - endy;
     var histPoint = 0;
     var maxValue = 128.0
 
     //Luma curve
-    ctx.beginPath();
-    ctx.moveTo(startx,starty);
-    for(var i = 0; i < maxValue; i++)
+    if(drawLuma)
     {
-        histPoint = histFunc(0,i);
-        ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+        ctx.beginPath();
+        ctx.moveTo(startx,starty);
+        for(var i = 0; i < maxValue; i++)
+        {
+            histPoint = histFunc(0,i);
+            ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
+        }
+        ctx.lineTo(endx,starty-(histPoint*graphheight));
+        ctx.lineTo(endx,starty);
+        ctx.lineTo(startx,starty);
+        ctx.closePath();
+        myGradient.addColorStop(1,"white");
+        myGradient.addColorStop(0,'rgb(140,140,140)');
+        ctx.fillStyle = myGradient;
+        ctx.fill()
     }
-    ctx.lineTo(endx,starty);
-    ctx.lineTo(startx,starty);
-    ctx.closePath();
-    myGradient.addColorStop(1,"white");
-    myGradient.addColorStop(0,'rgb(180,180,180)');
-    ctx.fillStyle = myGradient;
-    ctx.fill()
 
     //rCurve
     ctx.beginPath()
@@ -52,6 +61,7 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
         histPoint = histFunc(1,i);
         ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
     }
+    ctx.lineTo(endx,starty-(histPoint*graphheight));
     ctx.lineTo(endx,starty);
     ctx.closePath();
     ctx.strokeStyle = "#FF0000";
@@ -65,6 +75,7 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
         histPoint = histFunc(2,i);
         ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
     }
+    ctx.lineTo(endx,starty-(histPoint*graphheight));
     ctx.lineTo(endx,starty);
     ctx.closePath();
     ctx.strokeStyle = "#00FF00";
@@ -78,6 +89,7 @@ function generateHistogram(histNumber,ctx,width,height,padding,lineWidth,uiScale
         histPoint = histFunc(3,i);
         ctx.lineTo(startx+(i/maxValue)*graphwidth,starty-(histPoint)*graphheight);
     }
+    ctx.lineTo(endx,starty-(histPoint*graphheight));
     ctx.lineTo(endx,starty);
     ctx.closePath();
     ctx.strokeStyle = "#3030FF"

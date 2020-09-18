@@ -17,6 +17,7 @@
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
 #include "filmSim.hpp"
+#include <array>
 #include <utility>
 #include <omp.h>
 #include "math.h"
@@ -32,6 +33,12 @@ using namespace std;
 void diffuse_x(matrix<float> &developer_concentration,
                int convlength,
                int convrad, int pad, int paddedwidth, int order,
+               float swell_factor);
+
+
+void diffuse_y(matrix<float> &developer_concentration,
+               int convlength,
+               int convrad, int pad, int paddedlength, int order,
                float swell_factor);
 
 void diffuse(matrix<float> &developer_concentration, 
@@ -70,12 +77,8 @@ void diffuse(matrix<float> &developer_concentration,
 
     diffuse_x(developer_concentration,convlength,convrad,pad,paddedwidth,
               order, swell_factor);
-    matrix<float> transposed_developer_concentration(width,length);
-    developer_concentration.transpose_to(transposed_developer_concentration);
-    diffuse_x(transposed_developer_concentration,convlength,convrad,pad,
+    diffuse_y(developer_concentration,convlength,convrad,pad,
               paddedheight, order, swell_factor);
-    transposed_developer_concentration.transpose_to(developer_concentration);
-
     return;
 }
 
@@ -83,63 +86,175 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
                int convrad, int pad, int paddedwidth, int order,
                float swell_factor)
 {
-    int length = developer_concentration.nr();
-    int width = developer_concentration.nc();
-
-    vector<float> hpadded(paddedwidth); //stores one padded line
-    vector<float> htemp(paddedwidth); // stores result of box blur
-
-    //This is the running sum used to compute the box blur.
-    float running_sum = 0;
-
-    //These are indices for loops.
-    int row = 0;
-    int col = 0;
-    int pass = 0;
+    const int length = developer_concentration.nr();
+    const int width = developer_concentration.nc();
 
 #pragma omp parallel shared(developer_concentration,convlength,convrad,order,\
-        length,width,paddedwidth,pad,swell_factor)\
-    firstprivate(row,col,pass,htemp,running_sum,hpadded)
+        paddedwidth,pad,swell_factor)
     {
+        vector<float> hpadded(paddedwidth); //stores one padded line
+        vector<float> htemp(paddedwidth); // stores result of box blur
 #pragma omp for schedule(dynamic) nowait
-        for (row = 0; row<length;row++)
+        for (int row = 0; row<length;row++)
         {
             //Mirror the start of padded from the row.
-            for (col = 0; col < pad; col++)
+            for (int col = 0; col < pad; col++)
             {
-                hpadded[col] = developer_concentration(row,pad-col);
+                hpadded[col] = developer_concentration(row, pad - col);
             }
             //Fill the center of padded with a row.
-            for (col = 0; col < width; col++)
+            for (int col = 0; col < width; col++)
             {
-                hpadded[col+pad] = developer_concentration(row,col);
+                hpadded[col+pad] = developer_concentration(row, col);
             }
             //Mirror the row onto the end of padded.
-            for (col = 0; col < pad + 1; col++)
+            for (int col = 0; col < pad + 1; col++)
             {
                 hpadded[col+pad+width] = 
-                    developer_concentration(row,width-2-col);
+                    developer_concentration(row, width - 2 - col);
             }
-            for (pass = 0; pass < order; pass++)
+
+            for (int pass = 0; pass < order; pass++)
             {
                 //Perform a box blur, but hold off on the divisions in the
                 //averaging calculations
                 
                 //Start the running sum going at the beginning of the pad.
-                running_sum = 0;
-                for (col= pass*convrad; col < (pass*convrad)+convlength; col++)
+                float running_sum = 0;
+                for (int col= pass * convrad; col < (pass * convrad) + convlength; col++)
                 {
                     running_sum += hpadded[col];
                 }
 
                 //Start moving down the row.
-                for (col = (pass+1)*convrad;
-                     col < paddedwidth - 1 - (pass+1)*convrad;
-                     col++)
+                for (int col = (pass + 1) * convrad; col < paddedwidth - 1 - (pass + 1) * convrad; col++)
                 {
                     htemp[col] = running_sum;
-                    running_sum = running_sum + hpadded[col+convrad+1];
-                    running_sum = running_sum - hpadded[col-convrad];
+                    running_sum += hpadded[col + convrad + 1] - hpadded[col - convrad];
+                }
+
+                //Copy what was in htemp to hpadded for the next iteration.
+                //Swap just swaps pointers, so it is O(1)
+                swap(htemp,hpadded);
+            }
+            //Now we're done with the convolution of one row, and we can copy
+            //it back into developer_concentration. But we should also do the
+            //divisions that we never did during our previous averaging.
+            for (int col = 0; col < width; col++)
+            {
+                developer_concentration(row, col) = hpadded[col + pad] * swell_factor;
+            }
+        }
+    }
+}
+
+void diffuse_y(matrix<float> &developer_concentration, int convlength,
+               int convrad, int pad, int paddedlength, int order,
+               float swell_factor)
+{
+    const int length = developer_concentration.nr();
+    const int width = developer_concentration.nc();
+
+#pragma omp parallel shared(developer_concentration,convlength,convrad,order,\
+        paddedlength,pad,swell_factor)
+    {
+        constexpr int numcols = 8;  // process numcols columns at once for better usage of L1 cpu cache
+        vector<std::array<float, numcols>> hpadded(paddedlength); //stores one padded line
+        vector<std::array<float, numcols>> htemp(paddedlength); // stores result of box blur
+        #pragma omp for nowait
+        for (int col = 0; col < width - (numcols - 1); col += numcols)
+        {
+            //Mirror the start of padded from the row.
+            for (int row = 0; row < pad; row++)
+            {
+                for (int c = 0; c < numcols; ++c)
+                    hpadded[row][c] = developer_concentration(pad - row, col + c);
+            }
+            //Fill the center of padded with a row.
+            for (int row = 0; row < length; row++)
+            {
+                for (int c = 0; c < numcols; ++c)
+                    hpadded[row + pad][c] = developer_concentration(row, col + c);
+            }
+            //Mirror the row onto the end of padded.
+            for (int row = 0; row < pad + 1; row++)
+            {
+                for (int c = 0; c < numcols; ++c)
+                    hpadded[row + pad + length][c] = developer_concentration(length - 2 - row, col + c);
+            }    //This is the running sum used to compute the box blur.
+
+            for (int pass = 0; pass < order; pass++)
+            {
+                //Perform a box blur, but hold off on the divisions in the
+                //averaging calculations
+
+                //Start the running sum going at the beginning of the pad.
+                float running_sum[numcols] = {};
+                for (int row = pass * convrad; row < (pass * convrad) + convlength; row++)
+                {
+                    for (int c = 0; c < numcols; ++c)
+                        running_sum[c] += hpadded[row][c];
+                }
+
+                //Start moving down the row.
+                for (int row = (pass + 1) * convrad; row < paddedlength - 1 - (pass + 1) * convrad; row++)
+                {
+                    for (int c = 0; c < numcols; ++c) {
+                        htemp[row][c] = running_sum[c];
+                        running_sum[c] += hpadded[row + convrad + 1][c] - hpadded[row - convrad][c];
+                    }
+                }
+
+                //Copy what was in htemp to hpadded for the next iteration.
+                //Swap just swaps pointers, so it is O(1)
+                swap(htemp,hpadded);
+            }
+            //Now we're done with the convolution of one row, and we can copy
+            //it back into developer_concentration. But we should also do the
+            //divisions that we never did during our previous averaging.
+            for (int row = 0; row < length; row++)
+            {
+                for (int c = 0; c < numcols; ++c)
+                    developer_concentration(row, col + c) = hpadded[row + pad][c] * swell_factor;
+            }
+        }
+// remaining columns
+#pragma omp single
+        for (int col = width - (width % numcols); col < width; col++)
+        {
+            //Mirror the start of padded from the row.
+            for (int row = 0; row < pad; row++)
+            {
+                hpadded[row][0] = developer_concentration(pad - row, col);
+            }
+            //Fill the center of padded with a row.
+            for (int row = 0; row < length; row++)
+            {
+                hpadded[row + pad][0] = developer_concentration(row, col);
+            }
+            //Mirror the row onto the end of padded.
+            for (int row = 0; row < pad + 1; row++)
+            {
+                hpadded[row + pad + length][0] = developer_concentration(length - 2 - row, col);
+            }    //This is the running sum used to compute the box blur.
+
+            for (int pass = 0; pass < order; pass++)
+            {
+                //Perform a box blur, but hold off on the divisions in the
+                //averaging calculations
+
+                //Start the running sum going at the beginning of the pad.
+                float running_sum = 0;
+                for (int row = pass * convrad; row < (pass * convrad) + convlength; row++)
+                {
+                    running_sum += hpadded[row][0];
+                }
+
+                //Start moving down the row.
+                for (int row = (pass + 1) * convrad; row < paddedlength - 1 - (pass + 1) * convrad; row++)
+                {
+                    htemp[row][0] = running_sum;
+                    running_sum += hpadded[row + convrad + 1][0] - hpadded[row - convrad][0];
                 }
                 
                 //Copy what was in htemp to hpadded for the next iteration.
@@ -149,10 +264,9 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
             //Now we're done with the convolution of one row, and we can copy
             //it back into developer_concentration. But we should also do the
             //divisions that we never did during our previous averaging. 
-            for (col = 0; col < width; col++)
+            for (int row = 0; row < length; row++)
             {
-                developer_concentration(row,col) =
-                	hpadded[col+pad]*swell_factor;
+                developer_concentration(row, col) = hpadded[row + pad][0] * swell_factor;
             }
         }   
     }

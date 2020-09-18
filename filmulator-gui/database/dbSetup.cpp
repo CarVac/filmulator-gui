@@ -2,20 +2,24 @@
 #include <QString>
 #include <QVariant>
 #include <iostream>
+#include <QStandardPaths>
+#include <QFile>
 
 DBSuccess setupDB(QSqlDatabase *db)
 {
     QDir dir = QDir::home();
-    if (!dir.cd(".local/share/filmulator"))
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator");
+    if (!dir.cd(dirstr))
     {
-        if (!dir.mkpath(".local/share/filmulator"))
+        if (!dir.mkpath(dirstr))
         {
             std::cout << "Could not create database directory" << std::endl;
             return DBSuccess::failure;
         }
         else
         {
-            dir.cd(".local/share/filmulator");
+            dir.cd(dirstr);
         }
     }
     db -> setDatabaseName(dir.absoluteFilePath("filmulatorDB"));
@@ -33,8 +37,24 @@ DBSuccess setupDB(QSqlDatabase *db)
     }
 
     QSqlQuery query;
-    //query.exec("PRAGMA synchronous = OFF");//Use for speed, but dangerous.
-    //query.exec("PRAGMA synchronous = NORMAL");//Use for less speed, slightly dangerous.
+
+    //Check the database version.
+    query.exec("PRAGMA user_version;");
+    query.next();
+    const int oldVersion = query.value(0).toInt();
+    if (oldVersion > 12)//=================================================================version check here!
+    {
+        std::cout << "Newer database format. Aborting." << std::endl;
+        return DBSuccess::failure;
+    }
+    else if (oldVersion < 12)//============================================================version check here!
+    {
+        std::cout << "Backing up old database" << std::endl;
+        QFile file(dir.absoluteFilePath("filmulatorDB"));
+        QString name = "filmulatorDB_schema_";
+        name.append(QString::number(oldVersion));
+        file.copy(dir.absoluteFilePath(name));
+    }
 
     //We need to set up 3 tables for the processing.
     //1. The master table for searching. This should be small
@@ -111,7 +131,16 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTcropHeight real,"                      //32
                "ProcTcropAspect real,"                      //33
                "ProcTcropVoffset real,"                     //34
-               "ProcTcropHoffset real"                      //35
+               "ProcTcropHoffset real,"                     //35
+               "ProcTmonochrome integer,"                   //36
+               "ProcTbwRmult real,"                         //37
+               "ProcTbwGmult real,"                         //38
+               "ProcTbwBmult real,"                         //39
+               "ProcTtoeBoundary real"                      //40
+               "ProcTlensfunName varchar,"                  //41
+               "ProcTlensfunCa integer,"                    //42
+               "ProcTlensfunVign integer,"                  //43
+               "ProcTlensfunDist integer"                   //44
                ");"
                );
 
@@ -148,7 +177,16 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProfTtemperature real,"                     //27
                "ProfTtint real,"                            //28
                "ProfTvibrance real,"                        //29
-               "ProfTsaturation real"                       //30
+               "ProfTsaturation real,"                      //30 rotation and 4x crop params
+               "ProfTmonochrome integer,"                   //31 (+5 to match ProcessingTable)
+               "ProfTbwRmult real,"                         //32
+               "ProfTbwGmult real,"                         //33
+               "ProfTbwBmult real,"                         //34
+               "ProfTtoeBoundary real,"                     //35
+               "ProfTlensfunName varchar,"                 //36
+               "ProfTlensfunCa integer,"                    //37
+               "ProfTlensfunVign integer,"                  //38
+               "ProfTlensfunDist integer"                   //39
                ");"
                );
 
@@ -164,11 +202,25 @@ DBSuccess setupDB(QSqlDatabase *db)
                ");"
                );
 
+    //Next, we make a table that stores preferred lens corrections.
+    //These will override the ProcT values if absent
+    query.exec("CREATE TABLE IF NOT EXISTS LensPrefs ("
+               "ExifCamera varchar, "
+               "ExifLens varchar, "
+               "LensfunLens varchar, "
+               "LensfunCa integer, "
+               "LensfunVign integer, "
+               "LensfunDist integer, "
+               "AutoCa integer, "
+               "PRIMARY KEY (ExifCamera, ExifLens)"
+               ");"
+               );
+
     //Now we set the default Default profile.
     query.prepare("REPLACE INTO ProfileTable values "
-                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
-                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3
+                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3
+                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
     //Name of profile; must be unique.
     query.bindValue(0, "Default");
     //Initial Developer Concentration
@@ -222,7 +274,7 @@ DBSuccess setupDB(QSqlDatabase *db)
     //dcraw highlight recovery parameter
     query.bindValue(25, 0); //highlightRecovery
     //Automatic CA correct switch
-    query.bindValue(26, 0); //caEnabled
+    query.bindValue(26, -1); //caEnabled | -1 indicates use lens preferences
     //Color temperature WB adjustment
     query.bindValue(27, 5200.0f); //temperature
     //Magenta/green tint WB adjustment
@@ -231,16 +283,26 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.bindValue(29, 0.0f); //vibrance
     //Saturation of whole image
     query.bindValue(30, 0.0f); //saturation
+    //Whether the image is monochrome
+    query.bindValue(31, 0); //monochrome
+    //weighting for black and white conversion
+    query.bindValue(32, 0.21f); //bwRmult
+    query.bindValue(33, 0.78f); //bwGmult
+    query.bindValue(34, 0.07f); //bwBmult
+    //How much to offset the exposure tone curve to the right while maintaining the toe
+    query.bindValue(35, 0.0f); //toeBoundary
+    query.bindValue(36, "NoLens"); //lensfun lens
+    query.bindValue(37, -1); //lensfun CA - negative 1 indicates use preferences
+    query.bindValue(38, -1); //lensfun vignetting
+    query.bindValue(39, -1); //lensfun distortion
 
-    //Well, orientation obviously doesn't get a preset.
+    //Well, orientation and crop obviously don't get presets.
     query.exec();
 
+    //Because older versions would erroneously overwrite the file usage count on setting a new location, we need to set them all to 1
+    //SELECT COUNT(*), FTfileID FROM FileTable INNER JOIN SearchTable WHERE STsourceHash=FTfileID GROUP BY FTfileID;
 
-    //Check the database version.
-    query.exec("PRAGMA user_version;");
-    query.next();
-    const int oldVersion = query.value(0).toInt();
-    std::cout << "dbSetup old version: " << oldVersion << std::endl;
+    //Update old versions of the database
     QString versionString = ";";
 
     query.exec("BEGIN TRANSACTION;");//begin a transaction
@@ -269,6 +331,8 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers f;");
                    */
         versionString = "PRAGMA user_version = 1;";
+        std::cout << "Upgrading from old db version 0" << std::endl;
+        [[fallthrough]];
     case 1:
         /*
         query.exec("CREATE VIEW integers5 as "
@@ -286,6 +350,8 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "CROSS JOIN integers d;");
                    */
         versionString = "PRAGMA user_version = 2;";
+        std::cout << "Upgrading from old db version 1" << std::endl;
+        [[fallthrough]];
     case 2:
         query.exec("DROP TABLE QueueTable;");
         query.exec("CREATE TABLE QueueTable ("
@@ -295,19 +361,27 @@ DBSuccess setupDB(QSqlDatabase *db)
                    "QToutput bool,"
                    "QTsearchID varchar unique);");
         versionString = "PRAGMA user_version = 3;";
+        std::cout << "Upgrading from old db version 2" << std::endl;
+        [[fallthrough]];
     case 3:
         query.exec("DROP VIEW integers9;");
         query.exec("DROP VIEW integers4;");
         query.exec("DROP VIEW integers3;");
         versionString = "PRAGMA user_version = 4;";
+        std::cout << "Upgrading from old db version 3" << std::endl;
+        [[fallthrough]];
     case 4:
         query.exec("ALTER TABLE SearchTable "
                    "ADD COLUMN STimportStartTime integer;");
         query.exec("UPDATE SearchTable SET STimportStartTime = STimportTime;");
         versionString = "PRAGMA user_version = 5;";
+        std::cout << "Upgrading from old db version 4" << std::endl;
+        [[fallthrough]];
     case 5:
         query.exec("UPDATE SearchTable SET STrating = min(5,max(0,STrating));");
         versionString = "PRAGMA user_version = 6;";
+        std::cout << "Upgrading from old db version 5" << std::endl;
+        [[fallthrough]];
     case 6:
         query.exec("ALTER TABLE SearchTable "
                    "ADD COLUMN STthumbWritten bool;");
@@ -316,11 +390,15 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE SearchTable SET STthumbWritten = 1;");
         query.exec("UPDATE SearchTable SET STbigThumbWritten = 0;");
         versionString = "PRAGMA user_version = 7;";
+        std::cout << "Upgrading from old db version 6" << std::endl;
+        [[fallthrough]];
     case 7:
         query.exec("ALTER TABLE QueueTable "
                    "ADD COLUMN QTsortedIndex;");
         query.exec("UPDATE QueueTable SET QTsortedIndex = QTindex;");
         versionString = "PRAGMA user_version = 8;";
+        std::cout << "Upgrading from old db version 7" << std::endl;
+        [[fallthrough]];
     case 8:
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropHeight;");
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTcropAspect;");
@@ -331,6 +409,55 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProcessingTable SET ProcTcropVoffset = 0;");
         query.exec("UPDATE ProcessingTable SET ProcTcropHoffset = 0;");
         versionString = "PRAGMA user_version = 9;";
+        std::cout << "Upgrading from old db version 8" << std::endl;
+        [[fallthrough]];
+    case 9:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTmonochrome;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTbwRmult;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTbwGmult;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTbwBmult;");
+        query.exec("UPDATE ProcessingTable SET ProcTmonochrome = 0;");
+        query.exec("UPDATE ProcessingTable SET ProcTbwRmult = 0.21");
+        query.exec("UPDATE ProcessingTable SET ProcTbwGmult = 0.78");
+        query.exec("UPDATE ProcessingTable SET ProcTbwBmult = 0.07");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTmonochrome;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTbwRmult;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTbwGmult;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTbwBmult;");
+        query.exec("UPDATE ProfileTable SET ProfTmonochrome = 0;");
+        query.exec("UPDATE ProfileTable SET ProfTbwRmult = 0.21");
+        query.exec("UPDATE ProfileTable SET ProfTbwGmult = 0.78");
+        query.exec("UPDATE ProfileTable SET ProfTbwBmult = 0.07");
+        versionString = "PRAGMA user_version = 10;";
+        std::cout << "Upgrading from old db version 9" << std::endl;
+        [[fallthrough]];
+    case 10:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTtoeBoundary;");
+        query.exec("UPDATE ProcessingTable SET ProcTtoeBoundary = 0;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTtoeBoundary;");
+        query.exec("UPDATE ProfileTable SET ProfTtoeBoundary = 0;");
+        versionString = "PRAGMA user_version = 11;";
+        std::cout << "Upgrading from old db version 10" << std::endl;
+        [[fallthrough]];
+    case 11:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunName;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunCa;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunVign;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTlensfunDist;");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunName = \"NoLens\";");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunCa    = -1");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunVign  = -1");
+        query.exec("UPDATE ProcessingTable SET ProcTlensfunDist  = -1");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunName;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunCa;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunVign;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTlensfunDist;");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunName = \"NoLens\";");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunCa    = -1");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunVign  = -1");
+        query.exec("UPDATE ProfileTable SET ProfTlensfunDist  = -1");
+        versionString = "PRAGMA user_version = 12;";
+        std::cout << "Upgrading from old db version 11" << std::endl;
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

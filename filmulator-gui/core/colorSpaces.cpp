@@ -143,15 +143,15 @@ void Lab_to_XYZ(float   L, float   a, float   b,
 //The L* is 0 = 0, 1 = 65535.
 //a* and b* are -1 = 1, 0 = 32768, +1 = 65535.
 //Reference: http://www.brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-void sRGB_to_Lab_s(matrix<unsigned short> &RGB,
+void sRGB_to_Lab_s(matrix<unsigned short> &in,
                    matrix<unsigned short> &Lab)
 {
-    int nRows = RGB.nr();
-    int nCols = RGB.nc();
+    int nRows = in.nr();
+    int nCols = in.nc();
 
     Lab.set_size(nRows, nCols);
 
-#pragma omp parallel shared(RGB, Lab) firstprivate(nRows, nCols)
+#pragma omp parallel shared(in, Lab) firstprivate(nRows, nCols)
     {
 #pragma omp for schedule(dynamic) nowait
         for (int i = 0; i < nRows; i++)
@@ -159,9 +159,9 @@ void sRGB_to_Lab_s(matrix<unsigned short> &RGB,
             for (int j = 0; j < nCols; j += 3)
             {
                 //First, linearize the sRGB.
-                float r = sRGB_inverse_gamma(float(RGB(i, j  ))/65535.0);
-                float g = sRGB_inverse_gamma(float(RGB(i, j+1))/65535.0);
-                float b = sRGB_inverse_gamma(float(RGB(i, j+2))/65535.0);
+                float r = sRGB_inverse_gamma(float(in(i, j  ))/65535.0);
+                float g = sRGB_inverse_gamma(float(in(i, j+1))/65535.0);
+                float b = sRGB_inverse_gamma(float(in(i, j+2))/65535.0);
 
                 //Next, convert to XYZ.
                 float x, y, z;
@@ -188,24 +188,31 @@ void sRGB_to_Lab_s(matrix<unsigned short> &RGB,
 }
 
 //Converts gamma-curved sRGB D50 to linear, short int to float.
-void sRGB_linearize(matrix<unsigned short> &RGB,
+void sRGB_linearize(matrix<unsigned short> &in,
                     matrix<float> &out)
 {
-    int nRows = RGB.nr();
-    int nCols = RGB.nc();
+    int nRows = in.nr();
+    int nCols = in.nc();
+
+    // build lookup table
+    float invgamma[65536];
+    for (int i = 0; i < 65536; i++)
+    {
+        invgamma[i] = sRGB_inverse_gamma(i / 65535.0f);
+    }
 
     out.set_size(nRows, nCols);
 
-#pragma omp parallel shared(RGB, out) firstprivate(nRows, nCols)
+#pragma omp parallel shared(in, out) firstprivate(nRows, nCols)
     {
 #pragma omp for schedule(dynamic) nowait
         for (int i = 0; i < nRows; i++)
         {
             for (int j = 0; j < nCols; j += 3)
             {
-                out(i, j  ) = sRGB_inverse_gamma(float(RGB(i, j  ))/65535.0);
-                out(i, j+1) = sRGB_inverse_gamma(float(RGB(i, j+1))/65535.0);
-                out(i, j+2) = sRGB_inverse_gamma(float(RGB(i, j+2))/65535.0);
+                out(i, j  ) = invgamma[in(i, j  )];
+                out(i, j+1) = invgamma[in(i, j+1)];
+                out(i, j+2) = invgamma[in(i, j+2)];
             }
         }
     }
@@ -213,15 +220,15 @@ void sRGB_linearize(matrix<unsigned short> &RGB,
 
 //Converts linear float sRGB D50 to gamma-curved, float to short int.
 //Reference: http://www.brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
-void sRGB_gammacurve(matrix<float> &RGB,
+void sRGB_gammacurve(matrix<float> &in,
                      matrix<unsigned short> &out)
 {
-    int nRows = RGB.nr();
-    int nCols = RGB.nc();
+    int nRows = in.nr();
+    int nCols = in.nc();
 
     out.set_size(nRows,nCols);
 
-#pragma omp parallel shared(RGB, out) firstprivate(nRows, nCols)
+#pragma omp parallel shared(in, out) firstprivate(nRows, nCols)
     {
 #pragma omp for schedule(dynamic) nowait
         for (int i = 0; i < nRows; i++)
@@ -229,9 +236,9 @@ void sRGB_gammacurve(matrix<float> &RGB,
             for (int j = 0; j < nCols; j += 3)
             {
                 //First, linearize the sRGB.
-                out(i, j  ) = (unsigned short)(65535*sRGB_forward_gamma(RGB(i, j  )));
-                out(i, j+1) = (unsigned short)(65535*sRGB_forward_gamma(RGB(i, j+1)));
-                out(i, j+2) = (unsigned short)(65535*sRGB_forward_gamma(RGB(i, j+2)));
+                out(i, j  ) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j  )));
+                out(i, j+1) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j+1)));
+                out(i, j+2) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j+2)));
             }
         }
     }

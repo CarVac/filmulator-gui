@@ -1,6 +1,6 @@
-import QtQuick 2.3
-import QtQuick.Layouts 1.1
-import QtQml.Models 2.1
+import QtQuick 2.12
+import QtQuick.Layouts 1.12
+import QtQml.Models 2.12
 import "gui_components"
 import "getRoot.js" as GetRootObject
 import "colors.js" as Colors
@@ -19,6 +19,8 @@ Item {
 
     property real oldX
     property real newX
+
+    property bool onEditTab
 
     onDraggingChanged: {
         //Always reset it back to off when the state changes.
@@ -57,7 +59,10 @@ Item {
 
     GridView { //There is a bug in ListView that makes scrolling not smooth.
         id: listView
-        anchors.fill: parent
+        x: 0
+        y: 0
+        width: parent.width
+        height: parent.height - 5*uiScale
         flow: GridView.FlowTopToBottom
         layoutDirection: Qt.LeftToRight
         cacheBuffer: 10
@@ -67,6 +72,13 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 6000 * uiScale
         maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+        onMovingChanged: { //reset params after mouse scrolling
+            if (!moving) {
+                flickDeceleration = 6000 * uiScale
+                maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+            }
+        }
 
         displaced: Transition {
             NumberAnimation {
@@ -100,8 +112,8 @@ Item {
 
             delegate: MouseArea {
                 id: delegateRoot
-                width: root.height
-                height: root.height
+                width: listView.height
+                height: listView.height
 
                 property int visualIndex: DelegateModel.itemsIndex
                 property int oldVisualIndex
@@ -148,7 +160,7 @@ Item {
                     id: queueDelegate
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: delegateRoot.verticalCenter
-                    dim: root.height
+                    dim: listView.height
                     rootDir: organizeModel.thumbDir()
 
                     selectedID: paramManager.imageIndex
@@ -156,6 +168,8 @@ Item {
                     processed: QTprocessed
                     exported: QTexported
                     markedForOutput: QToutput
+                    rating: STrating
+
                     queueIndex: QTindex
 
                     //This is the location of the latest image from the film image provider.
@@ -212,10 +226,65 @@ Item {
                                 id: menuLayout
                                 spacing: 0 * root.uiScale
                                 x: Math.min(Math.max(0,-queueDelegate.mapToItem(null,0,0).x), sizer.mapToItem(queueDelegate,sizer.width,0).x - width)
-                                y: -154 * root.uiScale//#buttons*30+4
+                                anchors.bottom: parent.top
                                 z: 2
                                 width: 200 * root.uiScale
 
+                                ToolButton {
+                                    id: forgetButton
+                                    property bool active: false
+                                    text: active ? qsTr("Are you sure?") : qsTr("...Wait a moment...")
+                                    width: parent.width
+                                    z: 2
+                                    uiScale: root.uiScale
+
+                                    onTriggered: {
+                                        if (forgetButton.active) {
+                                            queueModel.batchForget()
+                                            forgetButton.active = false
+                                            queueDelegate.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                        else {
+                                            forgetCover.visible = true
+                                            forgetButton.active = false
+                                            forgetDelay.stop()
+                                        }
+                                    }
+
+                                    Timer {
+                                        id: forgetDelay
+                                        interval: 1000
+                                        onTriggered: {
+                                            forgetButton.active = true
+                                            forgetTimeout.start()
+                                        }
+                                    }
+                                    Timer {
+                                        id: forgetTimeout
+                                        interval: 5000
+                                        onTriggered: {
+                                            forgetCover.visible = true
+                                            forgetButton.active = false
+                                        }
+                                    }
+
+                                    ToolButton {
+                                        id: forgetCover
+                                        text: qsTr("Forget photos")
+                                        tooltipText: qsTr("Remove marked photos that are in the queue from the database. The files will not be deleted.")
+                                        anchors.fill: parent
+                                        uiScale: root.uiScale
+                                        onTriggered: {
+                                            forgetButton.active = false
+                                            forgetCover.visible = false
+                                            forgetDelay.start()
+                                        }
+                                        Component.onCompleted: {
+                                            forgetCover.tooltipWanted.connect(root.tooltipWanted)
+                                        }
+                                    }
+                                }
                                 ToolButton {
                                     id: clearQueue
                                     property bool active: false
@@ -223,9 +292,11 @@ Item {
                                     width: parent.width
                                     z: 2
                                     uiScale: root.uiScale
+
                                     onTriggered: {
                                         if (clearQueue.active) {
                                             queueModel.clearQueue()
+                                            clearQueue.active = false
                                             queueDelegate.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
@@ -272,7 +343,6 @@ Item {
                                         }
                                     }
                                 }
-
                                 ToolButton {
                                     id: removeFromQueue
                                     text: qsTr("Remove from queue")
@@ -310,17 +380,38 @@ Item {
                                     }
                                     uiScale: root.uiScale
                                 }
-                                RowLayout {
-                                    id: rate
-                                    spacing: 0 * root.uiScale
+                                Item {
+                                    //row layouts have rounding issues at high item counts if you specify size
+                                    //if you use Layouts.fillWidth then the gaps are too big
+                                    id: rateRow
+                                    width: parent.width
                                     height: 30 * root.uiScale
                                     z: 2
 
-                                    property real buttonWidth: (parent.width - root.uiScale/2)/6
+                                    property int buttonCount: 7
+                                    property real buttonWidth: parent.width/buttonCount
 
+                                    ToolButton {
+                                        id: rateNegative
+                                        width: parent.buttonWidth
+                                        x: 0 * parent.buttonWidth
+                                        text: qsTr("X")
+                                        tooltipText: qsTr("Mark this photo for forgetting or for deletion")
+                                        notDisabled: STrating >= 0 //-6 through -1 should be deletion, mapped to 5 through 0 rating, to preserve rating when swapping between deletion and non-deletion
+                                        uiScale: root.uiScale
+                                        onTriggered: {
+                                            organizeModel.setRating(QTsearchID, -1)
+                                            queueDelegate.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                        Component.onCompleted: {
+                                            rateNegative.tooltipWanted.connect(root.tooltipWanted)
+                                        }
+                                    }
                                     ToolButton {
                                         id: rate0
                                         width: parent.buttonWidth
+                                        x: 1 * parent.buttonWidth
                                         text: qsTr("0")
                                         tooltipText: qsTr("Rate this 0 stars")
                                         notDisabled: 0 != STrating
@@ -337,6 +428,7 @@ Item {
                                     ToolButton {
                                         id: rate1
                                         width: parent.buttonWidth
+                                        x: 2 * parent.buttonWidth
                                         text: qsTr("1")
                                         tooltipText: qsTr("Rate this 1 star")
                                         notDisabled: 1 != STrating
@@ -353,6 +445,7 @@ Item {
                                     ToolButton {
                                         id: rate2
                                         width: parent.buttonWidth
+                                        x: 3 * parent.buttonWidth
                                         text: qsTr("2")
                                         tooltipText: qsTr("Rate this 2 stars")
                                         notDisabled: 2 != STrating
@@ -369,6 +462,7 @@ Item {
                                     ToolButton {
                                         id: rate3
                                         width: parent.buttonWidth
+                                        x: 4 * parent.buttonWidth
                                         text: qsTr("3")
                                         tooltipText: qsTr("Rate this 3 stars")
                                         notDisabled: 3 != STrating
@@ -385,6 +479,7 @@ Item {
                                     ToolButton {
                                         id: rate4
                                         width: parent.buttonWidth
+                                        x: 5 * parent.buttonWidth
                                         text: qsTr("4")
                                         tooltipText: qsTr("Rate this 4 stars")
                                         notDisabled: 4 != STrating
@@ -401,6 +496,7 @@ Item {
                                     ToolButton {
                                         id: rate5
                                         width: parent.buttonWidth
+                                        x: 6 * parent.buttonWidth
                                         text: qsTr("5")
                                         tooltipText: qsTr("Rate this 5 stars")
                                         notDisabled: 5 != STrating
@@ -414,6 +510,10 @@ Item {
                                             rate5.tooltipWanted.connect(root.tooltipWanted)
                                         }
                                     }
+                                }
+                                Item {
+                                    id: rightClickBottomSpacer
+                                    implicitHeight: 2*uiScale
                                 }
                             }
                         }
@@ -468,20 +568,176 @@ Item {
         //Once we get incremental updates, this should also probably go away.
         Connections {
             target: queueModel
-            onQueueChanged: {
+            function onQueueChanged() {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
+                listView.returnToBounds()
             }
         }
 
         //This one will have to go away when we get proper updates.
         Connections {
             target: importModel
-            onImportChanged: {
+            function onImportChanged() {
                 var xPos = listView.contentX
                 queueModel.setQueueQuery()
                 listView.contentX = xPos
+                listView.returnToBounds()
+            }
+        }
+    }
+
+    Item {
+        id: scrollbarHolder
+        x: 0
+        y: parent.height-15*uiScale
+        width: parent.width
+        height: 15*uiScale
+
+        Rectangle {
+            id: scrollbarBackground
+            color: Colors.darkGray
+            opacity: 0
+
+            y: parent.height-height - 1 * uiScale
+            height: 3 * uiScale
+
+            x: 0
+            width: parent.width
+
+            transitions: Transition {
+                NumberAnimation {
+                    property: "height"
+                    duration: 200
+                }
+                NumberAnimation {
+                    property: "opacity"
+                    duration: 200
+                }
+            }
+            states: State {
+                name: "hovered"
+                when: scrollbarMouseArea.containsMouse || scrollbarMouseArea.pressed
+                PropertyChanges {
+                    target: scrollbarBackground
+                    height: 12 * uiScale
+                    opacity: 0.5
+                }
+            }
+        }
+
+        Rectangle {
+            id: scrollbar
+            color: scrollbarMouseArea.pressed ? Colors.medOrange : scrollbarMouseArea.containsMouse ? Colors.weakOrange : Colors.middleGray
+            radius: 1.5*uiScale
+
+            y: parent.height-height - 1 * uiScale
+            height: 3 * uiScale
+
+            x: 1 * uiScale + (0.99*listView.visibleArea.xPosition) * (parent.width - 2*uiScale)
+            width: (0.99*listView.visibleArea.widthRatio + 0.01) * (parent.width - 2*uiScale)
+
+            transitions: Transition {
+                NumberAnimation {
+                    property: "height"
+                    duration: 200
+                }
+            }
+            states: State {
+                name: "hovered"
+                when: scrollbarMouseArea.containsMouse || scrollbarMouseArea.pressed
+                PropertyChanges {
+                    target: scrollbar
+                    height: 12 * uiScale
+                }
+            }
+        }
+        MouseArea {
+            id: scrollbarMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton
+            onWheel: {
+                //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                //Set the scroll deceleration and max speed higher for wheel scrolling.
+                //It should be reset when the view stops moving.
+                //For now, this is 10x higher than standard.
+                var deceleration = 6000 * 10
+                listView.flickDeceleration = deceleration * uiScale
+                listView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                var velocity = listView.horizontalVelocity/uiScale
+                var newVelocity = velocity
+
+                var distance = 100
+                if (wheel.angleDelta.y > 0 && !listView.atXBeginning && !root.dragging) {
+                    //Leftward; up on the scroll wheel.
+
+                    //This formula makes each click of the wheel advance the 'target' a fixed distance.
+                    //We use the angle delta to handle multi-size scrolling like smooth scrolling touchpads.
+                    //We scale by uiScale.
+
+                    //If we're stopped or already moving leftward, add to the flick velocity. If we're moving rightward, then stop.
+
+                    //How much to add to the flick velocity?
+                    //First, we want to know where it'll stop currently, which is
+                    //d = at^2 + bt + c
+                    //when
+                    //  a, the acceleration, is -deceleration (-D)
+                    //  b, the initial velocity, is velocity (V)
+                    //  c is 0
+                    //and t is the value where velocity is 0
+                    //0 = 2at + b
+                    //t = -b/2a
+                    //and thus, plugging that t into the first equation,
+                    //d = b^2/(4a) - b^2/(2a) = - b^2/(4a)
+                    //d1 = V1^2 / (4D)
+                    //Now we want to increase that by an increment.
+                    //d2 = d1 + delta = V2^2 / (4D)
+                    //V1^2/(4D) + delta = V2^2/(4D)
+                    //V2 = sqrt((V1^2/(4D) + delta) * 4D)
+
+                    newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+
+                    //limit to the max flick velocity
+                    newVelocity = Math.min(newVelocity, listView.maximumFlickVelocity)
+
+                    //the flick logic sometimes sends the view flying like crazy if it's already moving quickly
+                    //so we set it to something low (nonzero so that deceleration won't get reset)
+                    listView.flick(1,0)
+
+                    listView.flick(newVelocity, 0)
+                } else if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
+                    //Rightward; down on the scroll wheel.
+                    newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                    newVelocity = -Math.min(newVelocity, listView.maximumFlickVelocity)
+                    listView.flick(-1,0)
+                    listView.flick(newVelocity, 0)
+                }
+            }
+
+            property bool overDragThresh: false
+            property real pressX
+            property real viewX
+            onPositionChanged: {
+                if (pressed) {
+                    var deltaX = mouse.x - pressX
+                    var scrollWidth = scrollbarMouseArea.width - scrollbar.width - 2*uiScale
+                    var relativeDelta = deltaX / scrollWidth
+                    var scrollMargin = listView.contentWidth - listView.width
+                    listView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
+                }
+            }
+
+            onPressed: {
+                preventStealing = true
+                listView.cancelFlick()
+                pressX = mouse.x
+                viewX = listView.contentX
+            }
+            onReleased: {
+                preventStealing = false
             }
         }
     }
@@ -493,18 +749,115 @@ Item {
         anchors.fill: listView
         acceptedButtons: Qt.NoButton
         onWheel: {
-            var velocity = listView.horizontalVelocity
+            //Set the scroll deceleration and max speed higher for wheel scrolling.
+            //It should be reset when the view stops moving.
+            //For now, this is 10x higher than standard.
+            var deceleration = 6000 * 10
+            listView.flickDeceleration = deceleration * uiScale
+            listView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+            var velocity = listView.horizontalVelocity/uiScale
+            var newVelocity = velocity
+
+            var distance = 100
             if (wheel.angleDelta.y > 0 && !listView.atXBeginning && !root.dragging) {
                 //Leftward; up on the scroll wheel.
-
-                //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                //We use the angle delta to handle multi-size scrolling like smooth scrolling touchpads.
-                //We scale by uiScale.
-                listView.flick(uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)), 0)
-            }
-            if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
+                newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                newVelocity = Math.min(newVelocity, listView.maximumFlickVelocity)
+                listView.flick(1,0)
+                listView.flick(newVelocity, 0)
+            } else if (wheel.angleDelta.y < 0 && !listView.atXEnd && !root.dragging) {
                 //Rightward; down on the scroll wheel.
-                listView.flick(uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/(-120)): (velocity == 0 ? -500 : 0)), 0)
+                newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                newVelocity = -Math.min(newVelocity, listView.maximumFlickVelocity)
+                listView.flick(-1,0)
+                listView.flick(newVelocity, 0)
+            }
+        }
+    }
+
+    Shortcut {
+        id: rateDelete
+        sequence: "x"
+        onActivated: {
+            organizeModel.markDeletion(paramManager.imageIndex)
+        }
+    }
+    Shortcut {
+        id: rateZero
+        sequence: "0"
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 0)
+            }
+        }
+    }
+    Shortcut {
+        id: rateOne
+        sequence: "1"
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 1)
+            }
+        }
+    }
+    Shortcut {
+        id: rateTwo
+        sequence: "2"
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 2)
+            }
+        }
+    }
+    Shortcut {
+        id: rateThree
+        sequence: "3"
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 3)
+            }
+        }
+    }
+    Shortcut {
+        id: rateFour
+        sequence: "4"
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 4)
+            }
+        }
+    }
+    Shortcut {
+        id: rateFive
+        sequence: "5"
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.setRating(paramManager.imageIndex, 5)
+            }
+        }
+    }
+    Shortcut {
+        id: prevImage
+        sequence: StandardKey.MoveToPreviousChar
+        onActivated: {
+            if (!root.dragging) {
+                var newIndex = queueModel.getPrev(paramManager.imageIndex)
+                if (newIndex !== paramManager.imageIndex) {
+                    paramManager.selectImage(newIndex)
+                }
+            }
+        }
+    }
+    Shortcut {
+        id: nextImage
+        sequence: StandardKey.MoveToNextChar
+        onActivated: {
+            if (!root.dragging) {
+                var newIndex = queueModel.getNext(paramManager.imageIndex)
+                if (newIndex !== paramManager.imageIndex) {
+                    paramManager.selectImage(newIndex)
+                }
             }
         }
     }

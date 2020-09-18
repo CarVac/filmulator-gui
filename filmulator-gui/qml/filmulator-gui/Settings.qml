@@ -1,8 +1,6 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
-import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 import "gui_components"
 import "colors.js" as Colors
 
@@ -10,7 +8,8 @@ Rectangle {
     id: root
     property real uiScale: 1
     color: Colors.darkGrayL
-    anchors.fill: parent
+    Layout.fillWidth: true
+    Layout.fillHeight: true
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -137,6 +136,118 @@ Rectangle {
                 previewResSlider.changed = false
             }
             uiScale: root.uiScale
+        }
+    }
+    ColumnLayout {
+        id: lensfunList
+        spacing: 0 * uiScale
+        x: 306 * uiScale
+        y: 3 * uiScale
+        width: 300 * uiScale
+
+        Rectangle {
+            id: lensfunCheck
+            width: parent.width
+            height: 45 * uiScale
+            property real padding: 4 * uiScale
+
+            color: Colors.darkGray
+
+            Text {
+                id: checkLabel
+                color: "white"
+                width: parent.width - checkButton.width - 2*parent.padding
+                x: parent.padding
+                y: parent.padding
+                font.pixelSize: 12.0 * uiScale
+                text: qsTr("Check for lens correction updates")
+            }
+
+            Rectangle {
+                id: checkResultBox
+                width: parent.width - checkButton.width - 2*parent.padding
+                height: 20 * uiScale
+                x: parent.padding
+                y: 20*uiScale + parent.padding
+                color: "black"
+
+                Text {
+                    id: checkResult
+                    color: "white"
+                    x: lensfunCheck.padding / 2
+                    y: 1 * uiScale
+                    width: parent.width - x
+                    height: parent.height - y
+                    font.pixelSize: 12.0 * uiScale
+                    text: settings.lensfunStatus
+                }
+            }
+
+            ToolButton {
+                id: checkButton
+                width: 60 * uiScale
+                height: 45 * uiScale
+                anchors.right: parent.right
+                y: 0 * uiScale
+                text: qsTr("Check","Check for lensfun updates")
+                onTriggered: {
+                    settings.checkLensfunStatus()
+                }
+
+                uiScale: root.uiScale
+            }
+        }
+        Rectangle {
+            id: lensfunUpdate
+            width: parent.width
+            height: 45 * uiScale
+            property real padding: 4 * uiScale
+
+            color: Colors.darkGray
+
+            Text {
+                id: updateLabel
+                color: "white"
+                width: parent.width - updateButton.width - 2*parent.padding
+                x: parent.padding
+                y: parent.padding
+                font.pixelSize: 12.0 * uiScale
+                text: qsTr("Update lens correction database")
+            }
+
+            Rectangle {
+                id: updateBox
+                width: parent.width - updateButton.width - 2*parent.padding
+                height: 20 * uiScale
+                x: parent.padding
+                y: 20*uiScale + parent.padding
+                color: "black"
+
+                Text {
+                    id: updateResult
+                    color: "white"
+                    x: lensfunCheck.padding / 2
+                    y: 1 * uiScale
+                    width: parent.width - x
+                    height: parent.height - y
+                    font.pixelSize: 12.0 * uiScale
+                    text: settings.updateStatus
+                }
+            }
+
+            ToolButton {
+                id: updateButton
+                width: 60 * uiScale
+                height: 45 * uiScale
+                anchors.right: parent.right
+                y: 0 * uiScale
+                text: qsTr("Update","Update lensfun database")
+                onTriggered: {
+                    settings.updateLensfun()
+                }
+
+                uiScale: root.uiScale
+            }
         }
     }
 }

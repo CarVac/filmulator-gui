@@ -10,19 +10,22 @@ struct Histogram {
     long long gHist[128];
     long long bHist[128];
 
-    long long lHistMax;
-    long long rHistMax;
-    long long gHistMax;
-    long long bHistMax;
+    float lHistMax;
+    float rHistMax;
+    float gHistMax;
+    float bHistMax;
+
+    bool empty = true;
 };
 
 class Interface
 {
 public:
     virtual void setProgress(float){}
-    virtual void updateHistPreFilm(const matrix<float> /*image*/, float /*maximum*/){}
-    virtual void updateHistPostFilm(const matrix<float> /*image*/, float /*maximum*/){}
-    virtual void updateHistFinal(const matrix<unsigned short> /*image*/){}
+    virtual void updateHistRaw(const matrix<float>& /*image*/, float /*maximum*/, unsigned /*cfa*/[2][2], unsigned /*xtrans*/[6][6], int /*maxXtrans*/, bool /*isRGB*/, bool /*isMonochrome*/){}
+    virtual void updateHistPreFilm(const matrix<float>& /*image*/, float /*maximum*/){}
+    virtual void updateHistPostFilm(const matrix<float>& /*image*/, float /*maximum*/){}
+    virtual void updateHistFinal(const matrix<unsigned short>& /*image*/){}
 
 
 };

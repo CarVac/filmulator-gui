@@ -18,37 +18,27 @@
  */
 #include "filmSim.hpp"
 
-matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
-        float rolloff_boundary)
+void exposure(matrix<float> &input_image, float crystals_per_pixel,
+        float rolloff_boundary, float toe_boundary)
 {
-    if (rolloff_boundary < 1.0f)
+    rolloff_boundary = std::max(std::min(rolloff_boundary, 65534.f), 1.f);
+    toe_boundary = std::max(std::min(toe_boundary, rolloff_boundary/2),0.f);//bound this to lower than half the rolloff boundary
+    const int nrows = input_image.nr();
+    const int ncols = input_image.nc();
+    const float max_crystals = 65535.f - toe_boundary;
+    const float crystal_headroom = max_crystals - rolloff_boundary;
+    //Magic number mostly for historical reasons
+    crystals_per_pixel *= 0.00015387105f;
+#pragma omp parallel
     {
-        rolloff_boundary = 1.0f;
-    }
-    else if(rolloff_boundary > 65534.0f)
-    {
-        rolloff_boundary = 65534.0f;
-    }
-    int nrows = input_image.nr();
-    int ncols = input_image.nc();
-    float input;
-    float crystal_headroom = 65535-rolloff_boundary;
-#pragma omp parallel shared(input_image, crystals_per_pixel, rolloff_boundary,\
-        nrows, ncols, crystal_headroom) private(input)
-    {
-#pragma omp for schedule(dynamic) nowait
-    for(int row = 0; row < nrows; row++)
-    {
-        for(int col = 0; col<ncols; col++)
-        {
-            input = max(0.0f,input_image(row,col));
-            if(input > rolloff_boundary)
-                input = 65535-(crystal_headroom*crystal_headroom/
-                        (input+crystal_headroom-rolloff_boundary));
-            input_image(row,col)=input*crystals_per_pixel*0.00015387105;
-            //Magic number mostly for historical reasons
+        #pragma omp for schedule(dynamic) nowait
+        for(int row = 0; row < nrows; row++) {
+            for(int col = 0; col<ncols; col++) {
+                float input = max(0.0f,input_image(row,col));
+                input = max(0.0f, input - toe_boundary + (toe_boundary*toe_boundary)/(input + toe_boundary+1/65535.0f));
+                input = input > rolloff_boundary ? 65535.f - ((crystal_headroom * crystal_headroom) / (input + crystal_headroom - rolloff_boundary)) : input;
+                input_image(row,col) = input * crystals_per_pixel;
+            }
         }
     }
-    }
-    return input_image;
 }

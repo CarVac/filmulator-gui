@@ -1,8 +1,6 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
-import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.2
+import QtQuick 2.12
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 import "gui_components"
 import "colors.js" as Colors
 
@@ -10,7 +8,8 @@ Rectangle {
     id: root
     property real uiScale: 1
     color: Colors.darkGrayL
-    anchors.fill: parent
+    Layout.fillWidth: true
+    Layout.fillHeight: true
     property string folderPath: ""
     property string filePath: ""
     property bool sourceIsFolder: true
@@ -57,9 +56,11 @@ Rectangle {
             height: 30 * root.uiScale
             color: Colors.darkGray
 
-            ExclusiveGroup {id: sourceSelectorGroup}
-
             property bool hovered: (sourceDirButton.hovered || sourceFileButton.hovered)
+
+            ButtonGroup {
+                id: sourceSelectorGroup
+            }
 
             ToolRadioButton {
                 id: sourceDirButton
@@ -70,7 +71,7 @@ Rectangle {
                 text: qsTr("Import Directory")
                 tooltipText: qsTr("Import from a directory and all subdirectories.")
                 checked: true
-                exclusiveGroup: sourceSelectorGroup
+                ButtonGroup.group: sourceSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.sourceIsFolder = true
@@ -90,7 +91,7 @@ Rectangle {
                 standalone: true
                 text: qsTr("Import Files")
                 tooltipText: qsTr("Import one or more files.")
-                exclusiveGroup: sourceSelectorGroup
+                ButtonGroup.group: sourceSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.sourceIsFolder = false
@@ -111,16 +112,10 @@ Rectangle {
             warningTooltipText: empty ? qsTr("Choose a directory to import from.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
             erroneous: (empty || (importInPlace && containsDCIM))
             property bool containsDCIM: false
-            property bool empty: false
+            property bool empty: enteredText === ""
             onEnteredTextChanged: {
                 root.folderPath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, false)
-            }
-            Connections {
-                target: importModel
-                onEmptyDirChanged: {
-                    sourceDirEntry.empty = importModel.emptyDir
-                }
             }
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
@@ -135,18 +130,19 @@ Rectangle {
             title: qsTr("Source Files")
             tooltipText: qsTr("Select one or more files to import.")
             fileDialogTitle: qsTr("Select the file(s) to import.")
-            warningTooltipText: invalid ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
-            erroneous: (invalid || (importInPlace && containsDCIM))
+            warningTooltipText: !(importInPlace && containsDCIM) ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
+            erroneous: (invalid || (importInPlace && containsDCIM) || enteredText == "")
             property bool containsDCIM: false
             property bool invalid: false
             nameFilters: importModel.getNameFilters();
             onEnteredTextChanged: {
                 root.filePath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, true)
+                invalid = false //If it was invalid, we need to at least let them try to import again once they change the contents
             }
             Connections {
                 target: importModel
-                onInvalidFileChanged: {
+                function onInvalidFileChanged() {
                     sourceFileEntry.invalid = importModel.invalidFile
                 }
             }
@@ -165,9 +161,11 @@ Rectangle {
             height: 30 * uiScale
             color: Colors.darkGray
 
-            ExclusiveGroup {id: destSelectorGroup}
-
             property bool hovered: (importAndMoveButton.hovered || importInPlaceButton.hovered)
+
+            ButtonGroup {
+                id: destSelectorGroup
+            }
 
             ToolRadioButton {
                 id: importAndMoveButton
@@ -178,7 +176,7 @@ Rectangle {
                 text: qsTr("Copy to directory")
                 tooltipText: qsTr("When importing, copy files to a folder structure based on date and time of capture. This lets you create backup copies at the same time.")
                 checked: true
-                exclusiveGroup: destSelectorGroup
+                ButtonGroup.group: destSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.importInPlace = false
@@ -198,7 +196,7 @@ Rectangle {
                 standalone: true
                 text: qsTr("Import in place")
                 tooltipText: qsTr("Import files into the database without moving or copying them.")
-                exclusiveGroup: destSelectorGroup
+                ButtonGroup.group: destSelectorGroup
                 onCheckedChanged: {
                     if (checked) {
                         root.importInPlace = true
@@ -246,13 +244,12 @@ Rectangle {
             warningTooltipText: empty ? qsTr("Choose a directory to move files to.") : qsTr("You do not have permissions to write in this directory. Please select another directory.")
             erroneous: (empty || notWritable)
             property bool notWritable: false
-            property bool empty: false
+            property bool empty: enteredText === ""
             enteredText: settings.getPhotoStorageDir()
             onEnteredTextChanged: {
                 importModel.photoDir = enteredText
                 settings.photoStorageDir = enteredText
                 notWritable = !importModel.pathWritable(enteredText)
-                empty = (enteredText == "")
             }
             Component.onCompleted: {
                 importModel.photoDir = enteredText
@@ -371,7 +368,8 @@ Rectangle {
             tooltipText: notDisabled ? qsTr("Start importing the selected file or folder. If importing is currently in progress, then the current file or folder will be imported after all current imports are complete.") : qsTr("Correct the errors that are highlighted above before importing.")
             width: parent.width
             height: 40 * uiScale
-            notDisabled: (!photoDirEntry.erroneous && (root.sourceIsFolder ? !sourceDirEntry.erroneous : !sourceFileEntry.erroneous))
+            // not disabled if dest is not erroneous, or if we're importing in place. It also needs to be not disabled if the appropriate source is not erroneous.
+            notDisabled: ((!photoDirEntry.erroneous || root.importInPlace) && (root.sourceIsFolder ? !sourceDirEntry.erroneous : !sourceFileEntry.erroneous))
             onTriggered: {
                 if (root.sourceIsFolder) {
                     importModel.importDirectory_r(root.folderPath, root.importInPlace, root.replace)
@@ -392,7 +390,7 @@ Rectangle {
             tooltipText: importModel.progressFrac
             Connections {
                 target: importModel
-                onProgressChanged: importProgress.value = importModel.progress
+                function onProgressChanged() { importProgress.value = importModel.progress }
             }
             Component.onCompleted: {
                 importProgress.tooltipWanted.connect(root.tooltipWanted)

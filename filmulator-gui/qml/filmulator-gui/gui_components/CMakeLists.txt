@@ -1,0 +1,66 @@
+if(APPLE)
+    INSTALL(
+        FILES
+            ToolRadioButton.qml
+            ToolSlider.qml
+            FilmProgressBar.qml
+            ToolButton.qml
+            ImportDirEntry.qml
+            ToolSwitch.qml
+            OrganizeDelegate.qml
+            ImportTextEntry.qml
+            ImportFileEntry.qml
+            QueueDelegate.qml
+            ToolTip.qml
+            SlideySwitch.qml
+            SlipperySlider.qml
+            SlimSplitView.qml
+        DESTINATION
+            Filmulator.app/Contents/Resources/qml/filmulator-gui/gui_components
+    )
+
+    install(CODE "execute_process(COMMAND install_name_tool -add_rpath @loader_path/../Frameworks Filmulator.app/Contents/MacOS/filmulator)")
+    install(CODE "execute_process(COMMAND $ENV{QT}/bin/macdeployqt Filmulator.app -executable=Filmulator.app/Contents/MacOS/filmulator -no-strip -verbose=3 -qmldir=Filmulator.app/Contents/Resources/qml)")
+
+elseif(WIN32)
+    INSTALL(
+        FILES
+            ToolRadioButton.qml
+            ToolSlider.qml
+            FilmProgressBar.qml
+            ToolButton.qml
+            ImportDirEntry.qml
+            ToolSwitch.qml
+            OrganizeDelegate.qml
+            ImportTextEntry.qml
+            ImportFileEntry.qml
+            QueueDelegate.qml
+            ToolTip.qml
+            SlideySwitch.qml
+            SlipperySlider.qml
+            SlimSplitView.qml
+        DESTINATION
+            ${CMAKE_INSTALL_BINDIR}/qml/filmulator-gui/gui_components
+    )
+
+else()
+    INSTALL(
+        FILES
+            ToolRadioButton.qml
+            ToolSlider.qml
+            FilmProgressBar.qml
+            ToolButton.qml
+            ImportDirEntry.qml
+            ToolSwitch.qml
+            OrganizeDelegate.qml
+            ImportTextEntry.qml
+            ImportFileEntry.qml
+            QueueDelegate.qml
+            ToolTip.qml
+            SlideySwitch.qml
+            SlipperySlider.qml
+            SlimSplitView.qml
+        DESTINATION
+            ${CMAKE_INSTALL_DATADIR}/Filmulator/qml/filmulator-gui/gui_components
+    )
+endif()

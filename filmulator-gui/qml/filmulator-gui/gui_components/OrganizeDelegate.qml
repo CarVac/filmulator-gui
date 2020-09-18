@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.12
 import "../colors.js" as Colors
 
 Rectangle {
@@ -17,7 +17,7 @@ Rectangle {
     property string filename
     property int thumbWritten
 
-    property string __thumbPath: rootDir + '/'+ searchID.slice(0,4) + '/' + searchID + '.jpg'
+    property string __thumbPath: (Qt.platform.os == "windows" ? 'file:///' : 'file://') + rootDir + '/'+ searchID.slice(0,4) + '/' + searchID + '.jpg'
 
     signal tooltipWanted(string text, int x, int y)
     signal selectImage()
@@ -86,7 +86,7 @@ Rectangle {
     Rectangle {
         id: ratingRect
         x: 0
-        y: 0
+        y: rating >= 0 ? 0 : 295*uiScale
         height: 5 * uiScale
         width: (rating >= 0) ? root.width * rating/5 : root.width
         color: ratingArea.pressed ? "#00000000" : ((rating >= 0) ? Colors.medOrange : "red")

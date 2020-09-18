@@ -1,13 +1,12 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Controls.Styles 1.2
-import QtQuick.Layouts 1.1
+import QtQuick 2.12
+import QtQuick.Layouts 1.12
 import "gui_components"
 import "colors.js" as Colors
 
-SplitView {
+SlimSplitView {
     id: root
-    anchors.fill: parent
+    Layout.fillWidth: true
+    Layout.fillHeight: true
     orientation: Qt.Horizontal
     property real uiScale: 1
 
@@ -66,87 +65,11 @@ SplitView {
                     uiScale: root.uiScale
                 }
 
-                ToolCalendar {
-                    id: captureCalendar
-                    minimumDate: "1970-01-01"
-                    maximumDate: "2038-01-01"
-                    selectedDate: settings.getOrganizeCaptureDate()
-                    onPressed: {
-                        filterListFlick.interactive = false
-                        var isChanged = 0
-                        if (!initialClick && !secondClick) {
-                            initialClick = true
-                            if (tempDate.toString() !== date.toString()) {
-                                isChanged = 1
-                            }
-                            if (tempDate.toDateString().slice(4,7) !== date.toDateString().slice(4,7)) {
-                                //If the month changed, we don't want to update on any further movements.
-                                //We start a counter to ignore x frames of movement.
-                                monthChanged = 15
-                            }
-                            tempDate = date
-                        } else {
-                            initialClick = false
-                            secondClick = true
-                            if (monthChanged <= 0) {
-                                // If the ignore counter is empty
-                                if (tempDate.toString() !== date.toString()) {
-                                    isChanged = 1
-                                }
-                                tempDate = date
-                            } else {
-                                //If we still have to see
-                                monthChanged = monthChanged - 1;
-                            }
-                        }
-                        if (isChanged === 1) {
-                            organizeModel.setMinMaxCaptureTime(tempDate)
-                            gridView.returnToBounds()
-                        }
-                    }
-
-                    onReleased: {
-                        var isChanged = 0
-                        //If the mouse has moved, and to a new date, and in the same month
-                        if (!initialClick && tempDate.toString() !== date.toString() && monthChanged <= 0) {
-                            //Use the new position.
-                            tempDate = date
-                            //Then do have it update the model.
-                            isChanged = 1
-                        }
-
-                        initialClick = false
-                        secondClick = false
-                        monthChanged = 0
-                        settings.organizeCaptureDate = tempDate
-                        if (isChanged === 1) {
-                            organizeModel.setMinMaxCaptureTime(tempDate)
-                        }
-                        selectedDate = tempDate
-                        filterListFlick.interactive = true
-                    }
-
-                    uiScale: root.uiScale
-                    Component.onCompleted: {
-                        captureCalendar.tooltipWanted.connect(root.tooltipWanted)
-                        organizeModel.setMinMaxCaptureTime(selectedDate)
-                        gridView.returnToBounds()
-                    }
-                    Connections {
-                        target: organizeModel
-                        onCaptureDateChanged: {
-                            var newDate = organizeModel.getSelectedDate()
-                            captureCalendar.selectedDate = newDate
-                            settings.organizeCaptureDate = newDate
-                        }
-                    }
-                }
-
                 ToolSlider {
-                    id: ratingSlider
-                    title: qsTr("Rating")
+                    id: minRatingSlider
+                    title: qsTr("Min Rating")
                     tooltipText: qsTr("Controls the minimum rating to display.")
-                    minimumValue: 0
+                    minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
                     tickmarksEnabled: true
@@ -157,17 +80,68 @@ SplitView {
                         organizeModel.minRating = value
                         gridView.returnToBounds()
                     }
+                    onEditComplete: {
+                        if (minRatingSlider.value > maxRatingSlider.value) {
+                            maxRatingSlider.value = minRatingSlider.value
+                            settings.maxOrganizeRating = value
+                            organizeModel.maxRating = value
+                            gridView.returnToBounds()
+                        }
+                    }
+
                     uiScale: root.uiScale
                     Component.onCompleted: {
-                        ratingSlider.tooltipWanted.connect(root.tooltipWanted)
+                        minRatingSlider.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.minRating = value
                     }
+                }
+
+                ToolSlider {
+                    id: maxRatingSlider
+                    title: qsTr("Min Rating")
+                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    minimumValue: -1
+                    maximumValue: 5
+                    stepSize: 1
+                    tickmarksEnabled: true
+                    value: settings.getMaxOrganizeRating()
+                    defaultValue: settings.getMaxOrganizeRating()
+                    onValueChanged: {
+                        settings.maxOrganizeRating = value
+                        organizeModel.maxRating = value
+                        gridView.returnToBounds()
+                    }
+                    onEditComplete: {
+                        if (minRatingSlider.value > maxRatingSlider.value) {
+                            minRatingSlider.value = maxRatingSlider.value
+                            settings.organizeRating = value
+                            organizeModel.minRating = value
+                            gridView.returnToBounds()
+                        }
+                    }
+                    uiScale: root.uiScale
+                    Component.onCompleted: {
+                        maxRatingSlider.tooltipWanted.connect(root.tooltipWanted)
+                        organizeModel.maxRating = value
+                    }
+                }
+
+                ToolButton {
+                    id: enqueueAll
+                    text: qsTr("Enqueue All")
+                    tooltipText: qsTr("Puts every visible image in the work queue. If any is already there, it is left where it was.")
+                    Layout.fillWidth: true
+                    onTriggered: queueModel.batchEnqueue(organizeModel.adaptableModelQuery(true))
+                    Component.onCompleted: {
+                        enqueueAll.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
                 }
             }
         }
     }
 
-    SplitView {
+    SlimSplitView {
         id: dateHistoSplit
         orientation: Qt.Vertical
         Layout.fillWidth: true
@@ -180,13 +154,25 @@ SplitView {
 
             GridView {
                 id: dateHistoView
-                anchors.fill: parent
+                x: 0
+                y: 0
+                width: parent.width
+                height: parent.height
                 flow: GridView.FlowTopToBottom
                 layoutDirection: Qt.LeftToRight
                 cellWidth: 5 * uiScale
-                cellHeight: dateHistogram.height
-                boundsBehavior: Flickable.StopAtBounds
+                cellHeight: height
 
+                boundsBehavior: Flickable.StopAtBounds
+                flickDeceleration: 6000 * uiScale
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
 
                 delegate: Rectangle {
                     id: dateHistoDelegate
@@ -199,7 +185,7 @@ SplitView {
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
                     property bool sel: organizeModel.isDateSelected(theDate)//selectedDate == theDate
-                    height: dateHistogram.height
+                    height: dateHistoView.height
                     color: (1===themonth%2) ? (sel ? Colors.darkOrangeH : Colors.darkGrayH) : (sel ? Colors.darkOrangeL : Colors.darkGrayL)
                     clip: true
                     Text {
@@ -249,7 +235,7 @@ SplitView {
                     }
                     Connections {
                         target: organizeModel
-                        onCaptureDateChanged: {
+                        function onCaptureDateChanged() {
                             sel = organizeModel.isDateSelected(theDate)
                         }
                     }
@@ -257,7 +243,7 @@ SplitView {
 
                 Connections {
                     target: dateHistoModel
-                    onDateHistoModelChanged: {
+                    function onDateHistoModelChanged() {
                         var xPos = dateHistoView.contentX
                         organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
                         dateHistoView.contentX = xPos
@@ -265,7 +251,16 @@ SplitView {
                 }
                 Connections {
                     target: importModel
-                    onSearchTableChanged: {
+                    function onSearchTableChanged() {
+                        var xPos = dateHistoView.contentX
+                        organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
+                        dateHistoView.contentX = xPos
+
+                    }
+                }
+                Connections {
+                    target: queueModel
+                    function onSearchTableChanged() {
                         var xPos = dateHistoView.contentX
                         organizeModel.setDateHistoQuery()//yes it's controlled by organizemodel
                         dateHistoView.contentX = xPos
@@ -279,6 +274,133 @@ SplitView {
                     positionViewAtEnd()
                 }
             }
+
+            Item {
+                id: scrollbarHolderDateHisto
+                x: 0
+                y: 0
+                width: parent.width
+                height: 15*uiScale
+
+                Rectangle {
+                    id: scrollbarDateHisto
+                    color: scrollbarMouseAreaDateHisto.pressed ? Colors.medOrange : scrollbarMouseAreaDateHisto.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    radius: 1.5*uiScale
+
+                    y: 1 * uiScale
+                    height: 3 * uiScale
+
+                    x: 1 * uiScale + (0.99*dateHistoView.visibleArea.xPosition) * (parent.width - 2*uiScale)
+                    width: (0.99*dateHistoView.visibleArea.widthRatio + 0.01) * (parent.width - 2*uiScale)
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "height"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed
+                        PropertyChanges {
+                            target: scrollbarDateHisto
+                            height: 12 * uiScale
+                        }
+                    }
+                }
+                MouseArea {
+                    id: scrollbarMouseAreaDateHisto
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 10
+                        dateHistoView.flickDeceleration = deceleration * uiScale
+                        dateHistoView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                        var velocity = dateHistoView.horizontalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 100
+                        if (wheel.angleDelta.y > 0 && !dateHistoView.atXBeginning && !root.dragging) {
+                            //Leftward; up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                            dateHistoView.flick(1,0)
+                            dateHistoView.flick(newVelocity, 0)
+                        } else if (wheel.angleDelta.y < 0 && !dateHistoView.atXEnd && !root.dragging) {
+                            //Rightward; down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                            dateHistoView.flick(-1,0)
+                            dateHistoView.flick(newVelocity, 0)
+                        }
+                    }
+
+                    property bool overDragThresh: false
+                    property real pressX
+                    property real viewX
+                    onPositionChanged: {
+                        if (pressed) {
+                            var deltaX = mouse.x - pressX
+                            var scrollWidth = scrollbarMouseAreaDateHisto.width - scrollbarDateHisto.width - 2*uiScale
+                            var relativeDelta = deltaX / scrollWidth
+                            var scrollMargin = dateHistoView.contentWidth - dateHistoView.width
+                            dateHistoView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
+                        }
+                    }
+
+                    onPressed: {
+                        preventStealing = true
+                        dateHistoView.cancelFlick()
+                        pressX = mouse.x
+                        viewX = dateHistoView.contentX
+                    }
+                    onReleased: {
+                        preventStealing = false
+                    }
+                }
+            }
+
+            MouseArea {
+                id: wheelstealerDateHisto
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                onWheel: {
+                    //See the Queue.qml file for the math behind this.
+
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    dateHistoView.flickDeceleration = deceleration * uiScale
+                    dateHistoView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = dateHistoView.horizontalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
+                    if (wheel.angleDelta.y > 0 && !dateHistoView.atXBeginning && !root.dragging) {
+                        //Leftward; up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                        dateHistoView.flick(1,0)
+                        dateHistoView.flick(newVelocity, 0)
+                    } else if (wheel.angleDelta.y < 0 && !dateHistoView.atXEnd && !root.dragging) {
+                        //Rightward; down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                        dateHistoView.flick(-1,0)
+                        dateHistoView.flick(newVelocity, 0)
+                    }
+                }
+            }
         }
 
         Rectangle {
@@ -288,15 +410,26 @@ SplitView {
 
             GridView {
                 id: gridView
-                anchors.fill: parent
+                x: 0
+                y: 0
+                width: parent.width - 5*uiScale
+                height: parent.height
 
                 cellWidth: 320 * uiScale
                 cellHeight: 320 * uiScale
 
+                clip: true
+
                 boundsBehavior: Flickable.StopAtBounds
                 flickDeceleration: 6000 * uiScale
-                maximumFlickVelocity: 50000 * Math.sqrt(uiScale)
-                clip: true
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
 
                 delegate: OrganizeDelegate {
                     id: organizeDelegate
@@ -327,7 +460,15 @@ SplitView {
 
                 Connections {
                     target: importModel
-                    onSearchTableChanged: {
+                    function onSearchTableChanged() {
+                        var yPos = gridView.contentY
+                        organizeModel.setOrganizeQuery()
+                        gridView.contentY = yPos
+                    }
+                }
+                Connections {
+                    target: queueModel
+                    function onSearchTableChanged() {
                         var yPos = gridView.contentY
                         organizeModel.setOrganizeQuery()
                         gridView.contentY = yPos
@@ -336,7 +477,7 @@ SplitView {
 
                 Connections {
                     target: organizeModel
-                    onOrganizeFilterChanged: {
+                    function onOrganizeFilterChanged() {
                         var yPos = gridView.contentY
                         organizeModel.setOrganizeQuery()
                         gridView.contentY = yPos
@@ -350,24 +491,164 @@ SplitView {
                     gridView.model = organizeModel
                 }
             }
+
+            Item {
+                id: scrollbarHolderGridView
+                x: parent.width - 15*uiScale
+                y: 0
+                width: 15*uiScale
+                height: parent.height
+
+                Rectangle {
+                    id: scrollbarBackgroundGridView
+                    color: Colors.darkGray
+                    opacity: 0
+
+                    x: parent.width-width - 1*uiScale
+                    width: 3 * uiScale
+
+                    y: 0
+                    height: parent.height
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "width"
+                            duration: 200
+                        }
+                        NumberAnimation {
+                            property: "opacity"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaGridView.containsMouse || scrollbarMouseAreaGridView.pressed
+                        PropertyChanges {
+                            target: scrollbarBackgroundGridView
+                            width: 12 * uiScale
+                            opacity: 0.5
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: scrollbarGridView
+                    color: scrollbarMouseAreaGridView.pressed ? Colors.medOrange : scrollbarMouseAreaGridView.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    radius: 1.5*uiScale
+
+                    x: parent.width-width - 1 * uiScale
+                    width: 3 * uiScale
+
+                    y: 1 * uiScale + (0.99*gridView.visibleArea.yPosition) * (parent.height - 2*uiScale)
+                    height: (0.99*gridView.visibleArea.heightRatio + 0.01) * (parent.height - 2*uiScale)
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "width"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaGridView.containsMouse || scrollbarMouseAreaGridView.pressed
+                        PropertyChanges {
+                            target: scrollbarGridView
+                            width: 12 * uiScale
+                        }
+                    }
+                }
+                MouseArea {
+                    id: scrollbarMouseAreaGridView
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 10
+                        gridView.flickDeceleration = deceleration * uiScale
+                        gridView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                        var velocity = gridView.verticalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 100
+                        if (wheel.angleDelta.y > 0 && !gridView.atXBeginning && !root.dragging) {
+                            //Leftward; up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, gridView.maximumFlickVelocity)
+                            gridView.flick(0,1)
+                            gridView.flick(0, newVelocity)
+                        } else if (wheel.angleDelta.y < 0 && !gridView.atXEnd && !root.dragging) {
+                            //Rightward; down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, gridView.maximumFlickVelocity)
+                            gridView.flick(0,-1)
+                            gridView.flick(0, newVelocity)
+                        }
+                    }
+
+                    property bool overDragThresh: false
+                    property real pressY
+                    property real viewY
+                    onPositionChanged: {
+                        if (pressed) {
+                            var deltaY = mouse.y - pressY
+                            var scrollHeight = scrollbarMouseAreaGridView.height - scrollbarGridView.height - 2*uiScale
+                            var relativeDelta = deltaY / scrollHeight
+                            var scrollMargin = gridView.contentHeight - gridView.height
+                            gridView.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
+                        }
+                    }
+
+                    onPressed: {
+                        preventStealing = true
+                        gridView.cancelFlick()
+                        pressY = mouse.y
+                        viewY = gridView.contentY
+                    }
+                    onReleased: {
+                        preventStealing = false
+                    }
+                }
+            }
+
+
             MouseArea {
                 id: wheelstealer
                 //Custom scrolling implementation because the default flickable one sucks.
                 anchors.fill: gridView
                 acceptedButtons: Qt.NoButton
                 onWheel: {
-                    var velocity = gridView.verticalVelocity
+                    //See the Queue.qml file for the math behind this.
+
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    gridView.flickDeceleration = deceleration * uiScale
+                    gridView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = gridView.verticalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
                     if (wheel.angleDelta.y > 0 && !gridView.atYBeginning) {
-                        //up
-                        //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                        //It uses the angle delta to handle smooth scrolling touchpads.
-                        gridView.flick(0, uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)))
-                        //It's not 1,000,000 (1000 squared) because it feels slightly sluggish at that level.
-                        //And 1000 isn't higher because otherwise a single scroll click is too far.
-                    }
-                    else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
-                        //down
-                        gridView.flick(0, uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0)))
+                        //up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, gridView.maximumFlickVelocity)
+                        gridView.flick(0,1)
+                        gridView.flick(0, newVelocity)
+                    } else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
+                        //down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, gridView.maximumFlickVelocity)
+                        gridView.flick(0,-1)
+                        gridView.flick(0, newVelocity)
                     }
                 }
             }

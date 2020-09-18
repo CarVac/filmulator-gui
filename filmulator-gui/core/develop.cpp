@@ -96,10 +96,8 @@ void develop( matrix<float> &crystalRad,
                                                           dCrystalVolB );
 
                 //Prevent developer concentration from going negative.
-                if ( develConcentration( row, col ) < 0 )
-                {
-                    develConcentration( row, col ) = 0;
-                }
+                develConcentration(row, col) = std::max(develConcentration(row, col), 0.0f);
+
                 //Here, silver salts are consumed in proportion to how much
                 //silver was deposited on the crystals. Unlike the developer,
                 //each color layer has its own separate amount in this sim.

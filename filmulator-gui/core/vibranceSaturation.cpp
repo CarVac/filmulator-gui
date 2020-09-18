@@ -1,19 +1,22 @@
 #include "filmSim.hpp"
 #include <algorithm>
+#include <iostream>
 
-// r,g,b values are from 0 to 1
-// h = [0,360], s = [0,1], v = [0,1]
+using std::cout;
+using std::endl;
+
+// r,g,b values are from 0 to 65535
+// h = [0,6], s = [0,1], v = [0,1]
 //		if s == 0, then h = -1 (undefined)
 
-void RGBtoHSV( float r, float g, float b, float &h, float &s, float &v )
+inline void RGBtoHSV65535( float r, float g, float b, float &h, float &s, float &v )
 {
-    float minimum, maximum, delta;
 
-    minimum = min(min( r, g), b );
-    maximum = max(max( r, g), b );
-    v = maximum;				// v
+    const float minimum = min(min( r, g), b );
+    const float maximum = max(max( r, g), b );
+    v = maximum / 65535.f;				// v
 
-    delta = maximum - minimum;
+    const float delta = maximum - minimum;
 
     if( maximum != 0 )
         s = delta / maximum;		// s
@@ -31,29 +34,27 @@ void RGBtoHSV( float r, float g, float b, float &h, float &s, float &v )
     else
         h = 4 + ( r - g ) / delta;	// between magenta & cyan
 
-    h *= 60;				// degrees
     if( h < 0 )
-        h += 360;
+        h += 6;
 
 }
 
-void HSVtoRGB( float h, float s, float v, float &r, float &g, float &b)
+inline void HSVtoRGB65535( float h, float s, float v, float &r, float &g, float &b)
 {
-    int i;
-    float f, p, q, t;
-
-    if( s == 0 ) {
+    v *= 65535.f;
+    if ( s == 0 ) {
         // achromatic (grey)
         r = g = b = v;
         return;
     }
 
-    h /= 60;			// sector 0 to 5
-    i = floor( h );
-    f = h - i;			// factorial part of h
-    p = v * ( 1 - s );
-    q = v * ( 1 - s * f );
-    t = v * ( 1 - s * ( 1 - f ) );
+    const int i = h; // floor() is very slow, and h is always >= 0
+
+    const float f = h - i;			// factorial part of h
+    const float vs = v * s;
+    const float p = v - vs;
+    const float q = v - f * vs;
+    const float t = p + v - q;
 
     switch( i ) {
         case 0:
@@ -90,12 +91,12 @@ void HSVtoRGB( float h, float s, float v, float &r, float &g, float &b)
 
 }
 
-float shift23=(1<<23);
-float OOshift23=1.0/(1<<23);
+constexpr float shift23=(1<<23);
+constexpr float OOshift23=1.0/(1<<23);
 
-float myLog2(float i)
+inline float myLog2(float i)
 {
-    float LogBodge=0.346607f;
+    constexpr float LogBodge=0.346607f;
     float x;
     float y;
     x=*(int *)&i;
@@ -106,9 +107,9 @@ float myLog2(float i)
     y=(y-y*y)*LogBodge;
     return x+y;
 }
-float myPow2(float i)
+inline float myPow2(float i)
 {
-    float PowBodge=0.33971f;
+    constexpr float PowBodge=0.33971f;
     float x;
     float y=i-floorf(i);
     y=(y-y*y)*PowBodge;
@@ -119,47 +120,65 @@ float myPow2(float i)
     return x;
 }
 
-float myPow(float a, float b)
+inline float myPow(float a, float b)
 {
-    float result;
-    if(a < std::numeric_limits<float>::min())
-        result = a; //(avoid bugs with tiny a)
-    else
-        result = myPow2(b*myLog2(a));
-    return result;
+    //(avoid bugs with tiny a)
+    return a < std::numeric_limits<float>::min() ? a : myPow2(b*myLog2(a));
 }
 
-void vibrance_saturation(matrix<unsigned short> &input,
+void vibrance_saturation(const matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
-                         double vibrance, double saturation)
+                         float vibrance, float saturation)
 {
-    int nrows = input.nr();
-    int ncols = input.nc();
-    double gamma = pow(2,-vibrance);
-    double sat = pow(2,saturation);
-    output.set_size(nrows,ncols);
+
     if ( abs( vibrance ) < 0.00001 && abs( saturation ) < 0.00001 ) //no adjustment
     {
         output = input;
         return;
     }
     //else, apply the adjustment.
-#pragma omp parallel shared(output, input) firstprivate(nrows,ncols,saturation,gamma)
-    {
-#pragma omp for schedule(dynamic) nowait
-    for(int i = 0; i < nrows; i++)
+    const int nrows = input.nr();
+    const int ncols = input.nc();
+    const float gamma = pow(2,-vibrance);
+    const float sat = pow(2,saturation);
+    output.set_size(nrows,ncols);
+
+    #pragma omp parallel for schedule(dynamic)
+    for(int i = 0; i < nrows; i++) {
         for(int j = 0; j < ncols; j += 3)
         {
-            float r = float(input(i,j  ))/65535.0;
-            float g = float(input(i,j+1))/65535.0;
-            float b = float(input(i,j+2))/65535.0;
+            float r = input(i,j  );
+            float g = input(i,j+1);
+            float b = input(i,j+2);
             float h,s,v;
-            RGBtoHSV(r,g,b,h,s,v);
-            s = max(min( sat*myPow(s,gamma), 1.0),0.0);
-            HSVtoRGB(h,s,v,r,g,b);
-            output(i,j  ) = r*65535;
-            output(i,j+1) = g*65535;
-            output(i,j+2) = b*65535;
+            RGBtoHSV65535(r,g,b,h,s,v);
+            s = max(min( sat*myPow(s,gamma), 1.f),0.f);
+            HSVtoRGB65535(h,s,v,r,g,b);
+            output(i,j  ) = r;
+            output(i,j+1) = g;
+            output(i,j+2) = b;
+        }
+    }
+}
+
+void monochrome_convert(const matrix<unsigned short> &input,
+                        matrix<unsigned short> &output,
+                        float rmult, float gmult, float bmult)
+{
+    const int nrows = input.nr();
+    const int ncols = input.nc();
+    output.set_size(nrows, ncols);
+
+    #pragma omp parallel for schedule(dynamic)
+    for(int i = 0; i < nrows; i++)
+    {
+        for (int j = 0; j < ncols; j += 3)
+        {
+            int gray = input(i,j)*rmult + input(i,j+1)*gmult + input(i,j+2)*bmult;
+            gray = max(0,min(gray, 65535));
+            output(i, j  ) = gray;
+            output(i, j+1) = gray;
+            output(i, j+2) = gray;
         }
     }
 }

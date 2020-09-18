@@ -18,7 +18,7 @@
  */
 #include "filmSim.hpp"
 
-bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
+bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
                   Exiv2::ExifData exifData)
 {
     int xsize, ysize;
@@ -64,10 +64,12 @@ bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
         _TIFFfree(buf);
 
     exifData["Exif.Image.Orientation"] = 1;//set all images to unrotated
-    exifData["Exif.Image.ImageWidth"] = output.nr();
-    exifData["Exif.Image.ImageLength"] = output.nc()/3;
+    exifData["Exif.Image.ImageWidth"] = output.nc()/3;
+    exifData["Exif.Image.ImageLength"] = output.nr();
+    exifData["Exif.Photo.ColorSpace"] = 1;
+    exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
 
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(outputfilename.c_str());
+    auto image = Exiv2::ImageFactory::open(outputfilename.c_str());
     assert(image.get() != 0);
 
     image->setExifData(exifData);

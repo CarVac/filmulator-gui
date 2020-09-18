@@ -1,17 +1,19 @@
 #include "thumbWriteWorker.h"
 #include <QDir>
 #include <iostream>
+#include "../database/database.hpp"
+#include <../database/organizeModel.h>
 using namespace std;
 
 ThumbWriteWorker::ThumbWriteWorker(QObject *parent) : QObject(parent)
 {
 }
 
-void ThumbWriteWorker::setImage(const matrix<unsigned short> imageIn,
+void ThumbWriteWorker::setImage(matrix<unsigned short> imageIn,
                                 Exiv2::ExifData dataIn)
 {
     QMutexLocker locker(&dataMutex);
-    image = imageIn;
+    image = std::move(imageIn);
     exifData = dataIn;
 }
 
@@ -22,7 +24,9 @@ bool ThumbWriteWorker::writeThumb(QString searchID)
     int rows = image.nr();
     int cols = image.nc();
 
-    QSqlQuery query;
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
     //If there was an error in the pipeline, the picture will be 0x0.
     if ((rows == 0) || (cols == 0))
     {
@@ -48,12 +52,7 @@ bool ThumbWriteWorker::writeThumb(QString searchID)
 
     //Set up the thumbnail directory.
     QDir dir = QDir::home();
-    dir.cd(".local/share/filmulator");
-    if (!dir.cd("thumbs"))
-    {
-        dir.mkdir("thumbs");
-        dir.cd("thumbs");
-    }
+    dir.cd(OrganizeModel::thumbDir());
     QString thumbDir = searchID;
     thumbDir.truncate(4);
     if (!dir.cd(thumbDir))
@@ -62,9 +61,10 @@ bool ThumbWriteWorker::writeThumb(QString searchID)
         dir.cd(thumbDir);
     }
     QString outputFilename = dir.absoluteFilePath(searchID);
+    cout << "Thumbnail being written to: " << outputFilename.toStdString() << endl;
 
     //Then we write.
-    imwrite_jpeg(gammaCurved, outputFilename.toStdString(), exifData, 95);
+    imwrite_jpeg(gammaCurved, outputFilename.toStdString(), exifData, 95, false);
 
     query.prepare("UPDATE SearchTable SET STthumbWritten = 1 WHERE STsearchID = ?;");
     query.bindValue(0, searchID);

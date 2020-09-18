@@ -3,7 +3,7 @@ folder_01.source = qml/filmulator-gui
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
-# Additional import path used to resolve QML modules in Creator's code model
+# Additional import path used to resolve QML modules in Creator\'s code model
 QML_IMPORT_PATH =
 
 # The .cpp file which was generated for your project. Feel free to hack it.
@@ -45,11 +45,14 @@ SOURCES += main.cpp \
     database/sqlModel.cpp \
     database/sqlInsertion.cpp \
     database/signalSwitchboard.cpp \
+    database/rawproc_lensfun/lensfun_dbupdate.cpp \
     ui/filmImageProvider.cpp \
+    ui/lensSelectModel.cpp \
     ui/parameterManager.cpp \
     ui/settings.cpp \
     ui/thumbWriteWorker.cpp \
-    ui/updateHistograms.cpp
+    ui/updateHistograms.cpp \
+    database/database.cpp
 
 lupdate_only {
 SOURCES += qml/filmulator-gui/*.qml \
@@ -64,21 +67,28 @@ unix:desktop.path = /usr/share/applications
 
 unix:desktop.files += ./filmulator_gui.desktop
 
+# win32 {
+# target.path = ???
+# desktop.path = ???
+# }
+win32:INCLUDEPATH += /usr/include
+win32:LIBS += -L/usr/lib
+
 unix {
 script.extra = move_script; install -m 755 -p filmulator
 extra.path = /usr/bin
-extra.
+LIBS += -L/usr/local/lib
 }
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
-OTHER_FILES += \
-    qml/filmulator-gui/colors.js\
-    qml/filmulator-gui/generateHistogram.js \
-    qml/filmulator-gui/getRoot.js\
-    filmulator
+#OTHER_FILES += \
+#    qml/filmulator-gui/colors.js\
+#    qml/filmulator-gui/generateHistogram.js \
+#    qml/filmulator-gui/getRoot.js\
+#    filmulator
 
 HEADERS += \
     core/filmSim.hpp \
@@ -98,21 +108,45 @@ HEADERS += \
     database/signalSwitchboard.h \
     database/sqlInsertion.h \
     database/sqlModel.h \
+    database/rawproc_lensfun/lensfun_dbupdate.h \
     ui/filmImageProvider.h \
+    ui/lensSelectModel.h \
     ui/parameterManager.h \
     ui/settings.h \
-    ui/thumbWriteWorker.h
+    ui/thumbWriteWorker.h \
+    database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++11 -DTOUT -O3 -fprefetch-loop-arrays -fopenmp -fno-strict-aliasing -ffast-math
+QMAKE_CXXFLAGS += -std=c++14 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math -DLF_GIT
+macx: {
+QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/opt/local/include
+}
+unix:!macx {
+QMAKE_CXXFLAGS += -fopenmp
+}
+
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp
-QMAKE_LFLAGS += -std=c++11 -O3 -fopenmp
+QMAKE_LFLAGS += -std=c++14 -O3
+macx: {
+QMAKE_LFLAGS += -lomp
+}
+unix:!macx {
+QMAKE_LFLAGS += -fopenmp
+}
 
-LIBS += -lpthread -ltiff -lexiv2 -ljpeg -lraw_r -lgomp
+LIBS += -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess -llensfun -lcurl -larchive
+macx: {
+LIBS += -L /opt/local/lib /opt/local/lib/libomp.dylib
+}
 
 QT += sql core quick qml widgets
+
+CONFIG += qtquickcompiler
 
 INSTALLS += desktop extra
 
 RESOURCES += \
+    qml.qrc \
     resources/pixmaps.qrc
+    
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9

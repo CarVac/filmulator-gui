@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
 //Function-------------------------------------------------------------------------
 bool ImagePipeline::filmulate(matrix<float> &input_image,
                               matrix<float> &output_density,
@@ -55,6 +54,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     float layer_mix_const = filmParam.layerMixConst;
     float layer_time_divisor = filmParam.layerTimeDivisor;
     float rolloff_boundary = filmParam.rolloffBoundary;
+    float toe_boundary = filmParam.toeBoundary;
 
     //Set up timers
     struct timeval initialize_start, development_start, develop_start,
@@ -68,12 +68,10 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
 
     //Now we activate some of the crystals on the film. This is literally
     //akin to exposing film to light.
-    matrix<float> active_crystals_per_pixel;
-    active_crystals_per_pixel = exposure(input_image, crystals_per_pixel,
-            rolloff_boundary);
-
+    matrix<float> active_crystals_per_pixel = input_image;
+    exposure(active_crystals_per_pixel, crystals_per_pixel, rolloff_boundary, toe_boundary);
     //We set the crystal radius to a small seed value for each color.
-    matrix<float> crystal_radius;
+    matrix<float>& crystal_radius = output_density;
     crystal_radius.set_size(nrows,ncols*3);
     crystal_radius = initial_crystal_radius;
 
@@ -208,11 +206,6 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     tout << "Layer mix time: " << layer_mix_dif << " seconds" << endl;
     tout << "Agitate time: " << agitate_dif << " seconds" << endl;
     
-    //Done filmulating, now do some housecleaning
-    silver_salt_density.free();
-    developer_concentration.free();
-
-
     //Now we compute the density (opacity) of the film.
     //We assume that overlapping crystals or dye clouds are
     //nonexistant. It works okay, for now...
@@ -226,7 +219,15 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
         return true;
     }
 
-    output_density = crystal_radius % crystal_radius % active_crystals_per_pixel;
+    const int numRows = crystal_radius.nr();
+    const int numCols = crystal_radius.nc();
+
+    #pragma omp parallel for
+    for (int i = 0; i < numRows; ++i) {
+        for (int j = 0; j < numCols; ++j) {
+            output_density(i, j) = crystal_radius(i, j) * crystal_radius(i, j) * active_crystals_per_pixel(i, j);
+        }
+    }
     tout << "Output density time: "<<timeDiff(mult_start) << endl;
 #ifdef DOUT
     debug_out.close();

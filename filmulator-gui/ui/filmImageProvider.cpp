@@ -1,10 +1,5 @@
 #include "filmImageProvider.h"
 #include "../database/exifFunctions.h"
-#include <pwd.h>
-#include <unistd.h>
-#include <QTimer>
-#include <cmath>
-#include <QDebug>
 #include <iostream>
 
 using std::cout;
@@ -15,7 +10,9 @@ using std::endl;
 FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     QObject(0),
     QQuickImageProvider(QQuickImageProvider::Image,
-                        QQuickImageProvider::ForceAsynchronousImageLoading)
+                        QQuickImageProvider::ForceAsynchronousImageLoading),
+    pipeline(WithCache, WithHisto, HighQuality),
+    quickPipe(WithCache, WithHisto, PreviewQuality)
 {
     paramManager = manager;
     cloneParam = new ParameterManager;
@@ -28,7 +25,6 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     worker->moveToThread(&workerThread);
     connect(this, SIGNAL(requestThumbnail(QString)), worker, SLOT(writeThumb(QString)));
     connect(worker, SIGNAL(doneWritingThumb()), this, SLOT(thumbDoneWriting()));
-    workerThread.start(QThread::LowPriority);
 
     //Check if we want the pipeline to cache.
     Settings settingsObject;
@@ -65,7 +61,6 @@ QImage FilmImageProvider::requestImage(const QString& id,
                                        const QSize& /*requestedSize*/)
 {
     gettimeofday(&request_start_time,NULL);
-    QImage output = emptyImage();
     cout << "FilmImageProvider::requestImage Here?" << endl;
     cout << "FilmImageProvider::requestImage id: " << id.toStdString() << endl;
 
@@ -108,24 +103,24 @@ QImage FilmImageProvider::requestImage(const QString& id,
     //Prepare the output filename.
     outputFilename = filename.substr(0,filename.length()-4);
     outputFilename.append("-output");
-    //Copy the image over.
-    last_image = image;
+    //Move the image over.
+    last_image = std::move(image);
     writeDataMutex.unlock();
-
     processMutex.unlock();
 
-    int nrows = image.nr();
-    int ncols = image.nc();
+    const int nrows = last_image.nr();
+    const int ncols = last_image.nc();
 
-    output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
+    QImage output = QImage(ncols/3,nrows,QImage::Format_ARGB32);
+    #pragma omp parallel for
     for(int i = 0; i < nrows; i++)
     {
         QRgb *line = (QRgb *)output.scanLine(i);
         for(int j = 0; j < ncols; j = j + 3)
         {
-            *line = QColor(image(i,j)/256,
-                           image(i,j+1)/256,
-                           image(i,j+2)/256).rgb();
+            *line = QColor(last_image(i,j)/256,
+                           last_image(i,j+1)/256,
+                           last_image(i,j+2)/256).rgb();
             line++;
         }
     }
@@ -157,6 +152,7 @@ void FilmImageProvider::writeThumbnail(QString searchID)
     writeDataMutex.lock();
     if (writeThisThumbnail)//when we have the crop temporarily disabled, don't write the thumb
     {
+        workerThread.start(QThread::LowPriority);
         worker->setImage(last_image, exifData);
         emit requestThumbnail(searchID);
     }
@@ -169,6 +165,8 @@ void FilmImageProvider::writeThumbnail(QString searchID)
 
 void FilmImageProvider::thumbDoneWriting()
 {
+    //clean up thread
+    exitWorker();
     emit thumbnailDone();
 }
 
@@ -186,34 +184,36 @@ void FilmImageProvider::updateFilmProgress(float percentDone_in)//Percent filmul
 
 float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, LogY isLog)
 {
+    if(hist.empty)
+    {
+        return 0.0f;
+    }
     //index is 0 for L, 1 for R, 2 for G, and 3 for B.
     assert((index < 4) && (index >= 0));
     switch (index)
     {
     case 0: //luminance
         if (!isLog)
-            return float(min(hist.lHist[i],hist.lHistMax))/float(hist.lHistMax);
+            return float(min(float(hist.lHist[i]),hist.lHistMax))/float(hist.lHistMax);
         else
-            return log(hist.lHist[i]+1)/log(hist.lHistMax+1);
+            return float(log(hist.lHist[i]+1)/log(double(hist.lHistMax+1)));
     case 1: //red
         if (!isLog)
-            return float(min(hist.rHist[i],hist.rHistMax))/float(hist.rHistMax);
+            return float(min(float(hist.rHist[i]),hist.rHistMax))/float(hist.rHistMax);
         else
-            return log(hist.rHist[i]+1)/log(hist.rHistMax+1);
+            return float(log(hist.rHist[i]+1)/log(double(hist.rHistMax+1)));
     case 2: //green
         if (!isLog)
-            return float(min(hist.gHist[i],hist.gHistMax))/float(hist.gHistMax);
+            return float(min(float(hist.gHist[i]),hist.gHistMax))/float(hist.gHistMax);
         else
-            return log(hist.gHist[i]+1)/log(hist.gHistMax+1);
+            return float(log(hist.gHist[i]+1)/log(double(hist.gHistMax+1)));
     default://case 3: //blue
         if (!isLog)
-            return float(min(hist.bHist[i],hist.bHistMax))/float(hist.bHistMax);
+            return float(min(float(hist.bHist[i]),hist.bHistMax))/float(hist.bHistMax);
         else
-            return log(hist.bHist[i]+1)/log(hist.bHistMax+1);
+            return float(log(hist.bHist[i]+1)/log(double(hist.bHistMax+1)));
     }
     //xHistMax is the maximum height of any bin except the extremes.
-
-    //return float(min(hist.allHist[i*4+index],hist.histMax[index]))/float(hist.histMax[index]); //maximum is the max of all elements except 0 and 127
 }
 
 QImage FilmImageProvider::emptyImage()

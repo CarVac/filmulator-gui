@@ -1,45 +1,78 @@
 language: cpp
 compiler: gcc
 sudo: require
-dist: trusty
+dist: xenial
 
 before_install:
-    - sudo add-apt-repository ppa:beineri/opt-qt591-trusty -y
+    # C++14
+    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    # Qt 5.14.2
+    - sudo add-apt-repository ppa:beineri/opt-qt-5.14.2-xenial -y
     - sudo apt-get update -qq
     
 install: 
-    - sudo apt-get -y install qt59base qt59declarative qt59quickcontrols libtiff-dev libgomp1 libexiv2-dev libjpeg-dev
-    - source /opt/qt59/bin/qt59-env.sh
+    # C++14
+    - sudo apt-get -y install g++-9
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
+    # Qt 5.14.2
+    - sudo apt-get -y install qt514base qt514declarative qt514quickcontrols qt514quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcurl4-openssl-dev libarchive-dev
+    - source /opt/qt514/bin/qt514-env.sh
 
 script:
+    #build libraw
   - git clone https://github.com/LibRaw/LibRaw.git
-  - git clone https://github.com/LibRaw/LibRaw-demosaic-pack-GPL2.git
-  - git clone https://github.com/LibRaw/LibRaw-demosaic-pack-GPL3.git
   - cd LibRaw
-  - git checkout 0.18-stable
-  - patch -p1 < ../patches/libraw-makefile.patch
+  - git checkout 0.19-stable
+  - git apply ../patches/libraw-makefile.patch
   - make -j3 -f Makefile.dist
   - sudo make install -f Makefile.dist
   - cd ..
-  - cd filmulator-gui
-  - qmake PREFIX=/usr
+    #build librtprocess
+  - git clone https://github.com/CarVac/librtprocess.git
+  - cd librtprocess
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE="Release" ..
   - make -j4
-  - make INSTALL_ROOT=appdir install ; find appdir/
+  - sudo make install
+  - cd ../..
+    #build lensfun
+  - git clone https://github.com/lensfun/lensfun.git
+  - cd lensfun
+    #- git checkout b7c7e49a3601690f3225b99a0acbe7272fe68bfa
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE="Release" ..
+  - make -j4
+  - sudo make install
+  - cd ../..
+    #build filmulator
+  - cd filmulator-gui
+    #- qmake PREFIX=/usr
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_INSTALL_PREFIX="appdir" -DCMAKE_BUILD_TYPE="Release" ..
+  - make -j4
+  - make install ; find appdir/
   - pwd
-  - # Dear upstream, please install to more standard locations
-  - mkdir -p appdir/usr/bin ; mv appdir/usr/lib/filmulator-gui/filmulator-gui appdir/usr/bin/filmulator-gui
-  - mkdir -p appdir/usr/qml ; mv appdir/usr/lib/filmulator-gui/qml/filmulator-gui/* appdir/usr/qml/
-  - rm -rf appdir/usr/lib/filmulator-gui/
-  - mkdir -p appdir/usr/share/applications/ ; cp filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
+    # Dear upstream, please install to more standard locations
+  - mkdir -p appdir/usr/bin ; mv appdir/bin/filmulator appdir/usr/bin/filmulator-gui
+  - mkdir -p appdir/usr/qml ; mv appdir/share/Filmulator/qml/filmulator-gui/* appdir/usr/qml/
+  - rm -rf appdir/bin/
+  - rm -rf appdir/share/
+  - mkdir -p appdir/usr/share/applications/ ; cp ../filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
   - sed -i -e 's|^Exec=.*|Exec=filmulator-gui|g' appdir/usr/share/applications/filmulator-gui.desktop
   - mkdir -p appdir/usr/share/icons/hicolor/64x64/apps/
-  - cp filmulator-gui64.png appdir/usr/share/icons/hicolor/64x64/apps/filmulator-gui.png
+  - cp ../filmulator-gui64.png appdir/usr/share/icons/hicolor/64x64/apps/filmulator-gui.png
   - find appdir/
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage
-  - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
-  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
-  - ls -l ./appdir/
+    # unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+  - export LD_LIBRARY_PATH=/usr/local/lib
+    # ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
+    # ls -l ./appdir/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
-  - curl --upload-file ./Filmulator*.AppImage https://transfer.sh/Filmulator-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+    #- curl --upload-file ./Filmulator*.AppImage https://transfer.sh/Filmulator-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+  - curl https://gist.githubusercontent.com/gingerbeardman/a7737e4c89fccab8605f8538ddaeec0d/raw/a78f5253b0fcdbd7b893f91627a29498690356ea/file.io.sh | sudo tee /usr/local/bin/file.io && sudo chmod +x /usr/local/bin/file.io
+  - file.io ./Filmulator*.AppImage 2w

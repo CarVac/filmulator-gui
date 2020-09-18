@@ -5,6 +5,7 @@
 #include "../ui/parameterManager.h"
 #include <QMutex>
 #include <QMutexLocker>
+#include <rtprocess/librtprocess.h>
 
 enum Cache {WithCache, NoCache};
 enum Histo {WithHisto, NoHisto};
@@ -16,8 +17,8 @@ public:
     ImagePipeline(Cache, Histo, QuickQuality);
 
     //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
-    matrix<unsigned short> processImage(ParameterManager * paramManager,
-                                        Interface * interface,
+    matrix<unsigned short>& processImage(ParameterManager * paramManager,
+                                        Interface * histoInterface,
                                         Exiv2::ExifData &exifOutput);
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
@@ -38,14 +39,14 @@ public:
     int resolution;
 
 protected:
-    matrix<unsigned short> emptyMatrix(){matrix<unsigned short> mat; return mat;}
+    matrix<unsigned short>& emptyMatrix(){return empty;}
 
     Cache cache;
     bool cacheEmpty = false;
     bool hasStartedProcessing = false;
     Histo histo;
     QuickQuality quality;
-    Interface * interface;
+    Interface * histoInterface;
 
     Valid valid;
     float progress;
@@ -55,8 +56,25 @@ protected:
 
     struct timeval timeRequested;
 
+    //raw stuff
+    matrix<float> raw_image;
+    matrix<unsigned short> empty;
+    unsigned cfa[2][2];
+    unsigned xtrans[6][6];
+    int maxXtrans;
+    int raw_width, raw_height;
+    float camToRGB[3][3];
+    float camToRGB4[3][4];
+    float rCamMul, gCamMul, bCamMul;//wb used on the image
+    float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
+    float maxValue;
+    bool isSraw;//Actually we should set this for all full-color raws (including X-Transformer)
+    bool isNikonSraw;
+    bool isMonochrome;
+    bool isCR3;
+
     matrix<float> input_image;
-    matrix<float> scaled_image;
+    matrix<float> recovered_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
     matrix<float> filmulated_image;

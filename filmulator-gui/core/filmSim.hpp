@@ -29,7 +29,7 @@
 #include <setjmp.h>
 #include <exiv2/exiv2.hpp>
 #include "lut.hpp"
-#include "libraw/libraw.h"
+#include <libraw/libraw.h>
 #include "matrix.hpp"
 #include <sys/time.h>
 #include "interface.h"
@@ -68,8 +68,8 @@ struct filmulateParams {//TODO: adjust variable names.
     float rolloffBoundary;
 };
 
-matrix<float> exposure(matrix<float> input_image, float crystals_per_pixel,
-        float rolloff_boundary);
+void exposure(matrix<float> &input_image, float crystals_per_pixel,
+        float rolloff_boundary, float toe_boundary);
 
 //Equalizes the concentration of developer across the reservoir and all pixels.
 void agitate( matrix<float> &developerConcentration, float activeLayerThickness,
@@ -150,11 +150,11 @@ bool merge_exps(matrix<float> &input_image, const matrix<float> &temp_image,
 string convert_from_raw(char* raw_filename, int i, string tempdir,
         int highlights);
 
-bool imwrite_tiff(matrix<unsigned short> output, string outputfilename,
+bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
                   Exiv2::ExifData exifData);
 
 bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
-                  Exiv2::ExifData exifData, int quality);
+                  Exiv2::ExifData exifData, int quality, bool writeExif=true);
 
 //Applies the hardcoded post-filmulation tonecurve to the image.
 float default_tonecurve( float input );
@@ -204,32 +204,31 @@ void whitepoint_blackpoint(matrix<float> &input, matrix<unsigned short> &output,
 
 //Applies LUTs individually to each color.
 void colorCurves(matrix<unsigned short> &input, matrix<unsigned short> &output,
-                LUT<unsigned short> lutR, LUT<unsigned short> lutG, LUT<unsigned short> lutB);
+                LUT<unsigned short> &lutR, LUT<unsigned short> &lutG, LUT<unsigned short> &lutB);
 
 void rotate_image(matrix<float> &input, matrix<float> &output,
                   int rotation);
-
-//Changes the white balance, assuming sRGB D50 input.
-//void white_balance (matrix<float> &input, matrix<float> &output,
-//                    float temp, float tone);
-
-//Computes the multipliers for the white balance.
-void whiteBalanceMults( float temperature, float tint, std::string inputFilename,
-                        float &rMult, float &gMult, float &bMult );
 
 //Uses Nelder-Mead method to find the WB parameters that yield (1,1,1) RGB multipliers.
 void optimizeWBMults( std::string inputFilename,
                       float &temperature, float &tint );
 
 //Applies the desired temperature and tint adjustments to the image.
-void whiteBalance( matrix<float> &input, matrix<float> &output,
-                   float temperature, float tint, std::string inputFilename );
+void whiteBalance(matrix<float> &input, matrix<float> &output,
+                  float temperature, float tint, float cam2rgb[3][3],
+                  float rCamMul, float gCamMul, float bCamMul,
+                  float rPreMul, float gPreMul, float bPreMul,
+                  float maxValue, float factor = 1.f);
 
-void vibrance_saturation(matrix<unsigned short> &input,
+void vibrance_saturation(const matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
-                         double vibrance, double saturation);
+                         float vibrance, float saturation);
 
-void downscale_and_crop(const matrix<float> input,
+void monochrome_convert(const matrix<unsigned short> &input,
+                        matrix<unsigned short> &output,
+                        float rmult, float gmult, float bmult);
+
+void downscale_and_crop(const matrix<float> &input,
                         matrix<float> &output,
                         const int inputStartX,
                         const int inputStartY,
