@@ -79,7 +79,8 @@ protected:
     ParameterManager * cloneParam;
     //We also want to make available image pipelines for preloading the next and previous images.
     //Upon changing images, we'll want to copy all the pipeline stages into the current quickPipe
-    //Validity too... that goes with the ParamManagers.
+    //When we do the shuffling of the data, once done we'll have to call
+    // paramManager.cloneParams(*cloneParam) so that it knows.
     ParameterManager * nextParam;
     ParameterManager * prevParam;
 
