@@ -40,6 +40,7 @@ script:
   - git clone https://github.com/lensfun/lensfun.git
   - cd lensfun
     #- git checkout b7c7e49a3601690f3225b99a0acbe7272fe68bfa
+  - git checkout de32cfeaa253ce49b987b732643fc4f63568f5d5 #just before a python change
   - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE="Release" ..
