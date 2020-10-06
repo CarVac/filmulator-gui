@@ -22,7 +22,7 @@ script:
     #build libraw
   - git clone https://github.com/LibRaw/LibRaw.git
   - cd LibRaw
-  - git checkout 0.19-stable
+  - git checkout 2aee1220d5ecdcb8887b11c3d505a900570852c6 #0.20-Release
   - git apply ../patches/libraw-makefile.patch
   - make -j3 -f Makefile.dist
   - sudo make install -f Makefile.dist
