@@ -285,6 +285,7 @@ SlimSplitView {
                 Rectangle {
                     id: scrollbarDateHisto
                     color: scrollbarMouseAreaDateHisto.pressed ? Colors.medOrange : scrollbarMouseAreaDateHisto.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    opacity: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed ? 0.65 : 1
                     radius: 1.5*uiScale
 
                     y: 1 * uiScale
