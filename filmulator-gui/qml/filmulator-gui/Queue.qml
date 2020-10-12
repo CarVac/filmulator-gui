@@ -271,7 +271,7 @@ Item {
 
                                     ToolButton {
                                         id: forgetCover
-                                        text: qsTr("Forget photos")
+                                        text: qsTr("Forget marked photos")
                                         tooltipText: qsTr("Remove marked photos that are in the queue from the database. The files will not be deleted.")
                                         anchors.fill: parent
                                         uiScale: root.uiScale
