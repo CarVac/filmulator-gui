@@ -68,7 +68,7 @@ SlimSplitView {
                 ToolSlider {
                     id: minRatingSlider
                     title: qsTr("Min Rating")
-                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    tooltipText: qsTr("Controls the minimum rating of images to display.")
                     minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
@@ -98,8 +98,8 @@ SlimSplitView {
 
                 ToolSlider {
                     id: maxRatingSlider
-                    title: qsTr("Min Rating")
-                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    title: qsTr("Max Rating")
+                    tooltipText: qsTr("Controls the maximum rating of images to display.")
                     minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
