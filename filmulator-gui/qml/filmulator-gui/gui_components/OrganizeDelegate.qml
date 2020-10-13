@@ -24,12 +24,14 @@ Rectangle {
     signal enqueueImage()
     signal rate(int ratingIn)
 
+    property bool flashing: false
+
     Rectangle {
         id: backgroundRect
         anchors.fill: parent
         //When they are equal in the DB, this sometimes turned on randomly.
         //Subtracting 1 from the lastProcessedTime makes it not.
-        color: (importTime < (lastProcessedTime-1)) ? "green" : "#000000"
+        color: flashing ? Colors.medOrange : (importTime < (lastProcessedTime-1)) ? "green" : "#000000"
         opacity: isCurrentItem ? .3 : .1
     }
 
@@ -95,8 +97,18 @@ Rectangle {
         id: imageEnqueuer
         anchors.fill: parent
         onClicked: root.selectImage()
-        onDoubleClicked: root.enqueueImage()
+        onDoubleClicked: {
+            root.enqueueImage()
+            root.flashing = true
+            enqueueBlinker.start()
+        }
     }
+    Timer {
+        id: enqueueBlinker
+        interval: 200
+        onTriggered: root.flashing = false
+    }
+
     MouseArea {
         id: ratingArea
         enabled: root.isCurrentItem
