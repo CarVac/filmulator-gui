@@ -19,7 +19,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                               const QDateTime importStartTime,
                               const bool appendHash,
                               const bool importInPlace,
-                              const bool replaceLocation)
+                              const bool replaceLocation,
+                              const bool noThumbnail)
 {
     //Generate a hash of the raw file.
     QCryptographicHash hash(QCryptographicHash::Md5);
@@ -239,7 +240,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                                       filename,
                                       exifUtcTime(abspath, cameraTZ),
                                       importStartTime,
-                                      abspath);
+                                      abspath,
+                                      noThumbnail);
 
         //Request that we enqueue the image.
         cout << "importFile SearchID: " << STsearchID.toStdString() << endl;

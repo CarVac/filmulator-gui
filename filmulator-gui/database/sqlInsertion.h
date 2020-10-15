@@ -17,6 +17,7 @@ QString createNewProfile(const QString fileHash,
                          const QString fileName,
                          const QDateTime captureTime,
                          const QDateTime importTime,
-                         const std::string fullFilename);
+                         const std::string fullFilename,
+                         const bool noThumbnail);
 
 #endif // SQLINSERTION_H

@@ -30,7 +30,8 @@ public slots:
                     const QDateTime importStartTime,
                     const bool appendHash,
                     const bool importInPlace,
-                    const bool replaceLocation);
+                    const bool replaceLocation,
+                    const bool noThumbnail);
 
 signals:
     void enqueueThis(QString STsearchID);

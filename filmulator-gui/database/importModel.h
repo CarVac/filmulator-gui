@@ -24,6 +24,7 @@ struct importParams {
     bool appendHashParam;
     bool importInPlace;
     bool replaceLocation;
+    bool noThumbnail;
 };
 
 enum Validity {
@@ -124,7 +125,8 @@ signals:
                        const QDateTime importStartTime,
                        const bool appendHash,
                        const bool importInPlace,
-                       const bool replaceLocation);
+                       const bool replaceLocation,
+                       const bool noThumbnail);
 
     void importChanged();
 

@@ -80,7 +80,8 @@ QString createNewProfile(const QString fileHash,
                          const QString fileName,
                          const QDateTime captureTime,
                          const QDateTime importStartTime,
-                         const std::string fullFilename)
+                         const std::string fullFilename,
+                         const bool noThumbnail)
 {
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
@@ -166,6 +167,14 @@ QString createNewProfile(const QString fileHash,
 
     ParameterManager paramManager;
     paramManager.selectImage(searchID);
+
+    //If we're loading from CLI, we don't need to generate a thumbnail since we go right into editing.
+    //So we just stop here.
+    if (noThumbnail)
+    {
+        return searchID;
+    }
+
 
     //Next, we prepare a dummy exif object because we don't care about the thumbnail's exif.
     Exiv2::ExifData exif;

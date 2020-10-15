@@ -30,6 +30,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                        const QDateTime,
                                        const bool,
                                        const bool,
+                                       const bool,
                                        const bool)),
             worker, SLOT(importFile(const QFileInfo,
                                     const int,
@@ -38,6 +39,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
                                     const QString,
                                     const QString,
                                     const QDateTime,
+                                    const bool,
                                     const bool,
                                     const bool,
                                     const bool)));
@@ -172,6 +174,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
         params.appendHashParam = appendHash;
         params.importInPlace = importInPlace;
         params.replaceLocation = replaceLocation;
+        params.noThumbnail = false;
         queue.push_back(params);
         maxQueue++;
     }
@@ -366,5 +369,6 @@ void ImportModel::startWorker(const importParams params)
     const bool append = params.appendHashParam;
     const bool inPlace = params.importInPlace;
     const bool replaceLocation = params.replaceLocation;
-    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time, append, inPlace, replaceLocation);
+    const bool noThumbnail = params.noThumbnail;
+    emit workForWorker(info, iTZ, cTZ, pDir, bDir, dConf, time, append, inPlace, replaceLocation, noThumbnail);
 }
