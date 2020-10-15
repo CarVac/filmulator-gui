@@ -26,6 +26,12 @@
 
 int main(int argc, char *argv[])
 {
+    cout << "Have " << argc << " arguments" << endl;
+    for (int i = 0; i < argc; i++)
+    {
+        cout << argv[i] << endl;
+    }
+
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating qapplication" << endl;
     //It cannot properly fall back to Qt Widgets versions of the dialogs if
     // we use a QGuiApplication, which only supports QML stuff.
