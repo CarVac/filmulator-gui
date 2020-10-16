@@ -124,10 +124,10 @@ int main(int argc, char *argv[])
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading qml file" << endl;
     engine.load("qrc:///qml/qml/filmulator-gui/main.qml");
 
-    if (argc == 3 && QString(argv[1]) == "-i")
+    if (argc == 2)
     {
         cout << "Importing file!" << endl;
-        QString searchID = importModel->importFileNow(QString(argv[2]), settingsObj);
+        QString searchID = importModel->importFileNow(QString(argv[1]), settingsObj);
         if (searchID != "")
         {
             paramManager->selectImage(searchID);
