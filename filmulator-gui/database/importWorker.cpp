@@ -10,7 +10,7 @@ ImportWorker::ImportWorker(QObject *parent) : QObject(parent)
 {
 }
 
-void ImportWorker::importFile(const QFileInfo infoIn,
+QString ImportWorker::importFile(const QFileInfo infoIn,
                               const int importTZ,
                               const int cameraTZ,
                               const QString photoDir,
@@ -180,6 +180,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     //And we're not updating locations
     //  (if we are updating locations, we don't want it to add new things to the db)
     bool changedST = false;
+    QString STsearchID;
     if (!inDatabaseAlready && !replaceLocation)
     {
         //Record the file location in the database.
@@ -235,7 +236,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         }
 
         //Now create a profile and a search table entry, and a thumbnail.
-        QString STsearchID;
         STsearchID = createNewProfile(hashString,
                                       filename,
                                       exifUtcTime(abspath, cameraTZ),
@@ -310,7 +310,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
             fileInsert(hashString, infoIn.absoluteFilePath());
             cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
 
-            QString STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));
+            STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));
             cout << "importWorker replace STsearchID: " << STsearchID.toStdString() << endl;
 
             if (QString("") != STsearchID)
@@ -323,4 +323,5 @@ void ImportWorker::importFile(const QFileInfo infoIn,
 
     //Tell the ImportModel whether we did anything to the SearchTable
     emit doneProcessing(changedST);
+    return STsearchID;
 }

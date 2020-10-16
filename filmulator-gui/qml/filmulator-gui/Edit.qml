@@ -199,6 +199,7 @@ SlimSplitView {
                                 topImage.state = "sf"//showing full image
                                 root.imageReady = true
                                 root.imageURL(topImage.source)//replace the thumbnail in the queue with the live image
+                                filmProvider.writeThumbnail(paramManager.imageIndex)
                             }
                             else {//it was loading the thumb or the quick image
                                 root.imageReady = false

@@ -124,6 +124,12 @@ int main(int argc, char *argv[])
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading qml file" << endl;
     engine.load("qrc:///qml/qml/filmulator-gui/main.qml");
 
+    if (argc == 3 && QString(argv[1]) == "-i")
+    {
+        QString searchID = importModel->importFileNow(QString(argv[2]), settingsObj);
+        paramManager->selectImage(searchID);
+    }
+
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating window" << endl;
 
     QObject *topLevel = engine.rootObjects().value(0);

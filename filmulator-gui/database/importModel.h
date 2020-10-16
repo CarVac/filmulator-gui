@@ -12,6 +12,7 @@
 #include <QMutexLocker>
 #include <QDateTime>
 #include <QStringList>
+#include "../ui/settings.h"
 
 struct importParams {
     QFileInfo fileInfoParam;
@@ -58,6 +59,7 @@ public:
     Q_INVOKABLE bool pathWritable(const QString dir);
     Q_INVOKABLE void importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation, const int depth = 0);
     Q_INVOKABLE Validity importFile(const QString name, const bool importInPlace, const bool replaceLocation, const bool onlyCheck);
+    Q_INVOKABLE QString importFileNow(const QString name, Settings * settingsObj);
     Q_INVOKABLE void importFileList(const QString name, const bool importInPlace, const bool replaceLocation);
     Q_INVOKABLE QStringList getNameFilters();
 
