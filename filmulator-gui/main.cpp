@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
 
     if (argc == 3 && QString(argv[1]) == "-i")
     {
+        cout << "Importing file!" << endl;
         QString searchID = importModel->importFileNow(QString(argv[2]), settingsObj);
         if (searchID != "")
         {

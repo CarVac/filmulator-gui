@@ -158,10 +158,6 @@ QString ImportWorker::importFile(const QFileInfo infoIn,
         }
     }
 
-
-
-
-
     //Check to see if it's already present in the database.
     //Open a new database connection for the thread
     QSqlDatabase db = getDB();
@@ -318,8 +314,33 @@ QString ImportWorker::importFile(const QFileInfo infoIn,
                 emit enqueueThis(STsearchID);
             }
         }
+    } else { //it's not in the database but we are hoping to replace the location.
+        //We only do this for CLI-based processing.
+        if (noThumbnail)
+        {
+            fileInsert(hashString, infoIn.absoluteFilePath());
+            cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
+
+            //Now create a profile and a search table entry, and a thumbnail.
+            STsearchID = createNewProfile(hashString,
+                                          filename,
+                                          exifUtcTime(abspath, cameraTZ),
+                                          importStartTime,
+                                          abspath,
+                                          noThumbnail);
+
+            //Request that we enqueue the image.
+            cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
+            if (QString("") != STsearchID)
+            {
+                emit enqueueThis(STsearchID);
+            }
+            //It might be ignored downstream, but that's not our problem here.
+
+            //Tell the views we need updating.
+            changedST = true;
+        }
     }
-    //else do nothing.
 
     //Tell the ImportModel whether we did anything to the SearchTable
     emit doneProcessing(changedST);

@@ -363,7 +363,7 @@ QString ImportModel::importFileNow(const QString name, Settings * settingsObj)
     params.appendHashParam = false;
     params.importInPlace = true;
     params.replaceLocation = true;
-    params.noThumbnail = false;
+    params.noThumbnail = true;
 
     ImportWorker * worker = new ImportWorker;
     const QString searchID = worker->importFile(params.fileInfoParam,
@@ -378,7 +378,10 @@ QString ImportModel::importFileNow(const QString name, Settings * settingsObj)
                                                 params.replaceLocation,
                                                 params.noThumbnail);
     delete worker;
-    emit enqueueThis(searchID);
+    if (searchID != "")
+    {
+        emit enqueueThis(searchID);
+    }
     return searchID;
 }
 

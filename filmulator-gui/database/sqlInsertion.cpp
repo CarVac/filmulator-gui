@@ -30,6 +30,7 @@ void fileInsert(const QString hash,
 
     if (inDatabaseAlready)
     {
+        cout << "it's in the db file table" << endl;
         query.prepare("UPDATE FileTable "
                       "SET FTfilePath = ? "
                       "WHERE (FTfileID = ?);");
@@ -39,6 +40,7 @@ void fileInsert(const QString hash,
     }
     else
     {
+        cout << "it's not in the db file table" << endl;
         std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
         std::string filenameStr = fullFilename.toStdString();
         const char *cstr = filenameStr.c_str();
