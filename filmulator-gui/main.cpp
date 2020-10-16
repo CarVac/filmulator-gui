@@ -127,7 +127,12 @@ int main(int argc, char *argv[])
     if (argc == 3 && QString(argv[1]) == "-i")
     {
         QString searchID = importModel->importFileNow(QString(argv[2]), settingsObj);
-        paramManager->selectImage(searchID);
+        if (searchID != "")
+        {
+            paramManager->selectImage(searchID);
+        } else {
+            cout << "Could not import file." << endl;
+        }
     }
 
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating window" << endl;
