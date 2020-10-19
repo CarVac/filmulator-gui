@@ -44,8 +44,7 @@ int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
 
 matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramManager,
                                                     Interface * interface_in,
-                                                    Exiv2::ExifData &exifOutput,
-                                                    Exiv2::ExifData &basicExifOutput)
+                                                    Exiv2::ExifData &exifOutput)
 {
     //Say that we've started processing to prevent cache status from changing..
     hasStartedProcessing = true;
@@ -268,23 +267,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 //cout << endl;
             }
 
-            //We need to fabricate fresh exif data from what libraw gives us for CR3 and for writing tiffs
-            Exiv2::ExifData tempExifData;
-
-            tempExifData["Exif.Image.Orientation"] = uint16_t(1);
-            tempExifData["Exif.Image.ImageWidth"] = vibrance_saturation_image.nc()/3;
-            tempExifData["Exif.Image.ImageLength"] = vibrance_saturation_image.nr();
-            tempExifData["Exif.Image.Make"] = IDATA.make;
-            tempExifData["Exif.Image.Model"] = IDATA.model;
-            tempExifData["Exif.Image.DateTime"] = exifDateTimeString(OTHER.timestamp);
-            tempExifData["Exif.Photo.DateTimeOriginal"] = exifDateTimeString(OTHER.timestamp);
-            tempExifData["Exif.Photo.DateTimeDigitized"] = exifDateTimeString(OTHER.timestamp);
-            tempExifData["Exif.Photo.ExposureTime"] = rationalTv(OTHER.shutter);
-            tempExifData["Exif.Photo.FNumber"] = rationalAvFL(OTHER.aperture);
-            tempExifData["Exif.Photo.ISOSpeed"] = int(round(OTHER.iso_speed));
-            tempExifData["Exif.Photo.FocalLength"] = rationalAvFL(OTHER.focal_len);
-            basicExifData = tempExifData;
-
             if (!isCR3)//we can't use exiv2 on CR3 yet
             {
                 auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
@@ -292,6 +274,22 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 image->readMetadata();
                 exifData = image->exifData();
             } else {
+                //We need to fabricate fresh exif data from what libraw gives us
+                Exiv2::ExifData basicExifData;
+
+                basicExifData["Exif.Image.Orientation"] = uint16_t(1);
+                basicExifData["Exif.Image.ImageWidth"] = vibrance_saturation_image.nc()/3;
+                basicExifData["Exif.Image.ImageLength"] = vibrance_saturation_image.nr();
+                basicExifData["Exif.Image.Make"] = IDATA.make;
+                basicExifData["Exif.Image.Model"] = IDATA.model;
+                basicExifData["Exif.Image.DateTime"] = exifDateTimeString(OTHER.timestamp);
+                basicExifData["Exif.Photo.DateTimeOriginal"] = exifDateTimeString(OTHER.timestamp);
+                basicExifData["Exif.Photo.DateTimeDigitized"] = exifDateTimeString(OTHER.timestamp);
+                basicExifData["Exif.Photo.ExposureTime"] = rationalTv(OTHER.shutter);
+                basicExifData["Exif.Photo.FNumber"] = rationalAvFL(OTHER.aperture);
+                basicExifData["Exif.Photo.ISOSpeed"] = int(round(OTHER.iso_speed));
+                basicExifData["Exif.Photo.FocalLength"] = rationalAvFL(OTHER.focal_len);
+
                 exifData = basicExifData;
             }
 
@@ -1179,7 +1177,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         updateProgress(valid, 0.0f);
 
         exifOutput = exifData;
-        basicExifOutput = basicExifData;
         return vibrance_saturation_image;
     }
     }//End task switch

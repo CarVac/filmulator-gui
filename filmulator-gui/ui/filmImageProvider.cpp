@@ -76,12 +76,11 @@ QImage FilmImageProvider::requestImage(const QString& id,
 
     //Run the pipeline.
     Exiv2::ExifData data;
-    Exiv2::ExifData basicData;
     matrix<unsigned short> image;
     if (!useQuickPipe)
     {
         filename = paramManager->getFullFilename();
-        image = pipeline.processImage(paramManager, this, data, basicData);
+        image = pipeline.processImage(paramManager, this, data);
     }
     else
     {
@@ -89,13 +88,13 @@ QImage FilmImageProvider::requestImage(const QString& id,
         if (id[0] == "q")
         {
             filename = paramManager->getFullFilename();
-            image = quickPipe.processImage(paramManager, this, data, basicData);
+            image = quickPipe.processImage(paramManager, this, data);
         }
         else
         {
             filename = cloneParam->getFullFilename();
             cout << "FilmImageProvider::requestImage filename: " << filename << endl;
-            image = pipeline.processImage(cloneParam, this, data, basicData);
+            image = pipeline.processImage(cloneParam, this, data);
         }
     }
 
@@ -105,7 +104,6 @@ QImage FilmImageProvider::requestImage(const QString& id,
     writeDataMutex.lock();
     //Prepare the exif data for output.
     exifData = data;
-    basicExifData = basicData;
     //Prepare the output filename.
     outputFilename = filename.substr(0,filename.length()-4);
     outputFilename.append("-output");
@@ -140,7 +138,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
 void FilmImageProvider::writeTiff()
 {
     processMutex.lock();
-    imwrite_tiff(last_image, outputFilename, basicExifData);
+    imwrite_tiff(last_image, outputFilename, exifData);
     processMutex.unlock();
 }
 

@@ -180,7 +180,6 @@ QString createNewProfile(const QString fileHash,
 
     //Next, we prepare a dummy exif object because we don't care about the thumbnail's exif.
     Exiv2::ExifData exif;
-    Exiv2::ExifData exif2;
 
     //Next, we create a dummy interface.
     Interface dummyInterface;
@@ -189,7 +188,7 @@ QString createNewProfile(const QString fileHash,
     ImagePipeline pipeline(NoCache, NoHisto, LowQuality);
 
     //Process an image.
-    matrix<unsigned short> image = pipeline.processImage(&paramManager, &dummyInterface, exif, exif2);
+    matrix<unsigned short> image = pipeline.processImage(&paramManager, &dummyInterface, exif);
 
     //Write the thumbnail.
     ThumbWriteWorker worker;
