@@ -6,8 +6,8 @@ dist: xenial
 before_install:
     # C++14
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    # Qt 5.14.2
-    - sudo add-apt-repository ppa:beineri/opt-qt-5.14.2-xenial -y
+    # Qt 5.15.0
+    - sudo add-apt-repository ppa:beineri/opt-qt-5.15.0-xenial -y
     - sudo apt-get update -qq
     
 install: 
