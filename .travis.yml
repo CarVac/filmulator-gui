@@ -14,9 +14,9 @@ install:
     # C++14
     - sudo apt-get -y install g++-9
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
-    # Qt 5.14.2
-    - sudo apt-get -y install qt514base qt514declarative qt514quickcontrols qt514quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcurl4-openssl-dev libarchive-dev
-    - source /opt/qt514/bin/qt514-env.sh
+    # Qt 5.15.0
+    - sudo apt-get -y install qt515base qt515declarative qt515quickcontrols qt515quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcurl4-openssl-dev libarchive-dev
+    - source /opt/qt515/bin/qt515-env.sh
 
 script:
     #build libraw
