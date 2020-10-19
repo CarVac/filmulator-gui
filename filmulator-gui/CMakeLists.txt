@@ -93,7 +93,6 @@ set(filmulator_SRCS
 #qt5_add_resources(filmulator_RSCS
 qtquick_compiler_add_resources(filmulator_RSCS
     qml.qrc
-    tl.qrc
     resources/pixmaps.qrc
 )
 
