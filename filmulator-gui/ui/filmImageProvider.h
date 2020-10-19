@@ -91,6 +91,7 @@ protected:
     struct timeval request_start_time;
 
     Exiv2::ExifData exifData;
+    Exiv2::ExifData basicExifData;
     std::string outputFilename;
     matrix<unsigned short> last_image;
 

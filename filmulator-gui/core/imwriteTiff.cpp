@@ -73,7 +73,7 @@ bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
     assert(image.get() != 0);
 
     image->setExifData(exifData);
-    //image->writeMetadata();
+    image->writeMetadata();
 
     return 0;
 }
