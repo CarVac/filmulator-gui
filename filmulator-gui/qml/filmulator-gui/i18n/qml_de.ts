@@ -49,7 +49,7 @@ Doppelklick auf ein Objektiv, um es auszuwählen.</translation>
     <message>
         <location filename="../Edit.qml" line="1862"/>
         <source>No lens selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Kein Objektiv ausgewählt</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="1904"/>
@@ -78,7 +78,7 @@ Berücksichtigt auch aktuell gewählte Objektivkorrekturen.</translation>
     <message>
         <location filename="../Edit.qml" line="2173"/>
         <source>Forget preferred lens</source>
-        <translation>Bevorzugtes Objektiv abwählen</translation>
+        <translation>Bevorzugtes Objektiv zurücksetzen</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2174"/>
@@ -224,7 +224,7 @@ Der Standardwert ist die von der Kamera gewählte Farbtemperatur.</translation>
 The default value is the camera&apos;s chosen WB.</source>
         <translation>Korregiert eine grün/magenta getönte Lichtquelle. Größere Werte sind grüner, und kleinere Werte sind magentafarben.
 
-Der Standardwert ist der von der Kamera gewählte Farbton.</translation>
+Der Standardwert ist der von der Kamera gewählte Weißabgleich.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="353"/>
@@ -306,7 +306,7 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../EditTools.qml" line="629"/>
         <source>Black Clipping Point</source>
-        <translation>Schwarz-Beschneidungspunkt</translation>
+        <translation>Schwarzpunkt</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="630"/>
@@ -316,7 +316,7 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../EditTools.qml" line="660"/>
         <source>White Clipping Point</source>
-        <translation>Weiß-Beschneidungspunkt</translation>
+        <translation>Weißpunkt</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="661"/>
@@ -512,7 +512,7 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../Import.qml" line="176"/>
         <source>Copy to directory</source>
-        <translation>In ein Verzeichnis kopieren</translation>
+        <translation>In Verzeichnis kopieren</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="177"/>
@@ -618,7 +618,8 @@ Es hängt einen Unterstrich und sieben Zeichen (abgeleitet aus dem Dateiinhalt) 
     <message>
         <location filename="../Import.qml" line="344"/>
         <source>Enqueue imported photos</source>
-        <translation>Importierte Fotos in die Warteschlange stellen</translation>
+        <translatorcomment>Shortened by deleting the verb.</translatorcomment>
+        <translation>Importierte Fotos in Warteschlange</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="345"/>
@@ -840,7 +841,7 @@ nicht lesbar</translation>
     <message>
         <location filename="../Settings.qml" line="25"/>
         <source>User Interface Scale</source>
-        <translation>Skalierung Oberfläche</translation>
+        <translation>Skalierung Benutzeroberfläche</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="26"/>

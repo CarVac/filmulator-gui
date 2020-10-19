@@ -1798,9 +1798,12 @@ SlimSplitView {
 
         Rectangle {
             id: lensfunBox
-            anchors.right: leftButtonSpacer.left
+            x: leftButtonSpacer.x - 350 * uiScale //not width because we don't want it to move when it resizes
             y: 0 * uiScale
-            width: 350 * uiScale
+            z: active ? 1 : 0
+            //resize when active to make room for german translation of buttons at bottom
+            //120 is the width of the buttons, 2 is the padding to make the rightmost button stationary
+            width: active ? (120 + 2 + 350) * uiScale : 350 * uiScale
             height: active ? 400 * uiScale : 30 * uiScale
             radius: 5 * uiScale
             visible: !photoBox.loadingError
