@@ -59,8 +59,6 @@ SOURCES += qml/filmulator-gui/*.qml \
     qml/filmulator-gui/gui_components/*.qml
 }
 
-TRANSLATIONS = translations/filmulator-gui_de.ts
-
 # Installation path
 unix:target.path = /usr/lib/filmulator-gui
 unix:desktop.path = /usr/share/applications

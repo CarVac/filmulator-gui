@@ -49,8 +49,14 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     QTranslator translator;
-    translator.load("filmulatortr_la");
-    app.installTranslator(&translator);
+    cout << QLocale::languageToString(QLocale().language()).toStdString() << endl;
+    if (translator.load(QLocale(), QLatin1String("filmulator-gui"), QLatin1String("_"), QLatin1String("qrc:///tl/translations/")))
+    {
+        cout << "succeeded in loading translation" << endl;
+        app.installTranslator(&translator);
+        engine.installExtensions(QJSEngine::TranslationExtension);
+        engine.setUiLanguage(QLocale::languageToString(QLocale().language()));
+    }
 
     //Prepare database connection.
     //This should create a new db file if there was none.

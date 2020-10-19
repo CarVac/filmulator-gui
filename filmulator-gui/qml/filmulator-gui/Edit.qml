@@ -1859,7 +1859,7 @@ SlimSplitView {
                     font.pixelSize: 12.0 * uiScale
                     clip: true
                     visible: !lensfunBox.active
-                    text: (parent.selectedLens == "") ? "No lens selected" : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
+                    text: (parent.selectedLens == "") ? qsTr("No lens selected") : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
                 }
 
                 MouseArea {

@@ -18,7 +18,7 @@ Rectangle {
         spacing: 0 * uiScale
         x: 3 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 350 * uiScale
 
         ToolSlider {
             id: uiScaleSlider
@@ -141,9 +141,9 @@ Rectangle {
     ColumnLayout {
         id: lensfunList
         spacing: 0 * uiScale
-        x: 306 * uiScale
+        x: 356 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 350 * uiScale
 
         Rectangle {
             id: lensfunCheck
