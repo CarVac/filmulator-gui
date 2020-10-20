@@ -855,21 +855,25 @@ Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem N
     <message>
         <location filename="../Settings.qml" line="51"/>
         <source>Use System Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Benutze Systemsprache</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="52"/>
         <source>Turning this off will set the language to English.
 
 This setting takes effect after applying settings and then restarting Filmulator.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wenn Sie dies ausschalten, wird die Sprache auf Englisch eingestellt.
+
+Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem Neustart von Filmulator wirksam.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="52"/>
         <source>Turning this off will let you select the interface language from a list.
 
 This setting takes effect after applying settings and then restarting Filmulator.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wenn Sie dies ausschalten, können Sie die Sprache der Benutzeroberfläche aus einer Liste auswählen.
+
+Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem Neustart von Filmulator wirksam.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="65"/>
