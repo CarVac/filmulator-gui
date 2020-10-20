@@ -48,16 +48,6 @@ int main(int argc, char *argv[])
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() <<  "creating qqmlapplicationengine" << endl;
     QQmlApplicationEngine engine;
 
-    QTranslator translator;
-    cout << QLocale::languageToString(QLocale().language()).toStdString() << endl;
-    if (translator.load(QLocale(), QLatin1String("filmulator-gui"), QLatin1String("_"), QLatin1String("qrc:///tl/translations/")))
-    {
-        cout << "succeeded in loading translation" << endl;
-        app.installTranslator(&translator);
-        engine.installExtensions(QJSEngine::TranslationExtension);
-        engine.setUiLanguage(QLocale::languageToString(QLocale().language()));
-    }
-
     //Prepare database connection.
     //This should create a new db file if there was none.
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "connecting to database" << endl;
@@ -68,6 +58,19 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    /*
+    QTranslator translator;
+    cout << QLocale::languageToString(QLocale().language()).toStdString() << endl;
+    if (translator.load(QLocale(), QLatin1String("filmulator-gui"), QLatin1String("_"), QLatin1String("qrc:///tl/translations/")))
+    {
+        cout << "succeeded in loading translation" << endl;
+        app.installTranslator(&translator);
+        engine.installExtensions(QJSEngine::TranslationExtension);
+        engine.setUiLanguage(QLocale::languageToString(QLocale().language()));
+    }
+    */
+
+
     //Create the object for communicating between SQL classes.
     SignalSwitchboard *switchboard = new SignalSwitchboard;
 
@@ -75,6 +78,12 @@ int main(int argc, char *argv[])
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating settings object" << endl;
     Settings *settingsObj = new Settings;
     engine.rootContext()->setContextProperty("settings", settingsObj);
+
+    if (settingsObj->getUseSystemLanguage() == false)
+    {
+        engine.setUiLanguage("English");
+        //when more than just German translations are available, have this be filled by another setting
+    }
 
     //Prepare an object for managing the processing parameters.
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating parametermanager" << endl;

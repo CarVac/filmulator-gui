@@ -47,6 +47,20 @@ Rectangle {
         }
 
         ToolSwitch {
+            id: useSystemLanguageSwitch
+            text: qsTr("Use System Language")
+            tooltipText: true ? qsTr("Turning this off will set the language to English.\n\nThis setting takes effect after applying settings and then restarting Filmulator.") : qsTr("Turning this off will let you select the interface language from a list.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
+            isOn: settings.getUseSystemLanguage()
+            defaultOn: settings.getUseSystemLanguage()
+            onIsOnChanged: useSystemLanguageSwitch.changed = true
+            Component.onCompleted: {
+                useSystemLanguageSwitch.tooltipWanted.connect(root.tooltipWanted)
+                useSystemLanguageSwitch.changed = false
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolSwitch {
             id: mipmapSwitch
             text: qsTr("Smooth editor image")
             tooltipText: qsTr("This enables mipmaps for the Filmulate tab's image view. It's recommended for noisy images where not mipmapping may cause patterns to appear at different zoom levels.\n\nIt has slight impact on responsiveness for the last few tools, but it doesn't affect performance when zooming and panning. It also softens the image slightly, which may be undesireable.\n\nThis is applied as soon as you save settings.")
@@ -117,11 +131,14 @@ Rectangle {
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
+            notDisabled: uiScaleSlider.changed || useSystemLanguageSwitch.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
             onTriggered: {
                 settings.uiScale = uiScaleSlider.value
                 uiScaleSlider.defaultValue = uiScaleSlider.value
                 uiScaleSlider.changed = false
+                settings.useSystemLanguage = useSystemLanguageSwitch.isOn
+                useSystemLanguageSwitch.defaultOn = useSystemLanguageSwitch.isOn
+                useSystemLanguageSwitch.changed = false
                 settings.mipmapView = mipmapSwitch.isOn
                 mipmapSwitch.defaultOn = mipmapSwitch.isOn
                 mipmapSwitch.changed = false

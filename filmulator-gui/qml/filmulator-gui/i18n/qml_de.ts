@@ -34,7 +34,7 @@
         <translation> ist nicht erreichbar.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1814"/>
+        <location filename="../Edit.qml" line="1817"/>
         <source>Select the lens that was used in order to use lens corrections.
 
 Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;&quot;) then it will search lenses from all mounts.
@@ -47,27 +47,27 @@ Schreiben Sie den Objektivnamen in das Feld rechts. Normalerweise wird nur nach 
 Doppelklick auf ein Objektiv, um es auszuwählen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1862"/>
+        <location filename="../Edit.qml" line="1865"/>
         <source>No lens selected</source>
         <translation>Kein Objektiv ausgewählt</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1904"/>
+        <location filename="../Edit.qml" line="1907"/>
         <source>Reset selected lens back to default and sets search box back to EXIF-derived lens name.</source>
         <translation>Setzt ausgewähltes Objektiv auf Standard zurück und setzt Suchbox zurück auf den Objektivnamen aus den EXIF-Daten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1972"/>
+        <location filename="../Edit.qml" line="1975"/>
         <source>Search fit score: </source>
         <translation>Trefferanzahl: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2156"/>
+        <location filename="../Edit.qml" line="2159"/>
         <source>Remember preferred lens</source>
         <translation>Bevorzugtes Objektiv beibehalten</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2157"/>
+        <location filename="../Edit.qml" line="2160"/>
         <source>Use the selected lens as default for all future photos taken with the same camera and lens combination.
 
 This also remembers the currently selected lens corrections.</source>
@@ -76,22 +76,22 @@ This also remembers the currently selected lens corrections.</source>
 Berücksichtigt auch aktuell gewählte Objektivkorrekturen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2173"/>
+        <location filename="../Edit.qml" line="2176"/>
         <source>Forget preferred lens</source>
         <translation>Bevorzugtes Objektiv zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2174"/>
+        <location filename="../Edit.qml" line="2177"/>
         <source>Clear the default lens for photos taken with the same camera and lens combination.</source>
         <translation>Löscht das bevorzugte Objektiv für Fotos, die mit der gleichen Objektiv-Kamera-Kombination gemacht wurden.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2197"/>
+        <location filename="../Edit.qml" line="2200"/>
         <source>Change the editor&apos;s background brightness between black, gray, and white.</source>
         <translation>Ändert die Helligkeit des Editor-Hintergrundes in Schwarz, Grau oder Weiß.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2241"/>
+        <location filename="../Edit.qml" line="2244"/>
         <source>Click this to save your crop.
 
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
@@ -104,7 +104,7 @@ Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenver
 Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende übliche Seitenverhältnis zu bringen. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2241"/>
+        <location filename="../Edit.qml" line="2244"/>
         <source>Click this to begin cropping.
 
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
@@ -117,12 +117,12 @@ Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenver
 Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zuschnitt auf das nächstliegende übliche Seitenverhältnis zu fixieren. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2287"/>
+        <location filename="../Edit.qml" line="2290"/>
         <source>Rotate image 90 degrees left.</source>
         <translation>Bild um 90 Grad nach links drehen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2308"/>
+        <location filename="../Edit.qml" line="2311"/>
         <source>Rotate image 90 degrees right.</source>
         <translation>Bild um 90 Grad nach rechts drehen.</translation>
     </message>
@@ -854,11 +854,30 @@ Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem N
     </message>
     <message>
         <location filename="../Settings.qml" line="51"/>
+        <source>Use System Language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="52"/>
+        <source>Turning this off will set the language to English.
+
+This setting takes effect after applying settings and then restarting Filmulator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="52"/>
+        <source>Turning this off will let you select the interface language from a list.
+
+This setting takes effect after applying settings and then restarting Filmulator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="65"/>
         <source>Smooth editor image</source>
         <translation>Editor-Bild glätten</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="52"/>
+        <location filename="../Settings.qml" line="66"/>
         <source>This enables mipmaps for the Filmulate tab&apos;s image view. It&apos;s recommended for noisy images where not mipmapping may cause patterns to appear at different zoom levels.
 
 It has slight impact on responsiveness for the last few tools, but it doesn&apos;t affect performance when zooming and panning. It also softens the image slightly, which may be undesireable.
@@ -871,12 +890,12 @@ Bei den letzten Werkzeugen hat es leichte Auswirkungen auf die Reaktionsfähigke
 Dies wird angewendet, sobald Sie die Einstellungen speichern.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="65"/>
+        <location filename="../Settings.qml" line="79"/>
         <source>Reduce memory usage</source>
         <translation>Reduzieren der Speichernutzung</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="66"/>
+        <location filename="../Settings.qml" line="80"/>
         <source>Warning: VERY SLOW!
 
 Enabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.
@@ -889,12 +908,12 @@ Wenn Sie dies aktivieren, wird das Caching im Editor ausgeschaltet. Es wird weni
 Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem Neustart von Filmulator wirksam.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="79"/>
+        <location filename="../Settings.qml" line="93"/>
         <source>Render small preview first</source>
         <translation>Zuerst kleine Vorschau rendern</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="80"/>
+        <location filename="../Settings.qml" line="94"/>
         <source>Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.
 
 This takes effect after applying settings and restarting Filmulator.</source>
@@ -903,12 +922,12 @@ This takes effect after applying settings and restarting Filmulator.</source>
 Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator in Kraft.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="93"/>
+        <location filename="../Settings.qml" line="107"/>
         <source>Preview render resolution</source>
         <translation>Auflösung des Vorschaurenderings</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="94"/>
+        <location filename="../Settings.qml" line="108"/>
         <source>When the small preview is active, the preview image will be processed at an image size with this value as the long dimension. The larger this is, the sharper the preview, but the longer it takes to generate.
 
 This takes effect after applying settings and restarting Filmulator.</source>
@@ -917,33 +936,33 @@ This takes effect after applying settings and restarting Filmulator.</source>
 Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator in Kraft.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="116"/>
+        <location filename="../Settings.qml" line="130"/>
         <source>Save Settings</source>
         <translation>Einstellungen speichern</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="117"/>
+        <location filename="../Settings.qml" line="131"/>
         <source>Apply settings and save for future use</source>
         <translation>Einstellungen übernehmen und für zukünftige Verwendung speichern</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="163"/>
+        <location filename="../Settings.qml" line="180"/>
         <source>Check for lens correction updates</source>
         <translation>Nach Objektivkorrektur-Updates suchen</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="192"/>
+        <location filename="../Settings.qml" line="209"/>
         <source>Check</source>
         <comment>Check for lensfun updates</comment>
         <translation>Suchen</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="215"/>
+        <location filename="../Settings.qml" line="232"/>
         <source>Update lens correction database</source>
         <translation>Update der Objektivkorrektur-Datenbank</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="244"/>
+        <location filename="../Settings.qml" line="261"/>
         <source>Update</source>
         <comment>Update lensfun database</comment>
         <translation>Update</translation>
