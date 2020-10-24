@@ -161,7 +161,7 @@ Nicht verfügbar für Nicht-Bayer-Sensoren.</translation>
     <message>
         <location filename="../EditTools.qml" line="202"/>
         <source>Profiled Vignetting</source>
-        <translation>Vignettierungskorrektur (Profil)</translation>
+        <translation>Vignettierung (Profil)</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="203"/>
@@ -171,7 +171,7 @@ Nicht verfügbar für Nicht-Bayer-Sensoren.</translation>
     <message>
         <location filename="../EditTools.qml" line="233"/>
         <source>Profiled Distortion</source>
-        <translation>Verzeichnungskorrektur (Profil)</translation>
+        <translation>Verzeichnung (Profil)</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="234"/>
