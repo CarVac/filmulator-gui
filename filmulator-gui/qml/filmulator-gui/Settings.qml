@@ -48,7 +48,7 @@ Rectangle {
 
         ToolSwitch {
             id: useSystemLanguageSwitch
-            text: qsTr("Use System Language")
+            text: qsTr("Use system language")
             tooltipText: true ? qsTr("Turning this off will set the language to English.\n\nThis setting takes effect after applying settings and then restarting Filmulator.") : qsTr("Turning this off will let you select the interface language from a list.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
             isOn: settings.getUseSystemLanguage()
             defaultOn: settings.getUseSystemLanguage()
