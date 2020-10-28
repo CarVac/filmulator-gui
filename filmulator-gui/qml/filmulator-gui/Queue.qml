@@ -271,7 +271,7 @@ Item {
 
                                     ToolButton {
                                         id: forgetCover
-                                        text: qsTr("Forget photos")
+                                        text: qsTr("Forget marked photos")
                                         tooltipText: qsTr("Remove marked photos that are in the queue from the database. The files will not be deleted.")
                                         anchors.fill: parent
                                         uiScale: root.uiScale
@@ -845,6 +845,9 @@ Item {
                 var newIndex = queueModel.getPrev(paramManager.imageIndex)
                 if (newIndex !== paramManager.imageIndex) {
                     paramManager.selectImage(newIndex)
+                    var selectedPosition = queueModel.getActivePosition(newIndex)
+                    var scrollMargin = listView.contentWidth - listView.width
+                    listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
                 }
             }
         }
@@ -857,6 +860,9 @@ Item {
                 var newIndex = queueModel.getNext(paramManager.imageIndex)
                 if (newIndex !== paramManager.imageIndex) {
                     paramManager.selectImage(newIndex)
+                    var selectedPosition = queueModel.getActivePosition(newIndex)
+                    var scrollMargin = listView.contentWidth - listView.width
+                    listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
                 }
             }
         }

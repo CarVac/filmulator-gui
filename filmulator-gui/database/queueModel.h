@@ -26,6 +26,8 @@ public:
     Q_INVOKABLE QString getNext(const QString searchID);
     Q_INVOKABLE QString getPrev(const QString searchID);
 
+    Q_INVOKABLE float getActivePosition(const QString searchID);
+
 public slots:
     Q_INVOKABLE void deQueue(const QString searchID);
     Q_INVOKABLE void enQueue(const QString searchID);

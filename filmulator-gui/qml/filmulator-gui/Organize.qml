@@ -68,7 +68,7 @@ SlimSplitView {
                 ToolSlider {
                     id: minRatingSlider
                     title: qsTr("Min Rating")
-                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    tooltipText: qsTr("Controls the minimum rating of images to display.")
                     minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
@@ -98,8 +98,8 @@ SlimSplitView {
 
                 ToolSlider {
                     id: maxRatingSlider
-                    title: qsTr("Min Rating")
-                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    title: qsTr("Max Rating")
+                    tooltipText: qsTr("Controls the maximum rating of images to display.")
                     minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
@@ -285,6 +285,7 @@ SlimSplitView {
                 Rectangle {
                     id: scrollbarDateHisto
                     color: scrollbarMouseAreaDateHisto.pressed ? Colors.medOrange : scrollbarMouseAreaDateHisto.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    opacity: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed ? 0.65 : 1
                     radius: 1.5*uiScale
 
                     y: 1 * uiScale

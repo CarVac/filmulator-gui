@@ -62,6 +62,11 @@ public:
 protected:
     ImagePipeline pipeline;
     ImagePipeline quickPipe;
+    //We also want to make available image pipelines for preloading the next and previous images.
+    //Upon changing images, we'll want to copy all the pipeline stages into the current quickPipe
+    //Validity too... that goes with the ParamManagers.
+    ImagePipeline nextQuickPipe;
+    ImagePipeline prevQuickPipe;
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;
@@ -72,6 +77,13 @@ protected:
 
     ParameterManager * paramManager;
     ParameterManager * cloneParam;
+    //We also want to make available image pipelines for preloading the next and previous images.
+    //Upon changing images, we'll want to copy all the pipeline stages into the current quickPipe
+    //When we do the shuffling of the data, once done we'll have to call
+    // paramManager.cloneParams(*cloneParam) so that it knows.
+    ParameterManager * nextParam;
+    ParameterManager * prevParam;
+
     QMutex processMutex;//Ensures that output files are only of the currently selected image.
     QMutex writeDataMutex;//binds together the update of outputFilename and the outputImage.
     float progress;

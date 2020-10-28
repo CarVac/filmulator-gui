@@ -18,7 +18,7 @@ Rectangle {
         spacing: 0 * uiScale
         x: 3 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 350 * uiScale
 
         ToolSlider {
             id: uiScaleSlider
@@ -42,6 +42,20 @@ Rectangle {
             }
             Component.onCompleted: {
                 uiScaleSlider.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolSwitch {
+            id: useSystemLanguageSwitch
+            text: qsTr("Use system language")
+            tooltipText: true ? qsTr("Turning this off will set the language to English.\n\nThis setting takes effect after applying settings and then restarting Filmulator.") : qsTr("Turning this off will let you select the interface language from a list.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
+            isOn: settings.getUseSystemLanguage()
+            defaultOn: settings.getUseSystemLanguage()
+            onIsOnChanged: useSystemLanguageSwitch.changed = true
+            Component.onCompleted: {
+                useSystemLanguageSwitch.tooltipWanted.connect(root.tooltipWanted)
+                useSystemLanguageSwitch.changed = false
             }
             uiScale: root.uiScale
         }
@@ -117,11 +131,14 @@ Rectangle {
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
+            notDisabled: uiScaleSlider.changed || useSystemLanguageSwitch.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
             onTriggered: {
                 settings.uiScale = uiScaleSlider.value
                 uiScaleSlider.defaultValue = uiScaleSlider.value
                 uiScaleSlider.changed = false
+                settings.useSystemLanguage = useSystemLanguageSwitch.isOn
+                useSystemLanguageSwitch.defaultOn = useSystemLanguageSwitch.isOn
+                useSystemLanguageSwitch.changed = false
                 settings.mipmapView = mipmapSwitch.isOn
                 mipmapSwitch.defaultOn = mipmapSwitch.isOn
                 mipmapSwitch.changed = false
@@ -141,9 +158,9 @@ Rectangle {
     ColumnLayout {
         id: lensfunList
         spacing: 0 * uiScale
-        x: 306 * uiScale
+        x: 356 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 350 * uiScale
 
         Rectangle {
             id: lensfunCheck

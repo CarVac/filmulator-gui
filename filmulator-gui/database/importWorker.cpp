@@ -10,7 +10,7 @@ ImportWorker::ImportWorker(QObject *parent) : QObject(parent)
 {
 }
 
-void ImportWorker::importFile(const QFileInfo infoIn,
+QString ImportWorker::importFile(const QFileInfo infoIn,
                               const int importTZ,
                               const int cameraTZ,
                               const QString photoDir,
@@ -19,7 +19,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                               const QDateTime importStartTime,
                               const bool appendHash,
                               const bool importInPlace,
-                              const bool replaceLocation)
+                              const bool replaceLocation,
+                              const bool noThumbnail)
 {
     //Generate a hash of the raw file.
     QCryptographicHash hash(QCryptographicHash::Md5);
@@ -157,10 +158,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         }
     }
 
-
-
-
-
     //Check to see if it's already present in the database.
     //Open a new database connection for the thread
     QSqlDatabase db = getDB();
@@ -179,6 +176,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     //And we're not updating locations
     //  (if we are updating locations, we don't want it to add new things to the db)
     bool changedST = false;
+    QString STsearchID;
     if (!inDatabaseAlready && !replaceLocation)
     {
         //Record the file location in the database.
@@ -234,12 +232,12 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         }
 
         //Now create a profile and a search table entry, and a thumbnail.
-        QString STsearchID;
         STsearchID = createNewProfile(hashString,
                                       filename,
                                       exifUtcTime(abspath, cameraTZ),
                                       importStartTime,
-                                      abspath);
+                                      abspath,
+                                      noThumbnail);
 
         //Request that we enqueue the image.
         cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
@@ -308,7 +306,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
             fileInsert(hashString, infoIn.absoluteFilePath());
             cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
 
-            QString STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));
+            STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));
             cout << "importWorker replace STsearchID: " << STsearchID.toStdString() << endl;
 
             if (QString("") != STsearchID)
@@ -316,9 +314,35 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                 emit enqueueThis(STsearchID);
             }
         }
+    } else { //it's not in the database but we are hoping to replace the location.
+        //We only do this for CLI-based processing.
+        if (noThumbnail)
+        {
+            fileInsert(hashString, infoIn.absoluteFilePath());
+            cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
+
+            //Now create a profile and a search table entry, and a thumbnail.
+            STsearchID = createNewProfile(hashString,
+                                          filename,
+                                          exifUtcTime(abspath, cameraTZ),
+                                          importStartTime,
+                                          abspath,
+                                          noThumbnail);
+
+            //Request that we enqueue the image.
+            cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
+            if (QString("") != STsearchID)
+            {
+                emit enqueueThis(STsearchID);
+            }
+            //It might be ignored downstream, but that's not our problem here.
+
+            //Tell the views we need updating.
+            changedST = true;
+        }
     }
-    //else do nothing.
 
     //Tell the ImportModel whether we did anything to the SearchTable
     emit doneProcessing(changedST);
+    return STsearchID;
 }

@@ -24,5 +24,6 @@
         <file>qml/filmulator-gui/gui_components/ToolSlider.qml</file>
         <file>qml/filmulator-gui/gui_components/ToolSwitch.qml</file>
         <file>qml/filmulator-gui/gui_components/ToolTip.qml</file>
+        <file>qml/filmulator-gui/i18n/qml_de.qm</file>
     </qresource>
 </RCC>

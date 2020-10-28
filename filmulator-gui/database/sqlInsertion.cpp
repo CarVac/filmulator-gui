@@ -30,6 +30,7 @@ void fileInsert(const QString hash,
 
     if (inDatabaseAlready)
     {
+        cout << "it's in the db file table" << endl;
         query.prepare("UPDATE FileTable "
                       "SET FTfilePath = ? "
                       "WHERE (FTfileID = ?);");
@@ -39,6 +40,7 @@ void fileInsert(const QString hash,
     }
     else
     {
+        cout << "it's not in the db file table" << endl;
         std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
         std::string filenameStr = fullFilename.toStdString();
         const char *cstr = filenameStr.c_str();
@@ -80,7 +82,8 @@ QString createNewProfile(const QString fileHash,
                          const QString fileName,
                          const QDateTime captureTime,
                          const QDateTime importStartTime,
-                         const std::string fullFilename)
+                         const std::string fullFilename,
+                         const bool noThumbnail)
 {
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
@@ -166,6 +169,14 @@ QString createNewProfile(const QString fileHash,
 
     ParameterManager paramManager;
     paramManager.selectImage(searchID);
+
+    //If we're loading from CLI, we don't need to generate a thumbnail since we go right into editing.
+    //So we just stop here.
+    if (noThumbnail)
+    {
+        return searchID;
+    }
+
 
     //Next, we prepare a dummy exif object because we don't care about the thumbnail's exif.
     Exiv2::ExifData exif;

@@ -24,7 +24,7 @@ Rectangle {
         spacing: 0
         x: 3 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 350 * uiScale
 
         ToolSlider {
             id: cameraOffset

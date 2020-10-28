@@ -73,7 +73,7 @@ Rectangle {
 
     Button {
         id: openDirButton
-        width: 120 * uiScale
+        width: 160 * uiScale
         height: 25 * uiScale
         x: root.width - width - __padding
         y: __padding

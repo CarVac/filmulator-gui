@@ -13,6 +13,8 @@ SlimSplitView {
     property bool imageReady: false//must only be made ready when the full size image is ready
     property bool requestingCropping: false
     property bool cropping: false
+    property int cropMarkFlashCount: 0
+    property bool cropMarkFlash: false
     property bool cancelCropping: false
     property real cropMargin: 50//200
     property bool onEditTab
@@ -56,7 +58,28 @@ SlimSplitView {
         flicky.returnToBounds()
         flicky.contentX = flicky.contentX + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
         flicky.contentY = flicky.contentY + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
+        if (cropping) {
+            //Flash the crop mark
+            cropMarkFlash = true
+            cropMarkTimer.start()
+        } else {
+            cropMarkTimer.stop()
+            cropMarkFlash = false
+            cropMarkFlashCount = 0
+        }
     }
+    Timer {
+        id: cropMarkTimer
+        interval: 250
+        onTriggered: {
+            if (cropMarkFlashCount < 3) {
+                cropMarkFlash = !cropMarkFlash
+                cropMarkFlashCount += 1
+                cropMarkTimer.restart()
+            }
+        }
+    }
+
     signal tooltipWanted(string text, int x, int y)
 
     //This is for telling the queue the latest image source so it can show it until the thumb updates.
@@ -199,6 +222,7 @@ SlimSplitView {
                                 topImage.state = "sf"//showing full image
                                 root.imageReady = true
                                 root.imageURL(topImage.source)//replace the thumbnail in the queue with the live image
+                                filmProvider.writeThumbnail(paramManager.imageIndex)
                             }
                             else {//it was loading the thumb or the quick image
                                 root.imageReady = false
@@ -522,7 +546,7 @@ SlimSplitView {
                     id: cropleft
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeLeft.handleVisible
+                    visible: root.cropping && (cropResizeLeft.handleVisible || root.cropMarkFlash)
                     width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.top: cropmarker.top
                     anchors.bottom: cropmarker.bottom
@@ -538,7 +562,7 @@ SlimSplitView {
                     id: cropright
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeRight.handleVisible
+                    visible: root.cropping && (cropResizeRight.handleVisible || root.cropMarkFlash)
                     width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.top: cropmarker.top
                     anchors.bottom: cropmarker.bottom
@@ -554,7 +578,7 @@ SlimSplitView {
                     id: croptop
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeTop.handleVisible
+                    visible: root.cropping && (cropResizeTop.handleVisible || root.cropMarkFlash)
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.left: cropmarker.left
                     anchors.right: cropmarker.right
@@ -570,7 +594,7 @@ SlimSplitView {
                     id: cropbottom
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeBottom.handleVisible
+                    visible: root.cropping && (cropResizeBottom.handleVisible || root.cropMarkFlash)
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.left: cropmarker.left
                     anchors.right: cropmarker.right
@@ -586,7 +610,7 @@ SlimSplitView {
                     id: croptopleft
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeTopLeft.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeTopLeft.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -602,7 +626,7 @@ SlimSplitView {
                     id: croptopright
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeTopRight.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeTopRight.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -618,7 +642,7 @@ SlimSplitView {
                     id: cropbottomleft
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeBottomLeft.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeBottomLeft.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -634,7 +658,7 @@ SlimSplitView {
                     id: cropbottomright
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeBottomRight.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeBottomRight.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -1797,9 +1821,12 @@ SlimSplitView {
 
         Rectangle {
             id: lensfunBox
-            anchors.right: leftButtonSpacer.left
+            x: leftButtonSpacer.x - 350 * uiScale //not width because we don't want it to move when it resizes
             y: 0 * uiScale
-            width: 350 * uiScale
+            z: active ? 1 : 0
+            //resize when active to make room for german translation of buttons at bottom
+            //120 is the width of the buttons, 2 is the padding to make the rightmost button stationary
+            width: active ? (120 + 2 + 350) * uiScale : 350 * uiScale
             height: active ? 400 * uiScale : 30 * uiScale
             radius: 5 * uiScale
             visible: !photoBox.loadingError
@@ -1858,7 +1885,7 @@ SlimSplitView {
                     font.pixelSize: 12.0 * uiScale
                     clip: true
                     visible: !lensfunBox.active
-                    text: (parent.selectedLens == "") ? "No lens selected" : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
+                    text: (parent.selectedLens == "") ? qsTr("No lens selected") : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
                 }
 
                 MouseArea {

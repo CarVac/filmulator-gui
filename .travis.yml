@@ -6,23 +6,23 @@ dist: xenial
 before_install:
     # C++14
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    # Qt 5.14.2
-    - sudo add-apt-repository ppa:beineri/opt-qt-5.14.2-xenial -y
+    # Qt 5.15.0
+    - sudo add-apt-repository ppa:beineri/opt-qt-5.15.0-xenial -y
     - sudo apt-get update -qq
     
 install: 
     # C++14
     - sudo apt-get -y install g++-9
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
-    # Qt 5.14.2
-    - sudo apt-get -y install qt514base qt514declarative qt514quickcontrols qt514quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcurl4-openssl-dev libarchive-dev
-    - source /opt/qt514/bin/qt514-env.sh
+    # Qt 5.15.0
+    - sudo apt-get -y install qt515base qt515declarative qt515quickcontrols qt515quickcontrols2 libtiff-dev libgomp1 libexiv2-dev libjpeg-dev libglibmm-2.4-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libcurl4-openssl-dev libarchive-dev
+    - source /opt/qt515/bin/qt515-env.sh
 
 script:
     #build libraw
   - git clone https://github.com/LibRaw/LibRaw.git
   - cd LibRaw
-  - git checkout 0.19-stable
+  - git checkout 0209b6a2caec189e6d1a9b21c10e9e49f46e5a92 #0.20-Release
   - git apply ../patches/libraw-makefile.patch
   - make -j3 -f Makefile.dist
   - sudo make install -f Makefile.dist
@@ -64,6 +64,7 @@ script:
   - sed -i -e 's|^Exec=.*|Exec=filmulator-gui|g' appdir/usr/share/applications/filmulator-gui.desktop
   - mkdir -p appdir/usr/share/icons/hicolor/64x64/apps/
   - cp ../filmulator-gui64.png appdir/usr/share/icons/hicolor/64x64/apps/filmulator-gui.png
+  - cp ../filmulator-gui64.png appdir/filmulator-gui.png
   - find appdir/
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage

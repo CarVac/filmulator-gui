@@ -12,7 +12,9 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     QQuickImageProvider(QQuickImageProvider::Image,
                         QQuickImageProvider::ForceAsynchronousImageLoading),
     pipeline(WithCache, WithHisto, HighQuality),
-    quickPipe(WithCache, WithHisto, PreviewQuality)
+    quickPipe(WithCache, WithHisto, PreviewQuality),
+    nextQuickPipe(WithCache, WithHisto, PreviewQuality),
+    prevQuickPipe(WithCache, WithHisto, PreviewQuality)
 {
     paramManager = manager;
     cloneParam = new ParameterManager;
@@ -38,6 +40,8 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     }
 
     quickPipe.resolution = settingsObject.getPreviewResolution();
+    nextQuickPipe.resolution = settingsObject.getPreviewResolution();
+    prevQuickPipe.resolution = settingsObject.getPreviewResolution();
 
     //Check if we want to use dual pipelines
     if (settingsObject.getQuickPreview())

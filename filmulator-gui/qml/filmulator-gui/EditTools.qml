@@ -497,7 +497,7 @@ SlimSplitView {
                     defaultValue: Math.log(Math.sqrt(paramManager.defFilmArea))
                     //The following thresholds are 24mmx65mm and twice 6x9cm film's
                     // areas, respectively.
-                    valueText: (Math.exp(value*2) < 1560) ? "SF" : (Math.exp(value*2) < 9408) ? "MF" : "LF"
+                    valueText: (Math.exp(value*2)).toFixed(1)//(Math.exp(value*2) < 1560) ? "SF" : (Math.exp(value*2) < 9408) ? "MF" : "LF"
                     onValueChanged: {
                         paramManager.filmArea = Math.exp(value*2)
                     }

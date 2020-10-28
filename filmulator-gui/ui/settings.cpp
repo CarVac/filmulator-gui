@@ -286,6 +286,23 @@ int Settings::getPreviewResolution()
     return previewResolution;
 }
 
+void Settings::setUseSystemLanguage(bool useSystemLanguageIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    useSystemLanguage = useSystemLanguageIn;
+    settings.setValue("ui/useSystemLanguage", useSystemLanguageIn);
+    emit useSystemLanguageChanged();
+}
+
+bool Settings::getUseSystemLanguage()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    //Default: 1; it should default to being on.
+    useSystemLanguage = settings.value("ui/useSystemLanguage", 1).toBool();
+    emit useSystemLanguageChanged();
+    return useSystemLanguage;
+}
+
 void Settings::checkLensfunStatus()
 {
     QDir dir = QDir::home();

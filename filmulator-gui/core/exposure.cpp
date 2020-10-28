@@ -23,6 +23,7 @@ void exposure(matrix<float> &input_image, float crystals_per_pixel,
 {
     rolloff_boundary = std::max(std::min(rolloff_boundary, 65534.f), 1.f);
     toe_boundary = std::max(std::min(toe_boundary, rolloff_boundary/2),0.f);//bound this to lower than half the rolloff boundary
+    rolloff_boundary = std::min(65535.f, rolloff_boundary - toe_boundary);//we mustn't let rolloff boundary exceed 65535
     const int nrows = input_image.nr();
     const int ncols = input_image.nc();
     const float max_crystals = 65535.f - toe_boundary;

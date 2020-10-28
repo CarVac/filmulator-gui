@@ -26,13 +26,17 @@
 
 int main(int argc, char *argv[])
 {
+    cout << "Have " << argc << " arguments" << endl;
+    for (int i = 0; i < argc; i++)
+    {
+        cout << argv[i] << endl;
+    }
+
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating qapplication" << endl;
     //It cannot properly fall back to Qt Widgets versions of the dialogs if
     // we use a QGuiApplication, which only supports QML stuff.
     //QGuiApplication app(argc, argv);
     QApplication app(argc, argv);
-
-    char* appdir = getenv("APPDIR");
 
     //This is for the QSettings defaults from things like the qt file dialog and stuff...
     app.setApplicationName("Filmulator");
@@ -44,10 +48,6 @@ int main(int argc, char *argv[])
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() <<  "creating qqmlapplicationengine" << endl;
     QQmlApplicationEngine engine;
 
-    QTranslator translator;
-    translator.load("filmulatortr_la");
-    app.installTranslator(&translator);
-
     //Prepare database connection.
     //This should create a new db file if there was none.
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "connecting to database" << endl;
@@ -58,6 +58,19 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    /*
+    QTranslator translator;
+    cout << QLocale::languageToString(QLocale().language()).toStdString() << endl;
+    if (translator.load(QLocale(), QLatin1String("filmulator-gui"), QLatin1String("_"), QLatin1String("qrc:///tl/translations/")))
+    {
+        cout << "succeeded in loading translation" << endl;
+        app.installTranslator(&translator);
+        engine.installExtensions(QJSEngine::TranslationExtension);
+        engine.setUiLanguage(QLocale::languageToString(QLocale().language()));
+    }
+    */
+
+
     //Create the object for communicating between SQL classes.
     SignalSwitchboard *switchboard = new SignalSwitchboard;
 
@@ -65,6 +78,12 @@ int main(int argc, char *argv[])
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating settings object" << endl;
     Settings *settingsObj = new Settings;
     engine.rootContext()->setContextProperty("settings", settingsObj);
+
+    if (settingsObj->getUseSystemLanguage() == false)
+    {
+        engine.setUiLanguage("English");
+        //when more than just German translations are available, have this be filled by another setting
+    }
 
     //Prepare an object for managing the processing parameters.
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating parametermanager" << endl;
@@ -119,6 +138,18 @@ int main(int argc, char *argv[])
 
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading qml file" << endl;
     engine.load("qrc:///qml/qml/filmulator-gui/main.qml");
+
+    if (argc == 2)
+    {
+        cout << "Importing file!" << endl;
+        QString searchID = importModel->importFileNow(QString(argv[1]), settingsObj);
+        if (searchID != "")
+        {
+            paramManager->selectImage(searchID);
+        } else {
+            cout << "Could not import file." << endl;
+        }
+    }
 
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating window" << endl;
 

@@ -21,16 +21,17 @@ public:
     explicit ImportWorker(QObject *parent = 0);
 
 public slots:
-    void importFile(const QFileInfo infoIn,
-                    const int importTZ,
-                    const int cameraTZ,
-                    const QString photoDir,
-                    const QString backupDir,
-                    const QString dirConfig,
-                    const QDateTime importStartTime,
-                    const bool appendHash,
-                    const bool importInPlace,
-                    const bool replaceLocation);
+    QString importFile(const QFileInfo infoIn,
+                       const int importTZ,
+                       const int cameraTZ,
+                       const QString photoDir,
+                       const QString backupDir,
+                       const QString dirConfig,
+                       const QDateTime importStartTime,
+                       const bool appendHash,
+                       const bool importInPlace,
+                       const bool replaceLocation,
+                       const bool noThumbnail);
 
 signals:
     void enqueueThis(QString STsearchID);

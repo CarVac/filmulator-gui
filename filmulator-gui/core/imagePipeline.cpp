@@ -43,8 +43,8 @@ int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
 }
 
 matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramManager,
-                                                   Interface * interface_in,
-                                                   Exiv2::ExifData &exifOutput)
+                                                    Interface * interface_in,
+                                                    Exiv2::ExifData &exifOutput)
 {
     //Say that we've started processing to prevent cache status from changing..
     hasStartedProcessing = true;

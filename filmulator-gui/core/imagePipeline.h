@@ -18,8 +18,8 @@ public:
 
     //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
     matrix<unsigned short>& processImage(ParameterManager * paramManager,
-                                        Interface * histoInterface,
-                                        Exiv2::ExifData &exifOutput);
+                                         Interface * histoInterface,
+                                         Exiv2::ExifData &exifOutput);
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
     float getProgress(){return progress;}
@@ -77,6 +77,7 @@ protected:
     matrix<float> recovered_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
+    Exiv2::ExifData basicExifData;//for tiff writing
     matrix<float> filmulated_image;
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;

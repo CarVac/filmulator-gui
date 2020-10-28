@@ -24,6 +24,8 @@ class Settings : public QObject
     Q_PROPERTY(bool lowMemMode READ getLowMemMode WRITE setLowMemMode NOTIFY lowMemModeChanged)
     Q_PROPERTY(bool quickPreview READ getQuickPreview WRITE setQuickPreview NOTIFY quickPreviewChanged)
     Q_PROPERTY(int previewResolution READ getPreviewResolution WRITE setPreviewResolution NOTIFY previewResolutionChanged)
+    Q_PROPERTY(bool useSystemLanguage READ getUseSystemLanguage WRITE setUseSystemLanguage NOTIFY useSystemLanguageChanged)
+
     Q_PROPERTY(QString lensfunStatus READ getLensfunStatus NOTIFY lensfunStatusChanged)
     Q_PROPERTY(QString updateStatus READ getUpdateStatus NOTIFY updateStatusChanged)
 
@@ -45,6 +47,7 @@ public:
     void setLowMemMode(bool lowMemModeIn);
     void setQuickPreview(bool quickPreviewIn);
     void setPreviewResolution(int resolutionIn);
+    void setUseSystemLanguage(bool useSystemLanguageIn);
 
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
@@ -62,6 +65,8 @@ public:
     Q_INVOKABLE bool getLowMemMode();
     Q_INVOKABLE bool getQuickPreview();
     Q_INVOKABLE int getPreviewResolution();
+    Q_INVOKABLE bool getUseSystemLanguage();
+
     Q_INVOKABLE QString getLensfunStatus() {return lensfunStatus;};
     Q_INVOKABLE QString getUpdateStatus() {return updateStatus;};
 
@@ -85,6 +90,8 @@ protected:
     bool lowMemMode;
     bool quickPreview;
     int previewResolution;
+    bool useSystemLanguage;
+
     QString lensfunStatus;
     QString updateStatus;
 
@@ -105,6 +112,8 @@ signals:
     void lowMemModeChanged();
     void quickPreviewChanged();
     void previewResolutionChanged();
+    void useSystemLanguageChanged();
+
     void lensfunStatusChanged();
     void updateStatusChanged();
 };
