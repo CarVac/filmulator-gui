@@ -772,15 +772,65 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
 
+                const float rotationAngle = 5.0f * 3.1415926535/180;//degrees
+                cout << "cos rotationangle: " << cos(rotationAngle) << endl;
+                cout << "sin rotationangle: " << sin(rotationAngle) << endl;
+
                 //Next is CA, or distortion, or both.
                 matrix<float> new_image;
                 new_image.set_size(height, width*3);
 
-                if (demosaicParam.lensfunCA && demosaicParam.lensfunDistortion)
+                if (demosaicParam.lensfunCA || demosaicParam.lensfunDistortion)
                 {
                     //ApplySubpixelGeometryDistortion
                     bool success = true;
                     int listWidth = width * 2 * 3;
+
+                    //Check how far out of bounds we go
+                    float maxOvershootDistance = 1.0f;
+                    cout << "max overshoot distance before: " << maxOvershootDistance << endl;
+                    float semiwidth = (width-1)/2.0f;
+                    float semiheight = (height-1)/2.0f;
+                    #pragma omp parallel for reduction(max:maxOvershootDistance)
+                    for (int row = 0; row < height; row++)
+                    {
+                        float positionList[listWidth];
+                        success = mod->ApplySubpixelGeometryDistortion(0.0f, row, width, 1, positionList);
+                        if (success)
+                        {
+                            for (int col = 0; col < width; col++)
+                            {
+                                int listIndex = col * 2 * 3; //list index
+                                for (int c = 0; c < 3; c++)
+                                {
+                                    float coordX = positionList[listIndex+2*c] - semiwidth;
+                                    float coordY = positionList[listIndex+2*c+1] - semiheight;
+                                    float rotatedX = coordX * cos(rotationAngle) - coordY * sin(rotationAngle);
+                                    float rotatedY = coordX * sin(rotationAngle) + coordY * cos(rotationAngle);
+
+                                    float overshoot = 1.0f;
+
+                                    if (abs(rotatedX) > semiwidth)
+                                    {
+                                        overshoot = max(abs(rotatedX)/semiwidth,overshoot);
+                                    }
+                                    if (abs(rotatedY) > semiheight)
+                                    {
+                                        overshoot = max(abs(rotatedY)/semiheight,overshoot);
+                                    }
+
+                                    if (overshoot > maxOvershootDistance)
+                                    {
+                                        maxOvershootDistance = overshoot;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    cout << "max overshoot distance: " << maxOvershootDistance << endl;
+                    cout << "semiwidth:  " << semiwidth << endl;
+                    cout << "semiheight: " << semiheight << endl;
+
                     #pragma omp parallel for
                     for (int row = 0; row < height; row++)
                     {
@@ -793,15 +843,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                 int listIndex = col * 2 * 3; //list index
                                 for (int c = 0; c < 3; c++)
                                 {
-                                    float coordX = positionList[listIndex+2*c];
-                                    float coordY = positionList[listIndex+2*c+1];
-                                    int sX = max(0, min(width-1,  int(floor(coordX))))*3 + c;//startX
-                                    int eX = max(0, min(width-1,  int(ceil(coordX))))*3 + c; //endX
-                                    int sY = max(0, min(height-1, int(floor(coordY))));      //startY
-                                    int eY = max(0, min(height-1, int(ceil(coordY))));       //endY
+                                    float coordX = positionList[listIndex+2*c] - semiwidth;
+                                    float coordY = positionList[listIndex+2*c+1] - semiheight;
+                                    float rotatedX = (coordX * cos(rotationAngle) - coordY * sin(rotationAngle)) / maxOvershootDistance + semiwidth;
+                                    float rotatedY = (coordX * sin(rotationAngle) + coordY * cos(rotationAngle)) / maxOvershootDistance + semiheight;
+                                    int sX = max(0, min(width-1,  int(floor(rotatedX))))*3 + c;//startX
+                                    int eX = max(0, min(width-1,  int(ceil(rotatedX))))*3 + c; //endX
+                                    int sY = max(0, min(height-1, int(floor(rotatedY))));      //startY
+                                    int eY = max(0, min(height-1, int(ceil(rotatedY))));       //endY
                                     float notUsed;
-                                    float eWX = modf(coordX, &notUsed); //end weight X
-                                    float eWY = modf(coordY, &notUsed); //end weight Y;
+                                    float eWX = modf(rotatedX, &notUsed); //end weight X
+                                    float eWY = modf(rotatedY, &notUsed); //end weight Y;
                                     float sWX = 1 - eWX;                //start weight X
                                     float sWY = 1 - eWY;                //start weight Y;
                                     new_image(row, col*3 + c) = recovered_image(sY, sX) * sWY * sWX +
@@ -814,83 +866,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                     recovered_image = std::move(new_image);
                 } else {
-                    if (demosaicParam.lensfunCA)
-                    {
-                        cout << "apply lensfun ca" << endl;
-                        //ApplySubpixelDistortion
-                        bool success = true;
-                        int listWidth = width * 2 * 3;
-                        #pragma omp parallel for
-                        for (int row = 0; row < height; row++)
-                        {
-                            float positionList[listWidth];
-                            success = mod->ApplySubpixelDistortion(0.0f, row, width, 1, positionList);
-                            if (success)
-                            {
-                                for (int col = 0; col < width; col++)
-                                {
-                                    int listIndex = col * 2 * 3; //list index
-                                    for (int c = 0; c < 3; c++)
-                                    {
-                                        float coordX = positionList[listIndex+2*c];
-                                        float coordY = positionList[listIndex+2*c+1];
-                                        int sX = max(0, min(width-1,  int(floor(coordX))))*3 + c;//startX
-                                        int eX = max(0, min(width-1,  int(ceil(coordX))))*3 + c; //endX
-                                        int sY = max(0, min(height-1, int(floor(coordY))));      //startY
-                                        int eY = max(0, min(height-1, int(ceil(coordY))));       //endY
-                                        float notUsed;
-                                        float eWX = modf(coordX, &notUsed); //end weight X
-                                        float eWY = modf(coordY, &notUsed); //end weight Y;
-                                        float sWX = 1 - eWX;                //start weight X
-                                        float sWY = 1 - eWY;                //start weight Y;
-                                        new_image(row, col*3 + c) = recovered_image(sY, sX) * sWY * sWX +
-                                                                    recovered_image(eY, sX) * eWY * sWX +
-                                                                    recovered_image(sY, eX) * sWY * eWX +
-                                                                    recovered_image(eY, eX) * eWY * eWX;
-                                    }
-                                }
-                            }
-                        }
-                        recovered_image = std::move(new_image);
-                    }
-                    if (demosaicParam.lensfunDistortion)
-                    {
-                        //ApplyGeometryDistortion
-                        bool success = true;
-                        int listWidth = width * 2;
-                        #pragma omp parallel for
-                        for (int row = 0; row < height; row++)
-                        {
-                            float positionList[listWidth];
-                            success = mod->ApplyGeometryDistortion(0.0f, row, width, 1, positionList);
-                            if (success)
-                            {
-                                for (int col = 0; col < width; col++)
-                                {
-                                    int listIndex = col * 2; //list index
-                                    float coordX = positionList[listIndex];
-                                    float coordY = positionList[listIndex+1];
-                                    int sX = max(0, min(width-1,  int(floor(coordX))))*3;//startX
-                                    int eX = max(0, min(width-1,  int(ceil(coordX))))*3; //endX
-                                    int sY = max(0, min(height-1, int(floor(coordY))));  //startY
-                                    int eY = max(0, min(height-1, int(ceil(coordY))));   //endY
-                                    float notUsed;
-                                    float eWX = modf(coordX, &notUsed); //end weight X
-                                    float eWY = modf(coordY, &notUsed); //end weight Y;
-                                    float sWX = 1 - eWX;                //start weight X
-                                    float sWY = 1 - eWY;                //start weight Y;
-                                    for (int c = 0; c < 3; c++)
-                                    {
-                                        new_image(row, col*3 + c) = recovered_image(sY, sX + c) * sWY * sWX +
-                                                                    recovered_image(eY, sX + c) * eWY * sWX +
-                                                                    recovered_image(sY, eX + c) * sWY * eWX +
-                                                                    recovered_image(eY, eX + c) * eWY * eWX;
-                                    }
-                                }
-                            }
-                        }
-                        recovered_image = std::move(new_image);
-                    }
+                    //also do rotations
+                    //recovered_image = std::move(new_image);
                 }
 
                 if (mod != NULL)
