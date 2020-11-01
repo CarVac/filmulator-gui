@@ -41,7 +41,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: timezoneOffset
-                    title: qsTr("Time zone")
+                    title: qsTr("Time Zone")
                     tooltipText: qsTr("Controls when the day is divided for the date filters.")
                     minimumValue: -14
                     maximumValue: 14
