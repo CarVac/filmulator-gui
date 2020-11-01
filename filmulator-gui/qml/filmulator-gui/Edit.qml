@@ -1821,12 +1821,12 @@ SlimSplitView {
 
         Rectangle {
             id: lensfunBox
-            x: leftButtonSpacer.x - 350 * uiScale //not width because we don't want it to move when it resizes
+            x: leftButtonSpacer.x - 320 * uiScale //not width because we don't want it to move when it resizes
             y: 0 * uiScale
             z: active ? 1 : 0
             //resize when active to make room for german translation of buttons at bottom
             //120 is the width of the buttons, 2 is the padding to make the rightmost button stationary
-            width: active ? (120 + 2 + 350) * uiScale : 350 * uiScale
+            width: active ? (150 + 2 + 320) * uiScale : 320 * uiScale
             height: active ? 400 * uiScale : 30 * uiScale
             radius: 5 * uiScale
             visible: !photoBox.loadingError
@@ -2263,7 +2263,7 @@ SlimSplitView {
             id: crop
             anchors.right: rotateLeft.left
             y: 0 * uiScale
-            notDisabled: root.imageReady
+            notDisabled: root.imageReady && !root.leveling
             tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
             Image {
                 width: 14 * uiScale
@@ -2308,7 +2308,7 @@ SlimSplitView {
 
         ToolButton {
             id: rotateLeft
-            anchors.right: rotateRight.left
+            anchors.right: level.left
             y: 0 * uiScale
             tooltipText: qsTr("Rotate image 90 degrees left.")
             Image {
@@ -2323,6 +2323,27 @@ SlimSplitView {
             }
             Component.onCompleted: {
                 rotateLeft.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
+            id: level
+            anchors.right: rotateRight.left
+            y: 0 * uiScale
+            notDisabled: root.imageReady && !root.cropping
+            tooltipText: root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Level the image.")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: parent.pressed ? "qrc:///icons/levelactive.png" : "qrc:///icons/level.png" //==================== should be root.leveling
+                antialiasing: true
+                opacity: level.notDisabled ? 1 : 0.5
+            }
+
+            Component.onCompleted: {
+                level.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
         }
