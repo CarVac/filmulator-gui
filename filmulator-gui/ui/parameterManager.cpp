@@ -189,6 +189,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     demParams.lensfunDistortion = s_lensfunDist >= 1;
     demParams.focalLength = focalLength;
     demParams.fnumber = fnumber;
+    demParams.rotationAngle = m_rotationAngle;
     std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
@@ -308,6 +309,19 @@ void ParameterManager::setLensfunDist(int distEnabled)
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLensfunDist"));
+    }
+}
+
+void ParameterManager::setRotationAngle(float angleIn)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_rotation = angleIn;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotationAngle"));
     }
 }
 
@@ -1184,10 +1198,11 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTlensfunName, "                    //41
                   "ProcTlensfunCa, "                      //42
                   "ProcTlensfunVign, "                    //43
-                  "ProcTlensfunDist) "                    //44
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4
-                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
+                  "ProcTlensfunDist, "                    //44
+                  "ProcTrotationAngle) "                  //45
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4
+                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -1233,6 +1248,7 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(42, m_lensfunCa);
     query.bindValue(43, m_lensfunVign);
     query.bindValue(44, m_lensfunDist);
+    query.bindValue(45, m_rotationAngle);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -1530,6 +1546,7 @@ void ParameterManager::selectImage(const QString imageID)
     emit lensfunCaChanged();
     emit lensfunVignChanged();
     emit lensfunDistChanged();
+    emit rotationAngleChanged();
     emit exposureCompChanged();
     emit temperatureChanged();
     emit tintChanged();
@@ -1575,6 +1592,7 @@ void ParameterManager::selectImage(const QString imageID)
     emit defLensfunCaChanged();
     emit defLensfunVignChanged();
     emit defLensfunDistChanged();
+    emit defRotationAngleChanged();
     emit defExposureCompChanged();
     emit defTemperatureChanged();
     emit defTintChanged();
@@ -1689,6 +1707,16 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
         nameCol = rec.indexOf("ProfTlensfunDist");
         if (-1 == nameCol) { std::cout << "paramManager ProfTlensfunDist" << endl; }
         m_lensfunDist = query.value(nameCol).toInt();
+    }
+
+    //Fine rotation angle
+    nameCol = rec.indexOf("ProfTrotationAngle");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrotationAngle" << endl; }
+    const float temp_rotationAngle = query.value(nameCol).toFloat();
+    d_rotationAngle = temp_rotationAngle;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rotationAngle = temp_rotationAngle;
     }
 
     //Exposure compensation
@@ -2154,6 +2182,17 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams lensfunDist" << endl;
         m_lensfunDist = temp_lensfunDist;
+        validity = min(validity, Valid::load);
+    }
+
+    //Fine rotation angle
+    nameCol = rec.indexOf("ProcTrotationAngle");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotationAngle" << endl; }
+    const float temp_rotationAngle = query.value(nameCol).toFloat();
+    if (temp_rotationAngle != m_rotationAngle)
+    {
+        //cout << "ParameterManager::loadParams rotationAngle" << endl;
+        m_rotationAngle = temp_rotationAngle;
         validity = min(validity, Valid::load);
     }
 
@@ -2761,6 +2800,15 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams lensfunDist" << endl;
         s_lensfunDist = temp_lensfunDist;
+        validity = min(validity, Valid::load);
+    }
+
+    //Fine rotation angle
+    const float temp_rotationAngle = sourceParams->getExposureComp();
+    if (temp_rotationAngle != m_rotationAngle)
+    {
+        //cout << "ParameterManager::cloneParams rotationAngle" << endl;
+        m_rotationAngle = temp_rotationAngle;
         validity = min(validity, Valid::load);
     }
 

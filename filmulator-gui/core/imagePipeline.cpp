@@ -772,7 +772,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
 
-                const float rotationAngle = 5.0f * 3.1415926535/180;//degrees
+                const float rotationAngle = demosaicParam.rotationAngle * 3.1415926535/180;//convert degrees to radians
                 cout << "cos rotationangle: " << cos(rotationAngle) << endl;
                 cout << "sin rotationangle: " << sin(rotationAngle) << endl;
 
