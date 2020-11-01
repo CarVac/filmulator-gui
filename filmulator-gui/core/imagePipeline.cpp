@@ -788,7 +788,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
                     //Check how far out of bounds we go
                     float maxOvershootDistance = 1.0f;
-                    cout << "max overshoot distance before: " << maxOvershootDistance << endl;
                     float semiwidth = (width-1)/2.0f;
                     float semiheight = (height-1)/2.0f;
                     #pragma omp parallel for reduction(max:maxOvershootDistance)
@@ -827,9 +826,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             }
                         }
                     }
-                    cout << "max overshoot distance: " << maxOvershootDistance << endl;
-                    cout << "semiwidth:  " << semiwidth << endl;
-                    cout << "semiheight: " << semiheight << endl;
 
                     #pragma omp parallel for
                     for (int row = 0; row < height; row++)
@@ -866,8 +862,67 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                     recovered_image = std::move(new_image);
                 } else {
-                    //also do rotations
-                    //recovered_image = std::move(new_image);
+                    //also do rotations on non-corrected images
+                    float maxOvershootDistance = 1.0f;
+                    float semiwidth = (width-1)/2.0f;
+                    float semiheight = (height-1)/2.0f;
+
+                    //check the four corners
+                    for (int row = 0; row < height; row += height-1)
+                    {
+                        for (int col = 0; col < width; col += width-1)
+                        {
+                            float coordX = col - semiwidth;
+                            float coordY = row - semiheight;
+                            float rotatedX = coordX * cos(rotationAngle) - coordY * sin(rotationAngle);
+                            float rotatedY = coordX * sin(rotationAngle) + coordY * cos(rotationAngle);
+
+                            float overshoot = 1.0f;
+
+                            if (abs(rotatedX) > semiwidth)
+                            {
+                                overshoot = max(abs(rotatedX)/semiwidth,overshoot);
+                            }
+                            if (abs(rotatedY) > semiheight)
+                            {
+                                overshoot = max(abs(rotatedY)/semiheight,overshoot);
+                            }
+
+                            if (overshoot > maxOvershootDistance)
+                            {
+                                maxOvershootDistance = overshoot;
+                            }
+                        }
+                    }
+
+                    //Apply the rotation
+                    for (int row = 0; row < height; row++)
+                    {
+                        for (int col = 0; col < width; col++)
+                        {
+                            float coordX = col - semiwidth;
+                            float coordY = row - semiheight;
+                            float rotatedX = (coordX * cos(rotationAngle) - coordY * sin(rotationAngle)) / maxOvershootDistance + semiwidth;
+                            float rotatedY = (coordX * sin(rotationAngle) + coordY * cos(rotationAngle)) / maxOvershootDistance + semiheight;
+                            int sX = max(0, min(width-1,  int(floor(rotatedX))))*3;//startX
+                            int eX = max(0, min(width-1,  int(ceil(rotatedX))))*3; //endX
+                            int sY = max(0, min(height-1, int(floor(rotatedY))));  //startY
+                            int eY = max(0, min(height-1, int(ceil(rotatedY))));   //endY
+                            float notUsed;
+                            float eWX = modf(rotatedX, &notUsed); //end weight X
+                            float eWY = modf(rotatedY, &notUsed); //end weight Y;
+                            float sWX = 1 - eWX;                //start weight X
+                            float sWY = 1 - eWY;                //start weight Y;
+                            for (int c = 0; c < 3; c++)
+                            {
+                                new_image(row, col*3 + c) = recovered_image(sY, sX + c) * sWY * sWX +
+                                                            recovered_image(eY, sX + c) * eWY * sWX +
+                                                            recovered_image(sY, eX + c) * sWY * eWX +
+                                                            recovered_image(eY, eX + c) * eWY * eWX;
+                            }
+                        }
+                    }
+                    recovered_image = std::move(new_image);
                 }
 
                 if (mod != NULL)
