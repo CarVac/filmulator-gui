@@ -4,37 +4,42 @@
 <context>
     <name>Edit</name>
     <message>
-        <location filename="../Edit.qml" line="1728"/>
+        <location filename="../Edit.qml" line="1950"/>
         <source>Width: </source>
         <translation>Breite: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1738"/>
+        <location filename="../Edit.qml" line="1960"/>
         <source>Height: </source>
         <translation>Höhe: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1748"/>
+        <location filename="../Edit.qml" line="1970"/>
         <source>H offset: </source>
         <translation>H-Versatz: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1758"/>
+        <location filename="../Edit.qml" line="1980"/>
         <source>V offset: </source>
         <translation>V-Versatz: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1789"/>
+        <location filename="../Edit.qml" line="1990"/>
+        <source>Rotation: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2021"/>
         <source>Error: </source>
         <translation>Fehler: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1789"/>
+        <location filename="../Edit.qml" line="2021"/>
         <source> is not accessible.</source>
         <translation> ist nicht erreichbar.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1817"/>
+        <location filename="../Edit.qml" line="2049"/>
         <source>Select the lens that was used in order to use lens corrections.
 
 Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;&quot;) then it will search lenses from all mounts.
@@ -47,27 +52,27 @@ Schreiben Sie den Objektivnamen in das Feld rechts. Normalerweise wird nur nach 
 Doppelklick auf ein Objektiv, um es auszuwählen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1865"/>
+        <location filename="../Edit.qml" line="2097"/>
         <source>No lens selected</source>
         <translation>Kein Objektiv ausgewählt</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1907"/>
+        <location filename="../Edit.qml" line="2139"/>
         <source>Reset selected lens back to default and sets search box back to EXIF-derived lens name.</source>
         <translation>Setzt ausgewähltes Objektiv auf Standard zurück und setzt Suchbox zurück auf den Objektivnamen aus den EXIF-Daten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1975"/>
+        <location filename="../Edit.qml" line="2207"/>
         <source>Search fit score: </source>
         <translation>Trefferanzahl: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2159"/>
+        <location filename="../Edit.qml" line="2391"/>
         <source>Remember preferred lens</source>
         <translation>Bevorzugtes Objektiv beibehalten</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2160"/>
+        <location filename="../Edit.qml" line="2392"/>
         <source>Use the selected lens as default for all future photos taken with the same camera and lens combination.
 
 This also remembers the currently selected lens corrections.</source>
@@ -76,53 +81,87 @@ This also remembers the currently selected lens corrections.</source>
 Berücksichtigt auch aktuell gewählte Objektivkorrekturen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2176"/>
+        <location filename="../Edit.qml" line="2408"/>
         <source>Forget preferred lens</source>
         <translation>Bevorzugtes Objektiv zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2177"/>
+        <location filename="../Edit.qml" line="2409"/>
         <source>Clear the default lens for photos taken with the same camera and lens combination.</source>
         <translation>Löscht das bevorzugte Objektiv für Fotos, die mit der gleichen Objektiv-Kamera-Kombination gemacht wurden.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2200"/>
+        <location filename="../Edit.qml" line="2432"/>
         <source>Change the editor&apos;s background brightness between black, gray, and white.</source>
         <translation>Ändert die Helligkeit des Editor-Hintergrundes in Schwarz, Grau oder Weiß.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2244"/>
+        <location filename="../Edit.qml" line="2476"/>
+        <source>Click this or press &quot;C&quot; to save your crop.
+
+Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
+
+Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2476"/>
+        <source>Click this or press &quot;C&quot; to begin cropping.
+
+Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
+
+Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Click this to save your crop.
 
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation>Hier klicken, um den Zuschnitt zu speichern.
+        <translation type="vanished">Hier klicken, um den Zuschnitt zu speichern.
 
 Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Ausschnitt zu verschieben, ohne seine Größe zu ändern.
 
 Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende übliche Seitenverhältnis zu bringen. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2244"/>
         <source>Click this to begin cropping.
 
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation>Hier klicken, um mit dem Zuschneiden zu beginnen.
+        <translation type="vanished">Hier klicken, um mit dem Zuschneiden zu beginnen.
 
 Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Zuschnitt zu verschieben, ohne seine Größe zu ändern.
 
 Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zuschnitt auf das nächstliegende übliche Seitenverhältnis zu fixieren. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2290"/>
+        <location filename="../Edit.qml" line="2523"/>
         <source>Rotate image 90 degrees left.</source>
         <translation>Bild um 90 Grad nach links drehen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2311"/>
+        <location filename="../Edit.qml" line="2546"/>
+        <source>Click this or press &quot;L&quot; to save the rotation.
+
+Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
+
+Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2546"/>
+        <source>Click this or press &quot;L&quot; to begin leveling the image.
+
+Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
+
+Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2600"/>
         <source>Rotate image 90 degrees right.</source>
         <translation>Bild um 90 Grad nach rechts drehen.</translation>
     </message>
@@ -135,9 +174,13 @@ Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zu
         <translation>Dies ist ein Histogramm der Daten in der Raw-Datei.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="123"/>
         <source>Auto CA correction</source>
-        <translation>Auto CA Korrektur</translation>
+        <translation type="vanished">Auto CA Korrektur</translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="123"/>
+        <source>Auto CA Correction</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="124"/>
@@ -661,9 +704,13 @@ Es hängt einen Unterstrich und sieben Zeichen (abgeleitet aus dem Dateiinhalt) 
 <context>
     <name>Organize</name>
     <message>
-        <location filename="../Organize.qml" line="44"/>
         <source>Time zone</source>
-        <translation>Zeitzone</translation>
+        <translation type="vanished">Zeitzone</translation>
+    </message>
+    <message>
+        <location filename="../Organize.qml" line="44"/>
+        <source>Time Zone</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Organize.qml" line="45"/>
@@ -853,9 +900,13 @@ This setting takes effect after applying settings and then restarting Filmulator
 Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem Neustart von Filmulator wirksam.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="51"/>
         <source>Use System Language</source>
-        <translation>Benutze Systemsprache</translation>
+        <translation type="vanished">Benutze Systemsprache</translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="51"/>
+        <source>Use system language</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="52"/>
