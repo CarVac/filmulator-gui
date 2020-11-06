@@ -701,6 +701,18 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         std::string camName = demosaicParam.cameraName.toStdString();
         const lfCamera * camera = NULL;
         const lfCamera ** cameraList = ldb->FindCamerasExt(NULL,camName.c_str());
+
+        //Set up stuff for rotation.
+        //We expect rotation to be from -45 to +45
+        //But -50 will be the signal from the UI to disable it.
+        float rotationAngle = demosaicParam.rotationAngle * 3.1415926535/180;//convert degrees to radians
+        if (demosaicParam.rotationAngle <= -49) {
+            rotationAngle = 0;
+        }
+        cout << "cos rotationangle: " << cos(rotationAngle) << endl;
+        cout << "sin rotationangle: " << sin(rotationAngle) << endl;
+        bool lensfunGeometryCorrectionApplied = false;
+
         if (cameraList)
         {
             const float cropFactor = cameraList[0]->CropFactor;
@@ -772,16 +784,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
 
-                //Set up stuff for rotation.
-                //We expect rotation to be from -45 to +45
-                //But -50 will be the signal from the UI to disable it.
-                float rotationAngle = demosaicParam.rotationAngle * 3.1415926535/180;//convert degrees to radians
-                if (demosaicParam.rotationAngle <= -49) {
-                    rotationAngle = 0;
-                }
-                cout << "cos rotationangle: " << cos(rotationAngle) << endl;
-                cout << "sin rotationangle: " << sin(rotationAngle) << endl;
-
                 //Next is CA, or distortion, or both.
                 matrix<float> new_image;
                 new_image.set_size(height, width*3);
@@ -789,6 +791,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 if (demosaicParam.lensfunCA || demosaicParam.lensfunDistortion)
                 {
                     //ApplySubpixelGeometryDistortion
+                    lensfunGeometryCorrectionApplied = true;
                     bool success = true;
                     int listWidth = width * 2 * 3;
 
@@ -867,68 +870,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         }
                     }
                     recovered_image = std::move(new_image);
-                } else {
-                    //also do rotations on non-corrected images
-                    float maxOvershootDistance = 1.0f;
-                    float semiwidth = (width-1)/2.0f;
-                    float semiheight = (height-1)/2.0f;
-
-                    //check the four corners
-                    for (int row = 0; row < height; row += height-1)
-                    {
-                        for (int col = 0; col < width; col += width-1)
-                        {
-                            float coordX = col - semiwidth;
-                            float coordY = row - semiheight;
-                            float rotatedX = coordX * cos(rotationAngle) - coordY * sin(rotationAngle);
-                            float rotatedY = coordX * sin(rotationAngle) + coordY * cos(rotationAngle);
-
-                            float overshoot = 1.0f;
-
-                            if (abs(rotatedX) > semiwidth)
-                            {
-                                overshoot = max(abs(rotatedX)/semiwidth,overshoot);
-                            }
-                            if (abs(rotatedY) > semiheight)
-                            {
-                                overshoot = max(abs(rotatedY)/semiheight,overshoot);
-                            }
-
-                            if (overshoot > maxOvershootDistance)
-                            {
-                                maxOvershootDistance = overshoot;
-                            }
-                        }
-                    }
-
-                    //Apply the rotation
-                    for (int row = 0; row < height; row++)
-                    {
-                        for (int col = 0; col < width; col++)
-                        {
-                            float coordX = col - semiwidth;
-                            float coordY = row - semiheight;
-                            float rotatedX = (coordX * cos(rotationAngle) - coordY * sin(rotationAngle)) / maxOvershootDistance + semiwidth;
-                            float rotatedY = (coordX * sin(rotationAngle) + coordY * cos(rotationAngle)) / maxOvershootDistance + semiheight;
-                            int sX = max(0, min(width-1,  int(floor(rotatedX))))*3;//startX
-                            int eX = max(0, min(width-1,  int(ceil(rotatedX))))*3; //endX
-                            int sY = max(0, min(height-1, int(floor(rotatedY))));  //startY
-                            int eY = max(0, min(height-1, int(ceil(rotatedY))));   //endY
-                            float notUsed;
-                            float eWX = modf(rotatedX, &notUsed); //end weight X
-                            float eWY = modf(rotatedY, &notUsed); //end weight Y;
-                            float sWX = 1 - eWX;                //start weight X
-                            float sWY = 1 - eWY;                //start weight Y;
-                            for (int c = 0; c < 3; c++)
-                            {
-                                new_image(row, col*3 + c) = recovered_image(sY, sX + c) * sWY * sWX +
-                                                            recovered_image(eY, sX + c) * eWY * sWX +
-                                                            recovered_image(sY, eX + c) * sWY * eWX +
-                                                            recovered_image(eY, eX + c) * eWY * eWX;
-                            }
-                        }
-                    }
-                    recovered_image = std::move(new_image);
                 }
 
                 if (mod != NULL)
@@ -944,6 +885,74 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         if (ldb != NULL)
         {
             lf_db_destroy(ldb);
+        }
+
+        if (!lensfunGeometryCorrectionApplied)
+        {
+            //also do rotations on non-corrected images
+            float maxOvershootDistance = 1.0f;
+            float semiwidth = (width-1)/2.0f;
+            float semiheight = (height-1)/2.0f;
+
+            //check the four corners
+            for (int row = 0; row < height; row += height-1)
+            {
+                for (int col = 0; col < width; col += width-1)
+                {
+                    float coordX = col - semiwidth;
+                    float coordY = row - semiheight;
+                    float rotatedX = coordX * cos(rotationAngle) - coordY * sin(rotationAngle);
+                    float rotatedY = coordX * sin(rotationAngle) + coordY * cos(rotationAngle);
+
+                    float overshoot = 1.0f;
+
+                    if (abs(rotatedX) > semiwidth)
+                    {
+                        overshoot = max(abs(rotatedX)/semiwidth,overshoot);
+                    }
+                    if (abs(rotatedY) > semiheight)
+                    {
+                        overshoot = max(abs(rotatedY)/semiheight,overshoot);
+                    }
+
+                    if (overshoot > maxOvershootDistance)
+                    {
+                        maxOvershootDistance = overshoot;
+                    }
+                }
+            }
+
+            //Apply the rotation
+            matrix<float> new_image;
+            new_image.set_size(height, width*3);
+
+            for (int row = 0; row < height; row++)
+            {
+                for (int col = 0; col < width; col++)
+                {
+                    float coordX = col - semiwidth;
+                    float coordY = row - semiheight;
+                    float rotatedX = (coordX * cos(rotationAngle) - coordY * sin(rotationAngle)) / maxOvershootDistance + semiwidth;
+                    float rotatedY = (coordX * sin(rotationAngle) + coordY * cos(rotationAngle)) / maxOvershootDistance + semiheight;
+                    int sX = max(0, min(width-1,  int(floor(rotatedX))))*3;//startX
+                    int eX = max(0, min(width-1,  int(ceil(rotatedX))))*3; //endX
+                    int sY = max(0, min(height-1, int(floor(rotatedY))));  //startY
+                    int eY = max(0, min(height-1, int(ceil(rotatedY))));   //endY
+                    float notUsed;
+                    float eWX = modf(rotatedX, &notUsed); //end weight X
+                    float eWY = modf(rotatedY, &notUsed); //end weight Y;
+                    float sWX = 1 - eWX;                //start weight X
+                    float sWY = 1 - eWY;                //start weight Y;
+                    for (int c = 0; c < 3; c++)
+                    {
+                        new_image(row, col*3 + c) = recovered_image(sY, sX + c) * sWY * sWX +
+                                                    recovered_image(eY, sX + c) * eWY * sWX +
+                                                    recovered_image(sY, eX + c) * sWY * eWX +
+                                                    recovered_image(eY, eX + c) * eWY * eWX;
+                    }
+                }
+            }
+            recovered_image = std::move(new_image);
         }
 
         valid = paramManager->markDemosaicComplete();
