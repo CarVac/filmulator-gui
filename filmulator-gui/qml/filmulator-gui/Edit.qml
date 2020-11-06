@@ -1717,7 +1717,7 @@ SlimSplitView {
                 Rectangle {
                     id: verticalAngleMark
                     width: 1
-                    height: 2 * Math.max(bottomImage.width, bottomImage.height)
+                    height: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
                     x: topImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
                     y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
                     color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
@@ -1726,7 +1726,7 @@ SlimSplitView {
                 }
                 Rectangle {
                     id: horizontalAngleMark
-                    width: 2 * Math.max(bottomImage.width, bottomImage.height)
+                    width: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
                     height: 1
                     x: topImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
                     y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
