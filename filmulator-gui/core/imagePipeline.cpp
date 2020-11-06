@@ -772,7 +772,13 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 }
 
-                const float rotationAngle = demosaicParam.rotationAngle * 3.1415926535/180;//convert degrees to radians
+                //Set up stuff for rotation.
+                //We expect rotation to be from -45 to +45
+                //But -50 will be the signal from the UI to disable it.
+                float rotationAngle = demosaicParam.rotationAngle * 3.1415926535/180;//convert degrees to radians
+                if (demosaicParam.rotationAngle <= -49) {
+                    rotationAngle = 0;
+                }
                 cout << "cos rotationangle: " << cos(rotationAngle) << endl;
                 cout << "sin rotationangle: " << sin(rotationAngle) << endl;
 

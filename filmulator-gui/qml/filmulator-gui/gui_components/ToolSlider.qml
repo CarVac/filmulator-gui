@@ -231,7 +231,7 @@ Rectangle {
             onPressed: {
                 var x = mouse.x - centerX
                 var y = mouse.y - centerY
-                if (x^2 + y^2 < width^2) {// it's inside the outer circle
+                if (Math.sqrt(x*x + y*y) < width/2) {// it's inside the outer circle
                     spinnerCircle.dragging = true
                     preventStealing = true
                     //Angles are clockwise positive from the top, so I'm doing atan2(x,y) instead of (y,x)

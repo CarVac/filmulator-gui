@@ -141,7 +141,9 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTlensfunCa integer,"                    //42
                "ProcTlensfunVign integer,"                  //43
                "ProcTlensfunDist integer,"                  //44
-               "ProcTrotationAngle real"                    //45
+               "ProcTrotationAngle real,"                   //45
+               "ProcTrotationPointX real,"                  //46
+               "ProcTrotationPointY real,"                  //47
                ");"
                );
 
@@ -188,7 +190,9 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProfTlensfunCa integer,"                    //37
                "ProfTlensfunVign integer,"                  //38
                "ProfTlensfunDist integer,"                  //39
-               "ProfTrotationAngle real"                    //40
+               "ProfTrotationAngle real,"                   //40
+               "ProfTrotationPointX real,"                  //41
+               "ProfTrotationPointY real,"                  //42
                ");"
                );
 
@@ -220,9 +224,9 @@ DBSuccess setupDB(QSqlDatabase *db)
 
     //Now we set the default Default profile.
     query.prepare("REPLACE INTO ProfileTable values "
-                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4
-                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4
+                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2
     //Name of profile; must be unique.
     query.bindValue(0, "Default");
     //Initial Developer Concentration
@@ -297,7 +301,11 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.bindValue(37, -1); //lensfun CA - negative 1 indicates use preferences
     query.bindValue(38, -1); //lensfun vignetting
     query.bindValue(39, -1); //lensfun distortion
-    query.bindValue(40, 0); //fine rotation angle
+    //fine rotation angle
+    query.bindValue(40, 0.0f); //rotationAngle
+    //where the ui point about which we adjust rotation is, relative to the image dimensions
+    query.bindValue(41, -1.f); //rotationPointX
+    query.bindValue(42, -1.f); //rotationPointY
 
     //Well, orientation and crop obviously don't get presets.
     query.exec();
@@ -464,9 +472,17 @@ DBSuccess setupDB(QSqlDatabase *db)
         [[fallthrough]];
     case 12:
         query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTrotationAngle;");
-        query.exec("UPDATE ProcessingTable SET ProcTrotationAngle = 0;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTrotationPointX;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTrotationPointY;");
+        query.exec("UPDATE ProcessingTable SET ProcTrotationAngle  =  0;");
+        query.exec("UPDATE ProcessingTable SET ProcTrotationPointX = -1;");
+        query.exec("UPDATE ProcessingTable SET ProcTrotationPointY = -1;");
         query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTrotationAngle;");
-        query.exec("UPDATE ProfileTable SET ProfTrotationAngle = 0;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTrotationPointX;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTrotationPointY;");
+        query.exec("UPDATE ProfileTable SET ProfTrotationAngle  =  0;");
+        query.exec("UPDATE ProfileTable SET ProfTrotationPointX = -1;");
+        query.exec("UPDATE ProfileTable SET ProfTrotationPointY = -1;");
         versionString = "PRAGMA user_version = 13;";
         std::cout << "Upgrading from old db version 12" << std::endl;
     }

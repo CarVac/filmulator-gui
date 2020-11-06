@@ -37,10 +37,10 @@ Item {
             border.color: notDisabled ? parent.pressed ?  Colors.lightOrange : Colors.brightGray : Colors.brightGray
             radius: 5 * uiScale
             gradient: Gradient {
-                GradientStop {color: button.pressed ? "#000000" : "#222222"; position: 0.0}
-                GradientStop {color: button.pressed ? "#161106" : "#111111"; position: 0.3}
-                GradientStop {color: button.pressed ? "#161106" : "#111111"; position: 0.7}
-                GradientStop {color: button.pressed ? "#272217" : "#000000"; position: 1.0}
+                GradientStop {color: (button.pressed && root.notDisabled) ? "#000000" : "#222222"; position: 0.0}
+                GradientStop {color: (button.pressed && root.notDisabled) ? "#161106" : "#111111"; position: 0.3}
+                GradientStop {color: (button.pressed && root.notDisabled) ? "#161106" : "#111111"; position: 0.7}
+                GradientStop {color: (button.pressed && root.notDisabled) ? "#272217" : "#000000"; position: 1.0}
             }
         }
         contentItem: Text {
