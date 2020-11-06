@@ -252,6 +252,9 @@ SlimSplitView {
                     }
 
                     onStatusChanged: {
+                        var num
+                        var s
+                        var size
                         if (topImage.status == Image.Ready) { //if the image is now ready
                             // First, we copy to the bottom image, regardless of what else.
                             console.log("top image ready")
@@ -281,10 +284,10 @@ SlimSplitView {
                             else {//it was loading the thumb or the quick image
                                 root.imageReady = false
                                 //Increment the image index
-                                var num = (topImage.index + 1) % 1000000//1 in a million
+                                num = (topImage.index + 1) % 1000000//1 in a million
                                 topImage.index = num;
-                                var s = num+"";
-                                var size = 6 //6 digit number
+                                s = num+"";
+                                size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
                                 topImage.indexString = s
 
@@ -324,10 +327,10 @@ SlimSplitView {
                             root.imageReady = false
                             console.log("top image errored")
                             //Increment the image index
-                            var num = (topImage.index + 1) % 1000000//1 in a million
+                            num = (topImage.index + 1) % 1000000//1 in a million
                             topImage.index = num;
-                            var s = num+"";
-                            var size = 6 //6 digit number
+                            s = num+"";
+                            size = 6 //6 digit number
                             while (s.length < size) {s = "0" + s}
                             topImage.indexString = s
 
