@@ -26,7 +26,7 @@
     <message>
         <location filename="../Edit.qml" line="1990"/>
         <source>Rotation: </source>
-        <translation type="unfinished"></translation>
+        <translation>Drehung: </translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2021"/>
@@ -102,7 +102,11 @@ Berücksichtigt auch aktuell gewählte Objektivkorrekturen.</translation>
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier klicken oder &quot;C&quot; drücken, um den Zuschnitt zu speichern.
+
+Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Ausschnitt zu verschieben, ohne seine Größe zu ändern.
+
+Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende übliche Seitenverhältnis zu bringen. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2476"/>
@@ -111,7 +115,11 @@ Hold Shift while dragging a corner to snap the crop to the nearest common aspect
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier klicken oder &quot;C&quot; drücken, um mit dem Zuschneiden zu beginnen.
+
+Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Zuschnitt zu verschieben, ohne seine Größe zu ändern.
+
+Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zuschnitt auf das nächstliegende übliche Seitenverhältnis zu fixieren. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
         <source>Click this to save your crop.
@@ -149,7 +157,11 @@ Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zu
 Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
 
 Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier klicken oder &quot;L&quot; drücken, um die Rotation zu speichern.
+
+Klicken Sie auf das Bild, um die Hilfslinien für die Rotation zu platzieren, dann klicken und ziehen Sie um das Bild herum, um die Rotation festzulegen. Sie können die Rotationshilfslinien neu positionieren, indem Sie in der Nähe des Rotationspunktes anfangen zu ziehen.
+
+Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drücken.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2546"/>
@@ -158,7 +170,11 @@ Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
 Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
 
 Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier klicken oder &quot;L&quot; drücken, um mit der Ausrichtung des Bildes zu beginnen.
+
+Klicken Sie auf das Bild, um die Hilfslinien für die Rotation zu platzieren, dann klicken und ziehen Sie um das Bild herum, um die Rotation festzulegen. Sie können die Rotationshilfslinien neu positionieren, indem Sie in der Nähe des Rotationspunktes anfangen zu ziehen.
+
+Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drücken.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2600"/>
@@ -180,7 +196,7 @@ Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
     <message>
         <location filename="../EditTools.qml" line="123"/>
         <source>Auto CA Correction</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto CA Korrektur</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="124"/>
@@ -710,7 +726,7 @@ Es hängt einen Unterstrich und sieben Zeichen (abgeleitet aus dem Dateiinhalt) 
     <message>
         <location filename="../Organize.qml" line="44"/>
         <source>Time Zone</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeitzone</translation>
     </message>
     <message>
         <location filename="../Organize.qml" line="45"/>
@@ -906,7 +922,7 @@ Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem N
     <message>
         <location filename="../Settings.qml" line="51"/>
         <source>Use system language</source>
-        <translation type="unfinished"></translation>
+        <translation>Benutze Systemsprache</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="52"/>
