@@ -46,7 +46,6 @@ SlimSplitView {
         } else {//we're done cropping
             if (!cancelCropping) {//accepted the crop
                 if (imageRect.noCrop) {
-                    console.log("crop is full image")
                     //if the crop is the full image, we want to set it to 0
                     //if we don't, if you rotate the image 90 degrees it keeps the aspect ratio
                     paramManager.cropHeight = 0
@@ -54,7 +53,6 @@ SlimSplitView {
                     paramManager.cropVoffset = 0
                     paramManager.cropHoffset = 0
                 } else {//the crop isn't the entire image
-                    console.log("image is cropped")
                     paramManager.cropHeight = imageRect.readHeight
                     paramManager.cropAspect = imageRect.readAspect
                     paramManager.cropVoffset = imageRect.readVoffset
@@ -1720,7 +1718,7 @@ SlimSplitView {
                     height: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
                     x: topImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
                     y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
-                    color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    color: rotationDrag.overCross ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     rotation: imageRect.rotationAngle
                     visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && root.imageReady
                 }
@@ -1730,7 +1728,7 @@ SlimSplitView {
                     height: 1
                     x: topImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
                     y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
-                    color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    color: rotationDrag.overCross ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     rotation: imageRect.rotationAngle
                     visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && root.imageReady
                 }
@@ -1763,11 +1761,13 @@ SlimSplitView {
 
                     enabled: root.leveling && root.imageReady
                     hoverEnabled: true
-                    preventStealing: root.leveling && root.imageReady
+                    preventStealing: false//root.leveling && root.imageReady
 
                     property bool notClickedYet: true
-                    property bool centering: false //and not rotating
+                    property bool centering: false
+                    property bool rotating: false
                     property bool overPoint: false
+                    property bool overCross: false
                     property real oldAngle: 0
                     property real oldX: 0
                     property real oldY: 0
@@ -1779,16 +1779,21 @@ SlimSplitView {
                                 notClickedYet = false
                                 imageRect.displayRotationPointX = mouse.x
                                 imageRect.displayRotationPointY = mouse.y
+                                preventStealing = true
                             } else { //the center has already been defined
                                 var distanceX = (mouse.x - imageRect.displayRotationPointX)*bottomImage.scale
                                 var distanceY = (mouse.y - imageRect.displayRotationPointY)*bottomImage.scale
-                                if (Math.sqrt(distanceX*distanceX + distanceY*distanceY) < rotationCenterMark.radius) {//drag the rotation reference point if it's close enough
+                                if (overPoint) {//drag the rotation reference point if it's close enough
                                     centering = true
+                                    rotating = false
                                     oldX = mouse.x
                                     oldY = mouse.y
-                                } else { //rotation
+                                    preventStealing = true
+                                } else if (overCross){ //rotation
                                     centering = false
+                                    rotating = true
                                     oldAngle = Math.atan2(mouse.y-imageRect.displayRotationPointY, mouse.x-imageRect.displayRotationPointX)*180/Math.PI
+                                    preventStealing = true
                                 }
                             }
                         }
@@ -1806,7 +1811,7 @@ SlimSplitView {
                                     imageRect.displayRotationPointY += deltaY
                                     oldX = mouse.x
                                     oldY = mouse.y
-                                } else {
+                                } else if (rotating) {
                                     var newAngle = Math.atan2(mouse.y-imageRect.displayRotationPointY, mouse.x-imageRect.displayRotationPointX)*180/Math.PI
                                     var delta = newAngle - oldAngle
                                     imageRect.rotationAngle += delta
@@ -1821,13 +1826,41 @@ SlimSplitView {
                             }
                             var distanceX = (mouse.x - imageRect.displayRotationPointX)*bottomImage.scale
                             var distanceY = (mouse.y - imageRect.displayRotationPointY)*bottomImage.scale
-                            if (Math.sqrt(distanceX*distanceX + distanceY*distanceY) < rotationCenterMark.radius) {
+                            var radius = Math.sqrt(distanceX*distanceX + distanceY*distanceY)
+                            var mouseAngle = Math.atan2(mouse.y-imageRect.displayRotationPointY, mouse.x-imageRect.displayRotationPointX)*180/Math.PI
+                            if (mouseAngle > 90) {
+                                mouseAngle -= 90
+                            }
+                            if (mouseAngle < -90) {
+                                mouseAngle += 90
+                            }
+                            if (mouseAngle > 45) {
+                                mouseAngle -= 90
+                            }
+                            if (mouseAngle < -45) {
+                                mouseAngle += 90
+                            }
+                            var deltaAngle = Math.abs(mouseAngle - imageRect.rotationAngle)
+
+                            if (radius < rotationCenterMark.radius) {
                                 overPoint = true
+                                overCross = false
                             } else {
                                 overPoint = false
+                                if(radius * Math.sin(deltaAngle*Math.PI/180) < 30*uiScale) {
+                                    overCross = true
+                                } else {
+                                    overCross = false
+                                }
                             }
                         }
                     }
+                    onReleased: {
+                        centering = false
+                        rotating = false
+                        preventStealing = false
+                    }
+
                     onDoubleClicked: {
                         if (pressedButtons & Qt.RightButton) {
                             imageRect.rotationAngle = 0
@@ -2569,13 +2602,15 @@ SlimSplitView {
             Shortcut {
                 sequence: "l"
                 onActivated: {
-                    if (!root.leveling) {
-                        filmProvider.disableThumbnailWrite()
-                        root.requestingLeveling = true
-                    } else {
-                        filmProvider.enableThumbnailWrite()
-                        root.cancelLeveling = false //we're saving the leveling, not canceling it
-                        root.requestingLeveling = false
+                    if (level.notDisabled && root.onEditTab) {
+                        if (!root.leveling) {
+                            filmProvider.disableThumbnailWrite()
+                            root.requestingLeveling = true
+                        } else {
+                            filmProvider.enableThumbnailWrite()
+                            root.cancelLeveling = false //we're saving the leveling, not canceling it
+                            root.requestingLeveling = false
+                        }
                     }
                 }
             }
