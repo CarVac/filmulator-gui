@@ -1866,6 +1866,12 @@ SlimSplitView {
                             imageRect.rotationAngle = 0
                         }
                     }
+                    onExited: {
+                        if (!rotationDrag.pressed) {
+                            overPoint = false
+                            overCross = false
+                        }
+                    }
                 }
             }
         }
