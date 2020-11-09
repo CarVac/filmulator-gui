@@ -11,6 +11,7 @@ SlimSplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
     property bool imageReady: false//must only be made ready when the full size image is ready
+    property bool previewReady: false//must be made true when preview OR full size is ready
 
     property bool requestingCropping: false
     property bool cropping: false
@@ -105,8 +106,8 @@ SlimSplitView {
                 rotationDrag.notClickedYet = true //have it follow the cursor around until it's clicked
             }
 
-            imageRect.displayRotationPointX = paramManager.rotationPointX * bottomImage.width
-            imageRect.displayRotationPointY = paramManager.rotationPointY * bottomImage.height
+            imageRect.readRotationPointX = paramManager.rotationPointX
+            imageRect.readRotationPointY = paramManager.rotationPointY
             if (paramManager.rotationAngle == 0) {
                 //we don't need to update the image, so just turn on cropping
                 leveling = true
@@ -276,6 +277,7 @@ SlimSplitView {
                             if (topImage.state == "lf") {//it was loading the full image
                                 topImage.state = "sf"//showing full image
                                 root.imageReady = true
+                                root.previewReady = true
                                 root.imageURL(topImage.source)//replace the thumbnail in the queue with the live image
                                 filmProvider.writeThumbnail(paramManager.imageIndex)
                             }
@@ -292,10 +294,12 @@ SlimSplitView {
                                 //now actually ask for the image
                                 if (topImage.state == "lt") {//it was loading the thumbnail
                                     topImage.state = "lq"//loading quick pipe
+                                    root.previewReady = false
                                     topImage.source = "image://filmy/q" + topImage.indexString
                                 }
                                 else if (topImage.state == "lq") {//it was loading the quick image
                                     topImage.state = "lf"//loading full image
+                                    root.previewReady = true
                                     topImage.source = "image://filmy/f" + topImage.indexString
                                 }
                             }
@@ -1704,10 +1708,10 @@ SlimSplitView {
                 // When you rotate the image by 90 degrees, it'll move with the image.
                 //The angle is going to be restricted to between -45 and +45 degrees.
                 property real rotationAngle
-                property real readRotationPointX: displayRotationPointX / bottomImage.width
-                property real readRotationPointY: displayRotationPointY / bottomImage.height
-                property real displayRotationPointX
-                property real displayRotationPointY
+                property real readRotationPointX
+                property real readRotationPointY
+                property real displayRotationPointX: readRotationPointX * bottomImage.width
+                property real displayRotationPointY: readRotationPointY * bottomImage.height
                 //When you rotate farther it'll modulo back.
 
                 //Next is the visible stuff.
@@ -1720,7 +1724,7 @@ SlimSplitView {
                     y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
                     color: rotationDrag.overCross ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     rotation: imageRect.rotationAngle
-                    visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && root.imageReady
+                    visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
                 }
                 Rectangle {
                     id: horizontalAngleMark
@@ -1730,7 +1734,7 @@ SlimSplitView {
                     y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
                     color: rotationDrag.overCross ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     rotation: imageRect.rotationAngle
-                    visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && root.imageReady
+                    visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
                 }
                 Rectangle {
                     id: rotationCenterMark
@@ -1742,7 +1746,7 @@ SlimSplitView {
                     color: "#00000000"
                     border.width: 2 * uiScale
                     border.color: Colors.medOrange
-                    visible: root.leveling && rotationDrag.overPoint && root.imageReady
+                    visible: root.leveling && rotationDrag.overPoint && (root.imageReady || root.previewReady) && root.requestingLeveling
                 }
 
                 MouseArea {
@@ -1759,7 +1763,8 @@ SlimSplitView {
                         yScale: bottomImage.scale
                     }
 
-                    enabled: root.leveling && root.imageReady
+                    enabled: root.leveling && (root.imageReady || root.previewReady) && root.requestingLeveling
+                    visible: root.leveling && (root.imageReady || root.previewReady) && root.requestingLeveling
                     hoverEnabled: true
                     preventStealing: false//root.leveling && root.imageReady
 
@@ -1772,13 +1777,16 @@ SlimSplitView {
                     property real oldX: 0
                     property real oldY: 0
 
+                    property real oldImageWidth: 1
+                    property real oldImageHeight: 1
+
                     onPressed: {
                         if (pressedButtons & Qt.LeftButton) {
                             flicky.returnToBounds()
                             if (notClickedYet) { //no center yet
                                 notClickedYet = false
-                                imageRect.displayRotationPointX = mouse.x
-                                imageRect.displayRotationPointY = mouse.y
+                                imageRect.readRotationPointX = mouse.x / bottomImage.width
+                                imageRect.readRotationPointY = mouse.y / bottomImage.height
                                 preventStealing = true
                             } else { //the center has already been defined
                                 var distanceX = (mouse.x - imageRect.displayRotationPointX)*bottomImage.scale
@@ -1800,15 +1808,15 @@ SlimSplitView {
                     }
                     onPositionChanged: {
                         if (notClickedYet) { //display the cursors where the mouse is
-                            imageRect.displayRotationPointX = mouse.x
-                            imageRect.displayRotationPointY = mouse.y
+                            imageRect.readRotationPointX = mouse.x / bottomImage.width
+                            imageRect.readRotationPointY = mouse.y / bottomImage.height
                         } else {
                             if (rotationDrag.pressed && (pressedButtons & Qt.LeftButton)) {
                                 if (centering) { //drag the rotation reference point
                                     var deltaX = mouse.x - oldX
                                     var deltaY = mouse.y - oldY
-                                    imageRect.displayRotationPointX += deltaX
-                                    imageRect.displayRotationPointY += deltaY
+                                    imageRect.readRotationPointX += deltaX / bottomImage.width
+                                    imageRect.readRotationPointY += deltaY / bottomImage.height
                                     oldX = mouse.x
                                     oldY = mouse.y
                                 } else if (rotating) {
@@ -1860,7 +1868,6 @@ SlimSplitView {
                         rotating = false
                         preventStealing = false
                     }
-
                     onDoubleClicked: {
                         if (pressedButtons & Qt.RightButton) {
                             imageRect.rotationAngle = 0
@@ -1870,6 +1877,27 @@ SlimSplitView {
                         if (!rotationDrag.pressed) {
                             overPoint = false
                             overCross = false
+                        }
+                    }
+                    Connections {
+                        target: bottomImage
+                        function onWidthChanged() {
+                            if (rotationDrag.pressed) {
+                                console.log("updating oldx")
+                                console.log(rotationDrag.oldX)
+                                rotationDrag.oldX = rotationDrag.oldX*bottomImage.width/rotationDrag.oldImageWidth
+                                console.log(rotationDrag.oldX)
+                            }
+                            rotationDrag.oldImageWidth = bottomImage.width
+                        }
+                        function onHeightChanged() {
+                            if (rotationDrag.pressed) {
+                                console.log("updating oldy")
+                                console.log(rotationDrag.oldY)
+                                rotationDrag.oldY = rotationDrag.oldY*bottomImage.height/rotationDrag.oldImageHeight
+                                console.log(rotationDrag.oldY)
+                            }
+                            rotationDrag.oldImageHeight = bottomImage.height
                         }
                     }
                 }
@@ -2584,13 +2612,13 @@ SlimSplitView {
             id: level
             anchors.right: rotateRight.left
             y: 0 * uiScale
-            notDisabled: root.imageReady && !root.cropping
+            notDisabled: root.previewReady && !root.cropping
             tooltipText: root.leveling ? qsTr("Click this or press \"L\" to save the rotation.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".") : qsTr("Click this or press \"L\" to begin leveling the image.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
                 anchors.centerIn: parent
-                source: root.leveling ? "qrc:///icons/levelactive.png" : "qrc:///icons/level.png"
+                source: root.requestingLeveling ? "qrc:///icons/levelactive.png" : "qrc:///icons/level.png"
                 antialiasing: true
                 opacity: level.notDisabled ? 1 : 0.5
             }
@@ -2624,7 +2652,7 @@ SlimSplitView {
             Shortcut {
                 sequence: "Shift+l"
                 onActivated: {
-                    if (root.leveling && root.imageReady) {
+                    if (root.leveling && root.previewReady) {
                         imageRect.rotationAngle = 0
                     }
                 }
