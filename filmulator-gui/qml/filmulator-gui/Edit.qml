@@ -23,6 +23,7 @@ SlimSplitView {
     property bool requestingLeveling: false
     property bool leveling: false
     property bool cancelLeveling: false
+    property real tempCropHeight: 0
 
     property bool onEditTab
 
@@ -115,11 +116,14 @@ SlimSplitView {
                 paramManager.rotationAngle = -50
                 //when the image is ready, then cropping will be set to true by topImage
             }
+            root.tempCropHeight = paramManager.cropHeight
+            paramManager.cropHeight = 0
         } else {//we're done leveling
             if (!cancelLeveling) {//accepted the leveling
                 paramManager.rotationPointX = imageRect.readRotationPointX
                 paramManager.rotationPointY = imageRect.readRotationPointY
                 paramManager.rotationAngle = imageRect.rotationAngle
+                paramManager.cropHeight = root.tempCropHeight
                 paramManager.writeback()
             } else {
                 cancelLeveling = false
