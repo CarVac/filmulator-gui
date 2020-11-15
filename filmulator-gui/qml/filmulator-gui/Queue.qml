@@ -838,6 +838,24 @@ Item {
         }
     }
     Shortcut {
+        id: rateUp
+        sequence: StandardKey.MoveToPreviousLine
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.incrementRating(paramManager.imageIndex, 1)
+            }
+        }
+    }
+    Shortcut {
+        id: rateDown
+        sequence: StandardKey.MoveToNextLine
+        onActivated: {
+            if (onEditTab) {
+                organizeModel.incrementRating(paramManager.imageIndex, -1)
+            }
+        }
+    }
+    Shortcut {
         id: prevImage
         sequence: StandardKey.MoveToPreviousChar
         onActivated: {
