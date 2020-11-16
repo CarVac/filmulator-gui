@@ -13,6 +13,7 @@ struct QueueOrder {
 class QueueModel : public SqlModel
 {
     Q_OBJECT
+    Q_PROPERTY(int queueSize READ getQueueSize NOTIFY queueSizeChanged)
 public:
     explicit QueueModel(QObject *parent = nullptr);
     Q_INVOKABLE void setQueueQuery();
@@ -35,12 +36,16 @@ public slots:
 protected:
     int maxIndex;
 
+    int m_queueSize;
+    int getQueueSize(){return m_queueSize;}
+
     void resetIndex();
     QSqlQuery modelQuery();
     void emitChange() {emit queueChanged();}
 
 signals:
     void queueChanged();
+    void queueSizeChanged();
     void searchTableChanged();
 };
 

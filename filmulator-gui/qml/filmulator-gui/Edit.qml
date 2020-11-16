@@ -12,6 +12,7 @@ SlimSplitView {
     property real uiScale: 1
     property bool imageReady: false//must only be made ready when the full size image is ready
     property bool previewReady: false//must be made true when preview OR full size is ready
+    property bool noImage: true//gets turned false once any image is loaded, and stays false
 
     property bool requestingCropping: false
     property bool cropping: false
@@ -155,6 +156,30 @@ SlimSplitView {
             width: parent.width
             height: Math.floor(parent.height - 30 * uiScale)
             color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
+
+            Rectangle {
+                id: noPictureBox
+                width: 400 * uiScale
+                height: noPictureText.contentHeight + 40 * uiScale
+                anchors.centerIn: parent
+                color: Colors.darkGray
+                border.color: Colors.lowGray
+                border.width: 2 * uiScale
+                radius: 10 * uiScale
+                visible: root.noImage
+
+                Text {
+                    id: noPictureText
+                    width: 350 * uiScale
+                    anchors.centerIn: parent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: "white"
+                    font.pixelSize: 14.0 * uiScale
+                    wrapMode: Text.Wrap
+                    text: qsTr("Select an image to edit by double-clicking on a photo in the work queue. Switch between images with the right and left arrow keys.\n\nRate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.")
+                }
+            }
         }
 
         Flickable {
@@ -259,7 +284,9 @@ SlimSplitView {
                         var s
                         var size
                         if (topImage.status == Image.Ready) { //if the image is now ready
-                            // First, we copy to the bottom image, regardless of what else.
+                            //First, we turn off the no-image-text
+                            root.noImage = false
+                            //Next, we copy to the bottom image, regardless of what else.
                             console.log("top image ready")
                             var topFitScaleX = flicky.width/topImage.width
                             var topFitScaleY = flicky.height/topImage.height

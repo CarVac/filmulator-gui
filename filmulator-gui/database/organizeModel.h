@@ -26,6 +26,8 @@ class OrganizeModel : public SqlModel
     Q_PROPERTY(int ratingSort    READ getRatingSort    WRITE setRatingSort    NOTIFY ratingSortChanged)
     Q_PROPERTY(int timeZone MEMBER m_timeZone WRITE setTimeZone NOTIFY timeZoneChanged)
 
+    Q_PROPERTY(int imageCount READ getImageCount NOTIFY imageCountChanged)
+
 public:
     explicit OrganizeModel(QObject *parent = 0);
     Q_INVOKABLE void setOrganizeQuery();
@@ -75,6 +77,8 @@ public:
     int getProcessedSort() {return processedSort;}
     int getRatingSort() {return ratingSort;}
 
+    int getImageCount(){return m_imageCount;}
+
 signals:
     void minCaptureTimeChanged();
     void maxCaptureTimeChanged();
@@ -93,6 +97,8 @@ signals:
     void timeZoneChanged();
 
     void organizeFilterChanged();
+
+    void imageCountChanged();
 
     void enqueueThis(const QString STsearchID);
 
@@ -123,6 +129,7 @@ protected:
     int minRating;
     int maxRating;
     int m_timeZone = 0;
+    int m_imageCount;
 
     // For these sort variables, -1 means descending, +1 means ascending, 0 means inactive.
     int captureSort;

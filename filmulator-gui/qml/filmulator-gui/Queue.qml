@@ -14,6 +14,8 @@ Item {
 
     property real thirdWidth: width/3
 
+    property real queueCount: queueModel.queueSize
+
     property bool dragging: false
     property bool wasDragScrolling: false
 
@@ -585,6 +587,30 @@ Item {
                 listView.contentX = xPos
                 listView.returnToBounds()
             }
+        }
+    }
+
+    Rectangle {
+        id: noQueueBox
+        width: 600 * uiScale
+        height: Math.min(noQueueText.contentHeight + 25 * uiScale, parent.height)
+        anchors.centerIn: parent
+        color: Colors.darkGray
+        border.color: Colors.lowGray
+        border.width: 2 * uiScale
+        radius: 10 * uiScale
+        visible: root.queueCount < 1
+
+        Text {
+            id: noQueueText
+            width: 575 * uiScale
+            anchors.centerIn: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            color: "white"
+            font.pixelSize: 14.0 * uiScale
+            wrapMode: Text.Wrap
+            text: qsTr("Work queue is empty. Import new photos with the Import tab or load existing photos by double-clicking on them in the Organize tab.")
         }
     }
 

@@ -135,6 +135,8 @@ void OrganizeModel::setOrganizeQuery()
         queryModel.fetchMore();
     }
 //    cout << "organize row count: " << rowCount() << endl;
+    m_imageCount = queryModel.rowCount();
+    emit imageCountChanged();
 }
 
 void OrganizeModel::setDateHistoQuery()

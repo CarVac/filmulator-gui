@@ -10,6 +10,8 @@ SlimSplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
 
+    property int itemCount: organizeModel.imageCount
+
     signal tooltipWanted(string text, int x, int y)
 
     Rectangle {
@@ -618,6 +620,30 @@ SlimSplitView {
                 }
             }
 
+            Rectangle {
+                id: noImageTopBox
+                width: 400 * uiScale
+                height: noImageTopText.contentHeight + 30 * uiScale
+                x: (parent.width-width)/2
+                y: 20 * uiScale
+                color: Colors.darkGray
+                border.color: Colors.lowGray
+                border.width: 2 * uiScale
+                radius: 10 * uiScale
+                visible: root.itemCount < 1
+
+                Text {
+                    id: noImageTopText
+                    width: 375 * uiScale
+                    anchors.centerIn: parent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: "white"
+                    font.pixelSize: 14.0 * uiScale
+                    wrapMode: Text.Wrap
+                    text: qsTr("Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.")
+                }
+            }
 
             MouseArea {
                 id: wheelstealer
