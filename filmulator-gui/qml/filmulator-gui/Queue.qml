@@ -610,7 +610,7 @@ Item {
             color: "white"
             font.pixelSize: 14.0 * uiScale
             wrapMode: Text.Wrap
-            text: qsTr("Work queue is empty. Import new photos with the Import tab or load existing photos by double-clicking on them in the Organize tab.")
+            text: qsTr("Work Queue is empty. Import new photos with the Import tab or load existing photos by double-clicking on them in the Organize tab.")
         }
     }
 
