@@ -212,7 +212,7 @@ SlimSplitView {
                     ToolTip {
                         id: dateHistoTooltip
                         anchors.fill: parent
-                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Count: ') + parent.count
+                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Photos: ') + parent.count
                         milliSecondDelay: 0
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
