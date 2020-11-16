@@ -2530,7 +2530,7 @@ SlimSplitView {
             id: backgroundBrightness
             anchors.right: crop.left
             y: 0 * uiScale
-            tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.")
+            tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.\n\nShortcut: B")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2574,7 +2574,7 @@ SlimSplitView {
             anchors.right: rotateLeft.left
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.leveling
-            tooltipText: root.cropping ? qsTr("Click this or press \"C\" to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this or press \"C\" to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
+            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C"): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2644,7 +2644,7 @@ SlimSplitView {
             anchors.right: rotateRight.left
             y: 0 * uiScale
             notDisabled: root.previewReady && !root.cropping
-            tooltipText: root.leveling ? qsTr("Click this or press \"L\" to save the rotation.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".") : qsTr("Click this or press \"L\" to begin leveling the image.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".")
+            tooltipText: root.leveling ? qsTr("Click this to save the rotation.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".\n\nShortcut: L") : qsTr("Click this to begin leveling the image.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".\n\nShortcut: L")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
