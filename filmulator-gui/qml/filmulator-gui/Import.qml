@@ -475,7 +475,7 @@ Rectangle {
             id: findBackupScenario
             width: parent.width
             height: 60 * uiScale
-            text: qsTr("Update location of files that have moved","Put a line break in if it gets much longer")
+            text: qsTr("Update locations of files that have moved","Put a line break in if it gets much longer")
             tooltipText: qsTr("If a photo in the database has its raw file moved, use this setup to re-import the photo. It will not load anything into the queue.\n\nThis is useful when you remove photos from your main directory and want to work from a backup location.")
             highlight: root.sourceIsFolder && root.importInPlace && replaceLocationSwitch.isOn && !enqueueSwitch.isOn
             noOutlineClick: true
