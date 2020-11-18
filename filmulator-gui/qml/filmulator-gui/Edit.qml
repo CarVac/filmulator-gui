@@ -383,6 +383,7 @@ SlimSplitView {
                     transformOrigin: Item.TopLeft
                     onStatusChanged: {
                         if (bottomImage.status == Image.Ready) {
+                            console.log("bottom image ready")
                             if (flicky.fit) {
                                 //This is probably not necessary, but I don't want rounding errors to crop up.
                                 bottomImage.scale = flicky.fitScale
@@ -1741,8 +1742,8 @@ SlimSplitView {
                 property real rotationAngle
                 property real readRotationPointX
                 property real readRotationPointY
-                property real displayRotationPointX: readRotationPointX * bottomImage.width
-                property real displayRotationPointY: readRotationPointY * bottomImage.height
+                property real displayRotationPointX: readRotationPointX*bottomImage.width
+                property real displayRotationPointY: readRotationPointY*bottomImage.height
                 //When you rotate farther it'll modulo back.
 
                 //Next is the visible stuff.
@@ -1751,33 +1752,33 @@ SlimSplitView {
                     id: verticalAngleMark
                     width: 1
                     height: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
-                    x: topImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
-                    y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
-                    color: rotationDrag.overCross ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    x: bottomImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
+                    color: (rotationDrag.overCross && !rotationDrag.centering) ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     rotation: imageRect.rotationAngle
-                    visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
+                    visible: root.leveling && (imageRect.readRotationPointX >= 0) && (imageRect.readRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
                 }
                 Rectangle {
                     id: horizontalAngleMark
                     width: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
                     height: 1
-                    x: topImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
-                    y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
-                    color: rotationDrag.overCross ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    x: bottomImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
+                    color: (rotationDrag.overCross && !rotationDrag.centering) ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     rotation: imageRect.rotationAngle
-                    visible: root.leveling && (imageRect.displayRotationPointX >= 0) && (imageRect.displayRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
+                    visible: root.leveling && (imageRect.readRotationPointX >= 0) && (imageRect.readRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
                 }
                 Rectangle {
                     id: rotationCenterMark
                     width: 40 * uiScale
                     height: width
-                    x: topImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
-                    y: topImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
+                    x: bottomImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
                     radius: width/2
                     color: "#00000000"
                     border.width: 2 * uiScale
                     border.color: Colors.medOrange
-                    visible: root.leveling && rotationDrag.overPoint && (root.imageReady || root.previewReady) && root.requestingLeveling
+                    visible: root.leveling && (rotationDrag.overPoint || rotationDrag.centering) && (root.imageReady || root.previewReady) && root.requestingLeveling
                 }
 
                 MouseArea {
@@ -1807,6 +1808,8 @@ SlimSplitView {
                     property real oldAngle: 0
                     property real oldX: 0
                     property real oldY: 0
+                    property real tempRotationPointX: -1
+                    property real tempRotationPointY: -1
 
                     property real oldImageWidth: 1
                     property real oldImageHeight: 1
@@ -1827,6 +1830,8 @@ SlimSplitView {
                                     rotating = false
                                     oldX = mouse.x
                                     oldY = mouse.y
+                                    tempRotationPointX = imageRect.readRotationPointX
+                                    tempRotationPointY = imageRect.readRotationPointY
                                     preventStealing = true
                                 } else if (overCross){ //rotation
                                     centering = false
@@ -1846,8 +1851,10 @@ SlimSplitView {
                                 if (centering) { //drag the rotation reference point
                                     var deltaX = mouse.x - oldX
                                     var deltaY = mouse.y - oldY
-                                    imageRect.readRotationPointX += deltaX / bottomImage.width
-                                    imageRect.readRotationPointY += deltaY / bottomImage.height
+                                    tempRotationPointX += deltaX / bottomImage.width
+                                    tempRotationPointY += deltaY / bottomImage.height
+                                    imageRect.readRotationPointX = Math.max(0, Math.min(1, tempRotationPointX))
+                                    imageRect.readRotationPointY = Math.max(0, Math.min(1, tempRotationPointY))
                                     oldX = mouse.x
                                     oldY = mouse.y
                                 } else if (rotating) {
@@ -1895,6 +1902,8 @@ SlimSplitView {
                         }
                     }
                     onReleased: {
+                        imageRect.readRotationPointX = Math.max(0, Math.min(1, imageRect.readRotationPointX))
+                        imageRect.readRotationPointX = Math.max(0, Math.min(1, imageRect.readRotationPointX))
                         centering = false
                         rotating = false
                         preventStealing = false
@@ -2574,7 +2583,7 @@ SlimSplitView {
             anchors.right: rotateLeft.left
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.leveling
-            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C"): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C")
+            tooltipText: (root.cropping ? qsTr("Click this to save your crop."): qsTr("Click this to begin cropping.")) + "\n\n" + qsTr("Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2644,7 +2653,7 @@ SlimSplitView {
             anchors.right: rotateRight.left
             y: 0 * uiScale
             notDisabled: root.previewReady && !root.cropping
-            tooltipText: root.leveling ? qsTr("Click this to save the rotation.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".\n\nShortcut: L") : qsTr("Click this to begin leveling the image.\n\nClick on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.\n\nReset the rotation to zero by pressing \"Shift+L\".\n\nShortcut: L")
+            tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\".\n\nShortcut: L")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
