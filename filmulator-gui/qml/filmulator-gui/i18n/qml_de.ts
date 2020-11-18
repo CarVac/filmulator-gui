@@ -4,42 +4,49 @@
 <context>
     <name>Edit</name>
     <message>
-        <location filename="../Edit.qml" line="1950"/>
+        <location filename="../Edit.qml" line="180"/>
+        <source>Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.
+
+Rate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2060"/>
         <source>Width: </source>
         <translation>Breite: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1960"/>
+        <location filename="../Edit.qml" line="2070"/>
         <source>Height: </source>
         <translation>Höhe: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1970"/>
+        <location filename="../Edit.qml" line="2080"/>
         <source>H offset: </source>
         <translation>H-Versatz: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1980"/>
+        <location filename="../Edit.qml" line="2090"/>
         <source>V offset: </source>
         <translation>V-Versatz: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="1990"/>
+        <location filename="../Edit.qml" line="2100"/>
         <source>Rotation: </source>
         <translation>Drehung: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2021"/>
+        <location filename="../Edit.qml" line="2131"/>
         <source>Error: </source>
         <translation>Fehler: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2021"/>
+        <location filename="../Edit.qml" line="2131"/>
         <source> is not accessible.</source>
         <translation> ist nicht erreichbar.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2049"/>
+        <location filename="../Edit.qml" line="2159"/>
         <source>Select the lens that was used in order to use lens corrections.
 
 Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;&quot;) then it will search lenses from all mounts.
@@ -52,27 +59,27 @@ Schreiben Sie den Objektivnamen in das Feld rechts. Normalerweise wird nur nach 
 Doppelklick auf ein Objektiv, um es auszuwählen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2097"/>
+        <location filename="../Edit.qml" line="2207"/>
         <source>No lens selected</source>
         <translation>Kein Objektiv ausgewählt</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2139"/>
+        <location filename="../Edit.qml" line="2249"/>
         <source>Reset selected lens back to default and sets search box back to EXIF-derived lens name.</source>
         <translation>Setzt ausgewähltes Objektiv auf Standard zurück und setzt Suchbox zurück auf den Objektivnamen aus den EXIF-Daten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2207"/>
+        <location filename="../Edit.qml" line="2317"/>
         <source>Search fit score: </source>
         <translation>Trefferanzahl: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2391"/>
+        <location filename="../Edit.qml" line="2501"/>
         <source>Remember preferred lens</source>
         <translation>Bevorzugtes Objektiv beibehalten</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2392"/>
+        <location filename="../Edit.qml" line="2502"/>
         <source>Use the selected lens as default for all future photos taken with the same camera and lens combination.
 
 This also remembers the currently selected lens corrections.</source>
@@ -81,41 +88,83 @@ This also remembers the currently selected lens corrections.</source>
 Berücksichtigt auch aktuell gewählte Objektivkorrekturen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2408"/>
+        <location filename="../Edit.qml" line="2518"/>
         <source>Forget preferred lens</source>
         <translation>Bevorzugtes Objektiv zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2409"/>
+        <location filename="../Edit.qml" line="2519"/>
         <source>Clear the default lens for photos taken with the same camera and lens combination.</source>
         <translation>Löscht das bevorzugte Objektiv für Fotos, die mit der gleichen Objektiv-Kamera-Kombination gemacht wurden.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2432"/>
-        <source>Change the editor&apos;s background brightness between black, gray, and white.</source>
-        <translation>Ändert die Helligkeit des Editor-Hintergrundes in Schwarz, Grau oder Weiß.</translation>
+        <location filename="../Edit.qml" line="2542"/>
+        <source>Change the editor&apos;s background brightness between black, gray, and white.
+
+Shortcut: B</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2476"/>
+        <location filename="../Edit.qml" line="2586"/>
+        <source>Click this to save your crop.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2586"/>
+        <source>Click this to begin cropping.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2586"/>
+        <source>Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
+
+Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.
+
+Shortcut: C</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2656"/>
+        <source>Click this to apply the rotation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2656"/>
+        <source>Click this to begin leveling the image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2656"/>
+        <source>Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.
+
+Reset the rotation to zero by pressing &quot;Shift+L&quot;.
+
+Shortcut: L</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change the editor&apos;s background brightness between black, gray, and white.</source>
+        <translation type="vanished">Ändert die Helligkeit des Editor-Hintergrundes in Schwarz, Grau oder Weiß.</translation>
+    </message>
+    <message>
         <source>Click this or press &quot;C&quot; to save your crop.
 
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation>Hier klicken oder &quot;C&quot; drücken, um den Zuschnitt zu speichern.
+        <translation type="vanished">Hier klicken oder &quot;C&quot; drücken, um den Zuschnitt zu speichern.
 
 Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Ausschnitt zu verschieben, ohne seine Größe zu ändern.
 
 Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende übliche Seitenverhältnis zu bringen. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2476"/>
         <source>Click this or press &quot;C&quot; to begin cropping.
 
 Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation>Hier klicken oder &quot;C&quot; drücken, um mit dem Zuschneiden zu beginnen.
+        <translation type="vanished">Hier klicken oder &quot;C&quot; drücken, um mit dem Zuschneiden zu beginnen.
 
 Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Zuschnitt zu verschieben, ohne seine Größe zu ändern.
 
@@ -146,38 +195,36 @@ Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenver
 Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zuschnitt auf das nächstliegende übliche Seitenverhältnis zu fixieren. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2523"/>
+        <location filename="../Edit.qml" line="2633"/>
         <source>Rotate image 90 degrees left.</source>
         <translation>Bild um 90 Grad nach links drehen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2546"/>
         <source>Click this or press &quot;L&quot; to save the rotation.
 
 Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
 
 Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation>Hier klicken oder &quot;L&quot; drücken, um die Rotation zu speichern.
+        <translation type="vanished">Hier klicken oder &quot;L&quot; drücken, um die Rotation zu speichern.
 
 Klicken Sie auf das Bild, um die Hilfslinien für die Rotation zu platzieren, dann klicken und ziehen Sie um das Bild herum, um die Rotation festzulegen. Sie können die Rotationshilfslinien neu positionieren, indem Sie in der Nähe des Rotationspunktes anfangen zu ziehen.
 
 Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drücken.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2546"/>
         <source>Click this or press &quot;L&quot; to begin leveling the image.
 
 Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
 
 Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation>Hier klicken oder &quot;L&quot; drücken, um mit der Ausrichtung des Bildes zu beginnen.
+        <translation type="vanished">Hier klicken oder &quot;L&quot; drücken, um mit der Ausrichtung des Bildes zu beginnen.
 
 Klicken Sie auf das Bild, um die Hilfslinien für die Rotation zu platzieren, dann klicken und ziehen Sie um das Bild herum, um die Rotation festzulegen. Sie können die Rotationshilfslinien neu positionieren, indem Sie in der Nähe des Rotationspunktes anfangen zu ziehen.
 
 Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drücken.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2600"/>
+        <location filename="../Edit.qml" line="2712"/>
         <source>Rotate image 90 degrees right.</source>
         <translation>Bild um 90 Grad nach rechts drehen.</translation>
     </message>
@@ -700,6 +747,56 @@ Es hängt einen Unterstrich und sieben Zeichen (abgeleitet aus dem Dateiinhalt) 
         <source>Correct the errors that are highlighted above before importing.</source>
         <translation>Korrigieren Sie vor dem Importieren die oben hervorgehobenen Fehler.</translation>
     </message>
+    <message>
+        <location filename="../Import.qml" line="426"/>
+        <source>Common import scenarios:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="434"/>
+        <source>Import new photos from a memory card</source>
+        <comment>Put a line break in if it gets much longer</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="435"/>
+        <source>This setup will copy photos from a memory card to a destination directory, and load all newly imported photos into the queue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="457"/>
+        <source>Import existing photos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="458"/>
+        <source>This setup will import photos that are already on your computer, and load all newly imported photos into the queue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="478"/>
+        <source>Update locations of files that have moved</source>
+        <comment>Put a line break in if it gets much longer</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="479"/>
+        <source>If a photo in the database has its raw file moved, use this setup to re-import the photo. It will not load anything into the queue.
+
+This is useful when you remove photos from your main directory and want to work from a backup location.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="501"/>
+        <source>Bring previously-imported files into the queue</source>
+        <comment>Put a line break in if it gets much longer</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Import.qml" line="502"/>
+        <source>If a file is in the database but you don&apos;t know when it was taken, just re-import it with this setup to load it into the queue.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ImportDirEntry</name>
@@ -724,54 +821,63 @@ Es hängt einen Unterstrich und sieben Zeichen (abgeleitet aus dem Dateiinhalt) 
         <translation type="vanished">Zeitzone</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="44"/>
+        <location filename="../Organize.qml" line="46"/>
         <source>Time Zone</source>
         <translation>Zeitzone</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="45"/>
+        <location filename="../Organize.qml" line="47"/>
         <source>Controls when the day is divided for the date filters.</source>
         <translation>Steuert, wann der Tag für die Datumsfilter geteilt wird.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="70"/>
+        <location filename="../Organize.qml" line="72"/>
         <source>Min Rating</source>
         <translation>Mindestbewertung</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="71"/>
+        <location filename="../Organize.qml" line="73"/>
         <source>Controls the minimum rating of images to display.</source>
         <translation>Steuert die Mindestbewertung der anzuzeigenden Bilder.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="101"/>
+        <location filename="../Organize.qml" line="103"/>
         <source>Max Rating</source>
         <translation>Maximalbewertung</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="102"/>
+        <location filename="../Organize.qml" line="104"/>
         <source>Controls the maximum rating of images to display.</source>
         <translation>Steuert die maximale Bewertung der anzuzeigenden Bilder.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="131"/>
+        <location filename="../Organize.qml" line="133"/>
         <source>Enqueue All</source>
         <translation>Alles in die Warteschlange einstellen</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="132"/>
+        <location filename="../Organize.qml" line="134"/>
         <source>Puts every visible image in the work queue. If any is already there, it is left where it was.</source>
         <translation>Fügt jedes sichtbare Bild in die Arbeitswarteschlange ein. Wenn bereits eines vorhanden ist, wird es dort belassen, wo es war.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="213"/>
+        <location filename="../Organize.qml" line="215"/>
         <source>Date: </source>
         <translation>Datum: </translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="213"/>
+        <location filename="../Organize.qml" line="215"/>
+        <source>Photos: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Organize.qml" line="644"/>
+        <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Count: </source>
-        <translation>Zähler: </translation>
+        <translation type="vanished">Zähler: </translation>
     </message>
 </context>
 <context>
@@ -787,116 +893,121 @@ nicht lesbar</translation>
 <context>
     <name>Queue</name>
     <message>
-        <location filename="../Queue.qml" line="236"/>
-        <location filename="../Queue.qml" line="291"/>
+        <location filename="../Queue.qml" line="238"/>
+        <location filename="../Queue.qml" line="293"/>
         <source>Are you sure?</source>
         <translation>Sind Sie sicher?</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="236"/>
-        <location filename="../Queue.qml" line="291"/>
+        <location filename="../Queue.qml" line="238"/>
+        <location filename="../Queue.qml" line="293"/>
         <source>...Wait a moment...</source>
         <translation>...Bitte einen Moment warten...</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="274"/>
+        <location filename="../Queue.qml" line="276"/>
         <source>Forget marked photos</source>
         <translation>Markierte Fotos entfernen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="275"/>
+        <location filename="../Queue.qml" line="277"/>
         <source>Remove marked photos that are in the queue from the database. The files will not be deleted.</source>
         <translation>Entfernt markierte Fotos, die sich in der Warteschlange befinden, aus der Datenbank. Die Dateien werden nicht gelöscht.</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="336"/>
+        <location filename="../Queue.qml" line="338"/>
         <source>Clear entire queue</source>
         <translation>Wartschlange komplett leeren</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="348"/>
+        <location filename="../Queue.qml" line="350"/>
         <source>Remove from queue</source>
         <translation>Aus Warteschlange entfernen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="360"/>
+        <location filename="../Queue.qml" line="362"/>
         <source>Copy all settings</source>
         <translation>Alle Einstellungen kopieren</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="372"/>
+        <location filename="../Queue.qml" line="374"/>
         <source>Paste settings</source>
         <translation>Einstellungen einfügen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="398"/>
+        <location filename="../Queue.qml" line="400"/>
         <source>X</source>
         <translation>X</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="399"/>
+        <location filename="../Queue.qml" line="401"/>
         <source>Mark this photo for forgetting or for deletion</source>
         <translation>Markiert dieses Foto zum Entfernen oder zum Löschen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="415"/>
+        <location filename="../Queue.qml" line="417"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="416"/>
+        <location filename="../Queue.qml" line="418"/>
         <source>Rate this 0 stars</source>
         <translation>Bewertet mit 0 Sternen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="432"/>
+        <location filename="../Queue.qml" line="434"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="433"/>
+        <location filename="../Queue.qml" line="435"/>
         <source>Rate this 1 star</source>
         <translation>Bewertet mit 1 Stern</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="449"/>
+        <location filename="../Queue.qml" line="451"/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="450"/>
+        <location filename="../Queue.qml" line="452"/>
         <source>Rate this 2 stars</source>
         <translation>Bewertet mit 2 Sternen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="466"/>
+        <location filename="../Queue.qml" line="468"/>
         <source>3</source>
         <translation>3</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="467"/>
+        <location filename="../Queue.qml" line="469"/>
         <source>Rate this 3 stars</source>
         <translation>Bewertet mit 3 Sternen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="483"/>
+        <location filename="../Queue.qml" line="485"/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="484"/>
+        <location filename="../Queue.qml" line="486"/>
         <source>Rate this 4 stars</source>
         <translation>Bewertet mit 4 Sternen</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="500"/>
+        <location filename="../Queue.qml" line="502"/>
         <source>5</source>
         <translation>5</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="501"/>
+        <location filename="../Queue.qml" line="503"/>
         <source>Rate this 5 stars</source>
         <translation>Bewertet mit 5 Sternen</translation>
+    </message>
+    <message>
+        <location filename="../Queue.qml" line="613"/>
+        <source>Work Queue is empty. Import new photos with the Import tab or load existing photos by double-clicking on them in the Organize tab.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
