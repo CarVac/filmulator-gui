@@ -592,7 +592,7 @@ Item {
 
     Rectangle {
         id: noQueueBox
-        width: 600 * uiScale
+        width: 700 * uiScale
         height: Math.min(noQueueText.contentHeight + 25 * uiScale, parent.height)
         anchors.centerIn: parent
         color: Colors.darkGray
@@ -603,7 +603,7 @@ Item {
 
         Text {
             id: noQueueText
-            width: 575 * uiScale
+            width: 675 * uiScale
             anchors.centerIn: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter

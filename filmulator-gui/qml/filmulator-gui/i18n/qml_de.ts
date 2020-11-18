@@ -8,7 +8,9 @@
         <source>Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.
 
 Rate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ein Bild zur Bearbeitung auswählen, indem Sie auf ein Foto in der Warteschlange doppelklicken. Wechseln zwischen den Bildern mit der rechten und linken Pfeiltaste.
+
+Bewerten des aktuellen Bildes durch Drücken der Tasten 0 bis 5 und X oder durch Drücken der Pfeiltasten nach oben oder unten.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2060"/>
@@ -102,17 +104,19 @@ Berücksichtigt auch aktuell gewählte Objektivkorrekturen.</translation>
         <source>Change the editor&apos;s background brightness between black, gray, and white.
 
 Shortcut: B</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändern der Hintergrundhelligkeit des Editors zwischen Schwarz, Grau und Weiß.
+
+Tastenkürzel: B</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2586"/>
         <source>Click this to save your crop.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier klicken, um Zuschnitt zu speichern.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2586"/>
         <source>Click this to begin cropping.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hierklicken, um Zuschnitt zu beginnen.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2586"/>
@@ -121,17 +125,21 @@ Shortcut: B</source>
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.
 
 Shortcut: C</source>
-        <translation type="unfinished"></translation>
+        <translation>Strg-Taste gedrückt halten, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Strg-Taste gedrückt halten, während Sie eine Kante oder das restliche Bild ziehen, um den Ausschnitt zu verschieben, ohne seine Größe zu ändern.
+
+Umschalttaste gedrückt halten, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende gemeinsame Seitenverhältnis zu fixieren. Umschalttaste gedrückt halten, während Sie den Ausschnitt bewegen, um ihn in der horizontalen und/oder vertikalen Mitte einzufangen.
+
+Tastaturkürzel: C</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2656"/>
         <source>Click this to apply the rotation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier klicken, um Drehung anzuwenden.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2656"/>
         <source>Click this to begin leveling the image.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier klicken, um mit Ausrichten zu beginnen.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2656"/>
@@ -140,7 +148,11 @@ Shortcut: C</source>
 Reset the rotation to zero by pressing &quot;Shift+L&quot;.
 
 Shortcut: L</source>
-        <translation type="unfinished"></translation>
+        <translation>Klicken, um die Drehhilfslinie auf dem Bild zu platzieren, und dann Hilfslinien ziehen, um sie vertikal oder horizontal auszurichten. Sie können die Rotationshilfe neu positionieren, indem Sie an der Stelle ziehen, an der sich die Hilfslinien treffen.
+
+Rotation auf Null zurücksetzen mit &quot;Umschalt+L&quot;.
+
+Tastaturkürzel: L</translation>
     </message>
     <message>
         <source>Change the editor&apos;s background brightness between black, gray, and white.</source>
@@ -750,52 +762,54 @@ Es hängt einen Unterstrich und sieben Zeichen (abgeleitet aus dem Dateiinhalt) 
     <message>
         <location filename="../Import.qml" line="426"/>
         <source>Common import scenarios:</source>
-        <translation type="unfinished"></translation>
+        <translation>Häufige Importvorgänge:</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="434"/>
         <source>Import new photos from a memory card</source>
         <comment>Put a line break in if it gets much longer</comment>
-        <translation type="unfinished"></translation>
+        <translation>Neue Fotos von Speicherkarte importieren</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="435"/>
         <source>This setup will copy photos from a memory card to a destination directory, and load all newly imported photos into the queue.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopiert Fotos von einer Speicherkarte in ein Zielverzeichnis und lädt alle neu importierten Fotos in die Warteschlange.</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="457"/>
         <source>Import existing photos</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestehende Fotos importieren</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="458"/>
         <source>This setup will import photos that are already on your computer, and load all newly imported photos into the queue.</source>
-        <translation type="unfinished"></translation>
+        <translation>Importiert Fotos, die sich bereits auf Ihrem Computer befinden, und lädt alle neu importierten Fotos in die Warteschlange.</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="478"/>
         <source>Update locations of files that have moved</source>
         <comment>Put a line break in if it gets much longer</comment>
-        <translation type="unfinished"></translation>
+        <translation>Speicherorte von verschobenen Dateien aktualisieren</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="479"/>
         <source>If a photo in the database has its raw file moved, use this setup to re-import the photo. It will not load anything into the queue.
 
 This is useful when you remove photos from your main directory and want to work from a backup location.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wenn die Rohdatei eines Fotos in der Datenbank verschoben wurde, verwenden Sie diese Einstellung, um das Foto erneut zu importieren. Es wird nichts in die Warteschlange geladen.
+
+Dies ist nützlich, wenn Sie Fotos aus Ihrem Hauptverzeichnis entfernen und von einem Backup-Speicherort aus arbeiten möchten.</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="501"/>
         <source>Bring previously-imported files into the queue</source>
         <comment>Put a line break in if it gets much longer</comment>
-        <translation type="unfinished"></translation>
+        <translation>Zuvor importierte Dateien in die Warteschlange stellen</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="502"/>
         <source>If a file is in the database but you don&apos;t know when it was taken, just re-import it with this setup to load it into the queue.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wenn sich eine Datei in der Datenbank befindet, Sie aber nicht wissen, wann sie entnommen wurde, importieren Sie sie einfach mit diesem Setup erneut, um sie in die Warteschlange zu laden.</translation>
     </message>
 </context>
 <context>
@@ -868,12 +882,12 @@ This is useful when you remove photos from your main directory and want to work 
     <message>
         <location filename="../Organize.qml" line="215"/>
         <source>Photos: </source>
-        <translation type="unfinished"></translation>
+        <translation>Fotos: </translation>
     </message>
     <message>
         <location filename="../Organize.qml" line="644"/>
         <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.</source>
-        <translation type="unfinished"></translation>
+        <translation>Doppelklicken Sie auf das Datumshistogramm oben, um Fotos von einem bestimmten Tag anzuzeigen. Klicken Sie mit der Umschalttaste oder der rechten Maustaste, um einen Datumsbereich festzulegen.</translation>
     </message>
     <message>
         <source>Count: </source>
@@ -1007,7 +1021,7 @@ nicht lesbar</translation>
     <message>
         <location filename="../Queue.qml" line="613"/>
         <source>Work Queue is empty. Import new photos with the Import tab or load existing photos by double-clicking on them in the Organize tab.</source>
-        <translation type="unfinished"></translation>
+        <translation>Warteschlange ist leer. Importieren Sie neue Fotos mit der Registerkarte Import oder laden Sie vorhandene Fotos, indem Sie sie auf der Registerkarte Organisieren doppelklicken.</translation>
     </message>
 </context>
 <context>
