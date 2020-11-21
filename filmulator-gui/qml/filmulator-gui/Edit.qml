@@ -2653,7 +2653,7 @@ SlimSplitView {
             anchors.right: rotateRight.left
             y: 0 * uiScale
             notDisabled: root.previewReady && !root.cropping
-            tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\".\n\nShortcut: L")
+            tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\" or double right clicking.\n\nShortcut: L")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
