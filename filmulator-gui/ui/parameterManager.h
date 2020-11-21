@@ -60,6 +60,7 @@ struct DemosaicParams {
     bool lensfunDistortion;
     float focalLength;
     float fnumber;
+    float rotationAngle;
 };
 
 struct PrefilmParams {
@@ -139,19 +140,25 @@ class ParameterManager : public QObject
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
 
     //Demosaic
-    Q_PROPERTY(int caEnabled       MEMBER s_caEnabled   WRITE setCaEnabled   NOTIFY caEnabledChanged)
-    Q_PROPERTY(int highlights      MEMBER m_highlights  WRITE setHighlights  NOTIFY highlightsChanged)
-    Q_PROPERTY(QString lensfunName MEMBER s_lensfunName WRITE setLensfunName NOTIFY lensfunNameChanged)
-    Q_PROPERTY(int lensfunCa       MEMBER s_lensfunCa   WRITE setLensfunCa   NOTIFY lensfunCaChanged)
-    Q_PROPERTY(int lensfunVign     MEMBER s_lensfunVign WRITE setLensfunVign NOTIFY lensfunVignChanged)
-    Q_PROPERTY(int lensfunDist     MEMBER s_lensfunDist WRITE setLensfunDist NOTIFY lensfunDistChanged)
+    Q_PROPERTY(int caEnabled        MEMBER s_caEnabled      WRITE setCaEnabled      NOTIFY caEnabledChanged)
+    Q_PROPERTY(int highlights       MEMBER m_highlights     WRITE setHighlights     NOTIFY highlightsChanged)
+    Q_PROPERTY(QString lensfunName  MEMBER s_lensfunName    WRITE setLensfunName    NOTIFY lensfunNameChanged)
+    Q_PROPERTY(int lensfunCa        MEMBER s_lensfunCa      WRITE setLensfunCa      NOTIFY lensfunCaChanged)
+    Q_PROPERTY(int lensfunVign      MEMBER s_lensfunVign    WRITE setLensfunVign    NOTIFY lensfunVignChanged)
+    Q_PROPERTY(int lensfunDist      MEMBER s_lensfunDist    WRITE setLensfunDist    NOTIFY lensfunDistChanged)
+    Q_PROPERTY(float rotationAngle  MEMBER m_rotationAngle  WRITE setRotationAngle  NOTIFY rotationAngleChanged)
+    Q_PROPERTY(float rotationPointX MEMBER m_rotationPointX WRITE setRotationPointX NOTIFY rotationPointXChanged)
+    Q_PROPERTY(float rotationPointY MEMBER m_rotationPointY WRITE setRotationPointY NOTIFY rotationPointYChanged)
 
-    Q_PROPERTY(int defCaEnabled  READ getDefCaEnabled  NOTIFY defCaEnabledChanged)
-    Q_PROPERTY(int defHighlights READ getDefHighlights NOTIFY defHighlightsChanged)
-    Q_PROPERTY(QString defLensfunName READ getDefLensfunName NOTIFY defLensfunNameChanged)
-    Q_PROPERTY(int defLensfunCa       READ getDefLensfunCa   NOTIFY defLensfunCaChanged)
-    Q_PROPERTY(int defLensfunVign     READ getDefLensfunVign NOTIFY defLensfunVignChanged)
-    Q_PROPERTY(int defLensfunDist     READ getDefLensfunDist NOTIFY defLensfunDistChanged)
+    Q_PROPERTY(int defCaEnabled        READ getDefCaEnabled      NOTIFY defCaEnabledChanged)
+    Q_PROPERTY(int defHighlights       READ getDefHighlights     NOTIFY defHighlightsChanged)
+    Q_PROPERTY(QString defLensfunName  READ getDefLensfunName    NOTIFY defLensfunNameChanged)
+    Q_PROPERTY(int defLensfunCa        READ getDefLensfunCa      NOTIFY defLensfunCaChanged)
+    Q_PROPERTY(int defLensfunVign      READ getDefLensfunVign    NOTIFY defLensfunVignChanged)
+    Q_PROPERTY(int defLensfunDist      READ getDefLensfunDist    NOTIFY defLensfunDistChanged)
+    Q_PROPERTY(float defRotationAngle  READ getDefRotationAngle  NOTIFY defRotationAngleChanged)
+    Q_PROPERTY(float defRotationPointX READ getDefRotationPointX NOTIFY defRotationPointXChanged)
+    Q_PROPERTY(float defRotationPointY READ getDefRotationPointY NOTIFY defRotationPointYChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -384,6 +391,9 @@ protected:
     int m_lensfunCa;      //When the UI sets the s_ params, these get changed so the db gets the changes too.
     int m_lensfunVign;    //On the same token, when the UI *resets*,
     int m_lensfunDist;    // these have to go back to "" or -1, not to the default.
+    float m_rotationAngle;
+    float m_rotationPointX;
+    float m_rotationPointY;
 
     int d_caEnabled; //d_'s are for default values
     int d_highlights;
@@ -391,6 +401,9 @@ protected:
     int d_lensfunCa;      //*not* -1, but actually from prefs
     int d_lensfunVign;    //They get filled a) at loading time, or b) when lens prefs are set or erased
     int d_lensfunDist;
+    float d_rotationAngle;
+    float d_rotationPointX;
+    float d_rotationPointY;
 
     //Prefilmulation
     float m_exposureComp;
@@ -506,6 +519,9 @@ protected:
     int getDefLensfunCa(){return d_lensfunCa;}
     int getDefLensfunVign(){return d_lensfunVign;}
     int getDefLensfunDist(){return d_lensfunDist;}
+    float getDefRotationAngle(){return d_rotationAngle;}
+    float getDefRotationPointX(){return d_rotationPointX;}
+    float getDefRotationPointY(){return d_rotationPointY;}
 
     //Prefilmulation
     float getDefExposureComp(){return d_exposureComp;}
@@ -556,6 +572,7 @@ protected:
     //Loading
     bool getTiffIn(){return m_tiffIn;}
     bool getJpegIn(){return m_jpegIn;}
+
     //Demosaic
     int getCaEnabled(){return s_caEnabled;}
     int getHighlights(){return m_highlights;}
@@ -563,6 +580,9 @@ protected:
     int getLensfunCa(){return s_lensfunCa;}
     int getLensfunVign(){return s_lensfunVign;}
     int getLensfunDist(){return s_lensfunDist;}
+    float getRotationAngle(){return m_rotationAngle;}
+    float getRotationPointX(){return m_rotationPointX;}
+    float getRotationPointY(){return m_rotationPointY;}
 
     //Prefilmulation
     float getExposureComp(){return m_exposureComp;}
@@ -624,6 +644,9 @@ protected:
     void setLensfunCa(int);
     void setLensfunVign(int);
     void setLensfunDist(int);
+    void setRotationAngle(float);
+    void setRotationPointX(float);
+    void setRotationPointY(float);
 
     //Prefilmulation
     void setExposureComp(float);
@@ -706,6 +729,9 @@ signals:
     void lensfunCaChanged();
     void lensfunVignChanged();
     void lensfunDistChanged();
+    void rotationAngleChanged();
+    void rotationPointXChanged();
+    void rotationPointYChanged();
 
     void defCaEnabledChanged();
     void defHighlightsChanged();
@@ -713,6 +739,9 @@ signals:
     void defLensfunCaChanged();
     void defLensfunVignChanged();
     void defLensfunDistChanged();
+    void defRotationAngleChanged();
+    void defRotationPointXChanged();
+    void defRotationPointYChanged();
 
     //Prefilmulation
     void exposureCompChanged();

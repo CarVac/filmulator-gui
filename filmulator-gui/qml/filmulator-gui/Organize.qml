@@ -10,6 +10,8 @@ SlimSplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
 
+    property int itemCount: organizeModel.imageCount
+
     signal tooltipWanted(string text, int x, int y)
 
     Rectangle {
@@ -41,7 +43,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: timezoneOffset
-                    title: qsTr("Time zone")
+                    title: qsTr("Time Zone")
                     tooltipText: qsTr("Controls when the day is divided for the date filters.")
                     minimumValue: -14
                     maximumValue: 14
@@ -210,7 +212,7 @@ SlimSplitView {
                     ToolTip {
                         id: dateHistoTooltip
                         anchors.fill: parent
-                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Count: ') + parent.count
+                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Photos: ') + parent.count
                         milliSecondDelay: 0
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
@@ -618,6 +620,30 @@ SlimSplitView {
                 }
             }
 
+            Rectangle {
+                id: noImageTopBox
+                width: 400 * uiScale
+                height: noImageTopText.contentHeight + 30 * uiScale
+                x: (parent.width-width)/2
+                y: 20 * uiScale
+                color: Colors.darkGray
+                border.color: Colors.lowGray
+                border.width: 2 * uiScale
+                radius: 10 * uiScale
+                visible: root.itemCount < 1
+
+                Text {
+                    id: noImageTopText
+                    width: 375 * uiScale
+                    anchors.centerIn: parent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: "white"
+                    font.pixelSize: 14.0 * uiScale
+                    wrapMode: Text.Wrap
+                    text: qsTr("Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.")
+                }
+            }
 
             MouseArea {
                 id: wheelstealer

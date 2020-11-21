@@ -26,12 +26,15 @@ class OrganizeModel : public SqlModel
     Q_PROPERTY(int ratingSort    READ getRatingSort    WRITE setRatingSort    NOTIFY ratingSortChanged)
     Q_PROPERTY(int timeZone MEMBER m_timeZone WRITE setTimeZone NOTIFY timeZoneChanged)
 
+    Q_PROPERTY(int imageCount READ getImageCount NOTIFY imageCountChanged)
+
 public:
     explicit OrganizeModel(QObject *parent = 0);
     Q_INVOKABLE void setOrganizeQuery();
     Q_INVOKABLE void setDateHistoQuery();
     Q_INVOKABLE static QString thumbDir();
-    Q_INVOKABLE void setRating(QString searchID, int rating);
+    Q_INVOKABLE void setRating(const QString searchID, const int rating);
+    Q_INVOKABLE void incrementRating(const QString searchID, const int ratingChange);
     Q_INVOKABLE void markDeletion(QString searchID);
     Q_INVOKABLE QString getDateTimeString(qint64 unixTimeIn);
     Q_INVOKABLE QDate getSelectedDate();
@@ -74,6 +77,8 @@ public:
     int getProcessedSort() {return processedSort;}
     int getRatingSort() {return ratingSort;}
 
+    int getImageCount(){return m_imageCount;}
+
 signals:
     void minCaptureTimeChanged();
     void maxCaptureTimeChanged();
@@ -92,6 +97,8 @@ signals:
     void timeZoneChanged();
 
     void organizeFilterChanged();
+
+    void imageCountChanged();
 
     void enqueueThis(const QString STsearchID);
 
@@ -122,6 +129,7 @@ protected:
     int minRating;
     int maxRating;
     int m_timeZone = 0;
+    int m_imageCount;
 
     // For these sort variables, -1 means descending, +1 means ascending, 0 means inactive.
     int captureSort;

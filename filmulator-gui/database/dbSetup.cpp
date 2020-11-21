@@ -42,12 +42,12 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.exec("PRAGMA user_version;");
     query.next();
     const int oldVersion = query.value(0).toInt();
-    if (oldVersion > 12)//=================================================================version check here!
+    if (oldVersion > 13)//=================================================================version check here!
     {
         std::cout << "Newer database format. Aborting." << std::endl;
         return DBSuccess::failure;
     }
-    else if (oldVersion < 12)//============================================================version check here!
+    else if (oldVersion < 13)//============================================================version check here!
     {
         std::cout << "Backing up old database" << std::endl;
         QFile file(dir.absoluteFilePath("filmulatorDB"));
@@ -140,7 +140,10 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTlensfunName varchar,"                  //41
                "ProcTlensfunCa integer,"                    //42
                "ProcTlensfunVign integer,"                  //43
-               "ProcTlensfunDist integer"                   //44
+               "ProcTlensfunDist integer,"                  //44
+               "ProcTrotationAngle real,"                   //45
+               "ProcTrotationPointX real,"                  //46
+               "ProcTrotationPointY real,"                  //47
                ");"
                );
 
@@ -183,10 +186,13 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProfTbwGmult real,"                         //33
                "ProfTbwBmult real,"                         //34
                "ProfTtoeBoundary real,"                     //35
-               "ProfTlensfunName varchar,"                 //36
+               "ProfTlensfunName varchar,"                  //36
                "ProfTlensfunCa integer,"                    //37
                "ProfTlensfunVign integer,"                  //38
-               "ProfTlensfunDist integer"                   //39
+               "ProfTlensfunDist integer,"                  //39
+               "ProfTrotationAngle real,"                   //40
+               "ProfTrotationPointX real,"                  //41
+               "ProfTrotationPointY real,"                  //42
                ");"
                );
 
@@ -218,9 +224,9 @@ DBSuccess setupDB(QSqlDatabase *db)
 
     //Now we set the default Default profile.
     query.prepare("REPLACE INTO ProfileTable values "
-                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3
-                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
+                  "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4
+                  //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2
     //Name of profile; must be unique.
     query.bindValue(0, "Default");
     //Initial Developer Concentration
@@ -295,6 +301,11 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.bindValue(37, -1); //lensfun CA - negative 1 indicates use preferences
     query.bindValue(38, -1); //lensfun vignetting
     query.bindValue(39, -1); //lensfun distortion
+    //fine rotation angle
+    query.bindValue(40, 0.0f); //rotationAngle
+    //where the ui point about which we adjust rotation is, relative to the image dimensions
+    query.bindValue(41, -1.f); //rotationPointX
+    query.bindValue(42, -1.f); //rotationPointY
 
     //Well, orientation and crop obviously don't get presets.
     query.exec();
@@ -458,6 +469,22 @@ DBSuccess setupDB(QSqlDatabase *db)
         query.exec("UPDATE ProfileTable SET ProfTlensfunDist  = -1");
         versionString = "PRAGMA user_version = 12;";
         std::cout << "Upgrading from old db version 11" << std::endl;
+        [[fallthrough]];
+    case 12:
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTrotationAngle;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTrotationPointX;");
+        query.exec("ALTER TABLE ProcessingTable ADD COLUMN ProcTrotationPointY;");
+        query.exec("UPDATE ProcessingTable SET ProcTrotationAngle  =  0;");
+        query.exec("UPDATE ProcessingTable SET ProcTrotationPointX = -1;");
+        query.exec("UPDATE ProcessingTable SET ProcTrotationPointY = -1;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTrotationAngle;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTrotationPointX;");
+        query.exec("ALTER TABLE ProfileTable ADD COLUMN ProfTrotationPointY;");
+        query.exec("UPDATE ProfileTable SET ProfTrotationAngle  =  0;");
+        query.exec("UPDATE ProfileTable SET ProfTrotationPointX = -1;");
+        query.exec("UPDATE ProfileTable SET ProfTrotationPointY = -1;");
+        versionString = "PRAGMA user_version = 13;";
+        std::cout << "Upgrading from old db version 12" << std::endl;
     }
     query.exec(versionString);
     query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.

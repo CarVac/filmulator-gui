@@ -189,6 +189,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     demParams.lensfunDistortion = s_lensfunDist >= 1;
     demParams.focalLength = focalLength;
     demParams.fnumber = fnumber;
+    demParams.rotationAngle = m_rotationAngle;
     std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
@@ -308,6 +309,41 @@ void ParameterManager::setLensfunDist(int distEnabled)
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLensfunDist"));
+    }
+}
+
+void ParameterManager::setRotationAngle(float angleIn)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_rotationAngle = angleIn;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotationAngle"));
+    }
+}
+
+void ParameterManager::setRotationPointX(float rowIn)
+{
+    if (!justInitialized)
+    {
+        //no need to lock the paramMutex, since this doesn't affect the image at all
+        m_rotationPointX = rowIn;
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotationPointX"));
+    }
+}
+
+void ParameterManager::setRotationPointY(float colIn)
+{
+    if (!justInitialized)
+    {
+        //no need to lock the paramMutex, since this doesn't affect the image at all
+        m_rotationPointY = colIn;
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotationPointY"));
     }
 }
 
@@ -1184,10 +1220,13 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTlensfunName, "                    //41
                   "ProcTlensfunCa, "                      //42
                   "ProcTlensfunVign, "                    //43
-                  "ProcTlensfunDist) "                    //44
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4
-                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
+                  "ProcTlensfunDist, "                    //44
+                  "ProcTrotationAngle, "                  //45
+                  "ProcTrotationPointX, "                 //46
+                  "ProcTrotationPointY) "                 //47
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4
+                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -1233,6 +1272,9 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(42, m_lensfunCa);
     query.bindValue(43, m_lensfunVign);
     query.bindValue(44, m_lensfunDist);
+    query.bindValue(45, m_rotationAngle);
+    query.bindValue(46, m_rotationPointX);
+    query.bindValue(47, m_rotationPointY);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -1530,6 +1572,9 @@ void ParameterManager::selectImage(const QString imageID)
     emit lensfunCaChanged();
     emit lensfunVignChanged();
     emit lensfunDistChanged();
+    emit rotationAngleChanged();
+    emit rotationPointXChanged();
+    emit rotationPointYChanged();
     emit exposureCompChanged();
     emit temperatureChanged();
     emit tintChanged();
@@ -1575,6 +1620,9 @@ void ParameterManager::selectImage(const QString imageID)
     emit defLensfunCaChanged();
     emit defLensfunVignChanged();
     emit defLensfunDistChanged();
+    emit defRotationAngleChanged();
+    emit defRotationPointXChanged();
+    emit defRotationPointYChanged();
     emit defExposureCompChanged();
     emit defTemperatureChanged();
     emit defTintChanged();
@@ -1689,6 +1737,34 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
         nameCol = rec.indexOf("ProfTlensfunDist");
         if (-1 == nameCol) { std::cout << "paramManager ProfTlensfunDist" << endl; }
         m_lensfunDist = query.value(nameCol).toInt();
+    }
+
+    //Fine rotation angle
+    nameCol = rec.indexOf("ProfTrotationAngle");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrotationAngle" << endl; }
+    const float temp_rotationAngle = query.value(nameCol).toFloat();
+    d_rotationAngle = temp_rotationAngle;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rotationAngle = temp_rotationAngle;
+    }
+
+    //Rotation reference point coordinates
+    nameCol = rec.indexOf("ProfTrotationPointX");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrotationPointX" << endl; }
+    const float temp_rotationPointX = query.value(nameCol).toFloat();
+    d_rotationPointX = temp_rotationPointX;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rotationPointX = temp_rotationPointX;
+    }
+    nameCol = rec.indexOf("ProfTrotationPointY");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrotationPointY" << endl; }
+    const float temp_rotationPointY = query.value(nameCol).toFloat();
+    d_rotationPointY = temp_rotationPointY;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rotationPointY = temp_rotationPointY;
     }
 
     //Exposure compensation
@@ -2155,6 +2231,37 @@ void ParameterManager::loadParams(QString imageID)
         //cout << "ParameterManager::loadParams lensfunDist" << endl;
         m_lensfunDist = temp_lensfunDist;
         validity = min(validity, Valid::load);
+    }
+
+    //Fine rotation angle
+    nameCol = rec.indexOf("ProcTrotationAngle");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotationAngle" << endl; }
+    const float temp_rotationAngle = query.value(nameCol).toFloat();
+    if (temp_rotationAngle != m_rotationAngle)
+    {
+        //cout << "ParameterManager::loadParams rotationAngle" << endl;
+        m_rotationAngle = temp_rotationAngle;
+        validity = min(validity, Valid::load);
+    }
+
+    //Rotation reference point coordinates
+    nameCol = rec.indexOf("ProcTrotationPointX");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotationPointX" << endl; }
+    const float temp_rotationPointX = query.value(nameCol).toFloat();
+    if (temp_rotationPointX != m_rotationPointX)
+    {
+        //cout << "ParameterManager::loadParams rotationPointX" << endl;
+        m_rotationPointX = temp_rotationPointX;
+        //the reference coordinates don't affect validity at all
+    }
+    nameCol = rec.indexOf("ProcTrotationPointY");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotationPointY" << endl; }
+    const float temp_rotationPointY = query.value(nameCol).toFloat();
+    if (temp_rotationPointY != m_rotationPointY)
+    {
+        //cout << "ParameterManager::loadParams rotationPointY" << endl;
+        m_rotationPointY = temp_rotationPointY;
+        //the reference coordinates don't affect validity at all
     }
 
     //Exposure compensation
@@ -2761,6 +2868,31 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams lensfunDist" << endl;
         s_lensfunDist = temp_lensfunDist;
+        validity = min(validity, Valid::load);
+    }
+
+    //Fine rotation angle
+    const float temp_rotationAngle = sourceParams->getRotationAngle();
+    if (temp_rotationAngle != m_rotationAngle)
+    {
+        //cout << "ParameterManager::cloneParams rotationAngle" << endl;
+        m_rotationAngle = temp_rotationAngle;
+        validity = min(validity, Valid::load);
+    }
+
+    //Rotation reference point coordinates
+    const float temp_rotationPointX = sourceParams->getRotationPointX();
+    if (temp_rotationPointX != m_rotationPointX)
+    {
+        //cout << "ParameterManager::cloneParams rotationPointX" << endl;
+        m_rotationPointX = temp_rotationPointX;
+        validity = min(validity, Valid::load);
+    }
+    const float temp_rotationPointY = sourceParams->getRotationPointY();
+    if (temp_rotationPointY != m_rotationPointY)
+    {
+        //cout << "ParameterManager::cloneParams rotationPointY" << endl;
+        m_rotationPointY = temp_rotationPointY;
         validity = min(validity, Valid::load);
     }
 

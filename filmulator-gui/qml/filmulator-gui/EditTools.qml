@@ -120,7 +120,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: autoCASlider
-                    title: qsTr("Auto CA correction")
+                    title: qsTr("Auto CA Correction")
                     tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.\n\nNot available for non-Bayer photos.")
                     minimumValue: 0
                     maximumValue: 5

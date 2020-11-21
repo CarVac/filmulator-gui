@@ -64,6 +64,8 @@ void QueueModel::resetIndex()
     } else {
         maxIndex = 0;
     }
+    m_queueSize = maxIndex;
+    emit queueSizeChanged();
 }
 
 void QueueModel::deQueue(const QString searchID)

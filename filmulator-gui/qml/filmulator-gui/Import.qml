@@ -399,4 +399,121 @@ Rectangle {
             uiScale: root.uiScale
         }
     }
+
+    ColumnLayout {
+        id: scenarioList
+        spacing: 0
+        x: 600 * uiScale
+        y: 20 * uiScale
+        width: 350 * uiScale
+
+        Rectangle {
+            id: scenarioLabelBox
+            width: parent.width
+            height: 20 * uiScale
+            color: Colors.darkGray
+
+            Text {
+                id: scenarioLabelText
+                x: 3 * uiScale
+                y: 0
+                width: parent.width-x
+                height: parent.height
+                color: "white"
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 12.0 * uiScale
+                text: qsTr("Common import scenarios:")
+            }
+        }
+
+        ToolButton {
+            id: memoryCardScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Import new photos from a memory card","Put a line break in if it gets much longer")
+            tooltipText: qsTr("This setup will copy photos from a memory card to a destination directory, and load all newly imported photos into the queue.")
+            highlight: root.sourceIsFolder && !root.importInPlace && appendSwitch.isOn && enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                sourceDirButton.checked = true
+                importAndMoveButton.checked = true
+                appendSwitch.isOn = true
+                enqueueSwitch.isOn = true
+                console.log("sourceisfolder " + root.sourceIsFolder)
+                console.log("import in place " + root.importInPlace)
+                console.log("append " + importModel.appendHash)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                memoryCardScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        ToolButton {
+            id: existingPhotosScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Import existing photos")
+            tooltipText: qsTr("This setup will import photos that are already on your computer, and load all newly imported photos into the queue.")
+            highlight: root.importInPlace && !replaceLocationSwitch.isOn && enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                importInPlaceButton.checked = true
+                replaceLocationSwitch.isOn = false
+                enqueueSwitch.isOn = true
+                console.log("import in place " + root.importInPlace)
+                console.log("replace location " + root.replace)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                existingPhotosScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        ToolButton {
+            id: findBackupScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Update locations of files that have moved","Put a line break in if it gets much longer")
+            tooltipText: qsTr("If a photo in the database has its raw file moved, use this setup to re-import the photo. It will not load anything into the queue.\n\nThis is useful when you remove photos from your main directory and want to work from a backup location.")
+            highlight: root.sourceIsFolder && root.importInPlace && replaceLocationSwitch.isOn && !enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                sourceDirButton.checked = true
+                importInPlaceButton.checked = true
+                replaceLocationSwitch.isOn = true
+                enqueueSwitch.isOn = false
+                console.log("sourceisfolder " + root.sourceIsFolder)
+                console.log("import in place " + root.importInPlace)
+                console.log("replace location " + root.replace)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                findBackupScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        ToolButton {
+            id: enqueueFileScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Bring previously-imported files into the queue","Put a line break in if it gets much longer")
+            tooltipText: qsTr("If a file is in the database but you don't know when it was taken, just re-import it with this setup to load it into the queue.")
+            highlight: root.importInPlace && replaceLocationSwitch.isOn && enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                importInPlaceButton.checked = true
+                replaceLocationSwitch.isOn = true
+                enqueueSwitch.isOn = true
+                console.log("import in place " + root.importInPlace)
+                console.log("replace location " + root.replace)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                findBackupScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+    }
 }

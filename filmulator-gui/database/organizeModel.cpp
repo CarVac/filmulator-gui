@@ -135,6 +135,8 @@ void OrganizeModel::setOrganizeQuery()
         queryModel.fetchMore();
     }
 //    cout << "organize row count: " << rowCount() << endl;
+    m_imageCount = queryModel.rowCount();
+    emit imageCountChanged();
 }
 
 void OrganizeModel::setDateHistoQuery()
@@ -164,14 +166,52 @@ QString OrganizeModel::thumbDir()
     return dirstr;
 }
 
-void OrganizeModel::setRating(QString searchID, int rating)
+void OrganizeModel::setRating(const QString searchID, const int rating)
 {
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
 
     QSqlQuery query(db);
     query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
-    query.bindValue(0, QVariant(max(min(rating,5),-5)));
+    query.bindValue(0, QVariant(max(min(rating,5),-6)));
+    query.bindValue(1, searchID);
+    query.exec();
+    emit updateTableOut("SearchTable", 0);//An edit made to the search table.
+    emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
+}
+
+void OrganizeModel::incrementRating(const QString searchID, const int ratingChange)
+{
+    if (searchID == "")
+    {
+        return;
+    }
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    QSqlQuery query(db);
+    query.prepare("SELECT STrating FROM SearchTable WHERE STsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    int rating = query.value(0).toInt();
+
+    if (rating < 0)
+    {
+        //don't change negative ratings unless rating change is positive, and then start it at -1
+        if (ratingChange > 0)
+        {
+            rating = -1 + ratingChange;
+        }
+    } else if (rating + ratingChange < 0)
+    {
+        rating = -1;
+    } else {
+        rating = rating + ratingChange;
+    }
+
+    query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
+    query.bindValue(0, QVariant(max(min(rating,5),-6)));
     query.bindValue(1, searchID);
     query.exec();
     emit updateTableOut("SearchTable", 0);//An edit made to the search table.
