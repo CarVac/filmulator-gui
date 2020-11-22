@@ -88,22 +88,13 @@ void diffuse_x(matrix<float> &developer_concentration, int convlength,
 {
     const int length = developer_concentration.nr();
     const int width = developer_concentration.nc();
-    cout << "padded width: " << paddedwidth << endl;
-    vector<float> tempVector(paddedwidth); //stores one padded line
-    cout << "max vector X: " << tempVector.max_size() << endl;
 
 #pragma omp parallel shared(developer_concentration,convlength,convrad,order,\
         paddedwidth,pad,swell_factor)
     {
         vector<float> hpadded(paddedwidth); //stores one padded line
         vector<float> htemp(paddedwidth); // stores result of box blur
-        #pragma omp critical
-        {
-            cout << "padded width: " << paddedwidth << endl;
-            cout << "max vector X: " << hpadded.max_size() << endl;
-        }
-
-        #pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(dynamic) nowait
         for (int row = 0; row<length;row++)
         {
             //Mirror the start of padded from the row.
@@ -170,11 +161,6 @@ void diffuse_y(matrix<float> &developer_concentration, int convlength,
         constexpr int numcols = 8;  // process numcols columns at once for better usage of L1 cpu cache
         vector<std::array<float, numcols>> hpadded(paddedlength); //stores one padded line
         vector<std::array<float, numcols>> htemp(paddedlength); // stores result of box blur
-        #pragma omp critical
-        {
-            cout << "padded length: " << paddedlength << endl;
-            cout << "max vector Y in loop: " << hpadded.max_size() << endl;
-        }
         #pragma omp for nowait
         for (int col = 0; col < width - (numcols - 1); col += numcols)
         {
