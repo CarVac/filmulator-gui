@@ -42,7 +42,11 @@ DBSuccess setupDB(QSqlDatabase *db)
     query.exec("PRAGMA user_version;");
     query.next();
     const int oldVersion = query.value(0).toInt();
-    if (oldVersion > 13)//=================================================================version check here!
+    if (oldVersion == 0)
+    {
+        std::cout << "First initialization." << std::endl;
+    }
+    else if (oldVersion > 13)//=================================================================version check here!
     {
         std::cout << "Newer database format. Aborting." << std::endl;
         return DBSuccess::failure;
@@ -136,14 +140,14 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProcTbwRmult real,"                         //37
                "ProcTbwGmult real,"                         //38
                "ProcTbwBmult real,"                         //39
-               "ProcTtoeBoundary real"                      //40
+               "ProcTtoeBoundary real,"                     //40
                "ProcTlensfunName varchar,"                  //41
                "ProcTlensfunCa integer,"                    //42
                "ProcTlensfunVign integer,"                  //43
                "ProcTlensfunDist integer,"                  //44
                "ProcTrotationAngle real,"                   //45
                "ProcTrotationPointX real,"                  //46
-               "ProcTrotationPointY real,"                  //47
+               "ProcTrotationPointY real"                   //47
                ");"
                );
 
@@ -192,7 +196,7 @@ DBSuccess setupDB(QSqlDatabase *db)
                "ProfTlensfunDist integer,"                  //39
                "ProfTrotationAngle real,"                   //40
                "ProfTrotationPointX real,"                  //41
-               "ProfTrotationPointY real,"                  //42
+               "ProfTrotationPointY real"                   //42
                ");"
                );
 
