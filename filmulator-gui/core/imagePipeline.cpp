@@ -388,7 +388,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //generate raw histogram
             if (WithHisto == histo)
             {
-                histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, cfa[0][0]==6);
+                histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
             }
 
             cout << "max of raw_image: " << rawMax << " ===============================================" << endl;
@@ -442,6 +442,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = stealVictim->camToRGB[i][j];
+                }
+                cout << endl;
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                cout << "camToRGB4: ";
+                for (int j = 0; j < 4; j++)
+                {
+                    camToRGB4[i][j] = stealVictim->camToRGB4[i][j];
                 }
                 cout << endl;
             }
@@ -1270,5 +1279,96 @@ void ImagePipeline::setCache(Cache cacheIn)
     if (false == hasStartedProcessing)
     {
         cache = cacheIn;
+    }
+}
+
+//This is used to copy everything from one pipeline to another.
+//The intended use case for this is for preloading.
+void ImagePipeline::copyPipeline(ImagePipeline * copySource)
+{
+
+    valid = copySource->valid;
+    progress = copySource->valid;
+    raw_image = copySource->raw_image;
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            cfa[i][j] = copySource->cfa[i][j];
+        }
+    }
+    for (int i = 0; i < 6; i++)
+    {
+        for (int j = 0; j < 6; j++)
+        {
+            xtrans[i][j] = copySource->xtrans[i][j];
+        }
+    }
+    maxXtrans = copySource->maxXtrans;
+    raw_width = copySource->raw_width;
+    raw_height = copySource->raw_height;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            camToRGB[i][j] = copySource->camToRGB[i][j];
+        }
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            camToRGB4[i][j] = copySource->camToRGB4[i][j];
+        }
+    }
+    rCamMul = copySource->rCamMul;
+    gCamMul = copySource->gCamMul;
+    bCamMul = copySource->bCamMul;
+    rPreMul = copySource->rPreMul;
+    gPreMul = copySource->gPreMul;
+    bPreMul = copySource->bPreMul;
+    maxValue = copySource->maxValue;
+    isSraw = copySource->isSraw;
+    isNikonSraw = copySource->isNikonSraw;
+    isMonochrome = copySource->isMonochrome;
+    isCR3 = copySource->isCR3;
+
+    input_image = copySource->input_image;
+    recovered_image = copySource->recovered_image;
+    pre_film_image = copySource->pre_film_image;
+    exifData = copySource->exifData;
+    basicExifData = copySource->basicExifData;
+    filmulated_image = copySource->filmulated_image;
+    contrast_image = copySource->contrast_image;
+    color_curve_image = copySource->color_curve_image;
+    vibrance_saturation_image = copySource->vibrance_saturation_image;
+}
+
+//This is used to copy only images from one pipeline to another,
+// but downsampling to the set resolution.
+//The intended use is for improving the quality of the quick preview
+// in the case of distortion correction or leveling.
+void ImagePipeline::copyAndDownsampleImages(ImagePipeline * copySource)
+{
+    //We only want to copy stuff starting with recovered image.
+    downscale_and_crop(copySource->recovered_image, recovered_image, 0, 0, ((copySource->recovered_image.nc())/3)-1, copySource->recovered_image.nr()-1, resolution, resolution);
+    downscale_and_crop(copySource->pre_film_image, pre_film_image, 0, 0, ((copySource->pre_film_image.nc())/3)-1, copySource->pre_film_image.nr()-1, resolution, resolution);
+    downscale_and_crop(copySource->filmulated_image, filmulated_image, 0, 0, ((copySource->filmulated_image.nc())/3)-1, copySource->filmulated_image.nr()-1, resolution, resolution);
+    //The stuff after filmulated_image is type <unsigned short> and so
+    // we don't have a routine to scale them. But that's okay, I think.
+    //Anything except tweaking saturation will pull from the higher res
+    // data.
+}
+
+//This is used to update the histograms once data is copied on an image change
+void ImagePipeline::rerunHistograms()
+{
+    //
+    if (WithHisto == histo)
+    {
+        histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
+        histoInterface->updateHistPreFilm(pre_film_image, 65535);
+        histoInterface->updateHistPostFilm(filmulated_image, .0025f);
+        histoInterface->updateHistFinal(vibrance_saturation_image);
     }
 }
