@@ -154,6 +154,21 @@ Item {
                 }
 
                 onDoubleClicked: {
+                    //Swap any precomputed pipelines
+                    //First we want to find which is the old and which is the new index
+                    var oldPosition = queueModel.getActivePosition(paramManager.imageIndex)
+                    var newPosition = queueModel.getActivePosition(QTsearchID)
+                    var nextID
+                    if (newPosition === oldPosition) {
+                        //don't do any preloading weirdness
+                    } else if (newPosition < oldPosition && newPosition !== 0.0) {
+                        nextID = queueModel.getPrev(QTsearchID)
+                        //do the shuffle
+                    } else if (newPosition > oldPosition && newPosition !== 1.0) {
+                        nextID = queueModel.getNext(QTsearchID)
+                        //do the shuffle
+                    }
+
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)
                 }
@@ -886,10 +901,16 @@ Item {
         sequence: StandardKey.MoveToPreviousChar
         onActivated: {
             if (!root.dragging) {
-                var newIndex = queueModel.getPrev(paramManager.imageIndex)
-                if (newIndex !== paramManager.imageIndex) {
-                    paramManager.selectImage(newIndex)
-                    var selectedPosition = queueModel.getActivePosition(newIndex)
+                //Swap any precomputed pipelines
+                var newID = queueModel.getPrev(paramManager.imageIndex)
+                var nextID = queueModel.getPrev(newID)
+                if (nextID !== newID) {
+                    //do the shuffle
+                }
+
+                if (newID !== paramManager.imageIndex) {
+                    paramManager.selectImage(newID)
+                    var selectedPosition = queueModel.getActivePosition(newID)
                     var scrollMargin = listView.contentWidth - listView.width
                     listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
                 }
@@ -901,10 +922,16 @@ Item {
         sequence: StandardKey.MoveToNextChar
         onActivated: {
             if (!root.dragging) {
-                var newIndex = queueModel.getNext(paramManager.imageIndex)
-                if (newIndex !== paramManager.imageIndex) {
-                    paramManager.selectImage(newIndex)
-                    var selectedPosition = queueModel.getActivePosition(newIndex)
+                //Swap any precomputed pipelines
+                var newID = queueModel.getNext(paramManager.imageIndex)
+                var nextID = queueModel.getNext(newID)
+                if (nextID !== newID) {
+                    //do the shuffle
+                }
+
+                if (newID !== paramManager.imageIndex) {
+                    paramManager.selectImage(newID)
+                    var selectedPosition = queueModel.getActivePosition(newID)
                     var scrollMargin = listView.contentWidth - listView.width
                     listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
                 }
