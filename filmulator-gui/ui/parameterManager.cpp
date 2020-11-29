@@ -1153,6 +1153,12 @@ Valid ParameterManager::getValid()
     return validity;
 }
 
+void ParameterManager::setValid(Valid validityIn)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    validity = validityIn;
+}
+
 //This gets called by a slider (from qml) when it is released.
 //It syncs the main (slider-interfaced) settings with the database.
 void ParameterManager::writeback()

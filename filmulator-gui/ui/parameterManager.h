@@ -312,6 +312,7 @@ public:
     Valid markFilmLikeCurvesComplete();
 
     Valid getValid();
+    void setValid(Valid validityIn);
 
     std::string getFullFilename(){return m_fullFilename;}
 
