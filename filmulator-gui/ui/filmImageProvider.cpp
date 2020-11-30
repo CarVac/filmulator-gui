@@ -102,7 +102,10 @@ QImage FilmImageProvider::requestImage(const QString& id,
             {
                 quickPipe.rerunHistograms();
             }
+            struct timeval quickTime;
+            gettimeofday(&quickTime, nullptr);
             image = quickPipe.processImage(paramManager, this, data);
+            cout << "requestImage quickPipe time: " << timeDiff(quickTime) << endl;
         }
         else
         {
@@ -110,14 +113,25 @@ QImage FilmImageProvider::requestImage(const QString& id,
             Exiv2::ExifData exif;
 
             cloneParam->markStartOfProcessing();
+            nextParam->markStartOfProcessing();
 
             //run precomputation
+            struct timeval preTime;
+            gettimeofday(&preTime, nullptr);
+            cout << "requestImage nextParam valid " << nextParam->getValid() << endl;
             nextQuickPipe.processImage(nextParam, this, exif);
+            cout << "requestImage preload time: " << timeDiff(preTime) << endl;
 
             //run full pipeline of current image
             filename = cloneParam->getFullFilename();
+            struct timeval fullTime;
+            gettimeofday(&fullTime, nullptr);
             image = pipeline.processImage(cloneParam, this, data);
-            quickPipe.copyAndDownsampleImages(&pipeline);
+            cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
+            if (image.nr() > 0)
+            {
+                quickPipe.copyAndDownsampleImages(&pipeline);
+            }
         }
     }
 

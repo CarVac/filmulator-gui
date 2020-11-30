@@ -68,6 +68,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
     isCR3 = false;
 
+    cout << "ImagePipeline::processImage valid: " << valid << endl;
+
     updateProgress(valid, 0.0f);
     switch (valid)
     {
@@ -79,6 +81,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
         if (abort == AbortStatus::restart)
         {
+            cout << "ImagePipeline::processImage: aborted at the start" << endl;
             return emptyMatrix();
         }
 
