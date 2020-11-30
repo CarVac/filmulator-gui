@@ -77,10 +77,10 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
-    changeMadeSinceCheck = false;//We can't have it abort first thing in the pipeline.
     if (validity < Valid::none)//If something earlier than this has changed
     {
         abort = AbortStatus::restart;//not actually possible
+        cout << "claimLoadParams validity abort" << endl;
     }
     else if (changeMadeSinceCheck)
     {

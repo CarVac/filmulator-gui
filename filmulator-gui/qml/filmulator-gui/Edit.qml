@@ -283,6 +283,8 @@ SlimSplitView {
                         var num
                         var s
                         var size
+                        console.log("topImage state: " + topImage.state)
+                        console.log("topImage status: " + topImage.status)
                         if (topImage.status == Image.Ready) { //if the image is now ready
                             //First, we turn off the no-image-text
                             root.noImage = false
@@ -303,7 +305,6 @@ SlimSplitView {
                                 //This has to happen after the size actually changes. It's put below.
                             }
 
-                            console.log("TopImage state: " + topImage.state)
 
                             if (topImage.state == "lf") {//it was loading the full image
                                 topImage.state = "sf"//showing full image
@@ -368,9 +369,11 @@ SlimSplitView {
                             topImage.indexString = s
 
                             //now actually ask for the image
+                            //we always go back to loading quick even when the full image fails
                             topImage.state = "lq"//loading quick pipe
                             topImage.source = "image://filmy/q" + topImage.indexString
                         }
+                        console.log("topImage state became: " + topImage.state)
                     }
                 }
                 Image {

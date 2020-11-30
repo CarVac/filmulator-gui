@@ -315,6 +315,8 @@ public:
     Valid getValidityWhenCanceled();
     void setValid(Valid validityIn);
 
+    void markStartOfProcessing(){changeMadeSinceCheck = false;}
+
     std::string getFullFilename(){return m_fullFilename;}
 
     void setClone(){isClone = true;}

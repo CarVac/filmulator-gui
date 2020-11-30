@@ -109,6 +109,8 @@ QImage FilmImageProvider::requestImage(const QString& id,
             //dummy stuff for the precomputation pipe
             Exiv2::ExifData exif;
 
+            cloneParam->markStartOfProcessing();
+
             //run precomputation
             nextQuickPipe.processImage(nextParam, this, exif);
 
@@ -250,6 +252,8 @@ void FilmImageProvider::prepareShuffle(const QString newIDin, const QString newN
 {
     newID = newIDin;
     newNextID = newNextIDin;
+    //cout << "prepareShuffle newID:     " << newID.toStdString() << endl;
+    //cout << "prepareShuffle newNextID: " << newNextID.toStdString() << endl;
 }
 
 void FilmImageProvider::shufflePipelines()
@@ -292,12 +296,14 @@ void FilmImageProvider::shufflePipelines()
 
         //copy processing parameters and validity of computation
         //cout << "shuffle: prevPipeline valid: " << prevParam->getValid() << " ==============================================================" << endl;
+        //cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
         //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
         tempValid = paramManager->getValidityWhenCanceled();//because we did selectImage the validity was canceled; we want the very latest
         paramManager->setValid(prevParam->getValid());
         //paramManager->selectImage(newID);//because we just set validity, this doesn't reset validity or notify qml
         prevParam->selectImage(currentID);
         prevParam->setValid(tempValid);
+        cloneParam->setValid(Valid::none);
 
         //select the params for the next image for preload
         if (newNextID != "")
@@ -305,6 +311,7 @@ void FilmImageProvider::shufflePipelines()
             nextParam->selectImage(newNextID);
         }
         //cout << "shuffle: prevPipeline valid: " << prevParam->getValid() << " ==============================================================" << endl;
+        //cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
         //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
 
         //then update searchIDs (should be the same for all variants here)
@@ -321,12 +328,14 @@ void FilmImageProvider::shufflePipelines()
         //check whether to use our preloaded image
         if (newID == nextID)//copy the preloaded image to the current
         {
-            //cout << "shuffle: new matches next" << endl;
+            cout << "shuffle: new matches next" << endl;
             //cout << "shuffle: nextPipeline valid: " << nextParam->getValid() << " ==============================================================" << endl;
+            //cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
             //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
             quickPipe.swapPipeline(&nextQuickPipe);
             //we already selected the right image
             paramManager->setValid(nextParam->getValid());
+            cloneParam->setValid(Valid::none);
         } //else, we just let qml do the selectImage afresh
 
         //select the params for the next image for preload
@@ -336,6 +345,7 @@ void FilmImageProvider::shufflePipelines()
             nextParam->selectImage(newNextID);
         }
         //cout << "shuffle: nextPipeline valid: " << nextParam->getValid() << " ==============================================================" << endl;
+        //cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
         //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
 
         //then update searchIDs (should be the same for all variants here)
