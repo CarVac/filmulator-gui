@@ -1278,66 +1278,48 @@ void ImagePipeline::setCache(Cache cacheIn)
     }
 }
 
-//This is used to copy everything from one pipeline to another.
-//The intended use case for this is for preloading.
-void ImagePipeline::copyPipeline(ImagePipeline * copySource)
+//This swaps the data between pipelines.
+//The intended use is for preloading.
+void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
 {
+    std::swap(valid, swapTarget->valid);
+    std::swap(progress, swapTarget->progress);
 
-    valid = copySource->valid;
-    progress = copySource->valid;
-    raw_image = copySource->raw_image;
-    for (int i = 0; i < 2; i++)
-    {
-        for (int j = 0; j < 2; j++)
-        {
-            cfa[i][j] = copySource->cfa[i][j];
-        }
-    }
-    for (int i = 0; i < 6; i++)
-    {
-        for (int j = 0; j < 6; j++)
-        {
-            xtrans[i][j] = copySource->xtrans[i][j];
-        }
-    }
-    maxXtrans = copySource->maxXtrans;
-    raw_width = copySource->raw_width;
-    raw_height = copySource->raw_height;
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            camToRGB[i][j] = copySource->camToRGB[i][j];
-        }
-    }
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            camToRGB4[i][j] = copySource->camToRGB4[i][j];
-        }
-    }
-    rCamMul = copySource->rCamMul;
-    gCamMul = copySource->gCamMul;
-    bCamMul = copySource->bCamMul;
-    rPreMul = copySource->rPreMul;
-    gPreMul = copySource->gPreMul;
-    bPreMul = copySource->bPreMul;
-    maxValue = copySource->maxValue;
-    isSraw = copySource->isSraw;
-    isNikonSraw = copySource->isNikonSraw;
-    isMonochrome = copySource->isMonochrome;
-    isCR3 = copySource->isCR3;
+    raw_image.swap(swapTarget->raw_image);
 
-    input_image = copySource->input_image;
-    recovered_image = copySource->recovered_image;
-    pre_film_image = copySource->pre_film_image;
-    exifData = copySource->exifData;
-    basicExifData = copySource->basicExifData;
-    filmulated_image = copySource->filmulated_image;
-    contrast_image = copySource->contrast_image;
-    color_curve_image = copySource->color_curve_image;
-    vibrance_saturation_image = copySource->vibrance_saturation_image;
+    std::swap(cfa, swapTarget->cfa);
+    std::swap(xtrans, swapTarget->xtrans);
+    maxXtrans = swapTarget->maxXtrans;
+
+    raw_width = swapTarget->raw_width;
+    raw_height = swapTarget->raw_height;
+
+    std::swap(camToRGB, swapTarget->camToRGB);
+    std::swap(camToRGB4, swapTarget->camToRGB4);
+
+    std::swap(rCamMul, swapTarget->rCamMul);
+    std::swap(gCamMul, swapTarget->gCamMul);
+    std::swap(bCamMul, swapTarget->bCamMul);
+    std::swap(rPreMul, swapTarget->rPreMul);
+    std::swap(gPreMul, swapTarget->gPreMul);
+    std::swap(bPreMul, swapTarget->bPreMul);
+
+    std::swap(maxValue, swapTarget->maxValue);
+    std::swap(isSraw, swapTarget->isSraw);
+    std::swap(isNikonSraw, swapTarget->isNikonSraw);
+    std::swap(isMonochrome, swapTarget->isMonochrome);
+    std::swap(isCR3, swapTarget->isCR3);
+
+    std::swap(exifData, swapTarget->exifData);
+    std::swap(basicExifData, swapTarget->basicExifData);
+
+    input_image.swap(swapTarget->input_image);
+    recovered_image.swap(swapTarget->recovered_image);
+    pre_film_image.swap(swapTarget->pre_film_image);
+    filmulated_image.swap(swapTarget->filmulated_image);
+    contrast_image.swap(swapTarget->contrast_image);
+    color_curve_image.swap(swapTarget->color_curve_image);
+    vibrance_saturation_image.swap(swapTarget->vibrance_saturation_image);
 }
 
 //This is used to copy only images from one pipeline to another,

@@ -287,16 +287,10 @@ void FilmImageProvider::shufflePipelines()
     } else if (newID == prevID)//swap new and old
     {
         cout << "shuffle: new matches old" << endl;
-        ImagePipeline tempPipeline(WithCache, WithHisto, PreviewQuality);
-        tempPipeline.resolution = previewResolution;
-
         //copy image data
-        tempPipeline.copyPipeline(&quickPipe);
-        quickPipe.copyPipeline(&prevQuickPipe);
-        prevQuickPipe.copyPipeline(&tempPipeline);
+        quickPipe.swapPipeline(&prevQuickPipe);
 
         //copy processing parameters and validity of computation
-        //copy validity first, particularly for the main paramManager
         //cout << "shuffle: prevPipeline valid: " << prevParam->getValid() << " ==============================================================" << endl;
         //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
         tempValid = paramManager->getValidityWhenCanceled();//because we did selectImage the validity was canceled; we want the very latest
@@ -320,7 +314,7 @@ void FilmImageProvider::shufflePipelines()
     } else {
         cout << "shuffle: new does not match old" << endl;
         //just copy current to old to start...
-        prevQuickPipe.copyPipeline(&quickPipe);
+        prevQuickPipe.swapPipeline(&quickPipe);
         prevParam->selectImage(currentID);
         prevParam->setValid(paramManager->getValidityWhenCanceled());
 
@@ -330,7 +324,7 @@ void FilmImageProvider::shufflePipelines()
             //cout << "shuffle: new matches next" << endl;
             //cout << "shuffle: nextPipeline valid: " << nextParam->getValid() << " ==============================================================" << endl;
             //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
-            quickPipe.copyPipeline(&nextQuickPipe);
+            quickPipe.swapPipeline(&nextQuickPipe);
             //we already selected the right image
             paramManager->setValid(nextParam->getValid());
         } //else, we just let qml do the selectImage afresh
