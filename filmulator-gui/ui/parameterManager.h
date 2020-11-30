@@ -319,7 +319,14 @@ public:
     void setClone(){isClone = true;}
 
 public slots:
+    //When the quick pipeline gets the params changed, we'll automatically
+    // have the clone pipeline update its params.
+    //This will turn changeMadeSinceCheck true, but only if it's a clone
     void cloneParams(ParameterManager * sourceParams);
+
+    //If this is a preload pipeline, we need to stop computation
+    // when *another* pipeline changes, but we don't need params copied
+    void cancelComputation();
 
 protected:
     //This is here for the sql insertion to pull the values from.

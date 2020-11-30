@@ -82,7 +82,7 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
     {
         abort = AbortStatus::restart;//not actually possible
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -108,7 +108,7 @@ AbortStatus ParameterManager::claimLoadAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -164,7 +164,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -202,7 +202,7 @@ AbortStatus ParameterManager::claimDemosaicAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -355,7 +355,7 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -382,7 +382,7 @@ AbortStatus ParameterManager::claimPrefilmAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -453,7 +453,7 @@ std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -494,7 +494,7 @@ AbortStatus ParameterManager::claimFilmAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -758,7 +758,7 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -788,7 +788,7 @@ AbortStatus ParameterManager::claimBlackWhiteAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -961,7 +961,7 @@ std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmli
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -994,7 +994,7 @@ AbortStatus ParameterManager::claimFilmLikeCurvesAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -2695,6 +2695,9 @@ void ParameterManager::loadParams(QString imageID)
 //The other param manager emits updateClone.
 //
 //This is very similar to selectImage but it doesn't have to worry about defaults at all
+//
+//When the parameter manager is a clone, then it cancels computation using
+// changeMadeSinceCheck.
 void ParameterManager::cloneParams(ParameterManager * sourceParams)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
@@ -2703,7 +2706,10 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     //Make sure that we always abort after any change while executing,
     //even if it's later in the pipeline,
     //Because we want to redo the small preview immediately.
-    changeMadeSinceCheck = true;
+    if (isClone)
+    {
+        changeMadeSinceCheck = true;
+    }
 
     //Load the image index
     const QString temp_imageIndex = sourceParams->getImageIndex();
@@ -3246,6 +3252,11 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
 
     enableParamChange();//Re-enable updating of the image.
     paramChangeWrapper(QString("cloneParams"));
+}
+
+void ParameterManager::cancelComputation()
+{
+    changeMadeSinceCheck = true;
 }
 
 //This prevents the back-and-forth between this object and QML from aborting
