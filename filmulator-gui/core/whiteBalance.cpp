@@ -245,13 +245,13 @@ void optimizeWBMults(std::string file,
     //get color matrix
     for (int i = 0; i < 3; i++)
     {
-        cout << "camToRGB: ";
+        //cout << "camToRGB: ";
         for (int j = 0; j < 3; j++)
         {
             camToRGB[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
-            cout << camToRGB[i][j] << " ";
+            //cout << camToRGB[i][j] << " ";
         }
-        cout << endl;
+        //cout << endl;
     }
     float rCamMul = image_processor->imgdata.color.cam_mul[0];
     float gCamMul = image_processor->imgdata.color.cam_mul[1];

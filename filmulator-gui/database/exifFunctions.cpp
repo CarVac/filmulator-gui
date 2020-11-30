@@ -541,12 +541,13 @@ QString identifyLens(const std::string fullFilename)
     }
 
     //identify the camera model in the database
-    cout << "SEARCHING CAMERA MODELS =================================" << endl;
+    //cout << "SEARCHING CAMERA MODELS =================================" << endl;
     const lfCamera * camera = NULL;
     const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
     if (cameraList)
     {
         camera = cameraList[0];
+        /*
         int i = 0;
         while (cameraList[i])
         {
@@ -555,13 +556,14 @@ QString identifyLens(const std::string fullFilename)
             cout << "Match score: " << cameraList[i]->Score << endl;
             i++;
         }
+        */
     } else {
         cout << "No matching cameras found in database." << endl;
     }
     lf_free(cameraList);
 
     QString lensName = "";
-    cout << "SEARCHING LENS MODELS ===================================" << endl;
+    //cout << "SEARCHING LENS MODELS ===================================" << endl;
     if (lensModel.length() > 0)
     {
         const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
@@ -584,7 +586,7 @@ QString identifyLens(const std::string fullFilename)
             }
             */
         } else {
-            cout << "No matching lenses found in database." << endl;
+            //cout << "No matching lenses found in database." << endl;
         }
         lf_free(lensList);
     }

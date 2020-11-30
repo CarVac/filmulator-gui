@@ -158,16 +158,26 @@ Item {
                     //First we want to find which is the old and which is the new index
                     var oldPosition = queueModel.getActivePosition(paramManager.imageIndex)
                     var newPosition = queueModel.getActivePosition(QTsearchID)
-                    var nextID
-                    if (newPosition === oldPosition) {
-                        //don't do any preloading weirdness
-                    } else if (newPosition < oldPosition && newPosition !== 0.0) {
-                        nextID = queueModel.getPrev(QTsearchID)
-                        //do the shuffle
-                    } else if (newPosition > oldPosition && newPosition !== 1.0) {
-                        nextID = queueModel.getNext(QTsearchID)
-                        //do the shuffle
+                    console.log("oldPosition: " + oldPosition)
+                    console.log("newPosition: " + newPosition)
+                    var nextID = ""
+                    if (newPosition === oldPosition || queueModel.getQueueSize() === 1) {
+                        //no change shuffle
+                    } else if (newPosition < oldPosition) {
+                        if (newPosition !== 0.0) {
+                            nextID = queueModel.getPrev(QTsearchID)
+                        } else {//we know it's not the last item on the queue
+                            nextID = queueModel.getNext(QTsearchID)
+                        }
+                    } else if (newPosition > oldPosition) {
+                        if (newPosition !== 1.0) {
+                            nextID = queueModel.getNext(QTsearchID)
+                        } else {//we know it's not also the first item on the queue
+                            nextID = queueModel.getPrev(QTsearchID)
+                        }
                     }
+                    //do the shuffle
+                    filmProvider.prepareShuffle(QTsearchID, nextID);
 
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)
@@ -904,15 +914,15 @@ Item {
                 //Swap any precomputed pipelines
                 var newID = queueModel.getPrev(paramManager.imageIndex)
                 var nextID = queueModel.getPrev(newID)
-                if (nextID !== newID) {
-                    //do the shuffle
-                }
+                if (newID !== "") {
+                    filmProvider.prepareShuffle(newID, nextID);
 
-                if (newID !== paramManager.imageIndex) {
-                    paramManager.selectImage(newID)
-                    var selectedPosition = queueModel.getActivePosition(newID)
-                    var scrollMargin = listView.contentWidth - listView.width
-                    listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                    if (newID !== paramManager.imageIndex) {
+                        paramManager.selectImage(newID)
+                        var selectedPosition = queueModel.getActivePosition(newID)
+                        var scrollMargin = listView.contentWidth - listView.width
+                        listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                    }
                 }
             }
         }
@@ -925,15 +935,15 @@ Item {
                 //Swap any precomputed pipelines
                 var newID = queueModel.getNext(paramManager.imageIndex)
                 var nextID = queueModel.getNext(newID)
-                if (nextID !== newID) {
-                    //do the shuffle
-                }
+                if (newID !== "") {
+                    filmProvider.prepareShuffle(newID, nextID);
 
-                if (newID !== paramManager.imageIndex) {
-                    paramManager.selectImage(newID)
-                    var selectedPosition = queueModel.getActivePosition(newID)
-                    var scrollMargin = listView.contentWidth - listView.width
-                    listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                    if (newID !== paramManager.imageIndex) {
+                        paramManager.selectImage(newID)
+                        var selectedPosition = queueModel.getActivePosition(newID)
+                        var scrollMargin = listView.contentWidth - listView.width
+                        listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                    }
                 }
             }
         }

@@ -59,6 +59,9 @@ public:
         }
     }
 
+    Q_INVOKABLE void prepareShuffle(const QString newIDin, const QString newNextIDin);
+    Q_INVOKABLE void shufflePipelines();
+
 protected:
     ImagePipeline pipeline;
     ImagePipeline quickPipe;
@@ -67,6 +70,8 @@ protected:
     //Validity too... that goes with the ParamManagers.
     ImagePipeline nextQuickPipe;
     ImagePipeline prevQuickPipe;
+
+    int previewResolution;
 
     ThumbWriteWorker *worker = new ThumbWriteWorker;
     QThread workerThread;
@@ -83,6 +88,13 @@ protected:
     // paramManager.cloneParams(*cloneParam) so that it knows.
     ParameterManager * nextParam;
     ParameterManager * prevParam;
+    Valid tempValid;
+
+    QString currentID = "";
+    QString nextID = "";
+    QString prevID = "";
+    QString newID = "";
+    QString newNextID = "";
 
     QMutex processMutex;//Ensures that output files are only of the currently selected image.
     QMutex writeDataMutex;//binds together the update of outputFilename and the outputImage.

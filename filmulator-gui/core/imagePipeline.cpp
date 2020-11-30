@@ -224,7 +224,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
 
             //get white saturation values
-            cout << "WHITE SATURATION ========================================================" << endl;
+            cout << "WHITE SATURATION" << endl;
             cout << "data_maximum: " << image_processor->imgdata.color.data_maximum << endl;
             cout << "maximum: " << image_processor->imgdata.color.maximum << endl;
 
@@ -391,7 +391,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
             }
 
-            cout << "max of raw_image: " << rawMax << " ===============================================" << endl;
+            cout << "max of raw_image: " << rawMax << endl;
             cout << "min of raw_image: " << rawMin << endl;
         }
         valid = paramManager->markLoadComplete();
@@ -438,21 +438,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //get color matrix
             for (int i = 0; i < 3; i++)
             {
-                cout << "camToRGB: ";
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = stealVictim->camToRGB[i][j];
                 }
-                cout << endl;
             }
             for (int i = 0; i < 3; i++)
             {
-                cout << "camToRGB4: ";
                 for (int j = 0; j < 4; j++)
                 {
                     camToRGB4[i][j] = stealVictim->camToRGB4[i][j];
                 }
-                cout << endl;
             }
         }
         else if (loadParam.tiffIn)
