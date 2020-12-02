@@ -77,6 +77,7 @@ SlimSplitView {
                     tickmarksEnabled: true
                     value: settings.getOrganizeRating()
                     defaultValue: settings.getOrganizeRating()
+                    valueText: value < 0 ? "X" : value
                     onValueChanged: {
                         settings.organizeRating = value
                         organizeModel.minRating = value
@@ -107,6 +108,7 @@ SlimSplitView {
                     stepSize: 1
                     tickmarksEnabled: true
                     value: settings.getMaxOrganizeRating()
+                    valueText: value < 0 ? "X" : value
                     defaultValue: settings.getMaxOrganizeRating()
                     onValueChanged: {
                         settings.maxOrganizeRating = value
