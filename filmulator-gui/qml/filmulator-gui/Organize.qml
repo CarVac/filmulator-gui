@@ -165,6 +165,8 @@ SlimSplitView {
                 cellWidth: 5 * uiScale
                 cellHeight: height
 
+                property real trueContentWidth: Math.max(width, cellWidth*dateHistoModel.dateHistoSize)
+
                 boundsBehavior: Flickable.StopAtBounds
                 flickDeceleration: 6000 * uiScale
                 maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
@@ -354,7 +356,7 @@ SlimSplitView {
                             var deltaX = mouse.x - pressX
                             var scrollWidth = scrollbarMouseAreaDateHisto.width - scrollbarDateHisto.width - 2*uiScale
                             var relativeDelta = deltaX / scrollWidth
-                            var scrollMargin = dateHistoView.contentWidth - dateHistoView.width
+                            var scrollMargin = dateHistoView.trueContentWidth - dateHistoView.width
                             dateHistoView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
                         }
                     }
@@ -420,6 +422,11 @@ SlimSplitView {
 
                 cellWidth: 320 * uiScale
                 cellHeight: 320 * uiScale
+
+                property int colCount: Math.floor(width/cellWidth)
+                property int rowCount: Math.ceil(organizeModel.imageCount/colCount)
+
+                property real trueContentHeight: Math.max(height, cellHeight*rowCount)
 
                 clip: true
 
@@ -603,7 +610,7 @@ SlimSplitView {
                             var deltaY = mouse.y - pressY
                             var scrollHeight = scrollbarMouseAreaGridView.height - scrollbarGridView.height - 2*uiScale
                             var relativeDelta = deltaY / scrollHeight
-                            var scrollMargin = gridView.contentHeight - gridView.height
+                            var scrollMargin = gridView.trueContentHeight - gridView.height
                             gridView.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
                         }
                     }

@@ -71,6 +71,8 @@ Item {
         cellWidth: root.height
         cellHeight: root.height
 
+        property real trueContentWidth: Math.max(width, cellWidth*queueModel.queueSize)
+
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 6000 * uiScale
         maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
@@ -158,8 +160,6 @@ Item {
                     //First we want to find which is the old and which is the new index
                     var oldPosition = queueModel.getActivePosition(paramManager.imageIndex)
                     var newPosition = queueModel.getActivePosition(QTsearchID)
-                    console.log("oldPosition: " + oldPosition)
-                    console.log("newPosition: " + newPosition)
                     var nextID = ""
                     if (newPosition === oldPosition || queueModel.getQueueSize() === 1) {
                         //no change shuffle
@@ -686,8 +686,8 @@ Item {
             y: parent.height-height - 1 * uiScale
             height: 3 * uiScale
 
-            x: 1 * uiScale + (0.99*listView.visibleArea.xPosition) * (parent.width - 2*uiScale)
-            width: (0.99*listView.visibleArea.widthRatio + 0.01) * (parent.width - 2*uiScale)
+            x: 1 * uiScale + (0.99*listView.contentX/listView.trueContentWidth) * (parent.width - 2*uiScale)
+            width: (0.99*listView.width/listView.trueContentWidth + 0.01) * (parent.width - 2*uiScale)
 
             transitions: Transition {
                 NumberAnimation {
@@ -770,14 +770,15 @@ Item {
 
             property bool overDragThresh: false
             property real pressX
-            property real viewX
+            property real initialX
             onPositionChanged: {
                 if (pressed) {
                     var deltaX = mouse.x - pressX
                     var scrollWidth = scrollbarMouseArea.width - scrollbar.width - 2*uiScale
                     var relativeDelta = deltaX / scrollWidth
-                    var scrollMargin = listView.contentWidth - listView.width
-                    listView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
+                    var scrollMargin = listView.trueContentWidth - listView.width
+                    var temp = initialX + relativeDelta*scrollMargin
+                    listView.contentX = Math.max(0, Math.min(scrollMargin, initialX + relativeDelta * scrollMargin))
                 }
             }
 
@@ -785,7 +786,7 @@ Item {
                 preventStealing = true
                 listView.cancelFlick()
                 pressX = mouse.x
-                viewX = listView.contentX
+                initialX = listView.contentX
             }
             onReleased: {
                 preventStealing = false
@@ -920,7 +921,7 @@ Item {
                     if (newID !== paramManager.imageIndex) {
                         paramManager.selectImage(newID)
                         var selectedPosition = queueModel.getActivePosition(newID)
-                        var scrollMargin = listView.contentWidth - listView.width
+                        var scrollMargin = listView.trueContentWidth - listView.width
                         listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
                     }
                 }
@@ -941,7 +942,7 @@ Item {
                     if (newID !== paramManager.imageIndex) {
                         paramManager.selectImage(newID)
                         var selectedPosition = queueModel.getActivePosition(newID)
-                        var scrollMargin = listView.contentWidth - listView.width
+                        var scrollMargin = listView.trueContentWidth - listView.width
                         listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
                     }
                 }
