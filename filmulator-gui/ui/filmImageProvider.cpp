@@ -74,9 +74,6 @@ QImage FilmImageProvider::requestImage(const QString& id,
     gettimeofday(&request_start_time,NULL);
     cout << "FilmImageProvider::requestImage id: " << id.toStdString() << endl;
 
-    //make sure everything happens together
-    processMutex.lock();
-
     //Copy out the filename.
     std::string filename;
 
@@ -137,6 +134,9 @@ QImage FilmImageProvider::requestImage(const QString& id,
             }
         }
     }
+
+    //make sure everything happens together
+    processMutex.lock();
 
     //Ensure that the thumbnail writer writes matching filenames and images
     writeDataMutex.lock();
