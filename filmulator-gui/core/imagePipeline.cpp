@@ -1344,12 +1344,23 @@ void ImagePipeline::copyAndDownsampleImages(ImagePipeline * copySource)
 //This is used to update the histograms once data is copied on an image change
 void ImagePipeline::rerunHistograms()
 {
-    //
     if (WithHisto == histo)
     {
-        histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
-        histoInterface->updateHistPreFilm(pre_film_image, 65535);
-        histoInterface->updateHistPostFilm(filmulated_image, .0025f);
-        histoInterface->updateHistFinal(vibrance_saturation_image);
+        if (valid >= Valid::load)
+        {
+            histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
+        }
+        if (valid >= Valid::prefilmulation)
+        {
+            histoInterface->updateHistPreFilm(pre_film_image, 65535);
+        }
+        if (valid >= Valid::filmulation)
+        {
+            histoInterface->updateHistPostFilm(filmulated_image, .0025f);
+        }
+        if (valid >= Valid::filmlikecurve)
+        {
+            histoInterface->updateHistFinal(vibrance_saturation_image);
+        }
     }
 }

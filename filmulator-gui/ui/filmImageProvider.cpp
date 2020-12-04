@@ -74,6 +74,9 @@ QImage FilmImageProvider::requestImage(const QString& id,
     gettimeofday(&request_start_time,NULL);
     cout << "FilmImageProvider::requestImage id: " << id.toStdString() << endl;
 
+    //make sure everything happens together
+    processMutex.lock();
+
     //Copy out the filename.
     std::string filename;
 
@@ -98,7 +101,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
             {
                 shufflePipelines();
             }
-            if (paramManager->getValid() == filmlikecurve)
+            if (paramManager->getValid() > Valid::none)
             {
                 quickPipe.rerunHistograms();
             }
@@ -135,8 +138,6 @@ QImage FilmImageProvider::requestImage(const QString& id,
         }
     }
 
-    //Ensure that the tiff and jpeg outputs don't write the previous image.
-    processMutex.lock();
     //Ensure that the thumbnail writer writes matching filenames and images
     writeDataMutex.lock();
     //Prepare the exif data for output.
@@ -272,11 +273,11 @@ void FilmImageProvider::prepareShuffle(const QString newIDin, const QString newN
 
 void FilmImageProvider::shufflePipelines()
 {
-    //cout << "shuffle newID:     " << newID.toStdString() << endl;
-    //cout << "shuffle newNextID: " << newNextID.toStdString() << endl;
-    //cout << "shuffle prevID:    " << prevID.toStdString() << endl;
-    //cout << "shuffle currentID: " << currentID.toStdString() << endl;
-    //cout << "shuffle nextID:    " << nextID.toStdString() << endl;
+    cout << "shuffle newID:     " << newID.toStdString() << endl;
+    cout << "shuffle newNextID: " << newNextID.toStdString() << endl;
+    cout << "shuffle prevID:    " << prevID.toStdString() << endl;
+    cout << "shuffle currentID: " << currentID.toStdString() << endl;
+    cout << "shuffle nextID:    " << nextID.toStdString() << endl;
     struct timeval shuffleTime;
     gettimeofday(&shuffleTime, nullptr);
 
