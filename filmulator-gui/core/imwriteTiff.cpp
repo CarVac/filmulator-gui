@@ -69,7 +69,7 @@ bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
     exifData["Exif.Photo.ColorSpace"] = 1;
     exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
 
-    auto image = Exiv2::ImageFactory::open(outputfilename.c_str());
+    auto image = Exiv2::ImageFactory::open(outputfilename);
     assert(image.get() != 0);
 
     image->setExifData(exifData);

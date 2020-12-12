@@ -74,8 +74,7 @@ bool imread_jpeg(string input_image_filename, matrix<float> &returnmatrix,
 		}
 	}
 
-	Exiv2::Image::AutoPtr image =
-        Exiv2::ImageFactory::open(input_image_filename);
+    auto image = Exiv2::ImageFactory::open(input_image_filename);
 	assert(image.get() != 0);
     image->readMetadata();
 	exifData = image->exifData();
