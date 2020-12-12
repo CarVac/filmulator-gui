@@ -3405,6 +3405,7 @@ void ParameterManager::updateAvailability()
                 bool isMonochrome = false;
                 if (!isCR3) //no CR3 cameras are monochrome
                 {
+                    cout << "updateAvailability exiv filename: " << m_fullFilename << endl;
                     auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
                     exifImage->readMetadata();
                     Exiv2::ExifData exifData = exifImage->exifData();

@@ -36,7 +36,7 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
 #endif
     if (libraw_error)
     {
-        cout << "exifUTCTime: Could not read input file!" << endl;
+        cout << "exifUtcTime: Could not read input file!" << endl;
         cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         return QDateTime();
     }
@@ -49,6 +49,7 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     if (!isCR3) //we can use exiv2
     {
         //Grab the exif data
+        cout << "exifUtcTime exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();
@@ -114,6 +115,7 @@ int exifDefaultRotation(const std::string fullFilename)
     if (!isCR3) // we can use exiv2
     {
         //Grab the exif data
+        cout << "exifDefaultRotation exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();
@@ -284,10 +286,11 @@ int exifRating(const std::string fullFilename)
     {
         return 0;
     } else {
-        auto image = Exiv2::ImageFactory::open(fullFilename); //CHANGE ME
-        image->readMetadata();
-        Exiv2::ExifData exifData = image->exifData();
-        Exiv2::XmpData xmpData = image->xmpData();
+        cout << "exifRating exiv filename: " << fullFilename << endl;
+        auto exifImage = Exiv2::ImageFactory::open(fullFilename);
+        exifImage->readMetadata();
+        Exiv2::ExifData exifData = exifImage->exifData();
+        Exiv2::XmpData xmpData = exifImage->xmpData();
 
         std::string maker = exifData["Exif.Image.Make"].toString();
         if (maker.compare("Canon") == 0)
@@ -437,6 +440,7 @@ QString exifLens(const std::string fullFilename)
     if (!isCR3) //we can't check stuff needing exiv2 if it's CR3
     {
         //Grab the exif data
+        cout << "exifLens exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();
@@ -539,6 +543,7 @@ QString identifyLens(const std::string fullFilename)
     if (!isCR3) //we can't check stuff neding exiv2 if it's CR3
     {
         //Grab the exif data
+        cout << "identifyLens exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();

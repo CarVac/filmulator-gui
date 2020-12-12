@@ -74,6 +74,7 @@ bool imread_jpeg(string input_image_filename, matrix<float> &returnmatrix,
 		}
 	}
 
+    cout << "imread_jpeg exiv filename: " << input_image_filename << endl;
     auto image = Exiv2::ImageFactory::open(input_image_filename);
 	assert(image.get() != 0);
     image->readMetadata();

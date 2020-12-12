@@ -282,6 +282,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
             if (!isCR3)//we can't use exiv2 on CR3 yet
             {
+                cout << "processImage exiv filename: " << loadParam.fullFilename << endl;
                 auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
                 assert(image.get() != 0);
                 image->readMetadata();

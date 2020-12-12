@@ -146,6 +146,7 @@ bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
         exifData["Exif.Photo.ColorSpace"] = 1;
         exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
 
+        cout << "imwrite_jpeg exiv filename: " << outputfilename << endl;
         auto image = Exiv2::ImageFactory::open(outputfilename);
         assert(image.get() != 0);
 

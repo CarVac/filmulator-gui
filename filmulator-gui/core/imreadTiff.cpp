@@ -78,6 +78,7 @@ bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
 	}
 	TIFFClose(tif);
 
+    cout << "imread_tiff exiv filename: " << input_image_filename << endl;
     auto image = Exiv2::ImageFactory::open(input_image_filename);
 	assert(image.get() != 0);
     image->readMetadata();
