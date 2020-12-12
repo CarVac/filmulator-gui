@@ -310,9 +310,9 @@ void FilmImageProvider::shufflePipelines()
         quickPipe.swapPipeline(&prevQuickPipe);
 
         //copy processing parameters and validity of computation
-        //cout << "shuffle: prevPipeline valid: " << prevParam->getValid() << " ==============================================================" << endl;
-        //cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
-        //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
+        cout << "shuffle: prevPipeline valid: " << prevParam->getValid() << " ==============================================================" << endl;
+        cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
+        cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
         tempValid = paramManager->getValidityWhenCanceled();//because we did selectImage the validity was canceled; we want the very latest
         paramManager->setValid(prevParam->getValid());
         //paramManager->selectImage(newID);//because we just set validity, this doesn't reset validity or notify qml
@@ -344,12 +344,13 @@ void FilmImageProvider::shufflePipelines()
         if (newID == nextID)//copy the preloaded image to the current
         {
             cout << "shuffle: new matches next" << endl;
-            //cout << "shuffle: nextPipeline valid: " << nextParam->getValid() << " ==============================================================" << endl;
-            //cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
-            //cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
+            cout << "shuffle: nextPipeline valid: " << nextParam->getValid() << " ==============================================================" << endl;
+            cout << "shuffle: currPipeline valid: " << paramManager->getValid() << " ==============================================================" << endl;
+            cout << "shuffle: currPipeline valid: " << paramManager->getValidityWhenCanceled() << " ==============================================================" << endl;
             quickPipe.swapPipeline(&nextQuickPipe);
             //we already selected the right image
             paramManager->setValid(nextParam->getValid());
+            nextParam->setValid(Valid::none);
             cloneParam->setValid(Valid::none);
         } //else, we just let qml do the selectImage afresh
 
@@ -369,4 +370,20 @@ void FilmImageProvider::shufflePipelines()
         nextID = newNextID;
     }
     cout << "shuffle finished duration: " << timeDiff(shuffleTime) << endl;
+}
+
+void FilmImageProvider::refreshParams(const QString IDin)
+{
+    if (prevParam->getImageIndex() == IDin)
+    {
+        prevParam->selectImage(IDin);
+    }
+    if (paramManager->getImageIndex() == IDin)
+    {
+        paramManager->selectImage(IDin);
+    }
+    if (nextParam->getImageIndex() == IDin)
+    {
+        nextParam->selectImage(IDin);
+    }
 }

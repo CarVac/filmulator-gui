@@ -402,6 +402,9 @@ Item {
                                     notDisabled: paramManager.pasteable
                                     onTriggered: {
                                         paramManager.paste(QTsearchID)
+                                        //notify the film image provider that this image was pasted to
+                                        //so that it can tell the paramManager to reselect the image
+                                        filmProvider.refreshParams(QTsearchID)
                                         queueDelegate.rightClicked = false
                                         loadMenu.sourceComponent = undefined
                                     }

@@ -61,6 +61,7 @@ public:
 
     Q_INVOKABLE void prepareShuffle(const QString newIDin, const QString newNextIDin);
     Q_INVOKABLE void shufflePipelines();
+    Q_INVOKABLE void refreshParams(const QString IDin);
 
 protected:
     ImagePipeline pipeline;
