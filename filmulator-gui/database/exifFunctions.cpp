@@ -28,11 +28,8 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     int libraw_error;
 #if (defined(_WIN32) || defined(__WIN32__))
     const QString tempFilename = QString::fromStdString(fullFilename);
-    wchar_t *wstr = new wchar_t[tempFilename.length() + 1];
-    tempFilename.toWCharArray(wstr);
-    wstr[tempFilename.length()] = 0;
-    libraw_error = libraw->open_file(wstr);
-    delete[] wstr;
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
 #else
     const char *cstrfilename = fullFilename.c_str();
     libraw_error = libraw->open_file(cstrfilename);
@@ -101,11 +98,8 @@ int exifDefaultRotation(const std::string fullFilename)
     int libraw_error;
 #if (defined(_WIN32) || defined(__WIN32__))
     const QString tempFilename = QString::fromStdString(fullFilename);
-    wchar_t *wstr = new wchar_t[tempFilename.length() + 1];
-    tempFilename.toWCharArray(wstr);
-    wstr[tempFilename.length()] = 0;
-    libraw_error = libraw->open_file(wstr);
-    delete[] wstr;
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
 #else
     const char *cstrfilename = fullFilename.c_str();
     libraw_error = libraw->open_file(cstrfilename);
@@ -408,11 +402,8 @@ QString exifLens(const std::string fullFilename)
     int libraw_error;
 #if (defined(_WIN32) || defined(__WIN32__))
     const QString tempFilename = QString::fromStdString(fullFilename);
-    wchar_t *wstr = new wchar_t[tempFilename.length() + 1];
-    tempFilename.toWCharArray(wstr);
-    wstr[tempFilename.length()] = 0;
-    libraw_error = libraw->open_file(wstr);
-    delete[] wstr;
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
 #else
     const char *cstrfilename = fullFilename.c_str();
     libraw_error = libraw->open_file(cstrfilename);
@@ -504,11 +495,8 @@ QString identifyLens(const std::string fullFilename)
     int libraw_error;
 #if (defined(_WIN32) || defined(__WIN32__))
     const QString tempFilename = QString::fromStdString(fullFilename);
-    wchar_t *wstr = new wchar_t[tempFilename.length() + 1];
-    tempFilename.toWCharArray(wstr);
-    wstr[tempFilename.length()] = 0;
-    libraw_error = libraw->open_file(wstr);
-    delete[] wstr;
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
 #else
     const char *cstrfilename = fullFilename.c_str();
     libraw_error = libraw->open_file(cstrfilename);
