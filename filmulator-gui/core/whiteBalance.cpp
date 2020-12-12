@@ -238,9 +238,11 @@ void optimizeWBMults(std::string file,
     int libraw_error;
 #if (defined(_WIN32) || defined(__WIN32__))
     const QString tempFilename = QString::fromStdString(file);
-    wchar_t *wstr;
+    wchar_t *wstr = new wchar_t[tempFilename.length() + 1];
     tempFilename.toWCharArray(wstr);
+    wstr[tempFilename.length()] = 0;
     libraw_error = libraw->open_file(wstr);
+    delete[] wstr;
 #else
     const char *cstr = file.c_str();
     libraw_error = libraw->open_file(cstr);

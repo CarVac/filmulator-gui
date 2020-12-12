@@ -45,9 +45,11 @@ void fileInsert(const QString hash,
 
         int libraw_error;
 #if (defined(_WIN32) || defined(__WIN32__))
-        wchar_t *wstr;
+        wchar_t *wstr = new wchar_t[fullFilename.length() + 1];
         fullFilename.toWCharArray(wstr);
+        wstr[tempFilename.length()] = 0;
         libraw_error = libraw->open_file(wstr);
+        delete[] wstr;
 #else
         std::string filenameStr = fullFilename.toStdString();
         const char *cstr = filenameStr.c_str();
