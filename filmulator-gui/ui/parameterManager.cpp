@@ -1577,7 +1577,24 @@ void ParameterManager::selectImage(const QString imageID)
     //Finally, we need to change the availability for the various lens corrections
     //First is Auto CA Correct, which only works with Bayer CFAs.
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
-    libraw->open_file(m_fullFilename.c_str());
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(m_fullFilename);
+    wchar_t *wstr;
+    tempFilename.toWCharArray(wstr);
+    libraw_error = libraw->open_file(wstr);
+#else
+    const char *cstr = m_fullFilename.c_str();
+    libraw_error = libraw->open_file(cstr);
+#endif
+    if (libraw_error)
+    {
+        cout << "selectImage: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        emit fileError();
+        return;
+    }
+
     bool isSraw = libraw->is_sraw();
     //cout << "Is sraw: " << isSraw << endl;
     bool isWeird = libraw->COLOR(0,0)==6;

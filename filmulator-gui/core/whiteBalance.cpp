@@ -3,6 +3,7 @@
 #include <iostream>
 #include <omp.h>
 #include <array>
+#include <QString>
 
 using std::cout;
 using std::endl;
@@ -231,13 +232,26 @@ void optimizeWBMults(std::string file,
                      float &temperature, float &tint)
 {
     //Load wb params from the raw file
-    std::unique_ptr<LibRaw> image_processor = std::unique_ptr<LibRaw>(new LibRaw());
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
 
     //Open the file.
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(file);
+    wchar_t *wstr;
+    tempFilename.toWCharArray(wstr);
+    libraw_error = libraw->open_file(wstr);
+#else
     const char *cstr = file.c_str();
-    if (0 != image_processor->open_file(cstr))
+    libraw_error = libraw->open_file(cstr);
+#endif
+    if (libraw_error)
     {
-        cout << "processImage: Could not read input file!" << endl;
+        cout << "optimizeWBMults: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        temperature = 5200.0f;
+        tint = 1.0f;
+        return;
     }
 
     float camToRGB[3][3];
@@ -248,21 +262,21 @@ void optimizeWBMults(std::string file,
         //cout << "camToRGB: ";
         for (int j = 0; j < 3; j++)
         {
-            camToRGB[i][j] = image_processor->imgdata.color.rgb_cam[i][j];
+            camToRGB[i][j] = libraw->imgdata.color.rgb_cam[i][j];
             //cout << camToRGB[i][j] << " ";
         }
         //cout << endl;
     }
-    float rCamMul = image_processor->imgdata.color.cam_mul[0];
-    float gCamMul = image_processor->imgdata.color.cam_mul[1];
-    float bCamMul = image_processor->imgdata.color.cam_mul[2];
+    float rCamMul = libraw->imgdata.color.cam_mul[0];
+    float gCamMul = libraw->imgdata.color.cam_mul[1];
+    float bCamMul = libraw->imgdata.color.cam_mul[2];
     float minMult = min(min(rCamMul, gCamMul), bCamMul);
     rCamMul /= minMult;
     gCamMul /= minMult;
     bCamMul /= minMult;
-    float rPreMul = image_processor->imgdata.color.pre_mul[0];
-    float gPreMul = image_processor->imgdata.color.pre_mul[1];
-    float bPreMul = image_processor->imgdata.color.pre_mul[2];
+    float rPreMul = libraw->imgdata.color.pre_mul[0];
+    float gPreMul = libraw->imgdata.color.pre_mul[1];
+    float bPreMul = libraw->imgdata.color.pre_mul[2];
     minMult = min(min(rPreMul, gPreMul), bPreMul);
     rPreMul /= minMult;
     gPreMul /= minMult;

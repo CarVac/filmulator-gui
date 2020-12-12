@@ -42,13 +42,21 @@ void fileInsert(const QString hash,
     {
         cout << "it's not in the db file table" << endl;
         std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+        int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+        wchar_t *wstr;
+        fullFilename.toWCharArray(wstr);
+        libraw_error = libraw->open_file(wstr);
+#else
         std::string filenameStr = fullFilename.toStdString();
         const char *cstr = filenameStr.c_str();
-        int libraw_error = libraw->open_file(cstr);
+        libraw_error = libraw->open_file(cstr);
+#endif
         if (0 != libraw_error)
         {
             cout << "exifLocalDateString: Could not read input file!" << endl;
-            cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;;
+            cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         }
 
         query.prepare("INSERT INTO FileTable values (?,?,?,?,?,?,?,?,?);");

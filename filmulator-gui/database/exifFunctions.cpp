@@ -24,10 +24,21 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
 
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    wchar_t *wstr;
+    tempFilename.toWCharArray(wstr);
+    libraw_error = libraw->open_file(wstr);
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
-        cout << "exifLocalDateString: Could not read input file!" << endl;
+        cout << "exifUTCTime: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         return QDateTime();
     }
 
@@ -84,10 +95,21 @@ int exifDefaultRotation(const std::string fullFilename)
     const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
 
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    wchar_t *wstr;
+    tempFilename.toWCharArray(wstr);
+    libraw_error = libraw->open_file(wstr);
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
-        cout << "exifLocalDateString: Could not read input file!" << endl;
+        cout << "exifDefaultRotation: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         return 0;
     }
 
@@ -378,11 +400,22 @@ QString exifLens(const std::string fullFilename)
 
     //Load the image in libraw
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    wchar_t *wstr;
+    tempFilename.toWCharArray(wstr);
+    libraw_error = libraw->open_file(wstr);
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
         cout << "exifLens: Could not read input file!" << endl;
-        return "";
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        return 0;
     }
 
     //find what the camera is
@@ -461,10 +494,21 @@ QString identifyLens(const std::string fullFilename)
 
     //Load the image in libraw
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    wchar_t *wstr;
+    tempFilename.toWCharArray(wstr);
+    libraw_error = libraw->open_file(wstr);
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
         cout << "identifyLens: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         return "";
     }
 
