@@ -3,6 +3,7 @@
 #include "../database/database.hpp"
 #include <iostream>
 #include <math.h>
+#include <QDebug>
 
 using std::cout;
 using std::endl;
@@ -121,6 +122,7 @@ bool ImportModel::pathWritable(const QString dir)
 
 void ImportModel::importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation, const int depth)
 {
+    qDebug() << "importDirectory_r dir: " << dir << Qt::endl;
     //This function reads in a directory and puts the raws into the database.
     if (dir.length() == 0)
     {
@@ -284,6 +286,7 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
 //This imports multiple files, recursively.
 void ImportModel::importFileList(const QString name, const bool importInPlace, const bool replaceLocation)
 {
+    qDebug() << "importFileList list: " << name << Qt::endl;
     Validity validity = Validity::valid;
     const QStringList nameList = name.split(",");
     //First check for validity.
