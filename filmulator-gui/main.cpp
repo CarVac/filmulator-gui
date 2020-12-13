@@ -24,7 +24,11 @@
 #include <QtWidgets/QApplication>
 #include <QFont>
 
+#if (defined(_WIN32) || defined(__WIN32__))
+int wmain(int argc, wchar_t *argv[])
+#else
 int main(int argc, char *argv[])
+#endif
 {
     cout << "Have " << argc << " arguments" << endl;
     for (int i = 0; i < argc; i++)
@@ -142,7 +146,11 @@ int main(int argc, char *argv[])
     if (argc == 2)
     {
         cout << "Importing file!" << endl;
+#if (defined(_WIN32) || defined(__WIN32__))
+        QString searchID = importModel->importFileNow(QString::fromWCharArray(argv[1]), settingsObj);
+#else
         QString searchID = importModel->importFileNow(QString(argv[1]), settingsObj);
+#endif
         if (searchID != "")
         {
             paramManager->selectImage(searchID);

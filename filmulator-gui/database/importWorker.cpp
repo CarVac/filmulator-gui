@@ -32,6 +32,7 @@ QString ImportWorker::importFile(const QFileInfo infoIn,
 
     //Grab EXIF data from the file.
     const std::string abspath = infoIn.absoluteFilePath().toStdString();
+    cout << "importFile absolute file path: " << abspath << endl;
     //We don't do this anymore because exiv2 doesn't support cr3 currently
 
     //Load data into the hash function.
