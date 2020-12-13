@@ -146,7 +146,6 @@ int main(int argc, char *argv[])
         cout << "main argv: " << argv[1] << endl;
         QString temp = QString::fromLocal8Bit(argv[1]);
         cout << "main argv qstring std: " << temp.toStdString() << endl;
-        cout << "main argv qstring w: " << temp.toStdWString() << endl;
         QString searchID = importModel->importFileNow(QString::fromLocal8Bit(argv[1]), settingsObj);
 #else
         QString searchID = importModel->importFileNow(QString(argv[1]), settingsObj);
