@@ -1,6 +1,8 @@
 #include "filmImageProvider.h"
 #include "../database/exifFunctions.h"
 #include <iostream>
+#include <QDir>
+#include "../database/organizeModel.h"
 
 using std::cout;
 using std::endl;
@@ -183,7 +185,18 @@ void FilmImageProvider::writeTiff()
 void FilmImageProvider::writeJpeg()
 {
     processMutex.lock();
-    imwrite_jpeg(last_image, outputFilename, exifData, 95);
+    //Set up the thumbnail directory.
+    QDir dir = QDir::home();
+    dir.cd(OrganizeModel::thumbDir());
+    QString thumbDir = currentID;
+    thumbDir.truncate(4);
+    if (!dir.cd(thumbDir))
+    {
+        dir.mkdir(thumbDir);
+        dir.cd(thumbDir);
+    }
+    std::string thumbPath = dir.absoluteFilePath(currentID).toStdString();
+    imwrite_jpeg(last_image, outputFilename, exifData, 95, thumbPath);
     processMutex.unlock();
 }
 

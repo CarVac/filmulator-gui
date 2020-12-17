@@ -19,7 +19,7 @@
 #include "filmSim.hpp"
 
 bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
-                  Exiv2::ExifData exifData, int quality, bool writeExif)
+                  Exiv2::ExifData exifData, int quality, string thumbPath, bool writeExif)
 {
     int xsize = output.nc()/3;
     int ysize = output.nr();
@@ -145,6 +145,12 @@ bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
         exifData["Exif.Image.ImageLength"] = output.nr();
         exifData["Exif.Photo.ColorSpace"] = 1;
         exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
+
+        //Fix the thumbnails
+        auto thumb = Exiv2::ExifThumb(exifData);
+        thumb.erase();
+        //Find the thumbnail for this image
+        thumb.setJpegThumbnail(thumbPath);
 
         cout << "imwrite_jpeg exiv filename: " << outputfilename << endl;
         auto image = Exiv2::ImageFactory::open(outputfilename);
