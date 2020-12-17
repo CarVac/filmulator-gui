@@ -140,6 +140,8 @@ bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
 	
     if (writeExif)
     {
+        cleanExif(exifData);
+
         exifData["Exif.Image.Orientation"] = uint16_t(1);//set all images to unrotated
         exifData["Exif.Image.ImageWidth"] = output.nc()/3;
         exifData["Exif.Image.ImageLength"] = output.nr();
