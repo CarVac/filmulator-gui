@@ -99,10 +99,10 @@ QImage FilmImageProvider::requestImage(const QString& id,
             if (newID != currentID)//the image changed
             {
                 shufflePipelines();
-            }
-            if (paramManager->getValid() > Valid::none)
-            {
-                quickPipe.rerunHistograms();
+                if (paramManager->getValid() > Valid::none)
+                {
+                    quickPipe.rerunHistograms();
+                }
             }
             struct timeval quickTime;
             gettimeofday(&quickTime, nullptr);
