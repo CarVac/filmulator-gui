@@ -71,6 +71,8 @@ Item {
         cellWidth: root.height
         cellHeight: root.height
 
+        property real trueContentWidth: Math.max(width, cellWidth*queueModel.queueSize)
+
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 6000 * uiScale
         maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
@@ -154,6 +156,29 @@ Item {
                 }
 
                 onDoubleClicked: {
+                    //Swap any precomputed pipelines
+                    //First we want to find which is the old and which is the new index
+                    var oldPosition = queueModel.getActivePosition(paramManager.imageIndex)
+                    var newPosition = queueModel.getActivePosition(QTsearchID)
+                    var nextID = ""
+                    if (newPosition === oldPosition || queueModel.getQueueSize() === 1) {
+                        //no change shuffle
+                    } else if (newPosition < oldPosition) {
+                        if (newPosition !== 0.0) {
+                            nextID = queueModel.getPrev(QTsearchID)
+                        } else {//we know it's not the last item on the queue
+                            nextID = queueModel.getNext(QTsearchID)
+                        }
+                    } else if (newPosition > oldPosition) {
+                        if (newPosition !== 1.0) {
+                            nextID = queueModel.getNext(QTsearchID)
+                        } else {//we know it's not also the first item on the queue
+                            nextID = queueModel.getPrev(QTsearchID)
+                        }
+                    }
+                    //do the shuffle
+                    filmProvider.prepareShuffle(QTsearchID, nextID);
+
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)
                 }
@@ -377,6 +402,9 @@ Item {
                                     notDisabled: paramManager.pasteable
                                     onTriggered: {
                                         paramManager.paste(QTsearchID)
+                                        //notify the film image provider that this image was pasted to
+                                        //so that it can tell the paramManager to reselect the image
+                                        filmProvider.refreshParams(QTsearchID)
                                         queueDelegate.rightClicked = false
                                         loadMenu.sourceComponent = undefined
                                     }
@@ -661,8 +689,8 @@ Item {
             y: parent.height-height - 1 * uiScale
             height: 3 * uiScale
 
-            x: 1 * uiScale + (0.99*listView.visibleArea.xPosition) * (parent.width - 2*uiScale)
-            width: (0.99*listView.visibleArea.widthRatio + 0.01) * (parent.width - 2*uiScale)
+            x: 1 * uiScale + (0.99*listView.contentX/listView.trueContentWidth) * (parent.width - 2*uiScale)
+            width: (0.99*listView.width/listView.trueContentWidth + 0.01) * (parent.width - 2*uiScale)
 
             transitions: Transition {
                 NumberAnimation {
@@ -745,14 +773,15 @@ Item {
 
             property bool overDragThresh: false
             property real pressX
-            property real viewX
+            property real initialX
             onPositionChanged: {
                 if (pressed) {
                     var deltaX = mouse.x - pressX
                     var scrollWidth = scrollbarMouseArea.width - scrollbar.width - 2*uiScale
                     var relativeDelta = deltaX / scrollWidth
-                    var scrollMargin = listView.contentWidth - listView.width
-                    listView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
+                    var scrollMargin = listView.trueContentWidth - listView.width
+                    var temp = initialX + relativeDelta*scrollMargin
+                    listView.contentX = Math.max(0, Math.min(scrollMargin, initialX + relativeDelta * scrollMargin))
                 }
             }
 
@@ -760,7 +789,7 @@ Item {
                 preventStealing = true
                 listView.cancelFlick()
                 pressX = mouse.x
-                viewX = listView.contentX
+                initialX = listView.contentX
             }
             onReleased: {
                 preventStealing = false
@@ -886,12 +915,18 @@ Item {
         sequence: StandardKey.MoveToPreviousChar
         onActivated: {
             if (!root.dragging) {
-                var newIndex = queueModel.getPrev(paramManager.imageIndex)
-                if (newIndex !== paramManager.imageIndex) {
-                    paramManager.selectImage(newIndex)
-                    var selectedPosition = queueModel.getActivePosition(newIndex)
-                    var scrollMargin = listView.contentWidth - listView.width
-                    listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                //Swap any precomputed pipelines
+                var newID = queueModel.getPrev(paramManager.imageIndex)
+                var nextID = queueModel.getPrev(newID)
+                if (newID !== "") {
+                    filmProvider.prepareShuffle(newID, nextID);
+
+                    if (newID !== paramManager.imageIndex) {
+                        paramManager.selectImage(newID)
+                        var selectedPosition = queueModel.getActivePosition(newID)
+                        var scrollMargin = listView.trueContentWidth - listView.width
+                        listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                    }
                 }
             }
         }
@@ -901,12 +936,18 @@ Item {
         sequence: StandardKey.MoveToNextChar
         onActivated: {
             if (!root.dragging) {
-                var newIndex = queueModel.getNext(paramManager.imageIndex)
-                if (newIndex !== paramManager.imageIndex) {
-                    paramManager.selectImage(newIndex)
-                    var selectedPosition = queueModel.getActivePosition(newIndex)
-                    var scrollMargin = listView.contentWidth - listView.width
-                    listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                //Swap any precomputed pipelines
+                var newID = queueModel.getNext(paramManager.imageIndex)
+                var nextID = queueModel.getNext(newID)
+                if (newID !== "") {
+                    filmProvider.prepareShuffle(newID, nextID);
+
+                    if (newID !== paramManager.imageIndex) {
+                        paramManager.selectImage(newID)
+                        var selectedPosition = queueModel.getActivePosition(newID)
+                        var scrollMargin = listView.trueContentWidth - listView.width
+                        listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                    }
                 }
             }
         }

@@ -28,6 +28,7 @@ public:
     Q_INVOKABLE QString getPrev(const QString searchID);
 
     Q_INVOKABLE float getActivePosition(const QString searchID);
+    Q_INVOKABLE int getQueueSize(){return m_queueSize;}
 
 public slots:
     Q_INVOKABLE void deQueue(const QString searchID);
@@ -37,7 +38,6 @@ protected:
     int maxIndex;
 
     int m_queueSize;
-    int getQueueSize(){return m_queueSize;}
 
     void resetIndex();
     QSqlQuery modelQuery();

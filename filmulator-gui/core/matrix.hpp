@@ -68,6 +68,8 @@ class matrix
         int nc() const;
         T& operator()(const int row, const int col) const;
 
+        void swap(matrix<T> &swapTarget);
+
         //for use with librtprocess
         T* operator[](const int index) const // use with indices
         {
@@ -314,6 +316,28 @@ matrix<T>& matrix<T>::operator=(matrix<T> &&toMove)
         toMove.num_cols = 0;
     }
     return *this;
+}
+
+template <class T>
+void matrix<T>::swap(matrix<T> &swapTarget)
+{
+    if(this != &swapTarget) {
+        auto temp_ua = ua_data;
+        ua_data = swapTarget.ua_data;
+        swapTarget.ua_data = temp_ua;
+        auto temp_data = data;
+        data = swapTarget.data;
+        swapTarget.data = temp_data;
+        auto temp_ptr = ptr;
+        ptr = swapTarget.ptr;
+        swapTarget.ptr = temp_ptr;
+        auto temp_nr = num_rows;
+        num_rows = swapTarget.num_rows;
+        swapTarget.num_rows = temp_nr;
+        auto temp_nc = num_cols;
+        num_cols = swapTarget.num_cols;
+        swapTarget.num_cols = temp_nc;
+    }
 }
 
 template <class T> template<class U>

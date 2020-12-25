@@ -283,6 +283,8 @@ SlimSplitView {
                         var num
                         var s
                         var size
+                        console.log("topImage state: " + topImage.state)
+                        console.log("topImage status: " + topImage.status)
                         if (topImage.status == Image.Ready) { //if the image is now ready
                             //First, we turn off the no-image-text
                             root.noImage = false
@@ -303,7 +305,6 @@ SlimSplitView {
                                 //This has to happen after the size actually changes. It's put below.
                             }
 
-                            console.log("TopImage state: " + topImage.state)
 
                             if (topImage.state == "lf") {//it was loading the full image
                                 topImage.state = "sf"//showing full image
@@ -368,9 +369,11 @@ SlimSplitView {
                             topImage.indexString = s
 
                             //now actually ask for the image
+                            //we always go back to loading quick even when the full image fails
                             topImage.state = "lq"//loading quick pipe
                             topImage.source = "image://filmy/q" + topImage.indexString
                         }
+                        console.log("topImage state became: " + topImage.state)
                     }
                 }
                 Image {
@@ -2653,7 +2656,7 @@ SlimSplitView {
             anchors.right: rotateRight.left
             y: 0 * uiScale
             notDisabled: root.previewReady && !root.cropping
-            tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\".\n\nShortcut: L")
+            tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\" or double right clicking.\n\nShortcut: L")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale

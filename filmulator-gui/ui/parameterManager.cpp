@@ -77,12 +77,12 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
-    changeMadeSinceCheck = false;//We can't have it abort first thing in the pipeline.
     if (validity < Valid::none)//If something earlier than this has changed
     {
         abort = AbortStatus::restart;//not actually possible
+        cout << "claimLoadParams validity abort" << endl;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -108,7 +108,7 @@ AbortStatus ParameterManager::claimLoadAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -123,6 +123,7 @@ AbortStatus ParameterManager::claimLoadAbort()
 Valid ParameterManager::markLoadComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partload == validity)
     {
         validity = Valid::load;//mark step complete (duh)
@@ -164,7 +165,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -202,7 +203,7 @@ AbortStatus ParameterManager::claimDemosaicAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -217,6 +218,7 @@ AbortStatus ParameterManager::claimDemosaicAbort()
 Valid ParameterManager::markDemosaicComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partdemosaic == validity)
     {
         validity = Valid::demosaic;
@@ -355,7 +357,7 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -382,7 +384,7 @@ AbortStatus ParameterManager::claimPrefilmAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -397,6 +399,7 @@ AbortStatus ParameterManager::claimPrefilmAbort()
 Valid ParameterManager::markPrefilmComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partprefilmulation == validity)
     {
         validity = Valid::prefilmulation;
@@ -453,7 +456,7 @@ std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -494,7 +497,7 @@ AbortStatus ParameterManager::claimFilmAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -509,6 +512,7 @@ AbortStatus ParameterManager::claimFilmAbort()
 Valid ParameterManager::markFilmComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partfilmulation == validity)
     {
         validity = Valid::filmulation;
@@ -758,7 +762,7 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -788,7 +792,7 @@ AbortStatus ParameterManager::claimBlackWhiteAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -803,6 +807,7 @@ AbortStatus ParameterManager::claimBlackWhiteAbort()
 Valid ParameterManager::markBlackWhiteComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partblackwhite == validity)
     {
         validity = Valid::blackwhite;
@@ -942,6 +947,7 @@ void ParameterManager::rotateLeft()
 Valid ParameterManager::markColorCurvesComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::blackwhite == validity)
     {
         validity = Valid::colorcurve;
@@ -961,7 +967,7 @@ std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmli
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -994,7 +1000,7 @@ AbortStatus ParameterManager::claimFilmLikeCurvesAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -1009,6 +1015,7 @@ AbortStatus ParameterManager::claimFilmLikeCurvesAbort()
 Valid ParameterManager::markFilmLikeCurvesComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partfilmlikecurve == validity)
     {
         validity = Valid::filmlikecurve;
@@ -1150,7 +1157,29 @@ void ParameterManager::setBwBmult(float Bmult)
 Valid ParameterManager::getValid()
 {
     QMutexLocker paramLocker(&paramMutex);
-    return validity;
+    if (processedYet)
+    {
+        return validity;
+    } else {
+        return Valid::none;
+    }
+}
+
+void ParameterManager::setValid(Valid validityIn)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    validity = validityIn;
+    if (validity != Valid::none)
+    {
+        //we know it had been processed
+        processedYet = true;
+    }
+}
+
+Valid ParameterManager::getValidityWhenCanceled()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    return validityWhenCanceled;
 }
 
 //This gets called by a slider (from qml) when it is released.
@@ -1312,8 +1341,15 @@ void ParameterManager::selectImage(const QString imageID)
     if (imageIndex != imageID)
     {
         imageIndex = imageID;
-        emit imageIndexChanged();
+        if (processedYet)
+        {
+            validityWhenCanceled = validity;
+            processedYet = false;
+        } else {
+            validityWhenCanceled = Valid::none;
+        }
         validity = Valid::none;
+        emit imageIndexChanged();
     }
 
     QString tempString = imageID;
@@ -1416,7 +1452,7 @@ void ParameterManager::selectImage(const QString imageID)
     emit modelChanged();
 
     exifLensName = exifLens(m_fullFilename);
-    cout << "parammanager exifLensName: " << exifLensName.toStdString() << endl;
+    //cout << "parammanager exifLensName: " << exifLensName.toStdString() << endl;
     emit exifLensNameChanged();
 
     //Copy all of the processing parameters from the db into this param manager.
@@ -1456,7 +1492,7 @@ void ParameterManager::selectImage(const QString imageID)
     const bool hasPreferences = (query.value(0).toInt() > 0);
     if (hasPreferences)
     {
-        cout << "Has lens preferences" << endl;
+        //cout << "Has lens preferences" << endl;
         query.prepare("SELECT LensfunLens, LensfunCa, LensfunVign, LensfunDist, AutoCa FROM LensPrefs  WHERE ExifCamera = ? AND ExifLens = ?;");
         query.bindValue(0, model);
         query.bindValue(1, exifLensName);
@@ -1491,11 +1527,11 @@ void ParameterManager::selectImage(const QString imageID)
         s_caEnabled = d_caEnabled;
     } else {
         //No preferences
-        cout << "Has no lens preferences" << endl;
+        //cout << "Has no lens preferences" << endl;
         //If there's a match for the exif lens, use that
         d_lensfunName = identifyLens(m_fullFilename);
         s_lensfunName = d_lensfunName;
-        cout << "Found lens: " << d_lensfunName.toStdString() << endl;
+        //cout << "Found lens: " << d_lensfunName.toStdString() << endl;
         //There are no global preferences, so we turn off all the corrections
         d_caEnabled = 0;
         s_caEnabled = 0;
@@ -1511,7 +1547,7 @@ void ParameterManager::selectImage(const QString imageID)
     if (m_lensfunName != "NoLens")
     {
         s_lensfunName = m_lensfunName;
-        cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
+        //cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
         if (m_caEnabled > -1)
         {
             s_caEnabled = m_caEnabled;
@@ -1530,22 +1566,38 @@ void ParameterManager::selectImage(const QString imageID)
         }
     } else {
         //If there's no matching lens, disable all the lensfun corrections.
-        cout << "No lens found" << endl;
+        //cout << "No lens found" << endl;
         //s_caEnabled can stay whatever it was because it doesn't depend on lensfun
         s_lensfunCa = 0;
         s_lensfunVign = 0;
         s_lensfunDist = 0;
     }
-    cout << "Default lens: " << d_lensfunName.toStdString() << endl;
+    //cout << "Default lens: " << d_lensfunName.toStdString() << endl;
 
     //Finally, we need to change the availability for the various lens corrections
     //First is Auto CA Correct, which only works with Bayer CFAs.
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
-    libraw->open_file(m_fullFilename.c_str());
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(m_fullFilename);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
+    const char *cstr = m_fullFilename.c_str();
+    libraw_error = libraw->open_file(cstr);
+#endif
+    if (libraw_error)
+    {
+        cout << "selectImage: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        emit fileError();
+        return;
+    }
+
     bool isSraw = libraw->is_sraw();
-    cout << "Is sraw: " << isSraw << endl;
+    //cout << "Is sraw: " << isSraw << endl;
     bool isWeird = libraw->COLOR(0,0)==6;
-    cout << "Is weird: " << isWeird << endl;
+    //cout << "Is weird: " << isWeird << endl;
     int maxXtrans = 0;
     for (int i=0; i<6; i++)
     {
@@ -1555,9 +1607,9 @@ void ParameterManager::selectImage(const QString imageID)
         }
     }
     bool isXtrans = maxXtrans > 0;
-    cout << "Is xtrans: " << isXtrans << endl;
+    //cout << "Is xtrans: " << isXtrans << endl;
     autoCaAvail = !isSraw && !isWeird && !isXtrans;
-    cout << "Auto CA is available: " << autoCaAvail << endl;
+    //cout << "Auto CA is available: " << autoCaAvail << endl;
     emit autoCaAvailChanged();
 
     //Then is lensfun, which depends on the camera and lens.
@@ -1656,7 +1708,6 @@ void ParameterManager::selectImage(const QString imageID)
     emit defBwGmultChanged();
     emit defBwBmultChanged();
     emit defToeBoundaryChanged();
-
 
     //Mark that it's safe for sliders to move again.
     QMutexLocker signalLocker(&signalMutex);
@@ -2689,15 +2740,21 @@ void ParameterManager::loadParams(QString imageID)
 //The other param manager emits updateClone.
 //
 //This is very similar to selectImage but it doesn't have to worry about defaults at all
+//
+//When the parameter manager is a clone, then it cancels computation using
+// changeMadeSinceCheck.
 void ParameterManager::cloneParams(ParameterManager * sourceParams)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
     disableParamChange();//Prevent aborting of computation.
 
     //Make sure that we always abort after any change while executing,
-    //even if it's later in the pipeline,
-    //Because we want to redo the small preview immediately.
-    changeMadeSinceCheck = true;
+    // even if it's later in the pipeline,
+    // because we want to redo the small preview immediately.
+    if (isClone)
+    {
+        changeMadeSinceCheck = true;
+    }
 
     //Load the image index
     const QString temp_imageIndex = sourceParams->getImageIndex();
@@ -3242,6 +3299,11 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     paramChangeWrapper(QString("cloneParams"));
 }
 
+void ParameterManager::cancelComputation()
+{
+    changeMadeSinceCheck = true;
+}
+
 //This prevents the back-and-forth between this object and QML from aborting
 // computation, and also prevents the sliders' moving from marking the photo
 // as edited.
@@ -3343,6 +3405,7 @@ void ParameterManager::updateAvailability()
                 bool isMonochrome = false;
                 if (!isCR3) //no CR3 cameras are monochrome
                 {
+                    cout << "updateAvailability exiv filename: " << m_fullFilename << endl;
                     auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
                     exifImage->readMetadata();
                     Exiv2::ExifData exifData = exifImage->exifData();

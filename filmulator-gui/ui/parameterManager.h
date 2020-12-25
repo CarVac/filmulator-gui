@@ -312,185 +312,14 @@ public:
     Valid markFilmLikeCurvesComplete();
 
     Valid getValid();
+    Valid getValidityWhenCanceled();
+    void setValid(Valid validityIn);
+
+    void markStartOfProcessing(){changeMadeSinceCheck = false;}
 
     std::string getFullFilename(){return m_fullFilename;}
 
     void setClone(){isClone = true;}
-
-public slots:
-    void cloneParams(ParameterManager * sourceParams);
-
-protected:
-    //This is here for the sql insertion to pull the values from.
-    void loadParams(QString imageID);
-    void loadDefaults(const CopyDefaults useDefaults, const std::string absFilePath);
-
-    //If this is true, then this is the clone parameter manager
-    //and we should always abort whenever there's a change made
-    bool isClone = false;
-    bool changeMadeSinceCheck = false;
-
-    //The paramMutex exists to prevent race conditions between
-    //changes in the parameters and changes in validity.
-    QMutex paramMutex;
-    QMutex signalMutex;
-
-    //We need a lensfun database for looking up various things
-    lfDatabase *ldb;
-    //Refresh lens correction availability
-    void updateAvailability();
-
-    //This is to attempt to prevent binding loops at the start of the program
-    bool justInitialized;
-
-    QString imageIndex;
-    QString copyFromImageIndex;
-    bool pasteable;
-    bool pasteSome;
-
-    void writeToDB(QString imageID);
-    void paramChangeWrapper(QString);
-    void disableParamChange();
-    void enableParamChange();
-
-    bool paramChangeEnabled;
-
-    //Variables for the properties.
-    //Image parameters, read-only.
-    QString filename;
-    QString fullFilenameQstr;
-    int sensitivity;
-    QString exposureTime;
-    QString aperture;
-    float fnumber;
-    float focalLength;
-    QString make;
-    QString model;
-    QString exifLensName;
-    bool autoCaAvail; //For non-Bayer sensors this is not available
-    bool lensfunCaAvail; //These vary depending on camera and lens (and the lensfun db)
-    bool lensfunVignAvail;
-    bool lensfunDistAvail;
-
-    Valid validity;
-
-    //Input
-    std::string m_fullFilename;
-    bool m_tiffIn;
-    bool m_jpegIn;
-
-    //Demosaic
-    int s_caEnabled;//similar to the lensfun stuff
-    int m_caEnabled;
-    int m_highlights;
-    QString s_lensfunName;//staging params filled at load and also when manually changed
-    int s_lensfunCa;      //These don't get written back
-    int s_lensfunVign;
-    int s_lensfunDist;
-    QString m_lensfunName;//main params get loaded from db. "" or -1 indicates autoselection via exif or prefs.
-    int m_lensfunCa;      //When the UI sets the s_ params, these get changed so the db gets the changes too.
-    int m_lensfunVign;    //On the same token, when the UI *resets*,
-    int m_lensfunDist;    // these have to go back to "" or -1, not to the default.
-    float m_rotationAngle;
-    float m_rotationPointX;
-    float m_rotationPointY;
-
-    int d_caEnabled; //d_'s are for default values
-    int d_highlights;
-    QString d_lensfunName;//*not* a blank string, but actually the lens that is either exif-automatched or in prefs
-    int d_lensfunCa;      //*not* -1, but actually from prefs
-    int d_lensfunVign;    //They get filled a) at loading time, or b) when lens prefs are set or erased
-    int d_lensfunDist;
-    float d_rotationAngle;
-    float d_rotationPointX;
-    float d_rotationPointY;
-
-    //Prefilmulation
-    float m_exposureComp;
-    float m_temperature;
-    float m_tint;
-
-    float d_exposureComp;
-    float d_temperature;
-    float d_tint;
-
-    //Filmulation
-    float m_initialDeveloperConcentration;
-    float m_reservoirThickness;
-    float m_activeLayerThickness;
-    float m_crystalsPerPixel;
-    float m_initialCrystalRadius;
-    float m_initialSilverSaltDensity;
-    float m_developerConsumptionConst;
-    float m_crystalGrowthConst;
-    float m_silverSaltConsumptionConst;
-    float m_totalDevelopmentTime;
-    int   m_agitateCount;
-    int   m_developmentSteps;
-    float m_filmArea;
-    float m_sigmaConst;
-    float m_layerMixConst;
-    float m_layerTimeDivisor;
-    float m_rolloffBoundary;
-    float m_toeBoundary;
-
-    float d_initialDeveloperConcentration;
-    float d_reservoirThickness;
-    float d_activeLayerThickness;
-    float d_crystalsPerPixel;
-    float d_initialCrystalRadius;
-    float d_initialSilverSaltDensity;
-    float d_developerConsumptionConst;
-    float d_crystalGrowthConst;
-    float d_silverSaltConsumptionConst;
-    float d_totalDevelopmentTime;
-    int   d_agitateCount;
-    int   d_developmentSteps;
-    float d_filmArea;
-    float d_sigmaConst;
-    float d_layerMixConst;
-    float d_layerTimeDivisor;
-    float d_rolloffBoundary;
-    float d_toeBoundary;
-
-    //Whitepoint & Blackpoint
-    float m_blackpoint;
-    float m_whitepoint;
-    float m_cropHeight = 0;
-    float m_cropAspect = 0;
-    float m_cropVoffset = 0;
-    float m_cropHoffset = 0;
-
-    float d_blackpoint;
-    float d_whitepoint;
-
-    //Global, all-color curves.
-    float m_shadowsX;
-    float m_shadowsY;
-    float m_highlightsX;
-    float m_highlightsY;
-    float m_vibrance;
-    float m_saturation;
-    bool  m_monochrome;
-    float m_bwRmult;
-    float m_bwGmult;
-    float m_bwBmult;
-
-    float d_shadowsX;
-    float d_shadowsY;
-    float d_highlightsX;
-    float d_highlightsY;
-    float d_vibrance;
-    float d_saturation;
-    bool  d_monochrome;
-    float d_bwRmult;
-    float d_bwGmult;
-    float d_bwBmult;
-
-    //Rotation
-    int m_rotation;
-
-    int d_rotation;
 
     //Getters for read-only properties.
     QString getImageIndex(){return imageIndex;}
@@ -631,6 +460,193 @@ protected:
 
     //Rotation
     int getRotation(){return m_rotation;}
+
+
+public slots:
+    //When the quick pipeline gets the params changed, we'll automatically
+    // have the clone pipeline update its params.
+    //This will turn changeMadeSinceCheck true, but only if it's a clone
+    void cloneParams(ParameterManager * sourceParams);
+
+    //If this is a preload pipeline, we need to stop computation
+    // when *another* pipeline changes, but we don't need params copied
+    void cancelComputation();
+
+protected:
+    //This is here for the sql insertion to pull the values from.
+    void loadParams(QString imageID);
+    void loadDefaults(const CopyDefaults useDefaults, const std::string absFilePath);
+
+    //If this is true, then this is the clone parameter manager
+    //and we should always abort whenever there's a change made
+    bool isClone = false;
+    bool changeMadeSinceCheck = false;
+
+    //The paramMutex exists to prevent race conditions between
+    //changes in the parameters and changes in validity.
+    QMutex paramMutex;
+    QMutex signalMutex;
+
+    //We need a lensfun database for looking up various things
+    lfDatabase *ldb;
+    //Refresh lens correction availability
+    void updateAvailability();
+
+    //This is to attempt to prevent binding loops at the start of the program
+    bool justInitialized;
+
+    QString imageIndex;
+    QString copyFromImageIndex;
+    bool pasteable;
+    bool pasteSome;
+
+    void writeToDB(QString imageID);
+    void paramChangeWrapper(QString);
+    void disableParamChange();
+    void enableParamChange();
+
+    bool paramChangeEnabled;
+
+    //Variables for the properties.
+    //Image parameters, read-only.
+    QString filename;
+    QString fullFilenameQstr;
+    int sensitivity;
+    QString exposureTime;
+    QString aperture;
+    float fnumber;
+    float focalLength;
+    QString make;
+    QString model;
+    QString exifLensName;
+    bool autoCaAvail; //For non-Bayer sensors this is not available
+    bool lensfunCaAvail; //These vary depending on camera and lens (and the lensfun db)
+    bool lensfunVignAvail;
+    bool lensfunDistAvail;
+
+    Valid validity;
+    Valid validityWhenCanceled;
+
+    //this is for dealing with the validity when canceled
+    bool processedYet = false;
+
+    //Input
+    std::string m_fullFilename;
+    bool m_tiffIn;
+    bool m_jpegIn;
+
+    //Demosaic
+    int s_caEnabled;//similar to the lensfun stuff
+    int m_caEnabled;
+    int m_highlights;
+    QString s_lensfunName;//staging params filled at load and also when manually changed
+    int s_lensfunCa;      //These don't get written back
+    int s_lensfunVign;
+    int s_lensfunDist;
+    QString m_lensfunName;//main params get loaded from db. "" or -1 indicates autoselection via exif or prefs.
+    int m_lensfunCa;      //When the UI sets the s_ params, these get changed so the db gets the changes too.
+    int m_lensfunVign;    //On the same token, when the UI *resets*,
+    int m_lensfunDist;    // these have to go back to "" or -1, not to the default.
+    float m_rotationAngle;
+    float m_rotationPointX;
+    float m_rotationPointY;
+
+    int d_caEnabled; //d_'s are for default values
+    int d_highlights;
+    QString d_lensfunName;//*not* a blank string, but actually the lens that is either exif-automatched or in prefs
+    int d_lensfunCa;      //*not* -1, but actually from prefs
+    int d_lensfunVign;    //They get filled a) at loading time, or b) when lens prefs are set or erased
+    int d_lensfunDist;
+    float d_rotationAngle;
+    float d_rotationPointX;
+    float d_rotationPointY;
+
+    //Prefilmulation
+    float m_exposureComp;
+    float m_temperature;
+    float m_tint;
+
+    float d_exposureComp;
+    float d_temperature;
+    float d_tint;
+
+    //Filmulation
+    float m_initialDeveloperConcentration;
+    float m_reservoirThickness;
+    float m_activeLayerThickness;
+    float m_crystalsPerPixel;
+    float m_initialCrystalRadius;
+    float m_initialSilverSaltDensity;
+    float m_developerConsumptionConst;
+    float m_crystalGrowthConst;
+    float m_silverSaltConsumptionConst;
+    float m_totalDevelopmentTime;
+    int   m_agitateCount;
+    int   m_developmentSteps;
+    float m_filmArea;
+    float m_sigmaConst;
+    float m_layerMixConst;
+    float m_layerTimeDivisor;
+    float m_rolloffBoundary;
+    float m_toeBoundary;
+
+    float d_initialDeveloperConcentration;
+    float d_reservoirThickness;
+    float d_activeLayerThickness;
+    float d_crystalsPerPixel;
+    float d_initialCrystalRadius;
+    float d_initialSilverSaltDensity;
+    float d_developerConsumptionConst;
+    float d_crystalGrowthConst;
+    float d_silverSaltConsumptionConst;
+    float d_totalDevelopmentTime;
+    int   d_agitateCount;
+    int   d_developmentSteps;
+    float d_filmArea;
+    float d_sigmaConst;
+    float d_layerMixConst;
+    float d_layerTimeDivisor;
+    float d_rolloffBoundary;
+    float d_toeBoundary;
+
+    //Whitepoint & Blackpoint
+    float m_blackpoint;
+    float m_whitepoint;
+    float m_cropHeight = 0;
+    float m_cropAspect = 0;
+    float m_cropVoffset = 0;
+    float m_cropHoffset = 0;
+
+    float d_blackpoint;
+    float d_whitepoint;
+
+    //Global, all-color curves.
+    float m_shadowsX;
+    float m_shadowsY;
+    float m_highlightsX;
+    float m_highlightsY;
+    float m_vibrance;
+    float m_saturation;
+    bool  m_monochrome;
+    float m_bwRmult;
+    float m_bwGmult;
+    float m_bwBmult;
+
+    float d_shadowsX;
+    float d_shadowsY;
+    float d_highlightsX;
+    float d_highlightsY;
+    float d_vibrance;
+    float d_saturation;
+    bool  d_monochrome;
+    float d_bwRmult;
+    float d_bwGmult;
+    float d_bwBmult;
+
+    //Rotation
+    int m_rotation;
+
+    int d_rotation;
 
     //Setters for the properties.
     //Loading

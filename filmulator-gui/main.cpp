@@ -142,7 +142,14 @@ int main(int argc, char *argv[])
     if (argc == 2)
     {
         cout << "Importing file!" << endl;
+#if (defined(_WIN32) || defined(__WIN32__))
+        cout << "main argv: " << argv[1] << endl;
+        QString temp = QString::fromLocal8Bit(argv[1]);
+        cout << "main argv qstring std: " << temp.toStdString() << endl;
+        QString searchID = importModel->importFileNow(QString::fromLocal8Bit(argv[1]), settingsObj);
+#else
         QString searchID = importModel->importFileNow(QString(argv[1]), settingsObj);
+#endif
         if (searchID != "")
         {
             paramManager->selectImage(searchID);

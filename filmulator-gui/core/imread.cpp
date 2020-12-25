@@ -85,7 +85,8 @@ bool imread(std::string input_image_filename, matrix<float> &returnmatrix,
         }
     }
     image_processor.recycle();
-    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(input_image_filename);
+    cout << "imread exiv filename: " << input_image_filename << endl;
+    auto image = Exiv2::ImageFactory::open(input_image_filename);
     assert(image.get() != 0);
     image->readMetadata();
     exifData = image->exifData();

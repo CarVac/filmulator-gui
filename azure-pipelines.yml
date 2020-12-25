@@ -114,6 +114,8 @@ steps:
     displayName: package dlls
   - script: |
       set HOME=.
+      #this sets the codepage to utf-8
+      mt.exe -manifest "codepage.xaml" -outputresource:"build/installed/bin/filmulator.exe";#1
       %MSYS_BASH% -c "/bin/cp --verbose LICENSE.txt -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator-gui/filmulator-gui80.ico -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"

@@ -527,6 +527,10 @@ QString QueueModel::getPrev(const QString searchID)
     query.bindValue(0, searchID);
     query.exec();
     query.next();
+    if (!query.isValid())
+    {
+        return "";//no result
+    }
     const int currentIndex = query.value(0).toInt();
     if (currentIndex - 1 >= 0)
     {
@@ -537,9 +541,9 @@ QString QueueModel::getPrev(const QString searchID)
         const QString newID = query.value(0).toString();
         query.exec("END TRANSACTION;");
         return newID;
-    } else {
+    } else {//past the end
         query.exec("END TRANSACTION;");
-        return searchID;
+        return "";//searchID;
     }
 }
 QString QueueModel::getNext(const QString searchID)
@@ -556,6 +560,10 @@ QString QueueModel::getNext(const QString searchID)
     query.bindValue(0, searchID);
     query.exec();
     query.next();
+    if (!query.isValid())
+    {
+        return "";
+    }
     const int currentIndex = query.value(0).toInt();
     if (currentIndex + 1 < maxIndex)
     {
@@ -566,9 +574,9 @@ QString QueueModel::getNext(const QString searchID)
         const QString newID = query.value(0).toString();
         query.exec("END TRANSACTION;");
         return newID;
-    } else {
+    } else {//past the end
         query.exec("END TRANSACTION;");
-        return searchID;
+        return "";
     }
 }
 

@@ -24,10 +24,20 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
 
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
-        cout << "exifLocalDateString: Could not read input file!" << endl;
+        cout << "exifUtcTime: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         return QDateTime();
     }
 
@@ -39,6 +49,7 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     if (!isCR3) //we can use exiv2
     {
         //Grab the exif data
+        cout << "exifUtcTime exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();
@@ -84,16 +95,27 @@ int exifDefaultRotation(const std::string fullFilename)
     const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
 
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
-        cout << "exifLocalDateString: Could not read input file!" << endl;
+        cout << "exifDefaultRotation: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         return 0;
     }
 
     if (!isCR3) // we can use exiv2
     {
         //Grab the exif data
+        cout << "exifDefaultRotation exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();
@@ -264,10 +286,11 @@ int exifRating(const std::string fullFilename)
     {
         return 0;
     } else {
-        auto image = Exiv2::ImageFactory::open(fullFilename); //CHANGE ME
-        image->readMetadata();
-        Exiv2::ExifData exifData = image->exifData();
-        Exiv2::XmpData xmpData = image->xmpData();
+        cout << "exifRating exiv filename: " << fullFilename << endl;
+        auto exifImage = Exiv2::ImageFactory::open(fullFilename);
+        exifImage->readMetadata();
+        Exiv2::ExifData exifData = exifImage->exifData();
+        Exiv2::XmpData xmpData = exifImage->xmpData();
 
         std::string maker = exifData["Exif.Image.Make"].toString();
         if (maker.compare("Canon") == 0)
@@ -378,11 +401,21 @@ QString exifLens(const std::string fullFilename)
 
     //Load the image in libraw
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
         cout << "exifLens: Could not read input file!" << endl;
-        return "";
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        return 0;
     }
 
     //find what the camera is
@@ -407,6 +440,7 @@ QString exifLens(const std::string fullFilename)
     if (!isCR3) //we can't check stuff needing exiv2 if it's CR3
     {
         //Grab the exif data
+        cout << "exifLens exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();
@@ -461,10 +495,20 @@ QString identifyLens(const std::string fullFilename)
 
     //Load the image in libraw
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(fullFilename);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
     const char *cstrfilename = fullFilename.c_str();
-    if (0 != libraw->open_file(cstrfilename))
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
     {
         cout << "identifyLens: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         return "";
     }
 
@@ -499,6 +543,7 @@ QString identifyLens(const std::string fullFilename)
     if (!isCR3) //we can't check stuff neding exiv2 if it's CR3
     {
         //Grab the exif data
+        cout << "identifyLens exiv filename: " << fullFilename << endl;
         auto exifImage = Exiv2::ImageFactory::open(fullFilename);
         exifImage->readMetadata();
         Exiv2::ExifData exifData = exifImage->exifData();
@@ -541,12 +586,13 @@ QString identifyLens(const std::string fullFilename)
     }
 
     //identify the camera model in the database
-    cout << "SEARCHING CAMERA MODELS =================================" << endl;
+    //cout << "SEARCHING CAMERA MODELS =================================" << endl;
     const lfCamera * camera = NULL;
     const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
     if (cameraList)
     {
         camera = cameraList[0];
+        /*
         int i = 0;
         while (cameraList[i])
         {
@@ -555,13 +601,14 @@ QString identifyLens(const std::string fullFilename)
             cout << "Match score: " << cameraList[i]->Score << endl;
             i++;
         }
+        */
     } else {
         cout << "No matching cameras found in database." << endl;
     }
     lf_free(cameraList);
 
     QString lensName = "";
-    cout << "SEARCHING LENS MODELS ===================================" << endl;
+    //cout << "SEARCHING LENS MODELS ===================================" << endl;
     if (lensModel.length() > 0)
     {
         const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
@@ -584,7 +631,7 @@ QString identifyLens(const std::string fullFilename)
             }
             */
         } else {
-            cout << "No matching lenses found in database." << endl;
+            //cout << "No matching lenses found in database." << endl;
         }
         lf_free(lensList);
     }

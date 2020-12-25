@@ -35,6 +35,21 @@ public:
     bool stealData = false;
     ImagePipeline * stealVictim;
 
+    //Method to straight up copy the data between imagepipelines
+    //This is used when copying preloaded pipeline data
+    void swapPipeline(ImagePipeline * copySource);
+
+    //This should be used after the full res pipeline is done
+    // so that the quick pipe gets refreshed from high res sampling
+    //This is important to keep the quick pipe sharp after level/distortion
+    // correction
+    //Only used for pipelines that already are based on the same image.
+    void copyAndDownsampleImages(ImagePipeline * copySource);
+
+    //This is related to the above; if the image changes but the pipeline is
+    // preloaded, we need to refresh the histograms
+    void rerunHistograms();
+
     //The resolution of a quick preview
     int resolution;
 

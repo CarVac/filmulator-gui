@@ -13,6 +13,7 @@ class DateHistogramModel : public BasicSqlModel
 {
     Q_OBJECT
 
+    Q_PROPERTY(int dateHistoSize READ getDateHistoSize NOTIFY dateHistoSizeChanged)
 public:
     explicit DateHistogramModel(QObject *parent = 0);
 
@@ -30,11 +31,14 @@ public:
 
     void signalChange() {emit dateHistoModelChanged();}
 
+    Q_INVOKABLE int getDateHistoSize(){return m_rowCount;}
+
 private:
     int m_rowCount;
 
 signals:
     void dateHistoModelChanged();
+    void dateHistoSizeChanged();
 
 protected:
     void emitChange() {emit dateHistoModelChanged();}
