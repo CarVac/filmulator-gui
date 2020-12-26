@@ -65,6 +65,9 @@ unix:desktop.path = /usr/share/applications
 
 unix:desktop.files += ./filmulator_gui.desktop
 
+unix:appstream.path = /usr/share/metainfo
+unix:appstream.files += ./resources/linux/org.filmulator.Filmulator.metainfo.xml
+
 # win32 {
 # target.path = ???
 # desktop.path = ???
@@ -141,7 +144,7 @@ QT += sql core quick qml widgets
 
 CONFIG += qtquickcompiler
 
-INSTALLS += desktop extra
+INSTALLS += desktop appstream extra
 
 RESOURCES += \
     qml.qrc \
