@@ -1567,7 +1567,11 @@ void ParameterManager::selectImage(const QString imageID)
     } else {
         //If there's no matching lens, disable all the lensfun corrections.
         //cout << "No lens found" << endl;
-        //s_caEnabled can stay whatever it was because it doesn't depend on lensfun
+        //s_caEnabled needs to be changed to whatever the database said though.
+        if (m_caEnabled > -1)
+        {
+            s_caEnabled = m_caEnabled;
+        }
         s_lensfunCa = 0;
         s_lensfunVign = 0;
         s_lensfunDist = 0;
@@ -2255,7 +2259,7 @@ void ParameterManager::loadParams(QString imageID)
     nameCol = rec.indexOf("ProcTlensfunCa");
     if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunCa" << endl; }
     const int temp_lensfunCa = query.value(nameCol).toInt();
-    if (temp_lensfunCa != m_caEnabled)
+    if (temp_lensfunCa != m_lensfunCa)
     {
         //cout << "ParameterManager::loadParams lensfunCa" << endl;
         m_lensfunCa = temp_lensfunCa;
