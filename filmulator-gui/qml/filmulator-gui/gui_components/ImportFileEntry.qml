@@ -18,6 +18,7 @@ Rectangle {
     property alias nameFilters: fileDialog.nameFilters
     property bool erroneous: false
     property bool highlight: false
+    property bool multiSelect: true
 
     color: highlight ? Colors.darkOrangeH : Colors.darkGray
 
@@ -78,7 +79,7 @@ Rectangle {
         height: 25 * uiScale
         x: root.width - width - __padding
         y: __padding
-        text: qsTr("Select files")
+        text: root.multiSelect ? qsTr("Select files") : qsTr("Select a file")
         action: Action {
             onTriggered: {
                 fileDialog.folder = textEntryBox.text
@@ -109,7 +110,7 @@ Rectangle {
     }
     FileDialog {
         id: fileDialog
-        fileMode: FileDialog.OpenFiles
+        fileMode: root.multiSelect ? FileDialog.OpenFiles : FileDialog.OpenFile
         onAccepted: {
             //root.enteredText = fileUrls.toString()//.substring(7)
             for (var i=0; i < files.length; i++) {

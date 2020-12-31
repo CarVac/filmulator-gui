@@ -33,6 +33,8 @@ SOURCES += main.cpp \
     core/whiteBalance.cpp \
     core/whitepointBlackpoint.cpp \
     database/basicSqlModel.cpp \
+    database/cJSON.c \
+    database/camconst.cpp \
     database/dateHistogramModel.cpp \
     database/dbSetup.cpp \
     database/exifFunctions.cpp \
@@ -96,6 +98,8 @@ HEADERS += \
     core/matrix.hpp \
     database/backgroundQueue.h \
     database/basicSqlModel.h \
+    database/cJSON.h \
+    database/camconst.h \
     database/dateHistogramModel.h \
     database/exifFunctions.h \
     database/filmulatorDB.h \

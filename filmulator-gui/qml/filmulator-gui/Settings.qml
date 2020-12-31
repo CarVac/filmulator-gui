@@ -32,6 +32,7 @@ Rectangle {
             minorTicksEnabled: true
             value: settings.getUiScale()
             defaultValue: settings.getUiScale()
+            valueText: value.toFixed(1)
             changed: false
             onValueChanged: {
                 if (Math.abs(value - defaultValue) < 0.05) {
@@ -156,9 +157,9 @@ Rectangle {
         }
     }
     ColumnLayout {
-        id: lensfunList
+        id: dataUpdateList
         spacing: 0 * uiScale
-        x: 356 * uiScale
+        x: 358 * uiScale
         y: 3 * uiScale
         width: 350 * uiScale
 
@@ -202,7 +203,7 @@ Rectangle {
 
             ToolButton {
                 id: checkButton
-                width: 60 * uiScale
+                width: 100 * uiScale
                 height: 45 * uiScale
                 anchors.right: parent.right
                 y: 0 * uiScale
@@ -254,13 +255,121 @@ Rectangle {
 
             ToolButton {
                 id: updateButton
-                width: 60 * uiScale
+                width: 100 * uiScale
                 height: 45 * uiScale
                 anchors.right: parent.right
                 y: 0 * uiScale
                 text: qsTr("Update","Update lensfun database")
                 onTriggered: {
                     settings.updateLensfun()
+                }
+
+                uiScale: root.uiScale
+            }
+        }
+        Rectangle {
+            id: camconstSpacer
+            width: parent.width
+            height: 4 * uiScale
+            color: Colors.darkGray
+            opacity: 0
+        }
+        Rectangle {
+            id: camconstDownload
+            width: parent.width
+            height: 45 * uiScale
+            property real padding: 4 * uiScale
+
+            color: Colors.darkGray
+
+            Text {
+                id: camconstDownloadLabel
+                color: "white"
+                width: parent.width - downloadButton.width - 2*parent.padding
+                x: parent.padding
+                y: parent.padding
+                font.pixelSize: 12.0 * uiScale
+                text: qsTr("Download latest camera constants")
+            }
+            Rectangle {
+                id: camconstDownloadBox
+                width: parent.width - downloadButton.width - 2*parent.padding
+                height: 20 * uiScale
+                x: parent.padding
+                y: 20*uiScale + parent.padding
+                color: "black"
+
+                Text {
+                    id: camconstDownloadResult
+                    color: "white"
+                    x: lensfunCheck.padding / 2
+                    y: 1 * uiScale
+                    width: parent.width - x
+                    height: parent.height - y
+                    font.pixelSize: 12.0 * uiScale
+                    text: settings.camconstDlStatus
+                }
+            }
+            ToolButton {
+                id: downloadButton
+                width: 100 * uiScale
+                height: 45 * uiScale
+                anchors.right: parent.right
+                y: 0 * uiScale
+                text: qsTr("Download","Download new camconst.json")
+                onTriggered: {
+                    settings.downloadCamConst()
+                }
+
+                uiScale: root.uiScale
+            }
+        }
+        Rectangle {
+            id: camconstLoad
+            width: parent.width
+            height: 45 * uiScale
+            property real padding: 4 * uiScale
+
+            color: Colors.darkGray
+
+            Text {
+                id: camconstLoadLabel
+                color: "white"
+                width: parent.width - camconstLoadButton.width - 2*parent.padding
+                x: parent.padding
+                y: parent.padding
+                font.pixelSize: 12.0 * uiScale
+                text: qsTr("Load camera constants from file")
+            }
+            Rectangle {
+                id: camconstLoadBox
+                width: parent.width - camconstLoadButton.width - 2*parent.padding
+                height: 20 * uiScale
+                x: parent.padding
+                y: 20*uiScale + parent.padding
+                color: "black"
+
+                Text {
+                    id: camconstLoadResult
+                    color: "white"
+                    x: lensfunCheck.padding / 2
+                    y: 1 * uiScale
+                    width: parent.width - x
+                    height: parent.height - y
+                    font.pixelSize: 12.0 * uiScale
+                    text: (settings.camconstLoadStatus == "") ? "" : ((settings.camconstLoadStatus == "loaded") ? qsTr("CamConst load successful.") : qsTr("CamConst load failed."))
+                }
+            }
+            ToolButton {
+                id: camconstLoadButton
+                width: 100 * uiScale
+                height: 45 * uiScale
+                anchors.right: parent.right
+                y: 0 * uiScale
+                text: qsTr("Load","Load data from camconst.json into filmulator database")
+                notDisabled: settings.camconstFilePath != ""
+                onTriggered: {
+                    settings.loadCamConst()
                 }
 
                 uiScale: root.uiScale

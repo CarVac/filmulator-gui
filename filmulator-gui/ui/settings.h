@@ -29,6 +29,10 @@ class Settings : public QObject
     Q_PROPERTY(QString lensfunStatus READ getLensfunStatus NOTIFY lensfunStatusChanged)
     Q_PROPERTY(QString updateStatus READ getUpdateStatus NOTIFY updateStatusChanged)
 
+    Q_PROPERTY(QString camconstDlStatus READ getCamconstDlStatus NOTIFY camconstDlStatusChanged)
+    Q_PROPERTY(QString camconstFilePath READ getCamconstFilePath WRITE setCamconstFilePath NOTIFY camconstFilePathChanged)
+    Q_PROPERTY(QString camconstLoadStatus READ getCamconstLoadStatus NOTIFY camconstLoadStatusChanged)
+
 public:
     explicit Settings(QObject *parent = 0);
     void setPhotoStorageDir(QString dirIn);
@@ -49,6 +53,8 @@ public:
     void setPreviewResolution(int resolutionIn);
     void setUseSystemLanguage(bool useSystemLanguageIn);
 
+    void setCamconstFilePath(QString filepathIn);
+
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
     Q_INVOKABLE QString getDirConfig();
@@ -67,11 +73,16 @@ public:
     Q_INVOKABLE int getPreviewResolution();
     Q_INVOKABLE bool getUseSystemLanguage();
 
-    Q_INVOKABLE QString getLensfunStatus() {return lensfunStatus;};
-    Q_INVOKABLE QString getUpdateStatus() {return updateStatus;};
-
+    Q_INVOKABLE QString getLensfunStatus() {return lensfunStatus;}
+    Q_INVOKABLE QString getUpdateStatus() {return updateStatus;}
     Q_INVOKABLE void checkLensfunStatus();
     Q_INVOKABLE void updateLensfun();
+
+    Q_INVOKABLE QString getCamconstDlStatus() {return camconstDlStatus;}
+    Q_INVOKABLE void downloadCamConst();
+    Q_INVOKABLE QString getCamconstFilePath() {return camconstFilePath;}
+    Q_INVOKABLE QString getCamconstLoadStatus() {return camconstLoadStatus;}
+    Q_INVOKABLE void loadCamConst();
 
 protected:
     QString photoStorageDir;
@@ -95,6 +106,10 @@ protected:
     QString lensfunStatus;
     QString updateStatus;
 
+    QString camconstDlStatus;
+    QString camconstFilePath;
+    QString camconstLoadStatus;
+
 signals:
     void photoStorageDirChanged();
     void photoBackupDirChanged();
@@ -116,6 +131,10 @@ signals:
 
     void lensfunStatusChanged();
     void updateStatusChanged();
+
+    void camconstDlStatusChanged();
+    void camconstFilePathChanged();
+    void camconstLoadStatusChanged();
 };
 
 #endif // SETTINGS_H

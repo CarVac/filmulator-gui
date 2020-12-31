@@ -67,6 +67,8 @@ set(filmulator_SRCS
     core/whiteBalance.cpp
     core/whitepointBlackpoint.cpp
     database/basicSqlModel.cpp
+    database/camconst.cpp
+    database/cJSON.c
     database/dateHistogramModel.cpp
     database/dbSetup.cpp
     database/exifFunctions.cpp
