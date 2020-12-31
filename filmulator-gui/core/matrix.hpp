@@ -32,7 +32,9 @@
 #define dout cout
 #else
 #define dout 0 && cout
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #endif
 
 #include "assert.h" //Included later so NDEBUG has an effect
