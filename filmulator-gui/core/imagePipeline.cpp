@@ -1,5 +1,6 @@
 #include "imagePipeline.h"
 #include "../database/exifFunctions.h"
+#include "../database/camconst.h"
 #include <QDir>
 #include <QStandardPaths>
 
@@ -237,13 +238,24 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
 
             //get white saturation values
-            cout << "WHITE SATURATION" << endl;
+            cout << "WHITE SATURATION ===================================" << endl;
             cout << "data_maximum: " << libraw->imgdata.color.data_maximum << endl;
             cout << "maximum: " << libraw->imgdata.color.maximum << endl;
 
+            //Calculate the white point based on the camera settings.
             //This needs the black point subtracted, and a fudge factor to ensure clipping is hard and fast.
-            //Maybe the fudge factor should be user-set.
-            maxValue = libraw->imgdata.color.maximum - blackpoint - maxBlockBlackpoint;
+            double whiteClippingPoint;
+            QString makeModel = IDATA.make;
+            makeModel.append(" ");
+            makeModel.append(IDATA.model);
+            camconst_status camconstStatus = camconst_read(makeModel, OTHER.iso_speed, OTHER.aperture, whiteClippingPoint);
+
+            if (camconstStatus == CAMCONST_READ_OK)
+            {
+                maxValue = whiteClippingPoint - blackpoint - maxBlockBlackpoint;
+            } else {
+                maxValue = libraw->imgdata.color.maximum - blackpoint - maxBlockBlackpoint;
+            }
             cout << "black-subtracted maximum: " << maxValue << endl;
             cout << "fmaximum: " << libraw->imgdata.color.fmaximum << endl;
             cout << "fnorm: " << libraw->imgdata.color.fnorm << endl;

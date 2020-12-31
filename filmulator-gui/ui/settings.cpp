@@ -21,8 +21,6 @@ Settings::Settings(QObject *parent) :
     lensfunStatus = "";
     updateStatus = "";
     camconstDlStatus = "";
-    camconstFilePath = "";
-    camconstLoadStatus = "";
 }
 
 void Settings::setPhotoStorageDir(QString dirIn)
@@ -389,7 +387,6 @@ void Settings::downloadCamConst()
     {
         camconstDlStatus = tr("camconst.json download succeeded.");
         emit camconstDlStatusChanged();
-        setCamconstFilePath(camconst_dir());
     }
     if (status == CAMCONST_DL_INITFAILED)
     {
@@ -405,24 +402,5 @@ void Settings::downloadCamConst()
     {
         camconstDlStatus = tr("CamConst retrieve failed.");
         emit camconstDlStatusChanged();
-    }
-}
-
-void Settings::setCamconstFilePath(QString filepathIn)
-{
-    camconstFilePath = filepathIn;
-    emit camconstFilePathChanged();
-}
-
-void Settings::loadCamConst()
-{
-    camconst_status status = camconst_read(camconstFilePath);
-    if (status == CAMCONST_READ_OK)
-    {
-        camconstLoadStatus = "loaded";
-        emit camconstLoadStatusChanged();
-    } else {
-        camconstLoadStatus = "failed";
-        emit camconstLoadStatusChanged();
     }
 }

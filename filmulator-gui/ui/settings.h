@@ -30,8 +30,6 @@ class Settings : public QObject
     Q_PROPERTY(QString updateStatus READ getUpdateStatus NOTIFY updateStatusChanged)
 
     Q_PROPERTY(QString camconstDlStatus READ getCamconstDlStatus NOTIFY camconstDlStatusChanged)
-    Q_PROPERTY(QString camconstFilePath READ getCamconstFilePath WRITE setCamconstFilePath NOTIFY camconstFilePathChanged)
-    Q_PROPERTY(QString camconstLoadStatus READ getCamconstLoadStatus NOTIFY camconstLoadStatusChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
@@ -52,8 +50,6 @@ public:
     void setQuickPreview(bool quickPreviewIn);
     void setPreviewResolution(int resolutionIn);
     void setUseSystemLanguage(bool useSystemLanguageIn);
-
-    void setCamconstFilePath(QString filepathIn);
 
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
@@ -80,9 +76,6 @@ public:
 
     Q_INVOKABLE QString getCamconstDlStatus() {return camconstDlStatus;}
     Q_INVOKABLE void downloadCamConst();
-    Q_INVOKABLE QString getCamconstFilePath() {return camconstFilePath;}
-    Q_INVOKABLE QString getCamconstLoadStatus() {return camconstLoadStatus;}
-    Q_INVOKABLE void loadCamConst();
 
 protected:
     QString photoStorageDir;
@@ -107,8 +100,6 @@ protected:
     QString updateStatus;
 
     QString camconstDlStatus;
-    QString camconstFilePath;
-    QString camconstLoadStatus;
 
 signals:
     void photoStorageDirChanged();
@@ -133,8 +124,6 @@ signals:
     void updateStatusChanged();
 
     void camconstDlStatusChanged();
-    void camconstFilePathChanged();
-    void camconstLoadStatusChanged();
 };
 
 #endif // SETTINGS_H

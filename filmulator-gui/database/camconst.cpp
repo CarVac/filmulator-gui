@@ -62,8 +62,9 @@ camconst_status camconst_download()
     return result;
 }
 
-camconst_status camconst_read(const QString filePath)
+camconst_status camconst_read(const QString inputMakeModel, const float iso, const float fnumber, double &whiteLevel)
 {
+    QString filePath = camconst_dir();
     if (filePath.length() == 0)
     {
         return CAMCONST_READ_FAILED;
@@ -95,7 +96,9 @@ camconst_status camconst_read(const QString filePath)
         return CAMCONST_READ_FAILED;
     }
 
-    std::string makeModel, name, value;
+    QString makeModel;
+    float apertureScaleFactor = 0;
+    whiteLevel = 0;
 
     //Only thing we care about for now is white level based on various things
     //also black level (check panasonic g9!!!) maybe?
@@ -123,20 +126,38 @@ camconst_status camconst_read(const QString filePath)
         cJSON * camera;
         cJSON_ArrayForEach(camera,camlist)
         {
+            makeModel = "";
             cJSON * makeModelList = cJSON_GetObjectItemCaseSensitive(camera, "make_model");
             if (cJSON_IsArray(makeModelList))
             {
-                makeModel = std::string(cJSON_GetArrayItem(makeModelList, 0)->valuestring);
+                cJSON * makeModelItem;
+                cJSON_ArrayForEach(makeModelItem, makeModelList)
+                {
+                    const QString tempMakeModel = QString(makeModelItem->valuestring);
+                    if (tempMakeModel == inputMakeModel)
+                    {
+                        makeModel = tempMakeModel;
+                    }
+                }
+                //makeModel = QString(cJSON_GetArrayItem(makeModelList, 0)->valuestring);
                 //TODO: make list of camera name synonyms, keep track of canonical name in a table
             } else {
-                makeModel = std::string(makeModelList->valuestring);
+                const QString tempMakeModel = QString(makeModelList->valuestring);
+                if (tempMakeModel == inputMakeModel)
+                {
+                    makeModel = tempMakeModel;
+                }
             }
-            std::cout << "make and model: " << makeModel << std::endl;
+            if (makeModel == "")
+            {
+                continue;
+            }
+            std::cout << "CamConst make and model: " << makeModel.toStdString() << std::endl;
 
             cJSON * item;
             cJSON_ArrayForEach(item, camera)
             {
-                std::cout << "item string: " << item->string << std::endl;
+                std::cout << "CamConst item string: " << item->string << std::endl;
                 if (QString(item->string) == "make_model")
                 {
                     continue;
@@ -157,53 +178,87 @@ camconst_status camconst_read(const QString filePath)
                     cJSON * rangeItem;
                     cJSON_ArrayForEach(rangeItem, item)
                     {
-                        std::cout << "range item string: " << rangeItem->string << std::endl;
+                        std::cout << "CamConst range item string: " << rangeItem->string << std::endl;
                         if (QString(rangeItem->string) == "white")
                         {
                             if (cJSON_IsNumber(rangeItem))
                             {
-                                std::cout << "whitepoint level only: " << rangeItem->valuedouble << std::endl;
+                                std::cout << "CamConst whitepoint level only: " << rangeItem->valuedouble << std::endl;
+                                whiteLevel = rangeItem->valuedouble;
                             }
                             if (cJSON_IsArray(rangeItem))
                             {
-                                std::cout << "whitepoint is array" << std::endl;
+                                std::cout << "CamConst whitepoint is array" << std::endl;
                                 cJSON * whiteItem;
+                                bool correctIso = false;
                                 cJSON_ArrayForEach(whiteItem, rangeItem)
                                 {
+                                    correctIso = false;
                                     //We have to get the objectitems
                                     cJSON * isoItem = cJSON_GetObjectItemCaseSensitive(whiteItem, "iso");
                                     if (cJSON_IsNumber(isoItem))
                                     {
-                                        std::cout << "whitepoint iso: " << isoItem->valuedouble << std::endl;
+                                        std::cout << "CamConst whitepoint iso: " << isoItem->valuedouble << std::endl;
+                                        if (abs(isoItem->valuedouble - iso) < 3)
+                                        {
+                                            correctIso = true;
+                                        }
                                     }
                                     if (cJSON_IsArray(isoItem))
                                     {
                                         cJSON * isoSubItem;
-                                        std::cout << "whitepoint isos: ";
+                                        std::cout << "CamConst whitepoint isos: ";
                                         cJSON_ArrayForEach(isoSubItem, isoItem)
                                         {
                                             std::cout << isoSubItem->valuedouble << " ";
+                                           if (abs(isoSubItem->valuedouble - iso) < 3)
+                                           {
+                                               correctIso = true;
+                                           }
                                         }
                                         std::cout << std::endl;
                                     }
 
-                                    cJSON * levelsItem = cJSON_GetObjectItemCaseSensitive(whiteItem, "levels");
-                                    if (cJSON_IsNumber(levelsItem))
+                                    if (correctIso)
                                     {
-                                        std::cout << "whitepoint level: " << levelsItem->valuedouble << std::endl;
-                                    }
-                                    if (cJSON_IsArray(levelsItem))
-                                    {
-                                        cJSON * levelsSubItem;
-                                        double whitepointLevel = 1e10;
-                                        cJSON_ArrayForEach(levelsSubItem, levelsItem)
+                                        cJSON * levelsItem = cJSON_GetObjectItemCaseSensitive(whiteItem, "levels");
+                                        if (cJSON_IsNumber(levelsItem))
                                         {
-                                            whitepointLevel = std::min(whitepointLevel, levelsSubItem->valuedouble);
+                                            std::cout << "CamConst whitepoint level: " << levelsItem->valuedouble << std::endl;
+                                            whiteLevel = levelsItem->valuedouble;
                                         }
-                                        std::cout << "whitepoint lowest level: " << whitepointLevel << std::endl;
+                                        if (cJSON_IsArray(levelsItem))
+                                        {
+                                            cJSON * levelsSubItem;
+                                            double tempWhiteLevel = 1e10;
+                                            cJSON_ArrayForEach(levelsSubItem, levelsItem)
+                                            {
+                                                tempWhiteLevel = std::min(tempWhiteLevel, levelsSubItem->valuedouble);
+                                            }
+                                            std::cout << "CamConst whitepoint lowest level: " << tempWhiteLevel << std::endl;
+                                            whiteLevel = tempWhiteLevel;
+                                        }
                                     }
                                 }
                             }
+                        }
+                        if (QString(rangeItem->string) == "white_max")
+                        {
+                            std::cout << "CamConst white max: " << rangeItem->valuedouble << std::endl;
+                        }
+                        if ((QString(rangeItem->string) == "aperture_scaling") && fnumber > 0.7)//we don't want to aperture scale manual lenses
+                        {
+                            cJSON * apertureListItem;
+                            cJSON_ArrayForEach(apertureListItem, rangeItem)
+                            {
+                                cJSON * apertureItem = cJSON_GetObjectItemCaseSensitive(apertureListItem, "aperture");
+                                if (apertureItem->valuedouble > fnumber && apertureScaleFactor == 0)
+                                {
+                                    cJSON * scaleItem = cJSON_GetObjectItemCaseSensitive(apertureListItem, "scale_factor");
+                                    apertureScaleFactor = scaleItem->valuedouble;
+                                }
+                            }
+                            std::cout << "CamConst aperture scale factor: " << apertureScaleFactor << std::endl;
                         }
                     }
                 }
@@ -211,5 +266,9 @@ camconst_status camconst_read(const QString filePath)
         }
     }
 
+    if (whiteLevel == 0)
+    {
+        status = CAMCONST_READ_NOENTRY;
+    }
     return status;
 }
