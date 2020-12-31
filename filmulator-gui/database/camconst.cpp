@@ -157,6 +157,7 @@ camconst_status camconst_read(const QString filePath)
                     cJSON * rangeItem;
                     cJSON_ArrayForEach(rangeItem, item)
                     {
+                        std::cout << "range item string: " << rangeItem->string << std::endl;
                         if (QString(rangeItem->string) == "white")
                         {
                             if (cJSON_IsNumber(rangeItem))
@@ -165,42 +166,41 @@ camconst_status camconst_read(const QString filePath)
                             }
                             if (cJSON_IsArray(rangeItem))
                             {
+                                std::cout << "whitepoint is array" << std::endl;
                                 cJSON * whiteItem;
                                 cJSON_ArrayForEach(whiteItem, rangeItem)
                                 {
-                                    if (QString(whiteItem->string) == "iso")
+                                    //We have to get the objectitems
+                                    cJSON * isoItem = cJSON_GetObjectItemCaseSensitive(whiteItem, "iso");
+                                    if (cJSON_IsNumber(isoItem))
                                     {
-                                        if (cJSON_IsNumber(whiteItem))
-                                        {
-                                            std::cout << "whitepoint iso: " << whiteItem->valuedouble << std::endl;
-                                        }
-                                        if (cJSON_IsArray(whiteItem))
-                                        {
-                                            cJSON * isoItem;
-                                            std::cout << "whitepoint isos: ";
-                                            cJSON_ArrayForEach(isoItem, whiteItem)
-                                            {
-                                                std::cout << isoItem->valuedouble << " ";
-                                            }
-                                            std::cout << std::endl;
-                                        }
+                                        std::cout << "whitepoint iso: " << isoItem->valuedouble << std::endl;
                                     }
-                                    if (QString(whiteItem->string) == "levels")
+                                    if (cJSON_IsArray(isoItem))
                                     {
-                                        if (cJSON_IsNumber(whiteItem))
+                                        cJSON * isoSubItem;
+                                        std::cout << "whitepoint isos: ";
+                                        cJSON_ArrayForEach(isoSubItem, isoItem)
                                         {
-                                            std::cout << "whitepoint level: " << whiteItem->valuedouble << std::endl;
+                                            std::cout << isoSubItem->valuedouble << " ";
                                         }
-                                        if (cJSON_IsArray(whiteItem))
+                                        std::cout << std::endl;
+                                    }
+
+                                    cJSON * levelsItem = cJSON_GetObjectItemCaseSensitive(whiteItem, "levels");
+                                    if (cJSON_IsNumber(levelsItem))
+                                    {
+                                        std::cout << "whitepoint level: " << levelsItem->valuedouble << std::endl;
+                                    }
+                                    if (cJSON_IsArray(levelsItem))
+                                    {
+                                        cJSON * levelsSubItem;
+                                        double whitepointLevel = 1e10;
+                                        cJSON_ArrayForEach(levelsSubItem, levelsItem)
                                         {
-                                            cJSON * levelsItem;
-                                            double whitepointLevel = 1e10;
-                                            cJSON_ArrayForEach(levelsItem, whiteItem)
-                                            {
-                                                whitepointLevel = std::min(whitepointLevel, levelsItem->valuedouble);
-                                            }
-                                            std::cout << "whitepoint lowest level: " << whitepointLevel << std::endl;
+                                            whitepointLevel = std::min(whitepointLevel, levelsSubItem->valuedouble);
                                         }
+                                        std::cout << "whitepoint lowest level: " << whitepointLevel << std::endl;
                                     }
                                 }
                             }
