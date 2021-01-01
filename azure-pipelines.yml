@@ -103,6 +103,7 @@ steps:
       set PATH=C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem
       set HOME=.
       %MSYS_BASH% -c "/bin/cp --verbose /MINGW64/bin/{%listdll%} -t ./"
+      curl --remote-name https://curl.haxx.se/ca/cacert.pem
       #%MSYS_BASH% -c "/usr/bin/wget.exe http://tripleboot.org/Uploads/windeployqt64releaseonly.zip"
       #%MSYS_BASH% -c "/usr/bin/unzip.exe windeployqt64releaseonly.zip"
       #%MSYS_BASH% -c "/bin/mv windeployqt64releaseonly.exe /bin/windeployqtreleaseonly.exe"

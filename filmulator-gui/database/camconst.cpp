@@ -43,8 +43,12 @@ camconst_status camconst_download()
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
         //try using native windows ca store
 #ifdef __WIN32__
-        res = curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
-        std::cout << "camconst set native ca error: " << res << std::endl;
+        res = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
+        std::cout << "camconst set verify peer error: " << res << std::endl;
+        res = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1);
+        std::cout << "camconst set verify host error: " << res << std::endl;
+        res = curl_easy_setopt(curl, CURLOPT_CAINFO, "cacert.pem");
+        std::cout << "camconst set ca error: " << res << std::endl;
 #endif
 
         FILE *f = fopen(dirstr.c_str(), "wb");
