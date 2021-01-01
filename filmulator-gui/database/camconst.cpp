@@ -41,6 +41,10 @@ camconst_status camconst_download()
     {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+        //try weakening TLS on windows because it's giving error 77
+#ifdef __WIN32__
+        curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NO_REVOKE);
+#endif
 
         FILE *f = fopen(dirstr.c_str(), "wb");
         if (f)
