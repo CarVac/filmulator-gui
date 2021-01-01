@@ -19,6 +19,8 @@ QString camconst_dir()
     std::string filename = "camconst.json";
     QString dir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dir.append("/filmulator/");
+    QDir directory(dir);
+    directory.mkpath(dir);
     dir.append(filename.c_str());
     return dir;
 }
