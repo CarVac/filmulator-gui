@@ -64,7 +64,7 @@ script:
   - sed -i -e 's|^Exec=.*|Exec=filmulator-gui|g' appdir/usr/share/applications/filmulator-gui.desktop
   - mkdir -p appdir/usr/share/icons/hicolor/64x64/apps/
   - cp ../filmulator-gui64.png appdir/usr/share/icons/hicolor/64x64/apps/filmulator-gui.png
-  - cp ../filmulator-gui64.png appdir/filmulator-gui.png
+  - cp ../filmulator-gui64.png appdir/filmulator-gui64.png
   - find appdir/
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
   - chmod a+x linuxdeployqt*.AppImage
