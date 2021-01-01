@@ -1,10 +1,9 @@
 [Desktop Entry]
 Type=Application
-Encoding=UTF-8
 Name=Filmulator
 Comment=Streamlined photo editor
-Exec=cd/usr/lib/filmulator-gui && /usr/lib/filmulator-gui/filmulator-gui
-Icon=filmulator-gui
+Exec=filmulator
+Icon=filmulator-gui64
 Terminal=false
 Categories=Graphics;Photography;Qt;
 Name[en_US]=Filmulator
