@@ -44,11 +44,6 @@ camconst_status camconst_download()
 #ifdef __WIN32__
         //try not using ssl verification
         res = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-        std::cout << "camconst set verify peer error: " << res << std::endl;
-        //res = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1);
-        //std::cout << "camconst set verify host error: " << res << std::endl;
-        //res = curl_easy_setopt(curl, CURLOPT_CAINFO, "cacert.pem");
-        //std::cout << "camconst set ca error: " << res << std::endl;
 #endif
 
         FILE *f = fopen(dirstr.c_str(), "wb");
@@ -58,7 +53,6 @@ camconst_status camconst_download()
             res = curl_easy_perform(curl);
             if (res != CURLE_OK)
             {
-                std::cout << "camconst download cURL error: " << res << std::endl;
                 result = CAMCONST_DL_RETRIEVEFAILED;
             }
             fclose(f);
