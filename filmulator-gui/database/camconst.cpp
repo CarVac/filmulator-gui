@@ -65,7 +65,8 @@ camconst_status camconst_download()
 camconst_status camconst_read(const QString inputMakeModel, const float iso, const float fnumber, double &whiteLevel)
 {
     QString filePath = camconst_dir();
-    if (filePath.length() == 0)
+    QFile file(filePath);
+    if (!file.exists())
     {
         return CAMCONST_READ_FAILED;
     }
