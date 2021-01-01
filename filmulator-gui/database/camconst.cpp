@@ -49,6 +49,7 @@ camconst_status camconst_download()
             res = curl_easy_perform(curl);
             if (res != CURLE_OK)
             {
+                std::cout << "camconst download cURL error: " << res << std::endl;
                 result = CAMCONST_DL_RETRIEVEFAILED;
             }
             fclose(f);
