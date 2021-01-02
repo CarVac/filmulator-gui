@@ -112,6 +112,7 @@ Rectangle {
         id: fileDialog
         fileMode: root.multiSelect ? FileDialog.OpenFiles : FileDialog.OpenFile
         onAccepted: {
+            root.enteredText = ""
             //root.enteredText = fileUrls.toString()//.substring(7)
             for (var i=0; i < files.length; i++) {
                 root.enteredText += files[i].toString()
