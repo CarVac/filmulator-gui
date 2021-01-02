@@ -325,4 +325,13 @@ Rectangle {
             }
         }
     }
+    Text {
+        id: versionText
+        color: "white"
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 4 * uiScale
+        font.pixelSize: 12.0 * uiScale
+        text: "v0.11.0rc4" + " "
+    }
 }
