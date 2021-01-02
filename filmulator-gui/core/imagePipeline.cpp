@@ -250,6 +250,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             makeModel.append(IDATA.model);
             camconst_status camconstStatus = camconst_read(makeModel, OTHER.iso_speed, OTHER.aperture, whiteClippingPoint);
 
+            //Modern Nikons have camconst.json white levels specified as if they were 14-bit
+            // even if the raw files are 12-bit-only, like the entry level cams
+            //So we need to detect if it's 12-bit and if the camconst specifies as 14-bit.
+            if ((QString(IDATA.make) == "Nikon") && (libraw->imgdata.color.maximum < 4096) && (whiteClippingPoint >= 4096))
+            {
+                whiteClippingPoint = whiteClippingPoint*4095/16383;
+                cout << "Nikon 12-bit camconst white clipping point: " << whiteClippingPoint << endl;
+            }
+
             if (camconstStatus == CAMCONST_READ_OK)
             {
                 maxValue = whiteClippingPoint - blackpoint - maxBlockBlackpoint;
