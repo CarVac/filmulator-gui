@@ -87,6 +87,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
 
         isCR3 = QString::fromStdString(loadParam.fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+        const bool isDNG = QString::fromStdString(loadParam.fullFilename).endsWith(".dng", Qt::CaseInsensitive);
         if (isCR3)
         {
             cout << "processImage this is a CR3!" << endl;
@@ -258,8 +259,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 whiteClippingPoint = whiteClippingPoint*4095/16383;
                 cout << "Nikon 12-bit camconst white clipping point: " << whiteClippingPoint << endl;
             }
+            cout << "is the file dng?: " << isDNG << endl;
 
-            if (camconstStatus == CAMCONST_READ_OK)
+            if (camconstStatus == CAMCONST_READ_OK && !isDNG) //dngs provide their own correct whitepoint
             {
                 maxValue = whiteClippingPoint - blackpoint - maxBlockBlackpoint;
             } else {
