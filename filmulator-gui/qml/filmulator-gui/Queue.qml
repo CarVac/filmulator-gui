@@ -24,6 +24,8 @@ Item {
 
     property bool onEditTab
 
+    signal doubleClicked()
+
     onDraggingChanged: {
         //Always reset it back to off when the state changes.
         wasDragScrolling = false
@@ -181,6 +183,7 @@ Item {
 
                     console.log("New image: " + QTsearchID)
                     paramManager.selectImage(QTsearchID)
+                    root.doubleClicked()
                 }
 
                 QueueDelegate {

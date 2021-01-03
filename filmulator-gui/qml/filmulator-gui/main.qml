@@ -69,6 +69,12 @@ ApplicationWindow {
                     sequence: "Ctrl+4"
                     onActivated: tabs.currentIndex = 3
                 }
+                Connections {
+                    target: queueItem
+                    function onDoubleClicked() {
+                        tabs.currentIndex = 2
+                    }
+                }
 
                 TabButton {
                     id: importButton
