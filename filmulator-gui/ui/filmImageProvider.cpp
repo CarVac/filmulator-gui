@@ -98,7 +98,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
         if (id[0] == "q")
         {
             filename = paramManager->getFullFilename();
-            if (newID != currentID)//the image changed
+            if (newID != currentID && useCache)//the image changed
             {
                 shufflePipelines();
                 if (paramManager->getValid() > Valid::none)
@@ -119,12 +119,15 @@ QImage FilmImageProvider::requestImage(const QString& id,
             cloneParam->markStartOfProcessing();
             nextParam->markStartOfProcessing();
 
-            //run precomputation
-            struct timeval preTime;
-            gettimeofday(&preTime, nullptr);
-            cout << "requestImage nextParam valid " << nextParam->getValid() << endl;
-            nextQuickPipe.processImage(nextParam, this, exif);
-            cout << "requestImage preload time: " << timeDiff(preTime) << endl;
+            //run precomputation, only if we're in high memory usage mode
+            if (useCache)
+            {
+                struct timeval preTime;
+                gettimeofday(&preTime, nullptr);
+                cout << "requestImage nextParam valid " << nextParam->getValid() << endl;
+                nextQuickPipe.processImage(nextParam, this, exif);
+                cout << "requestImage preload time: " << timeDiff(preTime) << endl;
+            }
 
             //run full pipeline of current image
             filename = cloneParam->getFullFilename();
@@ -132,7 +135,10 @@ QImage FilmImageProvider::requestImage(const QString& id,
             gettimeofday(&fullTime, nullptr);
             image = pipeline.processImage(cloneParam, this, data);
             cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
-            if (image.nr() > 0 && useCache)
+
+            //Copy the high-res pipeline images back to low-res to deal with
+            // softness from lens corrections or rotation
+            if (image.nr() > 0 && useCache)//don't copy invalid data
             {
                 quickPipe.copyAndDownsampleImages(&pipeline);
             }
@@ -298,6 +304,10 @@ void FilmImageProvider::shufflePipelines()
     struct timeval shuffleTime;
     gettimeofday(&shuffleTime, nullptr);
 
+    if (!useCache)
+    {
+        return;
+    }
     if (!useQuickPipe)
     {
         return;
@@ -389,6 +399,7 @@ void FilmImageProvider::shufflePipelines()
     cout << "shuffle finished duration: " << timeDiff(shuffleTime) << endl;
 }
 
+//called when settings are pasted, to ensure that the cached data gets invalidated if settings change
 void FilmImageProvider::refreshParams(const QString IDin)
 {
     if (prevParam->getImageIndex() == IDin)
