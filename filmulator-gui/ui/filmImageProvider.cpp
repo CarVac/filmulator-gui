@@ -41,10 +41,12 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     if (settingsObject.getLowMemMode() == true)
     {
         pipeline.setCache(NoCache);
+        useCache = false;
     }
     else
     {
         pipeline.setCache(WithCache);
+        useCache = true;
     }
 
     previewResolution = settingsObject.getPreviewResolution();
@@ -130,7 +132,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
             gettimeofday(&fullTime, nullptr);
             image = pipeline.processImage(cloneParam, this, data);
             cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
-            if (image.nr() > 0)
+            if (image.nr() > 0 && useCache)
             {
                 quickPipe.copyAndDownsampleImages(&pipeline);
             }

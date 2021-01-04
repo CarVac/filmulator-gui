@@ -78,7 +78,7 @@ Rectangle {
         ToolSwitch {
             id: lowMemModeSwitch
             text: qsTr("Reduce memory usage")
-            tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
+            tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off high-resolution caching in the editor. It will consume less memory but the full resolution image will recompute from the beginning for any edit you make.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
             isOn: settings.getLowMemMode()
             defaultOn: settings.getLowMemMode()
             onIsOnChanged: lowMemModeSwitch.changed = true
@@ -332,6 +332,6 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.margins: 4 * uiScale
         font.pixelSize: 12.0 * uiScale
-        text: "v0.11.0rc4" + " "
+        text: "v0.11.0rc5" + " "
     }
 }

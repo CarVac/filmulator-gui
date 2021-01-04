@@ -79,6 +79,7 @@ protected:
     bool thumbnailWriteEnabled = true;
     bool writeThisThumbnail = true;
 
+    bool useCache;
     bool useQuickPipe;
 
     ParameterManager * paramManager;
