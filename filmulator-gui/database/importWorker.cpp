@@ -3,6 +3,8 @@
 #include <iostream>
 #include "queueModel.h"
 #include "QThread"
+#include <libraw/libraw.h>
+
 using std::cout;
 using std::endl;
 
@@ -30,10 +32,42 @@ QString ImportWorker::importFile(const QFileInfo infoIn,
         qDebug("File couldn't be opened.");
     }
 
-    //Grab EXIF data from the file.
+    //Check that the raw file is readable by libraw before proceeding
     const std::string abspath = infoIn.absoluteFilePath().toStdString();
     cout << "importFile absolute file path: " << abspath << endl;
-    //We don't do this anymore because exiv2 doesn't support cr3 currently
+
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(abspath);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
+    const char *cstrfilename = abspath.c_str();
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
+    {
+        cout << "importFile: libraw could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        emit doneProcessing(false);
+        return "";
+    }
+    if (libraw->is_floating_point())
+    {
+        cout << "importFile: libraw cannot open a floating point raw" << endl;
+        emit doneProcessing(false);
+        return "";
+    }
+    libraw_error = libraw->unpack();
+    if (libraw_error)
+    {
+        cout << "importFile: libraw could not unpack input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        emit doneProcessing(false);
+        return "";
+    }
 
     //Load data into the hash function.
     while (!file.atEnd())

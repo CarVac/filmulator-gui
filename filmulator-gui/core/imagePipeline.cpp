@@ -130,15 +130,16 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
             if (libraw->is_floating_point())
             {
-                cerr << "processImage: libraw cannot open a floating point raw" << endl;
+                cout << "processImage: libraw cannot open a floating point raw" << endl;
                 //LibRaw cannot process floating point images unless compiled with the DNG SDK.
+                return emptyMatrix();
             }
             //This makes IMAGE contains the sensel value and 3 blank values at every
             //location.
             libraw_error = libraw->unpack();
             if (libraw_error)
             {
-                cerr << "processImage: Could not read input file, or was canceled" << endl;
+                cout << "processImage: Could not read input file, or was canceled" << endl;
                 cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
                 return emptyMatrix();
             }
