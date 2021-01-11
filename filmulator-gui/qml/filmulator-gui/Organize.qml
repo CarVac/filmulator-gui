@@ -12,6 +12,8 @@ SlimSplitView {
 
     property int itemCount: organizeModel.imageCount
 
+    property bool onOrganizeTab
+
     signal tooltipWanted(string text, int x, int y)
 
     Rectangle {
@@ -650,7 +652,7 @@ SlimSplitView {
                     color: "white"
                     font.pixelSize: 14.0 * uiScale
                     wrapMode: Text.Wrap
-                    text: qsTr("Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.")
+                    text: qsTr("Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range. Press right/left to switch days, and shift to select multiple days.")
                 }
             }
 
@@ -688,6 +690,38 @@ SlimSplitView {
                     }
                 }
             }
+        }
+    }
+    Shortcut {
+        id: prevDay
+        sequence: StandardKey.MoveToPreviousChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.incrementCaptureTime(-1)
+        }
+    }
+    Shortcut {
+        id: nextDay
+        sequence: StandardKey.MoveToNextChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.incrementCaptureTime(1)
+        }
+    }
+    Shortcut {
+        id: prevDayRange
+        sequence: StandardKey.SelectPreviousChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.extendCaptureTimeRange(-1)
+        }
+    }
+    Shortcut {
+        id: nextDayRange
+        sequence: StandardKey.SelectNextChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.extendCaptureTimeRange(1)
         }
     }
 }

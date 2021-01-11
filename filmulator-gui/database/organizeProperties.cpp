@@ -11,16 +11,16 @@ void OrganizeModel::setMinCaptureTime(QDate captureTimeIn)
 {
     //If the value didn't change, this was probably triggered by the timezone changing.
     //That changes EVERYTHING, so we don't want it updating the organize filter until the end.
-    bool changed = (minCaptureTime == captureTimeIn ? false : true);
+    bool changed = (minCaptureDate == captureTimeIn ? false : true);
 
-    minCaptureTime = captureTimeIn;
-    if (maxCaptureTime < minCaptureTime)
+    minCaptureDate = captureTimeIn;
+    if (maxCaptureDate < minCaptureDate)
     {
         setMaxCaptureTime(captureTimeIn);
     }
     //We want the beginning of the day.
     QDateTime tempTime = QDateTime(captureTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = tempTime.toSecsSinceEpoch();
+    minCaptureTime = tempTime.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
 
     if (changed)
@@ -31,16 +31,16 @@ void OrganizeModel::setMinCaptureTime(QDate captureTimeIn)
 
 void OrganizeModel::setMaxCaptureTime(QDate captureTimeIn)
 {
-    bool changed = (maxCaptureTime == captureTimeIn ? false : true);
+    bool changed = (maxCaptureDate == captureTimeIn ? false : true);
 
-    maxCaptureTime = captureTimeIn;
-    if (minCaptureTime > maxCaptureTime)
+    maxCaptureDate = captureTimeIn;
+    if (minCaptureDate > maxCaptureDate)
     {
         setMinCaptureTime(captureTimeIn);
     }
     //We want the end of the day.
     QDateTime tempTime = QDateTime(captureTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    maxCaptureTime_i = tempTime.toSecsSinceEpoch();
+    maxCaptureTime = tempTime.toSecsSinceEpoch();
     emit maxCaptureTimeChanged();
 
     if (changed)
@@ -51,12 +51,14 @@ void OrganizeModel::setMaxCaptureTime(QDate captureTimeIn)
 
 void OrganizeModel::setMinMaxCaptureTime(QDate captureTimeIn)
 {
-    minCaptureTime = captureTimeIn;
-    maxCaptureTime = captureTimeIn;
+    startCaptureDate = captureTimeIn;
+    endCaptureDate = captureTimeIn;
+    minCaptureDate = captureTimeIn;
+    maxCaptureDate = captureTimeIn;
     QDateTime morning = QDateTime(captureTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
     QDateTime evening = QDateTime(captureTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = morning.toSecsSinceEpoch();
-    maxCaptureTime_i = evening.toSecsSinceEpoch();
+    minCaptureTime = morning.toSecsSinceEpoch();
+    maxCaptureTime = evening.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
     emit maxCaptureTimeChanged();
     emit captureDateChanged();
@@ -64,13 +66,14 @@ void OrganizeModel::setMinMaxCaptureTime(QDate captureTimeIn)
 }
 void OrganizeModel::setMinMaxCaptureTimeString(QString captureTimeIn)
 {
-    startCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
-    minCaptureTime = startCaptureTime;//QDate::fromString(captureTimeIn,"yyyy/MM/dd");
-    maxCaptureTime = startCaptureTime;//QDate::fromString(captureTimeIn,"yyyy/MM/dd");
-    QDateTime morning = QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    QDateTime evening = QDateTime(maxCaptureTime, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = morning.toSecsSinceEpoch();
-    maxCaptureTime_i = evening.toSecsSinceEpoch();
+    startCaptureDate = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    endCaptureDate = startCaptureDate;
+    minCaptureDate = startCaptureDate;
+    maxCaptureDate = startCaptureDate;
+    QDateTime morning = QDateTime(minCaptureDate, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
+    QDateTime evening = QDateTime(maxCaptureDate, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
+    minCaptureTime = morning.toSecsSinceEpoch();
+    maxCaptureTime = evening.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
     emit maxCaptureTimeChanged();
     emit captureDateChanged();
@@ -80,28 +83,72 @@ void OrganizeModel::setMinMaxCaptureTimeString(QString captureTimeIn)
 //This is used by the date histogram to select multiple days.
 void OrganizeModel::extendMinMaxCaptureTimeString(QString captureTimeIn)
 {
-    QDate tempMinCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
-    QDate tempMaxCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
-    if (tempMinCaptureTime < startCaptureTime)
+    endCaptureDate = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
+    if (endCaptureDate < startCaptureDate)
     {
-        minCaptureTime = tempMinCaptureTime;
+        minCaptureDate = endCaptureDate;
+        maxCaptureDate = startCaptureDate;
     }
     else
     {
-        minCaptureTime = startCaptureTime;
+        minCaptureDate = startCaptureDate;
+        maxCaptureDate = endCaptureDate;
     }
-    if (tempMaxCaptureTime > startCaptureTime)
+    QDateTime morning = QDateTime(minCaptureDate, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
+    QDateTime evening = QDateTime(maxCaptureDate, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
+    minCaptureTime = morning.toSecsSinceEpoch();
+    maxCaptureTime = evening.toSecsSinceEpoch();
+    emit minCaptureTimeChanged();
+    emit maxCaptureTimeChanged();
+    emit captureDateChanged();
+    emit organizeFilterChanged();
+}
+
+//For arrow key shortcut
+void OrganizeModel::incrementCaptureTime(int days)
+{
+    startCaptureDate = endCaptureDate.addDays(days);
+    if (startCaptureDate > QDate::currentDate())
     {
-        maxCaptureTime = tempMaxCaptureTime;
+        startCaptureDate = QDate::currentDate();
+    }
+
+    endCaptureDate = startCaptureDate;
+    minCaptureDate = startCaptureDate;
+    maxCaptureDate = startCaptureDate;
+    QDateTime morning = QDateTime(minCaptureDate, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
+    QDateTime evening = QDateTime(maxCaptureDate, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
+    minCaptureTime = morning.toSecsSinceEpoch();
+    maxCaptureTime = evening.toSecsSinceEpoch();
+    emit minCaptureTimeChanged();
+    emit maxCaptureTimeChanged();
+    emit captureDateChanged();
+    emit organizeFilterChanged();
+}
+
+//For shift-arrow key shortcut
+void OrganizeModel::extendCaptureTimeRange(int days)
+{
+    endCaptureDate = endCaptureDate.addDays(days);
+    if (endCaptureDate > QDate::currentDate())
+    {
+        endCaptureDate = QDate::currentDate();
+    }
+
+    if (endCaptureDate < startCaptureDate)
+    {
+        minCaptureDate = endCaptureDate;
+        maxCaptureDate = startCaptureDate;
     }
     else
     {
-        maxCaptureTime = startCaptureTime;
+        minCaptureDate = startCaptureDate;
+        maxCaptureDate = endCaptureDate;
     }
-    QDateTime morning = QDateTime(minCaptureTime, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    QDateTime evening = QDateTime(maxCaptureTime, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    minCaptureTime_i = morning.toSecsSinceEpoch();
-    maxCaptureTime_i = evening.toSecsSinceEpoch();
+    QDateTime morning = QDateTime(minCaptureDate, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
+    QDateTime evening = QDateTime(maxCaptureDate, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
+    minCaptureTime = morning.toSecsSinceEpoch();
+    maxCaptureTime = evening.toSecsSinceEpoch();
     emit minCaptureTimeChanged();
     emit maxCaptureTimeChanged();
     emit captureDateChanged();
@@ -112,7 +159,7 @@ void OrganizeModel::extendMinMaxCaptureTimeString(QString captureTimeIn)
 bool OrganizeModel::isDateSelected(QString captureTimeIn)
 {
     QDate testCaptureTime = QDate::fromString(captureTimeIn,"yyyy/MM/dd");
-    if (testCaptureTime >= minCaptureTime && testCaptureTime <= maxCaptureTime)
+    if (testCaptureTime >= minCaptureDate && testCaptureTime <= maxCaptureDate)
     {
         return true;
     }
@@ -125,7 +172,7 @@ bool OrganizeModel::isDateSelected(QString captureTimeIn)
 
 QDate OrganizeModel::getSelectedDate()
 {
-    return QDateTime(minCaptureTime.addDays(1), QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600).date();
+    return QDateTime(minCaptureDate.addDays(1), QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600).date();
 }
 
 QString OrganizeModel::getSelectedYMDString()
@@ -137,16 +184,16 @@ QString OrganizeModel::getSelectedYMDString()
 
 void OrganizeModel::setMinImportTime(QDate importTimeIn)
 {
-    bool changed = (minImportTime == importTimeIn ? false : true);
+    bool changed = (minImportDate == importTimeIn ? false : true);
 
-    minImportTime = importTimeIn;
-    if (maxImportTime < minImportTime)
+    minImportDate = importTimeIn;
+    if (maxImportDate < minImportDate)
     {
         setMaxImportTime(importTimeIn);
     }
     //We want the beginning of the day.
     QDateTime tempTime = QDateTime(importTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    minImportTime_i = tempTime.toSecsSinceEpoch();
+    minImportTime = tempTime.toSecsSinceEpoch();
     emit minImportTimeChanged();
 
     if (changed)
@@ -157,16 +204,16 @@ void OrganizeModel::setMinImportTime(QDate importTimeIn)
 
 void OrganizeModel::setMaxImportTime(QDate importTimeIn)
 {
-    bool changed = (maxImportTime == importTimeIn ? false : true);
+    bool changed = (maxImportDate == importTimeIn ? false : true);
 
-    maxImportTime = importTimeIn;
-    if (minImportTime > maxImportTime)
+    maxImportDate = importTimeIn;
+    if (minImportDate > maxImportDate)
     {
         setMinImportTime(importTimeIn);
     }
     //We want the end of the day.
     QDateTime tempTime = QDateTime(importTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    maxImportTime_i = tempTime.toSecsSinceEpoch();
+    maxImportTime = tempTime.toSecsSinceEpoch();
     emit maxImportTimeChanged();
 
     if (changed)
@@ -177,16 +224,16 @@ void OrganizeModel::setMaxImportTime(QDate importTimeIn)
 
 void OrganizeModel::setMinProcessedTime(QDate processedTimeIn)
 {
-    bool changed = (minProcessedTime == processedTimeIn ? false : true);
+    bool changed = (minProcessedDate == processedTimeIn ? false : true);
 
-    minProcessedTime = processedTimeIn;
-    if (maxProcessedTime < minProcessedTime)
+    minProcessedDate = processedTimeIn;
+    if (maxProcessedDate < minProcessedDate)
     {
         setMaxProcessedTime(processedTimeIn);
     }
     //We want the beginning of the day.
     QDateTime tempTime = QDateTime(processedTimeIn, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
-    minProcessedTime_i = tempTime.toSecsSinceEpoch();
+    minProcessedTime = tempTime.toSecsSinceEpoch();
     emit minProcessedTimeChanged();
 
     if (changed)
@@ -197,16 +244,16 @@ void OrganizeModel::setMinProcessedTime(QDate processedTimeIn)
 
 void OrganizeModel::setMaxProcessedTime(QDate processedTimeIn)
 {
-    bool changed = (maxProcessedTime == processedTimeIn ? false : true);
+    bool changed = (maxProcessedDate == processedTimeIn ? false : true);
 
-    maxProcessedTime = processedTimeIn;
-    if (minProcessedTime > maxProcessedTime)
+    maxProcessedDate = processedTimeIn;
+    if (minProcessedDate > maxProcessedDate)
     {
         setMinProcessedTime(processedTimeIn);
     }
     //We want the end of the day.
     QDateTime tempTime = QDateTime(processedTimeIn, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
-    maxProcessedTime_i = tempTime.toSecsSinceEpoch();
+    maxProcessedTime = tempTime.toSecsSinceEpoch();
     emit maxProcessedTimeChanged();
 
     if (changed)
@@ -316,12 +363,12 @@ void OrganizeModel::setTimeZone(int timeZoneIn)
 {
     m_timeZone = timeZoneIn;
     //cout << "organizeModel::setTimeZone: " << timeZoneIn << endl;
-    setMinCaptureTime(minCaptureTime);
-    setMaxCaptureTime(maxCaptureTime);
-    setMinImportTime(minImportTime);
-    setMaxImportTime(maxImportTime);
-    setMinProcessedTime(minProcessedTime);
-    setMaxProcessedTime(maxProcessedTime);
+    setMinCaptureTime(minCaptureDate);
+    setMaxCaptureTime(maxCaptureDate);
+    setMinImportTime(minImportDate);
+    setMaxImportTime(maxImportDate);
+    setMinProcessedTime(minProcessedDate);
+    setMaxProcessedTime(maxProcessedDate);
     emit organizeFilterChanged();
     emit captureDateChanged();
 

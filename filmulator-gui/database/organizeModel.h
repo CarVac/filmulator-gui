@@ -12,12 +12,12 @@
 class OrganizeModel : public SqlModel
 {
     Q_OBJECT
-    Q_PROPERTY(QDate minCaptureTime   READ getMinCaptureTime   WRITE setMinCaptureTime   NOTIFY minCaptureTimeChanged)
-    Q_PROPERTY(QDate maxCaptureTime   READ getMaxCaptureTime   WRITE setMaxCaptureTime   NOTIFY maxCaptureTimeChanged)
-    Q_PROPERTY(QDate minImportTime    READ getMinImportTime    WRITE setMinImportTime    NOTIFY minImportTimeChanged)
-    Q_PROPERTY(QDate maxImportTime    READ getMaxImportTime    WRITE setMaxImportTime    NOTIFY maxImportTimeChanged)
-    Q_PROPERTY(QDate minProcessedTime READ getMinProcessedTime WRITE setMinProcessedTime NOTIFY minProcessedTimeChanged)
-    Q_PROPERTY(QDate maxProcessedTime READ getMaxProcessedTime WRITE setMaxProcessedTime NOTIFY maxProcessedTimeChanged)
+    Q_PROPERTY(QDate minCaptureDate   READ getMinCaptureTime   WRITE setMinCaptureTime   NOTIFY minCaptureTimeChanged)
+    Q_PROPERTY(QDate maxCaptureDate   READ getMaxCaptureTime   WRITE setMaxCaptureTime   NOTIFY maxCaptureTimeChanged)
+    Q_PROPERTY(QDate minImportDate    READ getMinImportTime    WRITE setMinImportTime    NOTIFY minImportTimeChanged)
+    Q_PROPERTY(QDate maxImportDate    READ getMaxImportTime    WRITE setMaxImportTime    NOTIFY maxImportTimeChanged)
+    Q_PROPERTY(QDate minProcessedDate READ getMinProcessedTime WRITE setMinProcessedTime NOTIFY minProcessedTimeChanged)
+    Q_PROPERTY(QDate maxProcessedDate READ getMaxProcessedTime WRITE setMaxProcessedTime NOTIFY maxProcessedTimeChanged)
     Q_PROPERTY(int minRating     READ getMinRating     WRITE setMinRating     NOTIFY minRatingChanged)
     Q_PROPERTY(int maxRating     READ getMaxRating     WRITE setMaxRating     NOTIFY maxRatingChanged)
     Q_PROPERTY(int captureSort   READ getCaptureSort   WRITE setCaptureSort   NOTIFY captureSortChanged)
@@ -47,6 +47,8 @@ public:
     Q_INVOKABLE void setMinMaxCaptureTime(QDate captureTimeIn);
     Q_INVOKABLE void setMinMaxCaptureTimeString(QString captureTimeIn);
     Q_INVOKABLE void extendMinMaxCaptureTimeString(QString captureTimeIn);
+    Q_INVOKABLE void incrementCaptureTime(int days);
+    Q_INVOKABLE void extendCaptureTimeRange(int days);
     Q_INVOKABLE bool isDateSelected(QString captureTimeIn);
     void setMinCaptureTime(QDate captureTimeIn);
     void setMaxCaptureTime(QDate captureTimeIn);
@@ -63,12 +65,12 @@ public:
     void setRatingSort(int sortMode);
     void setTimeZone(int timeZoneIn);
 
-    QDate getMinCaptureTime() {return minCaptureTime;}
-    QDate getMaxCaptureTime() {return maxCaptureTime;}
-    QDate getMinImportTime() {return minImportTime;}
-    QDate getMaxImportTime() {return maxImportTime;}
-    QDate getMinProcessedTime() {return minProcessedTime;}
-    QDate getMaxProcessedTime() {return maxProcessedTime;}
+    QDate getMinCaptureTime() {return minCaptureDate;}
+    QDate getMaxCaptureTime() {return maxCaptureDate;}
+    QDate getMinImportTime() {return minImportDate;}
+    QDate getMaxImportTime() {return maxImportDate;}
+    QDate getMinProcessedTime() {return minProcessedDate;}
+    QDate getMaxProcessedTime() {return maxProcessedDate;}
     int getMinRating() {return minRating;}
     int getMaxRating() {return maxRating;}
 
@@ -113,19 +115,20 @@ protected:
     //Was the histogram query initialized yet?
     bool dateHistogramSet;
 
-    QDate startCaptureTime;
-    QDate minCaptureTime;
-    QDate maxCaptureTime;
-    QDate minImportTime;
-    QDate maxImportTime;
-    QDate minProcessedTime;
-    QDate maxProcessedTime;
-    qint64 minCaptureTime_i;
-    qint64 maxCaptureTime_i;
-    qint64 minImportTime_i;
-    qint64 maxImportTime_i;
-    qint64 minProcessedTime_i;
-    qint64 maxProcessedTime_i;
+    QDate startCaptureDate;//start and end are for ranges; can be reversed unlike min/max
+    QDate endCaptureDate;
+    QDate minCaptureDate;
+    QDate maxCaptureDate;
+    QDate minImportDate;
+    QDate maxImportDate;
+    QDate minProcessedDate;
+    QDate maxProcessedDate;
+    qint64 minCaptureTime;
+    qint64 maxCaptureTime;
+    qint64 minImportTime;
+    qint64 maxImportTime;
+    qint64 minProcessedTime;
+    qint64 maxProcessedTime;
     int minRating;
     int maxRating;
     int m_timeZone = 0;

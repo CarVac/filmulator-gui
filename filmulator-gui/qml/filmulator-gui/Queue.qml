@@ -24,6 +24,8 @@ Item {
 
     property bool onEditTab
 
+    property bool rightClicked: false
+
     signal doubleClicked()
 
     onDraggingChanged: {
@@ -217,6 +219,7 @@ Item {
                         onClicked: {
                             loadMenu.sourceComponent = rightClickMenu
                             queueDelegate.rightClicked = true
+                            root.rightClicked = true
                         }
                     }
 
@@ -244,10 +247,12 @@ Item {
                                 acceptedButtons: Qt.AllButtons
                                 onClicked: {
                                     queueDelegate.rightClicked = false
+                                    root.rightClicked = false
                                     loadMenu.sourceComponent = undefined
                                 }
                                 onWheel: {
                                     queueDelegate.rightClicked = false
+                                    root.rightClicked = false
                                     loadMenu.sourceComponent = undefined
                                     queueModel.updateAll();
                                 }
@@ -273,6 +278,7 @@ Item {
                                             queueModel.batchForget()
                                             forgetButton.active = false
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         else {
@@ -328,6 +334,7 @@ Item {
                                             queueModel.clearQueue()
                                             clearQueue.active = false
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         else {
@@ -381,6 +388,7 @@ Item {
                                     onTriggered: {
                                         queueModel.deQueue(QTsearchID)
                                         queueDelegate.rightClicked = false
+                                        root.rightClicked = false
                                         loadMenu.sourceComponent = undefined
                                     }
                                     uiScale: root.uiScale
@@ -388,18 +396,24 @@ Item {
                                 ToolButton {
                                     id: copyAll
                                     text: qsTr("Copy all settings")
+                                    tooltipText: qsTr("Copy the processing parameters from this image, until you switch images or change processing parameters.")
                                     width: parent.width
                                     z: 2
                                     onTriggered: {
                                         paramManager.copyAll(QTsearchID)
                                         queueDelegate.rightClicked = false
+                                        root.rightClicked = false
                                         loadMenu.sourceComponent = undefined
+                                    }
+                                    Component.onCompleted: {
+                                        copy.tooltipWanted.connect(root.tooltipWanted)
                                     }
                                     uiScale: root.uiScale
                                 }
                                 ToolButton {
                                     id: paste
                                     text: qsTr("Paste settings")
+                                    tooltipText: qsTr("If you copy and then do anything other than paste, pasting will not be available.")
                                     width: parent.width
                                     z: 2
                                     notDisabled: paramManager.pasteable
@@ -409,7 +423,11 @@ Item {
                                         //so that it can tell the paramManager to reselect the image
                                         filmProvider.refreshParams(QTsearchID)
                                         queueDelegate.rightClicked = false
+                                        root.rightClicked = false
                                         loadMenu.sourceComponent = undefined
+                                    }
+                                    Component.onCompleted: {
+                                        paste.tooltipWanted.connect(root.tooltipWanted)
                                     }
                                     uiScale: root.uiScale
                                 }
@@ -435,6 +453,7 @@ Item {
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, -1)
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         Component.onCompleted: {
@@ -452,6 +471,7 @@ Item {
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, 0)
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         Component.onCompleted: {
@@ -469,6 +489,7 @@ Item {
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, 1)
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         Component.onCompleted: {
@@ -486,6 +507,7 @@ Item {
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, 2)
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         Component.onCompleted: {
@@ -503,6 +525,7 @@ Item {
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, 3)
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         Component.onCompleted: {
@@ -520,6 +543,7 @@ Item {
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, 4)
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         Component.onCompleted: {
@@ -537,10 +561,110 @@ Item {
                                         onTriggered: {
                                             organizeModel.setRating(QTsearchID, 5)
                                             queueDelegate.rightClicked = false
+                                            root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
                                         Component.onCompleted: {
                                             rate5.tooltipWanted.connect(root.tooltipWanted)
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickDelete
+                                        sequence: "x"
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.markDeletion(QTsearchID)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickZero
+                                        sequence: "0"
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.setRating(QTsearchID, 0)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickOne
+                                        sequence: "1"
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.setRating(QTsearchID, 1)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickTwo
+                                        sequence: "2"
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.setRating(QTsearchID, 2)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickThree
+                                        sequence: "3"
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.setRating(QTsearchID, 3)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickFour
+                                        sequence: "4"
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.setRating(QTsearchID, 4)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickFive
+                                        sequence: "5"
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.setRating(QTsearchID, 5)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickUp
+                                        sequence: StandardKey.MoveToPreviousLine
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.incrementRating(QTsearchID, 1)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
+                                        }
+                                    }
+                                    Shortcut {
+                                        id: rightClickDown
+                                        sequence: StandardKey.MoveToNextLine
+                                        enabled: queueDelegate.rightClicked
+                                        onActivated: {
+                                            organizeModel.incrementRating(QTsearchID, -1)
+                                            queueDelegate.rightClicked = false
+                                            root.rightClicked = false
+                                            loadMenu.sourceComponent = undefined
                                         }
                                     }
                                 }
@@ -837,6 +961,7 @@ Item {
     Shortcut {
         id: rateDelete
         sequence: "x"
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
             organizeModel.markDeletion(paramManager.imageIndex)
         }
@@ -844,78 +969,71 @@ Item {
     Shortcut {
         id: rateZero
         sequence: "0"
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.setRating(paramManager.imageIndex, 0)
-            }
+            organizeModel.setRating(paramManager.imageIndex, 0)
         }
     }
     Shortcut {
         id: rateOne
         sequence: "1"
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.setRating(paramManager.imageIndex, 1)
-            }
+            organizeModel.setRating(paramManager.imageIndex, 1)
         }
     }
     Shortcut {
         id: rateTwo
         sequence: "2"
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.setRating(paramManager.imageIndex, 2)
-            }
+            organizeModel.setRating(paramManager.imageIndex, 2)
         }
     }
     Shortcut {
         id: rateThree
         sequence: "3"
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.setRating(paramManager.imageIndex, 3)
-            }
+            organizeModel.setRating(paramManager.imageIndex, 3)
         }
     }
     Shortcut {
         id: rateFour
         sequence: "4"
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.setRating(paramManager.imageIndex, 4)
-            }
+            organizeModel.setRating(paramManager.imageIndex, 4)
         }
     }
     Shortcut {
         id: rateFive
         sequence: "5"
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.setRating(paramManager.imageIndex, 5)
-            }
+            organizeModel.setRating(paramManager.imageIndex, 5)
         }
     }
     Shortcut {
         id: rateUp
         sequence: StandardKey.MoveToPreviousLine
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.incrementRating(paramManager.imageIndex, 1)
-            }
+            organizeModel.incrementRating(paramManager.imageIndex, 1)
         }
     }
     Shortcut {
         id: rateDown
         sequence: StandardKey.MoveToNextLine
+        enabled: onEditTab && !root.rightClicked
         onActivated: {
-            if (onEditTab) {
-                organizeModel.incrementRating(paramManager.imageIndex, -1)
-            }
+            organizeModel.incrementRating(paramManager.imageIndex, -1)
         }
     }
     Shortcut {
         id: prevImage
         sequence: StandardKey.MoveToPreviousChar
+        enabled: onEditTab
         onActivated: {
             if (!root.dragging) {
                 //Swap any precomputed pipelines
@@ -937,6 +1055,7 @@ Item {
     Shortcut {
         id: nextImage
         sequence: StandardKey.MoveToNextChar
+        enabled: onEditTab
         onActivated: {
             if (!root.dragging) {
                 //Swap any precomputed pipelines

@@ -20,6 +20,14 @@ OrganizeModel::OrganizeModel(QObject *parent) :
     processedSort = 0;
     importSort = 0;
     dateHistogramSet = false;
+    startCaptureDate = QDate::currentDate();
+    endCaptureDate = startCaptureDate;
+    minCaptureDate = startCaptureDate;
+    maxCaptureDate = startCaptureDate;
+    QDateTime morning = QDateTime(minCaptureDate, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
+    QDateTime evening = QDateTime(maxCaptureDate, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
+    minCaptureTime = morning.toSecsSinceEpoch();
+    maxCaptureTime = evening.toSecsSinceEpoch();
 }
 
 QSqlQuery OrganizeModel::modelQuery()
@@ -60,28 +68,28 @@ QString OrganizeModel::adaptableModelQuery(const bool searchIDOnly)
     if (1)//maxCaptureTime != 0)
     {
         queryString.append("SearchTable.STcaptureTime <= ");
-        queryString.append(std::to_string(maxCaptureTime_i));
+        queryString.append(std::to_string(maxCaptureTime));
         queryString.append(" ");
         queryString.append("AND SearchTable.STcaptureTime >= ");
-        queryString.append(std::to_string(minCaptureTime_i));
+        queryString.append(std::to_string(minCaptureTime));
         queryString.append(" ");
     }
     if (0)//maxImportTime != 0)
     {
         queryString.append("AND SearchTable.STimportTime <= ");
-        queryString.append(std::to_string(maxImportTime_i));
+        queryString.append(std::to_string(maxImportTime));
         queryString.append(" ");
         queryString.append("AND SearchTable.STimportTime >= ");
-        queryString.append(std::to_string(minImportTime_i));
+        queryString.append(std::to_string(minImportTime));
         queryString.append(" ");
     }
     if (0)//maxProcessedTime != 0)
     {
         queryString.append("AND SearchTable.STlastProcessedTime <= ");
-        queryString.append(std::to_string(maxProcessedTime_i));
+        queryString.append(std::to_string(maxProcessedTime));
         queryString.append(" ");
         queryString.append("AND SearchTable.STlastProcessedTime >= ");
-        queryString.append(std::to_string(minProcessedTime_i));
+        queryString.append(std::to_string(minProcessedTime));
         queryString.append(" ");
     }
     if (1)//maxRating >= 0)

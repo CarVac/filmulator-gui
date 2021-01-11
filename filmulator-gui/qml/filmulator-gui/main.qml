@@ -270,6 +270,7 @@ ApplicationWindow {
 
                 Organize {
                     id: organizeItem
+                    onOrganizeTab: tabs.currentIndex == 1
                     Component.onCompleted: {
                         organizeItem.tooltipWanted.connect(root.tooltipWanted)
                     }
