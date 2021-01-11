@@ -406,7 +406,7 @@ Item {
                                         loadMenu.sourceComponent = undefined
                                     }
                                     Component.onCompleted: {
-                                        copy.tooltipWanted.connect(root.tooltipWanted)
+                                        copyAll.tooltipWanted.connect(root.tooltipWanted)
                                     }
                                     uiScale: root.uiScale
                                 }
