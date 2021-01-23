@@ -148,7 +148,11 @@ Tastaturkürzel: C</translation>
 Reset the rotation to zero by pressing &quot;Shift+L&quot; or double right clicking.
 
 Shortcut: L</source>
-        <translation type="unfinished"></translation>
+        <translation>Klicken, um die Drehhilfslinie auf dem Bild zu platzieren, und dann Hilfslinien ziehen, um sie vertikal oder horizontal auszurichten. Sie können die Rotationshilfe neu positionieren, indem Sie an der Stelle ziehen, an der sich die Hilfslinien treffen.
+
+Rotation auf Null zurücksetzen mit &quot;Umschalt+L&quot; oder rechtem Doppelklick.
+
+Tastaturkürzel: L</translation>
     </message>
     <message>
         <source>Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.
@@ -838,7 +842,7 @@ Dies ist nützlich, wenn Sie Fotos aus Ihrem Hauptverzeichnis entfernen und von 
     <message>
         <location filename="../gui_components/ImportFileEntry.qml" line="82"/>
         <source>Select a file</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei auswählen</translation>
     </message>
 </context>
 <context>
@@ -900,7 +904,7 @@ Dies ist nützlich, wenn Sie Fotos aus Ihrem Hauptverzeichnis entfernen und von 
     <message>
         <location filename="../Organize.qml" line="655"/>
         <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range. Press right/left to switch days, and shift to select multiple days.</source>
-        <translation type="unfinished"></translation>
+        <translation>Doppelklicken Sie auf das Datumshistogramm oben, um Fotos von einem bestimmten Tag anzuzeigen. Klicken Sie mit der Umschalttaste oder der rechten Maustaste, um einen Datumsbereich festzulegen. Pfeil Links/rechts drücken, um zwischen den Tagen zu wechseln, und Umschalttaste, um mehrere Tage zu wählen.</translation>
     </message>
     <message>
         <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.</source>
@@ -963,7 +967,7 @@ nicht lesbar</translation>
     <message>
         <location filename="../Queue.qml" line="399"/>
         <source>Copy the processing parameters from this image, until you switch images or change processing parameters.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Entwicklungseinstellungen dieses Bildes kopieren, bis das Bild gewechselt oder die Einstellungen verändert werden.</translation>
     </message>
     <message>
         <location filename="../Queue.qml" line="415"/>
@@ -973,7 +977,7 @@ nicht lesbar</translation>
     <message>
         <location filename="../Queue.qml" line="416"/>
         <source>If you copy and then do anything other than paste, pasting will not be available.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wenn Sie Einstellungen kopieren und dann etwas anderes tun, als sie einzufügen, ist danach das Einfügen nicht mehr verfügbar.</translation>
     </message>
     <message>
         <location filename="../Queue.qml" line="449"/>
@@ -1136,7 +1140,11 @@ Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem N
 Enabling this turns off high-resolution caching in the editor. It will consume less memory but the full resolution image will recompute from the beginning for any edit you make.
 
 This setting takes effect after applying settings and then restarting Filmulator.</source>
-        <translation type="unfinished"></translation>
+        <translation>Warnung: SEHR LANGSAM!
+
+Wenn Sie dies aktivieren, wird das hochauflösende Caching im Editor ausgeschaltet. Es wird weniger Speicher verbrauchen, aber bei jedem Entwicklungsschritt wird das Bild komplett neu berechnet.
+
+Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem Neustart von Filmulator wirksam.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="94"/>
@@ -1201,13 +1209,13 @@ Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator i
     <message>
         <location filename="../Settings.qml" line="292"/>
         <source>Download latest camera constants</source>
-        <translation type="unfinished"></translation>
+        <translation>Download aktuelle Kamerakonstanten</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="319"/>
         <source>Download</source>
         <comment>Download new camconst.json</comment>
-        <translation type="unfinished"></translation>
+        <translation>Download</translation>
     </message>
 </context>
 <context>
