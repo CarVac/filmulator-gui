@@ -152,7 +152,7 @@ bool imwrite_jpeg(matrix<unsigned short> &output, string outputfilename,
         auto thumb = Exiv2::ExifThumb(exifData);
         thumb.erase();
         //Find the thumbnail for this image
-        thumb.setJpegThumbnail(thumbPath);
+        //thumb.setJpegThumbnail(thumbPath);
 
         cout << "imwrite_jpeg exiv filename: " << outputfilename << endl;
         auto image = Exiv2::ImageFactory::open(outputfilename);

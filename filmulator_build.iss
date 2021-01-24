@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Filmulator"
-#define MyAppVersion "0.11.0"
+#define MyAppVersion "0.11.1"
 #define MyAppPublisher "Filmulator"
 #define MyAppURL "https://filmulator.org"
 #define MyAppExeName "filmulator.exe"

@@ -204,6 +204,7 @@ void FilmImageProvider::writeJpeg()
         dir.cd(thumbDir);
     }
     std::string thumbPath = dir.absoluteFilePath(currentID).toStdString();
+    cout << "writejpeg current id: " << currentID.toStdString() << endl;
     thumbPath.append(".jpg");
     cout << "writejpeg thumb path: " << thumbPath << endl;
     imwrite_jpeg(last_image, outputFilename, exifData, 95, thumbPath);
