@@ -1975,6 +1975,82 @@ SlimSplitView {
             }
         }
 
+        Rectangle {
+            id: savedIndicator
+            anchors.centerIn: flicky
+            width: savedText.contentWidth + 20 * uiScale
+            height: 30 * uiScale
+            color: "black"
+            border.color: "gray"
+            radius: 10 * uiScale
+            Text {
+                id: savedText
+                anchors.centerIn: parent
+                width: parent.width
+                color: "white"
+                text: qsTr("Image Saved")
+                font.pixelSize: 20 * uiScale
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            state: "notVisible"
+            states: [
+                State {
+                    name: "notVisible"
+                    PropertyChanges {
+                        target: savedIndicator
+                        opacity: 0
+                    }
+                },
+                State {
+                    name: "isVisible"
+                    PropertyChanges {
+                        target: savedIndicator
+                        opacity: 1
+                    }
+                }
+            ]
+            transitions: [
+                Transition {
+                    from: "isVisible"
+                    to: "notVisible"
+                    PropertyAnimation {
+                        target: savedIndicator
+                        properties: "opacity"
+                        duration: 600
+                    }
+                },
+                Transition {
+                    from: "notVisible"
+                    to: "isVisible"
+                    PropertyAnimation {
+                        target: savedIndicator
+                        properties: "opacity"
+                        duration: 0
+                    }
+                }
+            ]
+            Connections {
+                target: editTools
+                function onSaveStatusChanged() {
+                    if (editTools.saveStatus == "") {
+                        savedIndicator.state = "notVisible"
+                    } else {
+                        savedIndicator.state = "isVisible"
+                        savedIndicatorTimer.start()
+                    }
+                }
+            }
+            Timer {
+                id: savedIndicatorTimer
+                interval: 1500
+                onTriggered: {
+                    savedIndicator.state = "notVisible"
+                    editTools.saveStatus = ""
+                }
+            }
+        }
+
         FilmProgressBar {
             id: progressBar
             visible: true
