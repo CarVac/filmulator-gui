@@ -350,7 +350,7 @@ void Settings::updateLensfun()
 
     if (dbStatus == LENSFUN_DBUPDATE_OK)
     {
-        updateStatus = tr("Database updated successfully.", "lensfun database update");
+        updateStatus = tr("Success. Please restart.", "lensfun database update");
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION)
