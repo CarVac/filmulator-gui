@@ -99,13 +99,15 @@ QImage FilmImageProvider::requestImage(const QString& id,
         if (id[0] == "q")
         {
             filename = paramManager->getFullFilename();
-            shufflePipelines();
             if (newID != currentID && useCache)//the image changed
             {
+                shufflePipelines();
                 if (paramManager->getValid() > Valid::none)
                 {
                     quickPipe.rerunHistograms();
                 }
+            } else {
+                shufflePipelines();
             }
             struct timeval quickTime;
             gettimeofday(&quickTime, nullptr);
