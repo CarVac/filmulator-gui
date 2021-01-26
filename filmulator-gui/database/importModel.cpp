@@ -165,7 +165,19 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     for (int i = 0; i < fileList.size(); i++)
     {
         importParams params;
-        params.fileInfoParam = fileList.at(i);
+        const QString path = fileList.at(i).absoluteFilePath();
+        cout << "importDirectory_r file path before: " << path.toStdString() << endl;
+        //Check for "file://" at the beginning
+        //On Windows, for some reason there's an extra / that must be removed
+        //But if it's a UNC file path, it's just file://server/share and we want to leave the slashes.
+#ifdef Q_OS_WIN
+        const int count = path.startsWith("file:///") ? 8 : path.startsWith("file:") 5 ? 0;
+#else
+        const int count = path.startsWith("file://") ? 7 : 0;
+#endif
+        cout << "importDirectory_r file path after: " << path.mid(count).toStdString() << endl;
+        const QFileInfo file = QFileInfo(path.mid(count));
+        params.fileInfoParam = file;
         params.importTZParam = importTZ;
         params.cameraTZParam = cameraTZ;
         params.photoDirParam = photoDir;
@@ -203,11 +215,11 @@ QStringList ImportModel::getNameFilters()
 //If invalid, returns Validity::invalid
 Validity ImportModel::importFile(const QString name, const bool importInPlace, const bool replaceLocation, const bool onlyCheck)
 {
-
-    //Check for "url://" at the beginning
+    //Check for "file://" at the beginning
     //On Windows, for some reason there's an extra / that must be removed
+    //But if it's a UNC file path, it's just file://server/share and we want to leave the slashes.
 #ifdef Q_OS_WIN
-    const int count = name.startsWith("file://") ? 8 : 0;
+    const int count = name.startsWith("file:///") ? 8 : name.startsWith("file:") 5 ? 0;
 #else
     const int count = name.startsWith("file://") ? 7 : 0;
 #endif
@@ -316,11 +328,11 @@ void ImportModel::importFileList(const QString name, const bool importInPlace, c
 //If it fails, it returns an empty QString.
 QString ImportModel::importFileNow(const QString name, Settings * settingsObj)
 {
-
-    //Check for "url://" at the beginning
+    //Check for "file://" at the beginning
     //On Windows, for some reason there's an extra / that must be removed
+    //But if it's a UNC file path, it's just file://server/share and we want to leave the slashes.
 #ifdef Q_OS_WIN
-    const int count = name.startsWith("file://") ? 8 : 0;
+    const int count = name.startsWith("file:///") ? 8 : name.startsWith("file:") 5 ? 0;
 #else
     const int count = name.startsWith("file://") ? 7 : 0;
 #endif
