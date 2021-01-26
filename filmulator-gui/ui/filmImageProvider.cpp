@@ -89,6 +89,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
     matrix<unsigned short> image;
     if (!useQuickPipe)
     {
+        shufflePipelines();//this'll just deal with the ID names
         filename = paramManager->getFullFilename();
         image = pipeline.processImage(paramManager, this, data);
     }
@@ -98,9 +99,9 @@ QImage FilmImageProvider::requestImage(const QString& id,
         if (id[0] == "q")
         {
             filename = paramManager->getFullFilename();
+            shufflePipelines();
             if (newID != currentID && useCache)//the image changed
             {
-                shufflePipelines();
                 if (paramManager->getValid() > Valid::none)
                 {
                     quickPipe.rerunHistograms();
@@ -307,10 +308,12 @@ void FilmImageProvider::shufflePipelines()
 
     if (!useCache)
     {
+        currentID = newID;
         return;
     }
     if (!useQuickPipe)
     {
+        currentID = newID;
         return;
     }
     if (newID == "")
