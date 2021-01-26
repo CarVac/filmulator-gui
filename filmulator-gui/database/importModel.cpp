@@ -171,7 +171,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
         //On Windows, for some reason there's an extra / that must be removed
         //But if it's a UNC file path, it's just file://server/share and we want to leave the slashes.
 #ifdef Q_OS_WIN
-        const int count = path.startsWith("file:///") ? 8 : path.startsWith("file:") 5 ? 0;
+        const int count = name.startsWith("file:///") ? 8 : name.startsWith("file:") ? 5 : 0;
 #else
         const int count = path.startsWith("file://") ? 7 : 0;
 #endif
@@ -219,7 +219,7 @@ Validity ImportModel::importFile(const QString name, const bool importInPlace, c
     //On Windows, for some reason there's an extra / that must be removed
     //But if it's a UNC file path, it's just file://server/share and we want to leave the slashes.
 #ifdef Q_OS_WIN
-    const int count = name.startsWith("file:///") ? 8 : name.startsWith("file:") 5 ? 0;
+    const int count = name.startsWith("file:///") ? 8 : name.startsWith("file:") ? 5 : 0;
 #else
     const int count = name.startsWith("file://") ? 7 : 0;
 #endif
@@ -332,7 +332,7 @@ QString ImportModel::importFileNow(const QString name, Settings * settingsObj)
     //On Windows, for some reason there's an extra / that must be removed
     //But if it's a UNC file path, it's just file://server/share and we want to leave the slashes.
 #ifdef Q_OS_WIN
-    const int count = name.startsWith("file:///") ? 8 : name.startsWith("file:") 5 ? 0;
+    const int count = name.startsWith("file:///") ? 8 : name.startsWith("file:") ? 5 : 0;
 #else
     const int count = name.startsWith("file://") ? 7 : 0;
 #endif
