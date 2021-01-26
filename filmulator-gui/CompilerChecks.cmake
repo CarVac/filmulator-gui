@@ -55,7 +55,7 @@ if (UNIX)
         check_cxx_compiler_flag_ssp("-fstack-protector" WITH_STACK_PROTECTOR)
         if (WITH_STACK_PROTECTOR)
             list(APPEND SUPPORTED_CXX_COMPILER_FLAGS "-fstack-protector")
-            # This is needed as Solaris has a seperate libssp
+            # This is needed as Solaris has a separate libssp
             if (SOLARIS)
                 list(APPEND SUPPORTED_LINKER_FLAGS "-fstack-protector")
             endif()
