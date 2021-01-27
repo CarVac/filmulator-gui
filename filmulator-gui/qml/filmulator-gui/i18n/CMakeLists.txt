@@ -2,6 +2,7 @@ if(APPLE)
     INSTALL(
         FILES
             qml_de.qm
+            qml_pt.qm
         DESTINATION
             Filmulator.app/Contents/Resources/qml/filmulator-gui/i18n
     )
@@ -13,6 +14,7 @@ elseif(WIN32)
     INSTALL(
         FILES
             qml_de.qm
+            qml_pt.qm
         DESTINATION
             ${CMAKE_INSTALL_BINDIR}/qml/filmulator-gui/i18n
     )
@@ -21,6 +23,7 @@ else()
     INSTALL(
         FILES
             qml_de.qm
+            qml_pt.qm
         DESTINATION
             ${CMAKE_INSTALL_DATADIR}/Filmulator/qml/filmulator-gui/i18n
     )
