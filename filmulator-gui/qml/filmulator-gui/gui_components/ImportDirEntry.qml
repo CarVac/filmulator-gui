@@ -109,7 +109,17 @@ Rectangle {
     FolderDialog {
         id: dirDialog
         onAccepted: {
-            root.enteredText = folder.toString().substring(Qt.platform.os == "windows" ? 8 : 7)
+            var folderDir = folder.toString()
+            if (Qt.platform.os == "windows") {
+                if (folderDir.substring(0,8) === "file:///") {
+                    // standard drive letter file path has an extra / on windows
+                    root.enteredText = folderDir.substring(8)
+                } else { // UNC file paths have zero extra slashes.
+                    root.enteredText = folderDir.substring(5)
+                }
+            } else {
+                root.enteredText = folderDir.substring(7)
+            }
         }
     }
 
