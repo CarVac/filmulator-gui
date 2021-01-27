@@ -1195,29 +1195,125 @@ Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator i
         <translation>Nach Objektivkorrektur-Updates suchen</translation>
     </message>
     <message>
+        <location filename="../Settings.qml" line="198"/>
+        <source>Checking database version.</source>
+        <comment>lensfun database check</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="201"/>
+        <source>Database unavailable from server.</source>
+        <comment>lensfun database check</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="204"/>
+        <source>No local database yet.</source>
+        <comment>lensfun database check</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="207"/>
+        <source>Update available.</source>
+        <comment>lensfun database check</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../Settings.qml" line="210"/>
+        <source>Up to date.</source>
+        <comment>lensfun database check</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="233"/>
         <source>Check</source>
         <comment>Check for lensfun updates</comment>
         <translation>Suchen</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="233"/>
+        <location filename="../Settings.qml" line="256"/>
         <source>Update lens correction database</source>
         <translation>Update der Objektivkorrektur-Datenbank</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="262"/>
+        <location filename="../Settings.qml" line="273"/>
+        <source>Updating database.</source>
+        <comment>lensfun database update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="276"/>
+        <source>Success. Please restart.</source>
+        <comment>lensfun database update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="279"/>
+        <source>Already up to date.</source>
+        <comment>lensfun database update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="282"/>
+        <source>Unavailable from server.</source>
+        <comment>lensfun database update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="285"/>
+        <source>Failure (initialization)</source>
+        <comment>lensfun database update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="288"/>
+        <source>Failure (file)</source>
+        <comment>lensfun database update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="291"/>
+        <source>Failure (retrieve)</source>
+        <comment>lensfun database update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="314"/>
         <source>Update</source>
         <comment>Update lensfun database</comment>
         <translation>Update</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="292"/>
+        <location filename="../Settings.qml" line="344"/>
         <source>Download latest camera constants</source>
         <translation>Download aktuelle Kamerakonstanten</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="319"/>
+        <location filename="../Settings.qml" line="360"/>
+        <source>Download successful.</source>
+        <comment>camconst.json update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="363"/>
+        <source>Failure (initialization)</source>
+        <comment>camconst.json update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="366"/>
+        <source>Failure (file)</source>
+        <comment>camconst.json update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="369"/>
+        <source>Failure (retrieve)</source>
+        <comment>camconst.json update</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="391"/>
         <source>Download</source>
         <comment>Download new camconst.json</comment>
         <translation>Download</translation>

@@ -189,6 +189,29 @@ Rectangle {
                 y: 20*uiScale + parent.padding
                 color: "black"
 
+                property string lensfunStatus
+
+                Connections {
+                    target: settings
+                    function onLensfunStatusChanged() {
+                        if (settings.lensfunStatus === "checking") {
+                            checkResultBox.lensfunStatus = qsTr("Checking database version.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "unavail") {
+                            checkResultBox.lensfunStatus = qsTr("Database unavailable from server.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "nolocal") {
+                            checkResultBox.lensfunStatus = qsTr("No local database yet.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "avail") {
+                            checkResultBox.lensfunStatus = qsTr("Update available.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "uptodate") {
+                            checkResultBox.lensfunStatus = qsTr("Up to date.", "lensfun database check")
+                        }
+                    }
+                }
+
                 Text {
                     id: checkResult
                     color: "white"
@@ -197,7 +220,7 @@ Rectangle {
                     width: parent.width - x
                     height: parent.height - y
                     font.pixelSize: 12.0 * uiScale
-                    text: settings.lensfunStatus
+                    text: parent.lensfunStatus
                 }
             }
 
@@ -241,6 +264,35 @@ Rectangle {
                 y: 20*uiScale + parent.padding
                 color: "black"
 
+                property string updateStatus
+
+                Connections {
+                    target: settings
+                    function onUpdateStatusChanged() {
+                        if (settings.updateStatus === "updating") {
+                            updateBox.updateStatus = qsTr("Updating database.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "success") {
+                            updateBox.updateStatus = qsTr("Success. Please restart.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "uptodate") {
+                            updateBox.updateStatus = qsTr("Already up to date.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "unavail") {
+                            updateBox.updateStatus = qsTr("Unavailable from server.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "initfail") {
+                            updateBox.updateStatus = qsTr("Failure (initialization)", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "filefail") {
+                            updateBox.updateStatus = qsTr("Failure (file)", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "retrievefail") {
+                            updateBox.updateStatus = qsTr("Failure (retrieve)", "lensfun database update")
+                        }
+                    }
+                }
+
                 Text {
                     id: updateResult
                     color: "white"
@@ -249,7 +301,7 @@ Rectangle {
                     width: parent.width - x
                     height: parent.height - y
                     font.pixelSize: 12.0 * uiScale
-                    text: settings.updateStatus
+                    text: parent.updateStatus
                 }
             }
 
@@ -299,6 +351,26 @@ Rectangle {
                 y: 20*uiScale + parent.padding
                 color: "black"
 
+                property string camconstDlStatus
+
+                Connections {
+                    target: settings
+                    function onCamconstDlStatusChanged() {
+                        if (settings.camconstDlStatus === "success") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Download successful.", "camconst.json update")
+                        }
+                        if (settings.camconstDlStatus === "initfail") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Failure (initialization)", "camconst.json update")
+                        }
+                        if (settings.camconstDlStatus === "fopenfail") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Failure (file)", "camconst.json update")
+                        }
+                        if (settings.camconstDlStatus === "retrievefail") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Failure (retrieve)", "camconst.json update")
+                        }
+                    }
+                }
+
                 Text {
                     id: camconstDownloadResult
                     color: "white"
@@ -307,7 +379,7 @@ Rectangle {
                     width: parent.width - x
                     height: parent.height - y
                     font.pixelSize: 12.0 * uiScale
-                    text: settings.camconstDlStatus
+                    text: parent.camconstDlStatus
                 }
             }
             ToolButton {

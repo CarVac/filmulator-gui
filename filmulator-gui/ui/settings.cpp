@@ -311,29 +311,29 @@ void Settings::checkLensfunStatus()
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator");
 
-    lensfunStatus = tr("Checking database version", "lensfun database check");
+    lensfunStatus = "checking";
     emit lensfunStatusChanged();
 
     lf_db_return dbStatus = lensfun_dbcheck(2, dirstr.toStdString());
 
     if (dbStatus == LENSFUN_DBUPDATE_NOVERSION)
     {
-        lensfunStatus = tr("Database unavailable from server.", "lensfun database check");
+        lensfunStatus = "unavail";
         emit lensfunStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_NODATABASE)
     {
-        lensfunStatus = tr("No local database yet.", "lensfun database check");
+        lensfunStatus = "nolocal";
         emit lensfunStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_OLDVERSION)
     {
-        lensfunStatus = tr("Updated database available.", "lensfun database check");
+        lensfunStatus = "avail";
         emit lensfunStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION)
     {
-        lensfunStatus = tr("Database is up to date.", "lensfun database check");
+        lensfunStatus = "uptodate";
         emit lensfunStatusChanged();
     }
 }
@@ -343,39 +343,39 @@ void Settings::updateLensfun()
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator");
 
-    updateStatus = tr("Updating database", "lensfun database update");
+    updateStatus = "updating";
     emit updateStatusChanged();
 
     lf_db_return dbStatus = lensfun_dbupdate(2, dirstr.toStdString());
 
     if (dbStatus == LENSFUN_DBUPDATE_OK)
     {
-        updateStatus = tr("Success. Please restart.", "lensfun database update");
+        updateStatus = "success";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION)
     {
-        updateStatus = tr("Database is up to date.", "lensfun database update");
+        updateStatus = "uptodate";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_NOVERSION)
     {
-        updateStatus = tr("No database available from server.", "lensfun database update");
+        updateStatus = "unavail";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_INITFAILED)
     {
-        updateStatus = tr("Database retrieve failed (init).", "lensfun database update");
+        updateStatus = "initfail";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_FILEOPENFAILED)
     {
-        updateStatus = tr("Database retrieve failed (file).", "lensfun database update");
+        updateStatus = "filefail";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_RETRIEVEFAILED)
     {
-        updateStatus = tr("Database retrieve failed (retrieve).", "lensfun database update");
+        updateStatus = "retrievefail";
         emit updateStatusChanged();
     }
 }
@@ -385,22 +385,22 @@ void Settings::downloadCamConst()
     camconst_status status = camconst_download();
     if (status == CAMCONST_DL_OK)
     {
-        camconstDlStatus = tr("camconst.json download succeeded.");
+        camconstDlStatus = "success";
         emit camconstDlStatusChanged();
     }
     if (status == CAMCONST_DL_INITFAILED)
     {
-        camconstDlStatus = tr("camconst.json init failed.");
+        camconstDlStatus = "initfail";
         emit camconstDlStatusChanged();
     }
     if (status == CAMCONST_DL_FOPENFAILED)
     {
-        camconstDlStatus = tr("camconst.json fopen failed.");
+        camconstDlStatus = "fopenfail";
         emit camconstDlStatusChanged();
     }
     if (status == CAMCONST_DL_RETRIEVEFAILED)
     {
-        camconstDlStatus = tr("CamConst retrieve failed.");
+        camconstDlStatus = "retrievefail";
         emit camconstDlStatusChanged();
     }
 }
