@@ -1134,6 +1134,7 @@ SlimSplitView {
                     if (saveJPEGButton.notDisabled && root.onEditTab) {
                         filmProvider.writeJpeg()
                         queueModel.markSaved(paramManager.imageIndex)
+                        root.saveStatus = "saved"
                     }
                 }
             }
