@@ -13,42 +13,47 @@ Rate the current image by pressing 0 through 5 and X, or by pressing up or down 
 Bewerten des aktuellen Bildes durch Drücken der Tasten 0 bis 5 und X oder durch Drücken der Pfeiltasten nach oben oder unten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2063"/>
+        <location filename="../Edit.qml" line="1991"/>
+        <source>Image Saved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2139"/>
         <source>Width: </source>
         <translation>Breite: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2073"/>
+        <location filename="../Edit.qml" line="2149"/>
         <source>Height: </source>
         <translation>Höhe: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2083"/>
+        <location filename="../Edit.qml" line="2159"/>
         <source>H offset: </source>
         <translation>H-Versatz: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2093"/>
+        <location filename="../Edit.qml" line="2169"/>
         <source>V offset: </source>
         <translation>V-Versatz: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2103"/>
+        <location filename="../Edit.qml" line="2179"/>
         <source>Rotation: </source>
         <translation>Drehung: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2134"/>
+        <location filename="../Edit.qml" line="2210"/>
         <source>Error: </source>
         <translation>Fehler: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2134"/>
+        <location filename="../Edit.qml" line="2210"/>
         <source> is not accessible.</source>
         <translation> ist nicht erreichbar.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2162"/>
+        <location filename="../Edit.qml" line="2238"/>
         <source>Select the lens that was used in order to use lens corrections.
 
 Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;&quot;) then it will search lenses from all mounts.
@@ -61,27 +66,27 @@ Schreiben Sie den Objektivnamen in das Feld rechts. Normalerweise wird nur nach 
 Doppelklick auf ein Objektiv, um es auszuwählen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2210"/>
+        <location filename="../Edit.qml" line="2286"/>
         <source>No lens selected</source>
         <translation>Kein Objektiv ausgewählt</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2252"/>
+        <location filename="../Edit.qml" line="2328"/>
         <source>Reset selected lens back to default and sets search box back to EXIF-derived lens name.</source>
         <translation>Setzt ausgewähltes Objektiv auf Standard zurück und setzt Suchbox zurück auf den Objektivnamen aus den EXIF-Daten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2320"/>
+        <location filename="../Edit.qml" line="2396"/>
         <source>Search fit score: </source>
         <translation>Trefferanzahl: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2504"/>
+        <location filename="../Edit.qml" line="2580"/>
         <source>Remember preferred lens</source>
         <translation>Bevorzugtes Objektiv beibehalten</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2505"/>
+        <location filename="../Edit.qml" line="2581"/>
         <source>Use the selected lens as default for all future photos taken with the same camera and lens combination.
 
 This also remembers the currently selected lens corrections.</source>
@@ -90,17 +95,17 @@ This also remembers the currently selected lens corrections.</source>
 Berücksichtigt auch aktuell gewählte Objektivkorrekturen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2521"/>
+        <location filename="../Edit.qml" line="2597"/>
         <source>Forget preferred lens</source>
         <translation>Bevorzugtes Objektiv zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2522"/>
+        <location filename="../Edit.qml" line="2598"/>
         <source>Clear the default lens for photos taken with the same camera and lens combination.</source>
         <translation>Löscht das bevorzugte Objektiv für Fotos, die mit der gleichen Objektiv-Kamera-Kombination gemacht wurden.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2545"/>
+        <location filename="../Edit.qml" line="2621"/>
         <source>Change the editor&apos;s background brightness between black, gray, and white.
 
 Shortcut: B</source>
@@ -109,17 +114,17 @@ Shortcut: B</source>
 Tastenkürzel: B</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2589"/>
+        <location filename="../Edit.qml" line="2665"/>
         <source>Click this to save your crop.</source>
         <translation>Hier klicken, um Zuschnitt zu speichern.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2589"/>
+        <location filename="../Edit.qml" line="2665"/>
         <source>Click this to begin cropping.</source>
         <translation>Hierklicken, um Zuschnitt zu beginnen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2589"/>
+        <location filename="../Edit.qml" line="2665"/>
         <source>Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.
@@ -132,17 +137,17 @@ Umschalttaste gedrückt halten, während Sie eine Ecke ziehen, um den Ausschnitt
 Tastaturkürzel: C</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2659"/>
+        <location filename="../Edit.qml" line="2735"/>
         <source>Click this to apply the rotation.</source>
         <translation>Hier klicken, um Drehung anzuwenden.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2659"/>
+        <location filename="../Edit.qml" line="2735"/>
         <source>Click this to begin leveling the image.</source>
         <translation>Hier klicken, um mit Ausrichten zu beginnen.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2659"/>
+        <location filename="../Edit.qml" line="2735"/>
         <source>Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.
 
 Reset the rotation to zero by pressing &quot;Shift+L&quot; or double right clicking.
@@ -219,7 +224,7 @@ Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenver
 Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zuschnitt auf das nächstliegende übliche Seitenverhältnis zu fixieren. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2636"/>
+        <location filename="../Edit.qml" line="2712"/>
         <source>Rotate image 90 degrees left.</source>
         <translation>Bild um 90 Grad nach links drehen.</translation>
     </message>
@@ -248,7 +253,7 @@ Klicken Sie auf das Bild, um die Hilfslinien für die Rotation zu platzieren, da
 Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drücken.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2715"/>
+        <location filename="../Edit.qml" line="2791"/>
         <source>Rotate image 90 degrees right.</source>
         <translation>Bild um 90 Grad nach rechts drehen.</translation>
     </message>
@@ -256,7 +261,7 @@ Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drüc
 <context>
     <name>EditTools</name>
     <message>
-        <location filename="../EditTools.qml" line="113"/>
+        <location filename="../EditTools.qml" line="114"/>
         <source>This is a histogram of the data in the raw file.</source>
         <translation>Dies ist ein Histogramm der Daten in der Raw-Datei.</translation>
     </message>
@@ -265,12 +270,12 @@ Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drüc
         <translation type="vanished">Auto CA Korrektur</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="123"/>
+        <location filename="../EditTools.qml" line="124"/>
         <source>Auto CA Correction</source>
         <translation>Auto CA Korrektur</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="124"/>
+        <location filename="../EditTools.qml" line="125"/>
         <source>Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.
 
 Not available for non-Bayer photos.</source>
@@ -279,42 +284,42 @@ Not available for non-Bayer photos.</source>
 Nicht verfügbar für Nicht-Bayer-Sensoren.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="162"/>
+        <location filename="../EditTools.qml" line="163"/>
         <source>Profiled CA</source>
         <translation>CA-Korrektur (Profil)</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="163"/>
+        <location filename="../EditTools.qml" line="164"/>
         <source>Correct directional color fringing based on a profile stored for this lens model.</source>
         <translation>Korrigiert die gerichteten Farbsäume auf der Grundlage eines für dieses Objekv gespeicherten Profils.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="202"/>
+        <location filename="../EditTools.qml" line="203"/>
         <source>Profiled Vignetting</source>
         <translation>Vignettierung (Profil)</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="203"/>
+        <location filename="../EditTools.qml" line="204"/>
         <source>Correct vignetting based on a profile stored for this lens model.</source>
         <translation>Korrigiert die Vignettierung auf der Grundlage eines für dieses Objektiv gespeicherten Profils.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="233"/>
+        <location filename="../EditTools.qml" line="234"/>
         <source>Profiled Distortion</source>
         <translation>Verzeichnung (Profil)</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="234"/>
+        <location filename="../EditTools.qml" line="235"/>
         <source>Correct geometric distortion based on a profile stored for this lens model.</source>
         <translation>Korrigiert die geometrische Verzeichnung auf der Grundlage eines für dieses Objektiv gespeicherten Profils.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="264"/>
+        <location filename="../EditTools.qml" line="265"/>
         <source>Highlight Recovery</source>
         <translation>Lichter wiederherstellen</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="265"/>
+        <location filename="../EditTools.qml" line="266"/>
         <source>Recover clipped highlights.
 
 0 clips after the preliminary white balance.
@@ -328,13 +333,13 @@ Nicht verfügbar für Nicht-Bayer-Sensoren.</translation>
 2 ermöglicht die Spitzlichtrekonstruktion, die am besten funktioniert, wenn nur ein Kanal beschnitten ist und wenn violette Ränder kein Problem darstellen.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="297"/>
+        <location filename="../EditTools.qml" line="298"/>
         <source>Temperature</source>
         <translatorcomment>Should be color temperature</translatorcomment>
         <translation>Farbtemperatur</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="298"/>
+        <location filename="../EditTools.qml" line="299"/>
         <source>Correct the image color for a light source of the indicated Kelvin temperature.
 
 The default value is the camera&apos;s chosen WB.</source>
@@ -343,12 +348,12 @@ The default value is the camera&apos;s chosen WB.</source>
 Der Standardwert ist die von der Kamera gewählte Farbtemperatur.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="325"/>
+        <location filename="../EditTools.qml" line="326"/>
         <source>Tint</source>
         <translation>Tönung</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="326"/>
+        <location filename="../EditTools.qml" line="327"/>
         <source>Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.
 
 The default value is the camera&apos;s chosen WB.</source>
@@ -357,38 +362,38 @@ The default value is the camera&apos;s chosen WB.</source>
 Der Standardwert ist der von der Kamera gewählte Weißabgleich.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="353"/>
+        <location filename="../EditTools.qml" line="354"/>
         <source>Exposure Compensation</source>
         <translation>Belichtungsausgleich</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="354"/>
+        <location filename="../EditTools.qml" line="355"/>
         <source>The amount the program should to over- or under-expose the &quot;film&quot; relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.</source>
         <translation>Der Betrag, den das Programm den &quot;Film&quot; im Verhältnis zur aufgenommenen Belichtung über- oder unterbelichten sollte. Analog zur Belichtung des Films in der Kamera. Gewöhnlich ist dies so einzustellen, dass das Histogramm die volle Breite nutzt.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="422"/>
+        <location filename="../EditTools.qml" line="423"/>
         <source>This is a histogram of the input to the film simulation.</source>
         <translation>Dies ist ein Histogramm des Inputs für die Filmsimulation.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="432"/>
+        <location filename="../EditTools.qml" line="433"/>
         <source>Shadow Rolloff Point</source>
         <translatorcomment>There is no German word for Rolloff.</translatorcomment>
         <translation>Schatten-Rolloff</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="433"/>
+        <location filename="../EditTools.qml" line="434"/>
         <source>This adjusts the contrast in the shadows of the image prior to the film simulation. Raising this darkens the image and makes it more contrasty.</source>
         <translation>Dadurch wird der Kontrast in den Schatten des Bildes vor der Filmsimulation angepasst. Eine Anhebung dunkelt das Bild ab und macht es kontrastreicher.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="462"/>
+        <location filename="../EditTools.qml" line="463"/>
         <source>Highlight Rolloff Point</source>
         <translation>Lichter-Rolloff</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="463"/>
+        <location filename="../EditTools.qml" line="464"/>
         <source>Sets the point above which the highlights gently stop getting brighter. This controls the saturation of the highlights, and only has a significant effect at high drama settings when the highlights get strongly darkened.
 If you have a photo with no highlight clipping and none of it extends beyond the right of the prefilm histogram, feel free to raise this all the way to 1.
 If you have highlight clipping and there are unpleasant color shifts, lower this to taste.</source>
@@ -397,165 +402,165 @@ Wenn Sie ein Foto ohne Spitzlichtbeschneidung haben und keines davon über die r
 Wenn Sie eine Spitzlichtbeschneidung haben und es unangenehme Farbverschiebungen gibt, senken Sie diesen nach Belieben.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="492"/>
+        <location filename="../EditTools.qml" line="493"/>
         <source>Film Area</source>
         <translation>Filmbereich</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="493"/>
+        <location filename="../EditTools.qml" line="494"/>
         <source>Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.
 Typically, when adjusting this, change it until the point where small adjustments make noticeable changes in the appearance of the image. That&apos;s usually in the vicinity of the best setting.</source>
         <translation>Größere Formate betonen kleinere Details und schwächen den Kontrast ab; kleinere Formate betonen größere regionale Kontraste. Dies hat den gleichen Effekt wie die Filmgröße im Realfilm. Wenn Sie sich ins Mittel- oder Großformat wagen, halten Sie den Schieberegler Drama unter 40, um ein Überkochen zu verhindern.
 Ändern Sie ihn in der Regel so lange, bis kleine Anpassungen das Erscheinungsbild des Fotos merklich verändern. Das ist normalerweise in der Nähe der besten Einstellung.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="522"/>
+        <location filename="../EditTools.qml" line="523"/>
         <source>Drama</source>
         <translation>Drama</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="523"/>
+        <location filename="../EditTools.qml" line="524"/>
         <source>Pulls down highlights to retain detail. This is the real &quot;filmy&quot; effect. This not only helps bring down bright highlights, but it can also rescue extremely saturated regions such as flowers.</source>
         <translation>Zieht Spitzlichter herunter, um Details zu erhalten. Dies ist der eigentliche &quot;filmische&quot; Effekt. Dadurch werden nicht nur helle Spitzlichter heruntergezogen, sondern es können auch extrem gesättigte Regionen wie z.B. Blumen gerettet werden.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="550"/>
+        <location filename="../EditTools.qml" line="551"/>
         <source>In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you.</source>
         <translation>Im Notfall Glas zerbrechen und diese Taste drücken. Das erhöht das Filmische, falls Ihnen 100 Drama nicht genug war.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="551"/>
+        <location filename="../EditTools.qml" line="552"/>
         <source>Overdrive Mode</source>
         <translation>Übersteuerungs-Modus</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="619"/>
+        <location filename="../EditTools.qml" line="620"/>
         <source>This is a histogram of the output from the film simulation.</source>
         <translation>Dies ist ein Histogramm der Ausgabe der Filmsimulation.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="629"/>
+        <location filename="../EditTools.qml" line="630"/>
         <source>Black Clipping Point</source>
         <translation>Schwarzpunkt</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="630"/>
+        <location filename="../EditTools.qml" line="631"/>
         <source>This controls the threshold for crushing the shadows. You can see its position in the post-film histogram.</source>
         <translation>Damit wird die Schwelle für die Beschneidung der Schatten gesteuert. Sie können seine Position im Post-Film-Histogramm sehen.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="660"/>
+        <location filename="../EditTools.qml" line="661"/>
         <source>White Clipping Point</source>
         <translation>Weißpunkt</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="661"/>
+        <location filename="../EditTools.qml" line="662"/>
         <source>This controls the threshold for clipping the highlights. Vaguely analogous to adjusting exposure time in the darkroom. You can see its position in the post-film histogram.</source>
         <translation>Damit wird die Schwelle für die Beschneidung der Lichter gesteuert. Sie können seine Position im Post-Film-Histogramm sehen.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="690"/>
+        <location filename="../EditTools.qml" line="691"/>
         <source>Shadow Brightness</source>
         <translation>Helligkeit Schatten</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="691"/>
+        <location filename="../EditTools.qml" line="692"/>
         <source>This controls the brightness of the generally darker regions of the image.</source>
         <translation>Hiermit wird die Helligkeit der dunkleren Bereiche des Bildes gesteuert.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="718"/>
+        <location filename="../EditTools.qml" line="719"/>
         <source>Highlight Brightness</source>
         <translation>Helligkeit Lichter</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="719"/>
+        <location filename="../EditTools.qml" line="720"/>
         <source>This controls the brightness of the generally lighter regions of the image.</source>
         <translation>Hiermit wird die Helligkeit der helleren Bereiche des Bildes gesteuert.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="746"/>
+        <location filename="../EditTools.qml" line="747"/>
         <source>Monochrome</source>
         <translation>Monochrom</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="747"/>
+        <location filename="../EditTools.qml" line="748"/>
         <source>Turn this on to convert to black-and-white.</source>
         <translation>Schalten Sie diese Option ein, um in Schwarz-Weiß zu konvertieren.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="777"/>
+        <location filename="../EditTools.qml" line="778"/>
         <source>Vibrance</source>
         <translation>Lebendigkeit</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="778"/>
+        <location filename="../EditTools.qml" line="779"/>
         <source>This adjusts the vividness of the less-saturated colors in the image.</source>
         <translation>Dadurch wird die Lebendigkeit der weniger gesättigten Farben im Bild gesteuert.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="807"/>
+        <location filename="../EditTools.qml" line="808"/>
         <source>Saturation</source>
         <translation>Sättigung</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="808"/>
+        <location filename="../EditTools.qml" line="809"/>
         <source>This adjusts the vividness of the entire image.</source>
         <translation>Dadurch wird die Lebendigkeit des gesamten Bildes angepasst.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="837"/>
+        <location filename="../EditTools.qml" line="838"/>
         <source>Red Weight</source>
         <translation>Rot-Gewichtung</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="838"/>
+        <location filename="../EditTools.qml" line="839"/>
         <source>How much to weight the red channel when converting to monochrome.</source>
         <translation>Wie stark der rote Kanal bei der Umwandlung in Schwarz-Weiß zu gewichten ist.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="866"/>
+        <location filename="../EditTools.qml" line="867"/>
         <source>Green Weight</source>
         <translation>Grün-Gewichtung</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="867"/>
+        <location filename="../EditTools.qml" line="868"/>
         <source>How much to weight the green channel when converting to monochrome.</source>
         <translation>Wie stark der grüne Kanal bei der Umwandlung in Schwarz-Weiß zu gewichten ist.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="895"/>
+        <location filename="../EditTools.qml" line="896"/>
         <source>Blue Weight</source>
         <translation>Blau-Gewichtung</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="896"/>
+        <location filename="../EditTools.qml" line="897"/>
         <source>How much to weight the blue channel when converting to monochrome.</source>
         <translation>Wie stark der blaue Kanal bei der Umwandlung in Schwarz-Weiß zu gewichten ist.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1103"/>
+        <location filename="../EditTools.qml" line="1104"/>
         <source>Save TIFF</source>
         <translation>Tiff speichern</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1104"/>
-        <location filename="../EditTools.qml" line="1122"/>
+        <location filename="../EditTools.qml" line="1105"/>
+        <location filename="../EditTools.qml" line="1124"/>
         <source>Finish cropping to save the result.</source>
         <translation>Beenden Sie den Zuschnitt, um das Ergebnis zu speichern.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1104"/>
+        <location filename="../EditTools.qml" line="1105"/>
         <source>Save a TIFF to the directory containing the raw file.</source>
         <translation>Speichert ein TIFF in dem Verzeichnis, das die Rohdatei enthält.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1121"/>
+        <location filename="../EditTools.qml" line="1123"/>
         <source>Save JPEG</source>
         <translation>JPEG speichern</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1122"/>
+        <location filename="../EditTools.qml" line="1124"/>
         <source>Save a JPEG to the directory containing the raw file.</source>
         <translation>Speichert ein JPEG in dem Verzeichnis, das die Rohdatei enthält.</translation>
     </message>
