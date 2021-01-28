@@ -79,7 +79,7 @@ bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
     uint64 dir_offset = 0;
     TIFFCreateEXIFDirectory(out);
 
-    uint16 iso = exifData["Exif.Image.ISOSpeedRatings"].toLong();
+    uint16 iso = exifData["Exif.Photo.ISOSpeedRatings"].toLong();
     if (!TIFFSetField(out, EXIFTAG_ISOSPEEDRATINGS, 1, &iso))
     {
         std::cout << "tiff failed to write iso" << std::endl;
