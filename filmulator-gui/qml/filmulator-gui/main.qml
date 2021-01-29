@@ -18,7 +18,6 @@ ApplicationWindow {
     signal imageURL(string newURL)
     property bool cropping: false
 
-
     onClosing: {
         close.accepted = false
         importModel.exitWorker()
@@ -283,6 +282,10 @@ ApplicationWindow {
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
                         editItem.imageURL.connect(root.imageURL)
+                        if (startOnFilmulate)
+                        {
+                            tabs.currentIndex = 2
+                        }
                     }
                     onRequestingCroppingChanged: {
                         root.cropping = editItem.requestingCropping

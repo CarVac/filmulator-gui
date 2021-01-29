@@ -14,6 +14,8 @@ ParameterManager::ParameterManager() : QObject(0)
     justInitialized = true;
     paramChangeEnabled = true;
 
+    imageIndex = "";
+
     cout << "ParamManager load defaults to params" << endl;
 
     //Load the defaults, copy to the parameters, there's no filename yet.

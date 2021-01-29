@@ -136,9 +136,8 @@ int main(int argc, char *argv[])
     LensSelectModel *lensModel = new LensSelectModel;
     engine.rootContext()->setContextProperty("lensModel", lensModel);
 
-    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading qml file" << endl;
-    engine.load("qrc:///qml/qml/filmulator-gui/main.qml");
-
+    QString searchID = "";
+    engine.rootContext()->setContextProperty("startOnFilmulate", false);
     if (argc == 2)
     {
         cout << "Importing file!" << endl;
@@ -146,16 +145,26 @@ int main(int argc, char *argv[])
         cout << "main argv: " << argv[1] << endl;
         QString temp = QString::fromLocal8Bit(argv[1]);
         cout << "main argv qstring std: " << temp.toStdString() << endl;
-        QString searchID = importModel->importFileNow(QString::fromLocal8Bit(argv[1]), settingsObj);
+        searchID = importModel->importFileNow(QString::fromLocal8Bit(argv[1]), settingsObj);
 #else
-        QString searchID = importModel->importFileNow(QString(argv[1]), settingsObj);
+        searchID = importModel->importFileNow(QString(argv[1]), settingsObj);
 #endif
         if (searchID != "")
         {
-            paramManager->selectImage(searchID);
+            //must be set before loading qml file
+            engine.rootContext()->setContextProperty("startOnFilmulate", true);
         } else {
             cout << "Could not import file." << endl;
         }
+    }
+
+    cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "loading qml file" << endl;
+    engine.load("qrc:///qml/qml/filmulator-gui/main.qml");
+
+    if (searchID != "")
+    {
+        //must be performed after loading qml file
+        paramManager->selectImage(searchID);
     }
 
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating window" << endl;
