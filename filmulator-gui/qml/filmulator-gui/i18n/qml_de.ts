@@ -56,12 +56,17 @@ Bewerten des aktuellen Bildes durch Drücken der Tasten 0 bis 5 und X oder durch
         <location filename="../Edit.qml" line="2238"/>
         <source>Select the lens that was used in order to use lens corrections.
 
-Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;&quot;) then it will search lenses from all mounts.
-
-Double-click a lens to select it.</source>
+Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;</source>
         <translation>Wählen Sie das genutzte Objektiv aus, um Objektivkorrekturen zu nutzen.
 
-Schreiben Sie den Objektivnamen in das Feld rechts. Normalerweise wird nur nach Objektiven mit entsprechendem Kameranschluss gesucht, aber wenn das erste Zeichen ein Backslash (&quot;\&quot;) ist, werden Objektive aller Anschlüsse gesucht.
+Schreiben Sie den Objektivnamen in das Feld rechts. Normalerweise wird nur nach Objektiven mit entsprechendem Kameranschluss gesucht, aber wenn das erste Zeichen ein Backslash (&quot;</translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2238"/>
+        <source>&quot;) then it will search lenses from all mounts.
+
+Double-click a lens to select it.</source>
+        <translation>&quot;) ist, werden Objektive aller Anschlüsse gesucht.
 
 Doppelklick auf ein Objektiv, um es auszuwählen.</translation>
     </message>
@@ -160,97 +165,9 @@ Rotation auf Null zurücksetzen mit &quot;Umschalt+L&quot; oder rechtem Doppelkl
 Tastaturkürzel: L</translation>
     </message>
     <message>
-        <source>Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.
-
-Reset the rotation to zero by pressing &quot;Shift+L&quot;.
-
-Shortcut: L</source>
-        <translation type="vanished">Klicken, um die Drehhilfslinie auf dem Bild zu platzieren, und dann Hilfslinien ziehen, um sie vertikal oder horizontal auszurichten. Sie können die Rotationshilfe neu positionieren, indem Sie an der Stelle ziehen, an der sich die Hilfslinien treffen.
-
-Rotation auf Null zurücksetzen mit &quot;Umschalt+L&quot;.
-
-Tastaturkürzel: L</translation>
-    </message>
-    <message>
-        <source>Change the editor&apos;s background brightness between black, gray, and white.</source>
-        <translation type="vanished">Ändert die Helligkeit des Editor-Hintergrundes in Schwarz, Grau oder Weiß.</translation>
-    </message>
-    <message>
-        <source>Click this or press &quot;C&quot; to save your crop.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Hier klicken oder &quot;C&quot; drücken, um den Zuschnitt zu speichern.
-
-Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Ausschnitt zu verschieben, ohne seine Größe zu ändern.
-
-Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende übliche Seitenverhältnis zu bringen. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
-    </message>
-    <message>
-        <source>Click this or press &quot;C&quot; to begin cropping.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Hier klicken oder &quot;C&quot; drücken, um mit dem Zuschneiden zu beginnen.
-
-Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Zuschnitt zu verschieben, ohne seine Größe zu ändern.
-
-Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zuschnitt auf das nächstliegende übliche Seitenverhältnis zu fixieren. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
-    </message>
-    <message>
-        <source>Click this to save your crop.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Hier klicken, um den Zuschnitt zu speichern.
-
-Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Ausschnitt zu verschieben, ohne seine Größe zu ändern.
-
-Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende übliche Seitenverhältnis zu bringen. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
-    </message>
-    <message>
-        <source>Click this to begin cropping.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Hier klicken, um mit dem Zuschneiden zu beginnen.
-
-Halten Sie die Strg-Taste gedrückt, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Halten Sie die Strg-Taste gedrückt, während Sie eine Kante oder das restliche Bild ziehen, um den Zuschnitt zu verschieben, ohne seine Größe zu ändern.
-
-Halten Sie die Umschalttaste gedrückt, während Sie eine Ecke ziehen, um den Zuschnitt auf das nächstliegende übliche Seitenverhältnis zu fixieren. Halten Sie die Umschalttaste gedrückt, während Sie den Ausschnitt bewegen, um ihn an der horizontalen und/oder vertikalen Mitte auszurichten.</translation>
-    </message>
-    <message>
         <location filename="../Edit.qml" line="2712"/>
         <source>Rotate image 90 degrees left.</source>
         <translation>Bild um 90 Grad nach links drehen.</translation>
-    </message>
-    <message>
-        <source>Click this or press &quot;L&quot; to save the rotation.
-
-Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
-
-Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation type="vanished">Hier klicken oder &quot;L&quot; drücken, um die Rotation zu speichern.
-
-Klicken Sie auf das Bild, um die Hilfslinien für die Rotation zu platzieren, dann klicken und ziehen Sie um das Bild herum, um die Rotation festzulegen. Sie können die Rotationshilfslinien neu positionieren, indem Sie in der Nähe des Rotationspunktes anfangen zu ziehen.
-
-Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drücken.</translation>
-    </message>
-    <message>
-        <source>Click this or press &quot;L&quot; to begin leveling the image.
-
-Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
-
-Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation type="vanished">Hier klicken oder &quot;L&quot; drücken, um mit der Ausrichtung des Bildes zu beginnen.
-
-Klicken Sie auf das Bild, um die Hilfslinien für die Rotation zu platzieren, dann klicken und ziehen Sie um das Bild herum, um die Rotation festzulegen. Sie können die Rotationshilfslinien neu positionieren, indem Sie in der Nähe des Rotationspunktes anfangen zu ziehen.
-
-Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drücken.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2791"/>
@@ -264,10 +181,6 @@ Setzen Sie die Rotation auf Null zurück, indem Sie &quot;Umschalt+L&quot; drüc
         <location filename="../EditTools.qml" line="114"/>
         <source>This is a histogram of the data in the raw file.</source>
         <translation>Dies ist ein Histogramm der Daten in der Raw-Datei.</translation>
-    </message>
-    <message>
-        <source>Auto CA correction</source>
-        <translation type="vanished">Auto CA Korrektur</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="124"/>
@@ -853,10 +766,6 @@ Dies ist nützlich, wenn Sie Fotos aus Ihrem Hauptverzeichnis entfernen und von 
 <context>
     <name>Organize</name>
     <message>
-        <source>Time zone</source>
-        <translation type="vanished">Zeitzone</translation>
-    </message>
-    <message>
         <location filename="../Organize.qml" line="48"/>
         <source>Time Zone</source>
         <translation>Zeitzone</translation>
@@ -910,14 +819,6 @@ Dies ist nützlich, wenn Sie Fotos aus Ihrem Hauptverzeichnis entfernen und von 
         <location filename="../Organize.qml" line="655"/>
         <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range. Press right/left to switch days, and shift to select multiple days.</source>
         <translation>Doppelklicken Sie auf das Datumshistogramm oben, um Fotos von einem bestimmten Tag anzuzeigen. Klicken Sie mit der Umschalttaste oder der rechten Maustaste, um einen Datumsbereich festzulegen. Pfeil Links/rechts drücken, um zwischen den Tagen zu wechseln, und Umschalttaste, um mehrere Tage zu wählen.</translation>
-    </message>
-    <message>
-        <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.</source>
-        <translation type="vanished">Doppelklicken Sie auf das Datumshistogramm oben, um Fotos von einem bestimmten Tag anzuzeigen. Klicken Sie mit der Umschalttaste oder der rechten Maustaste, um einen Datumsbereich festzulegen.</translation>
-    </message>
-    <message>
-        <source>Count: </source>
-        <translation type="vanished">Zähler: </translation>
     </message>
 </context>
 <context>
@@ -1077,10 +978,6 @@ This setting takes effect after applying settings and then restarting Filmulator
 Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem Neustart von Filmulator wirksam.</translation>
     </message>
     <message>
-        <source>Use System Language</source>
-        <translation type="vanished">Benutze Systemsprache</translation>
-    </message>
-    <message>
         <location filename="../Settings.qml" line="52"/>
         <source>Use system language</source>
         <translation>Benutze Systemsprache</translation>
@@ -1125,18 +1022,6 @@ Dies wird angewendet, sobald Sie die Einstellungen speichern.</translation>
         <location filename="../Settings.qml" line="80"/>
         <source>Reduce memory usage</source>
         <translation>Reduzieren der Speichernutzung</translation>
-    </message>
-    <message>
-        <source>Warning: VERY SLOW!
-
-Enabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.
-
-This setting takes effect after applying settings and then restarting Filmulator.</source>
-        <translation type="vanished">Warnung: SEHR LANGSAM!
-
-Wenn Sie dies aktivieren, wird das Caching im Editor ausgeschaltet. Es wird weniger Speicher verbrauchen, aber das Verschieben eines Schiebereglers führt dazu, dass er von Anfang an neu berechnet wird.
-
-Diese Einstellung wird nach dem Anwenden der Einstellungen und anschließendem Neustart von Filmulator wirksam.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="81"/>

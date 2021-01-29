@@ -2235,7 +2235,7 @@ SlimSplitView {
                 id: lensFunMenuButton
                 x: 0 * uiScale
                 y: 0 * uiScale
-                tooltipText: qsTr("Select the lens that was used in order to use lens corrections.\n\nType the lens name in the box to the right. Normally it will only search lenses for the camera's mount, but if the first character is a backslash (\"\\\") then it will search lenses from all mounts.\n\nDouble-click a lens to select it.")
+                tooltipText: qsTr("Select the lens that was used in order to use lens corrections.\n\nType the lens name in the box to the right. Normally it will only search lenses for the camera's mount, but if the first character is a backslash (\"")+"\\"+qsTr("\") then it will search lenses from all mounts.\n\nDouble-click a lens to select it.")
                 Image {
                     id: lensFunMenuButtonImage
                     width: 14 * uiScale

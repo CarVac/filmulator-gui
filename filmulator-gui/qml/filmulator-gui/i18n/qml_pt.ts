@@ -15,7 +15,7 @@ Avalie a imagem atual pressionando de 0 a 5 e X ou pressionando as teclas de set
     <message>
         <location filename="../Edit.qml" line="1991"/>
         <source>Image Saved</source>
-        <translation type="unfinished"></translation>
+        <translation>Imagem Salva</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2139"/>
@@ -55,23 +55,14 @@ Avalie a imagem atual pressionando de 0 a 5 e X ou pressionando as teclas de set
     <message>
         <source>Select the lens that was used in order to use lens corrections.
 
-Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot; \ &quot;) then it will search lenses from all mounts.
-
-Double-click a lens to select it.</source>
-        <translation type="vanished">Selecione a lente que foi usada para aplicar as correções desta lente.
-
-Digite o nome da lente na caixa à direita. Normalmente, ele pesquisará apenas as lentes da baioneta da marca, mas se o primeiro caractere for uma barra invertida (&quot; \ &quot;), ele pesquisará as lentes de todas as marcas.
-
-Clique duas vezes em uma lente para selecioná-la.</translation>
-    </message>
-    <message>
-        <location filename="../Edit.qml" line="2238"/>
-        <source>Select the lens that was used in order to use lens corrections.
-
 Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;&quot;) then it will search lenses from all mounts.
 
 Double-click a lens to select it.</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Selecione a lente que foi usada para usar as correções de lente.
+
+Digite o nome da lente na caixa à direita. Normalmente, ele pesquisará apenas as lentes do suporte da câmera, mas se o primeiro caractere for uma barra invertida (&quot;\&quot;), ele pesquisará as lentes de todos os suportes.
+
+Clique duas vezes em uma lente para selecioná-la.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2286"/>
@@ -168,69 +159,27 @@ Redefina a rotação para zero pressionando &quot;Shift + L&quot; ou clicando du
 Atalho: L</translation>
     </message>
     <message>
-        <source>Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.
-
-Reset the rotation to zero by pressing &quot;Shift+L&quot;.
-
-Shortcut: L</source>
-        <translation type="vanished">Clique para colocar a guia de rotação na imagem e arraste as linhas-guia para alinhá-las com o que você deseja que seja vertical ou horizontal. Você pode reposicionar a guia de rotação arrastando onde as linhas de guia se encontram. Redefina a rotação para zero pressionando &quot;Shift + L&quot;. Atalho: L</translation>
-    </message>
-    <message>
-        <source>Change the editor&apos;s background brightness between black, gray, and white.</source>
-        <translation type="vanished">Altera o brilho do fundo do editor entre preto, cinza e branco.</translation>
-    </message>
-    <message>
-        <source>Click this or press &quot;C&quot; to save your crop.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Clique aqui ou pressione &quot;C&quot; para salvar seu corte. Segure Ctrl ao arrastar um canto para bloquear a proporção. Segure a tecla Ctrl enquanto arrasta uma borda ou a imagem restante para mover o corte sem alterar seu tamanho. Segure a tecla Shift enquanto arrasta um canto para ajustar o corte à proporção de aspecto comum mais próxima. Segure Shift enquanto move o corte para ajustá-lo ao centro horizontal e / ou vertical.</translation>
-    </message>
-    <message>
-        <source>Click this or press &quot;C&quot; to begin cropping.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Clique aqui ou pressione &quot;C&quot; para começar a recortar. Segure Ctrl ao arrastar um canto para bloquear a proporção. Segure a tecla Ctrl enquanto arrasta uma borda ou a imagem restante para mover o corte sem alterar seu tamanho. Segure a tecla Shift enquanto arrasta um canto para ajustar o corte à proporção de aspecto comum mais próxima. Segure Shift enquanto move o corte para ajustá-lo ao centro horizontal e / ou vertical.</translation>
-    </message>
-    <message>
-        <source>Click this to save your crop.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Clique aqui para salvar seu corte. Segure Ctrl ao arrastar um canto para bloquear a proporção. Segure a tecla Ctrl enquanto arrasta uma borda ou a imagem restante para mover o corte sem alterar seu tamanho. Segure a tecla Shift enquanto arrasta um canto para ajustar o corte à proporção de aspecto comum mais próxima. Segure Shift enquanto move o corte para ajustá-lo ao centro horizontal e / ou vertical.</translation>
-    </message>
-    <message>
-        <source>Click this to begin cropping.
-
-Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
-
-Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.</source>
-        <translation type="vanished">Clique aqui para começar a cortar. Segure Ctrl ao arrastar um canto para bloquear a proporção. Segure a tecla Ctrl enquanto arrasta uma borda ou a imagem restante para mover o corte sem alterar seu tamanho. Segure a tecla Shift enquanto arrasta um canto para ajustar o corte à proporção de aspecto comum mais próxima. Segure Shift enquanto move o corte para ajustá-lo ao centro horizontal e / ou vertical.</translation>
-    </message>
-    <message>
         <location filename="../Edit.qml" line="2712"/>
         <source>Rotate image 90 degrees left.</source>
         <translation>Girar imagem 90 graus para a esquerda.</translation>
     </message>
     <message>
-        <source>Click this or press &quot;L&quot; to save the rotation.
+        <location filename="../Edit.qml" line="2238"/>
+        <source>Select the lens that was used in order to use lens corrections.
 
-Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
+Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;</source>
+        <translation>Selecione a lente que foi usada para usar as correções de lente.
 
-Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation type="vanished">Clique aqui ou pressione &quot;L&quot; para salvar a rotação. Clique na imagem para posicionar as guias de rotação e, a seguir, clique e arraste ao redor dela para definir a rotação. Você pode reposicionar as guias de rotação arrastando começando próximo ao ponto de rotação. Redefina a rotação para zero pressionando &quot;Shift + L&quot;.</translation>
+Digite o nome da lente na caixa à direita. Normalmente, ele pesquisará apenas as lentes do suporte da câmera, mas se o primeiro caractere for uma barra invertida (&quot;</translation>
     </message>
     <message>
-        <source>Click this or press &quot;L&quot; to begin leveling the image.
+        <location filename="../Edit.qml" line="2238"/>
+        <source>&quot;) then it will search lenses from all mounts.
 
-Click on the image to place the rotation guides, then click and drag around it to set the rotation. You can reposition the rotation guides by dragging starting near the rotation point.
+Double-click a lens to select it.</source>
+        <translation>&quot;), ele pesquisará as lentes de todos os suportes.
 
-Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
-        <translation type="vanished">Clique aqui ou pressione &quot;L&quot; para começar a nivelar a imagem. Clique na imagem para posicionar as guias de rotação e, a seguir, clique e arraste ao redor dela para definir a rotação. Você pode reposicionar as guias de rotação arrastando começando próximo ao ponto de rotação. Redefina a rotação para zero pressionando &quot;Shift + L&quot;.</translation>
+Clique duas vezes em uma lente para selecioná-la.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2791"/>
@@ -244,10 +193,6 @@ Reset the rotation to zero by pressing &quot;Shift+L&quot;.</source>
         <location filename="../EditTools.qml" line="114"/>
         <source>This is a histogram of the data in the raw file.</source>
         <translation>Este é um histograma dos dados no arquivo RAW.</translation>
-    </message>
-    <message>
-        <source>Auto CA correction</source>
-        <translation type="vanished">Correção automática de CA</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="124"/>
@@ -319,39 +264,27 @@ Não disponível para fotos não Bayer.</translation>
         <translation>Temperatura de cor</translation>
     </message>
     <message>
-        <source>Correct the image color for a light source of the indicated Kelvin temperature.
-
-The default value is the camera’s chosen WB.</source>
-        <translation type="vanished">Corrija a cor da imagem para uma fonte de luz com a temperatura Kelvin indicada.
-
-O valor padrão é o WB escolhido pela câmera.</translation>
-    </message>
-    <message>
         <location filename="../EditTools.qml" line="326"/>
         <source>Tint</source>
         <translation>Matiz</translation>
-    </message>
-    <message>
-        <source>Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.
-
-The default value is the camera’s chosen WB.</source>
-        <translation type="vanished">Corrija para uma fonte de luz verde / magenta. Os valores maiores são mais verdes e os menores são magenta.
-
-O valor padrão é o WB escolhido pela câmera.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="299"/>
         <source>Correct the image color for a light source of the indicated Kelvin temperature.
 
 The default value is the camera&apos;s chosen WB.</source>
-        <translation type="unfinished"></translation>
+        <translation>Corrija a cor da imagem para uma fonte de luz com a temperatura Kelvin indicada.
+
+O valor padrão é o WB escolhido pela câmera.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="327"/>
         <source>Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.
 
 The default value is the camera&apos;s chosen WB.</source>
-        <translation type="unfinished"></translation>
+        <translation>Corrija para uma fonte de luz verde / magenta. Os valores maiores são mais verdes e os menores são magenta.
+
+O valor padrão é o WB escolhido pela câmera.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="354"/>
@@ -714,20 +647,14 @@ Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparê
         <source>Enter using y&apos;s, M&apos;s, and d&apos;s, slashes, and other punctuation the desired structure. You can use single quotes to include words in the structure. For example:
 &quot;/yyyy/MM/yyyy-MM-dd/&quot;
 &quot;/yyyy/&apos;Alaska&apos;/yyyy-MM-dd/&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Insira usando y&apos;s, M&apos;s e d&apos;s, barras e outras pontuações na estrutura desejada. Você pode usar aspas simples para incluir palavras na estrutura. Por exemplo:
+&quot;/aaaa/MM/aaaa-MM-dd/&quot;
+&quot;/aaaa/&apos;Alasca&apos;/aaaa-MM-dd/&quot;</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="502"/>
         <source>If a file is in the database but you don&apos;t know when it was taken, just re-import it with this setup to load it into the queue.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enter using y’s, M’s, and d’s, slashes, and other punctuation the desired structure. You can use single quotes to include words in the structure. For example:
-&quot;/yyyy/MM/yyyy-MM-dd/&quot;
-&quot;/yyyy/’Alaska’/yyyy-MM-dd/&quot;</source>
-        <translation type="vanished">Insira usando y’s, M&apos;s e d&apos;s, barras e outras pontuações na estrutura desejada. Você pode usar aspas simples para incluir palavras na estrutura. Por exemplo:
-&quot;/aaaa/MM/aaaa-MM-dd/&quot;
-&quot;/aaaa/&apos;Alasca&apos;/aaaa-MM-dd/&quot;</translation>
+        <translation>Se um arquivo está no banco de dados, mas você não sabe quando foi obtido, apenas importe-o novamente com esta configuração para carregá-lo na fila.</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="301"/>
@@ -823,10 +750,6 @@ Isso é útil quando você remove fotos do diretório principal e deseja trabalh
         <comment>Put a line break in if it gets much longer</comment>
         <translation>Traga os arquivos importados anteriormente para a fila</translation>
     </message>
-    <message>
-        <source>If a file is in the database but you don’t know when it was taken, just re-import it with this setup to load it into the queue.</source>
-        <translation type="vanished">Se um arquivo está no banco de dados, mas você não sabe quando foi obtido, apenas importe-o novamente com esta configuração para carregá-lo na fila.</translation>
-    </message>
 </context>
 <context>
     <name>ImportDirEntry</name>
@@ -851,10 +774,6 @@ Isso é útil quando você remove fotos do diretório principal e deseja trabalh
 </context>
 <context>
     <name>Organize</name>
-    <message>
-        <source>Time zone</source>
-        <translation type="vanished">Fuso horário</translation>
-    </message>
     <message>
         <location filename="../Organize.qml" line="48"/>
         <source>Time Zone</source>
@@ -909,14 +828,6 @@ Isso é útil quando você remove fotos do diretório principal e deseja trabalh
         <location filename="../Organize.qml" line="655"/>
         <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range. Press right/left to switch days, and shift to select multiple days.</source>
         <translation>Clique duas vezes no Histograma de Data acima para visualizar as fotos de um determinado dia. Clique com a tecla Shift ou clique com o botão direito para definir um intervalo de datas. Pressione direita / esquerda para alternar entre os dias e Shift para selecionar vários dias.</translation>
-    </message>
-    <message>
-        <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range.</source>
-        <translation type="vanished">Clique duas vezes no Histograma de Data acima para visualizar as fotos de um determinado dia. Clique com a tecla Shift ou clique com o botão direito para definir um intervalo de datas.</translation>
-    </message>
-    <message>
-        <source>Count: </source>
-        <translation type="vanished">Contagem:</translation>
     </message>
 </context>
 <context>
@@ -1073,11 +984,7 @@ imagem ilegível</translation>
 This setting takes effect after applying settings and then restarting Filmulator.</source>
         <translation>Ajusta o tamanho de todos os controles no programa.
 
-Esta configuração entra em vigor após aplicar as configurações e reiniciar o Filmulator..</translation>
-    </message>
-    <message>
-        <source>Use System Language</source>
-        <translation type="vanished">Use a linguagem do sistema</translation>
+Esta configuração entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="52"/>
@@ -1124,14 +1031,6 @@ Isso é aplicado assim que você salva as configurações.</translation>
         <location filename="../Settings.qml" line="80"/>
         <source>Reduce memory usage</source>
         <translation>Reduza o uso de memória</translation>
-    </message>
-    <message>
-        <source>Warning: VERY SLOW!
-
-Enabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.
-
-This setting takes effect after applying settings and then restarting Filmulator.</source>
-        <translation type="vanished">Aviso: MUITO LENTO! Ativar isso desativa o armazenamento em cache no editor. Ele consumirá menos memória, mas mover qualquer controle deslizante fará com que ele seja recomputado desde o início. Esta configuração entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="81"/>
@@ -1193,31 +1092,31 @@ Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</
         <location filename="../Settings.qml" line="198"/>
         <source>Checking database version.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Verificando versão do database.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="201"/>
         <source>Database unavailable from server.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Database não disponível no servidor.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="204"/>
         <source>No local database yet.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Sem database local.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="207"/>
         <source>Update available.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Atualização disponível.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="210"/>
         <source>Up to date.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Atualizado.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="233"/>
@@ -1234,43 +1133,43 @@ Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</
         <location filename="../Settings.qml" line="273"/>
         <source>Updating database.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Atualização em andamento.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="276"/>
         <source>Success. Please restart.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Sucesso. Por favor reinicie.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="279"/>
         <source>Already up to date.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Já atualizado.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="282"/>
         <source>Unavailable from server.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Não disponível no servidor.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="285"/>
         <source>Failure (initialization)</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Falha (inicialização)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="288"/>
         <source>Failure (file)</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Falha (arquivo)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="291"/>
         <source>Failure (retrieve)</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Falha (recuperar)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="314"/>
@@ -1287,25 +1186,25 @@ Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</
         <location filename="../Settings.qml" line="360"/>
         <source>Download successful.</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Baixado com sucesso.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="363"/>
         <source>Failure (initialization)</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Falha (inicialização)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="366"/>
         <source>Failure (file)</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Falha (arquivo)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="369"/>
         <source>Failure (retrieve)</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Falha (recuperar)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="391"/>

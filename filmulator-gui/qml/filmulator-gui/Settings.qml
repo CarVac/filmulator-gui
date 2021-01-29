@@ -161,7 +161,7 @@ Rectangle {
         spacing: 0 * uiScale
         x: 358 * uiScale
         y: 3 * uiScale
-        width: 350 * uiScale
+        width: 400 * uiScale
 
         Rectangle {
             id: lensfunCheck
@@ -404,6 +404,6 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.margins: 4 * uiScale
         font.pixelSize: 12.0 * uiScale
-        text: "v0.11.1rc5" + " "
+        text: "v0.11.1rc6" + " "
     }
 }
