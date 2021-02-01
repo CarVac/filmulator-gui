@@ -1106,7 +1106,7 @@ SlimSplitView {
             onTriggered: {
                 filmProvider.writeTiff()
                 queueModel.markSaved(paramManager.imageIndex)
-                root.savestatus = "saved"
+                root.saveStatus = "saved"
             }
             Component.onCompleted: {
                 saveTIFFButton.tooltipWanted.connect(root.tooltipWanted)
