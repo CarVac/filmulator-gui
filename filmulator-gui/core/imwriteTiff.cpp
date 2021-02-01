@@ -74,50 +74,26 @@ bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
 
     TIFFWriteDirectory(out);
 
-    //write some limited metadata; exiv2 won't work with libtiff
-
-    uint64 dir_offset = 0;
-    TIFFCreateEXIFDirectory(out);
-
-    uint16 iso = exifData["Exif.Photo.ISOSpeedRatings"].toLong();
-    if (!TIFFSetField(out, EXIFTAG_ISOSPEEDRATINGS, 1, &iso))
-    {
-        std::cout << "tiff failed to write iso" << std::endl;
-    }
-    double exposuretime = exifData["Exif.Photo.ExposureTime"].toFloat();
-    if (!TIFFSetField(out, EXIFTAG_EXPOSURETIME, exposuretime))
-    {
-        std::cout << "tiff failed to write exposure time" << std::endl;
-    }
-    double fnumber = exifData["Exif.Photo.FNumber"].toFloat();
-    if (!TIFFSetField(out, EXIFTAG_FNUMBER, fnumber))
-    {
-        std::cout << "tiff failed to write fnumber" << std::endl;
-    }
-    double focallength = exifData["Exif.Photo.FocalLength"].toFloat();
-    if (!TIFFSetField(out, EXIFTAG_FOCALLENGTH, focallength))
-    {
-        std::cout << "tiff failed to write focal length" << std::endl;
-    }
-
-    if (!TIFFWriteCustomDirectory(out, &dir_offset))
-    {
-        std::cout << "tiff failed to write custom directory" << std::endl;
-    }
-    if (!TIFFSetDirectory(out, 0))
-    {
-        std::cout << "tiff failed to set directory" << std::endl;
-    }
-    if (!TIFFSetField(out, TIFFTAG_EXIFIFD, dir_offset))
-    {
-        std::cout << "tiff failed to set field" << std::endl;
-    }
-
     (void) TIFFClose(out);
 
     if (buf)
         _TIFFfree(buf);
 
+    //Programs reading tiffs really freak out if you write the full exif data
+    //So we write only the basics here.
+    Exiv2::ExifData minimumData;
+    minimumData["Exif.Photo.ISOSpeedRatings"] = exifData["Exif.Photo.ISOSpeedRatings"];
+    minimumData["Exif.Photo.ExposureTime"]    = exifData["Exif.Photo.ExposureTime"];
+    minimumData["Exif.Photo.FNumber"]         = exifData["Exif.Photo.FNumber"];
+    minimumData["Exif.Photo.FocalLength"]     = exifData["Exif.Photo.FocalLength"];
+
+    minimumData.sortByTag(); //darktable's does this so maybe we should
+
+    auto image = Exiv2::ImageFactory::open(outputfilename);
+    assert(image.get() != 0);
+
+    image->setExifData(minimumData);
+    image->writeMetadata();
 
     return 0;
 }
