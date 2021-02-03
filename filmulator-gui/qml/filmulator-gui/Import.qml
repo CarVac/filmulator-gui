@@ -109,13 +109,14 @@ Rectangle {
             title: qsTr("Source Directory")
             tooltipText: qsTr("Select or type in the directory containing photos to be imported.")
             dirDialogTitle: qsTr("Select the directory containing the photos to import. It will only import raw files.")
-            warningTooltipText: empty ? qsTr("Choose a directory to import from.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
-            erroneous: (empty || (importInPlace && containsDCIM))
+            warningTooltipText: empty ? qsTr("Choose a directory to import from.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.\n\nDouble-click the error icon to proceed.")
+            erroneous: (empty || (importInPlace && containsDCIM && !clearError))
             property bool containsDCIM: false
             property bool empty: enteredText === ""
             onEnteredTextChanged: {
                 root.folderPath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, false)
+                clearError = false;
             }
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
@@ -130,14 +131,15 @@ Rectangle {
             title: qsTr("Source Files")
             tooltipText: qsTr("Select one or more files to import.")
             fileDialogTitle: qsTr("Select the file(s) to import.")
-            warningTooltipText: !(importInPlace && containsDCIM) ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
-            erroneous: (invalid || (importInPlace && containsDCIM) || enteredText == "")
+            warningTooltipText: !(importInPlace && containsDCIM && !clearError) ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.\n\nDouble-click the error icon to proceed.")
+            erroneous: (invalid || (importInPlace && containsDCIM && !clearError) || enteredText == "")
             property bool containsDCIM: false
             property bool invalid: false
             nameFilters: importModel.getNameFilters();
             onEnteredTextChanged: {
                 root.filePath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, true)
+                clearError = false
                 invalid = false //If it was invalid, we need to at least let them try to import again once they change the contents
             }
             Connections {
@@ -373,8 +375,10 @@ Rectangle {
             onTriggered: {
                 if (root.sourceIsFolder) {
                     importModel.importDirectory_r(root.folderPath, root.importInPlace, root.replace)
+                    sourceDirEntry.clearError = false
                 } else {
                     importModel.importFileList(root.filePath, root.importInPlace, root.replace)
+                    sourceFileEntry.clearError = false
                 }
             }
             Component.onCompleted: {

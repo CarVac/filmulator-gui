@@ -16,6 +16,7 @@ Rectangle {
     property alias dirDialogTitle: dirDialog.title
     property alias enteredText: textEntryBox.text
     property bool erroneous: false
+    property bool clearError: false
     property bool highlight: false
 
     color: highlight ? Colors.darkOrangeH : Colors.darkGray
@@ -55,6 +56,13 @@ Rectangle {
             source: "qrc:///icons/errortriangle.png"
             antialiasing: true
             visible: root.erroneous
+            MouseArea {
+                id: errorMouse
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                enabled: root.erroneous
+                onDoubleClicked: root.clearError = true
+            }
         }
 
         TextInput {

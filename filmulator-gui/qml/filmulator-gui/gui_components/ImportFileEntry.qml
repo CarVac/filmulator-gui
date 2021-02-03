@@ -17,6 +17,7 @@ Rectangle {
     property alias enteredText: textEntryBox.text
     property alias nameFilters: fileDialog.nameFilters
     property bool erroneous: false
+    property bool clearError: false
     property bool highlight: false
     property bool multiSelect: true
 
@@ -57,6 +58,13 @@ Rectangle {
             source: "qrc:///icons/errortriangle.png"
             antialiasing: true
             visible: root.erroneous
+            MouseArea {
+                id: errorMouse
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                enabled: root.erroneous
+                onDoubleClicked: root.clearError = true
+            }
         }
 
         TextInput {
