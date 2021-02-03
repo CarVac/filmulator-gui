@@ -57,7 +57,8 @@ script:
   - pwd
     # Dear upstream, please install to more standard locations
   - mkdir -p appdir/usr/bin ; mv appdir/bin/filmulator appdir/usr/bin/filmulator-gui
-  - mkdir -p appdir/usr/qml ; mv appdir/share/Filmulator/qml/filmulator-gui/* appdir/usr/qml/
+    # Can we remove this step, now that we use the QML compiler?
+    # - mkdir -p appdir/usr/qml ; mv appdir/share/Filmulator/qml/filmulator-gui/* appdir/usr/qml/
   - rm -rf appdir/bin/
   - rm -rf appdir/share/
   - mkdir -p appdir/usr/share/applications/ ; cp ../filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
