@@ -57,8 +57,7 @@ script:
   - pwd
     # Dear upstream, please install to more standard locations
   - mkdir -p appdir/usr/bin ; mv appdir/bin/filmulator appdir/usr/bin/filmulator-gui
-    # Can we remove this step, now that we use the QML compiler?
-    # - mkdir -p appdir/usr/qml ; mv appdir/share/Filmulator/qml/filmulator-gui/* appdir/usr/qml/
+  - mkdir -p appdir/usr/qml ; mv appdir/share/Filmulator/qml/filmulator-gui/* appdir/usr/qml/
   - rm -rf appdir/bin/
   - rm -rf appdir/share/
   - mkdir -p appdir/usr/share/applications/ ; cp ../filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
@@ -73,9 +72,7 @@ script:
   - export LD_LIBRARY_PATH=/usr/local/lib
     # ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
     # ls -l ./appdir/
-    # Can we remove the qml command here, since we use the QML compiler?
-    # - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
-  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -verbose=2
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage -qmldir=. -qmldir=appdir/usr/qml/ -verbose=2
   - find ./appdir -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
     #- curl --upload-file ./Filmulator*.AppImage https://transfer.sh/Filmulator-git.$(git rev-parse --short HEAD)-x86_64.AppImage
   - curl https://gist.githubusercontent.com/gingerbeardman/a7737e4c89fccab8605f8538ddaeec0d/raw/a78f5253b0fcdbd7b893f91627a29498690356ea/file.io.sh | sudo tee /usr/local/bin/file.io && sudo chmod +x /usr/local/bin/file.io
