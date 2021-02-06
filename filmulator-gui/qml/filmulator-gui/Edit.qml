@@ -11,10 +11,22 @@ SlimSplitView {
     orientation: Qt.Horizontal
     property real uiScale: 1
     property bool imageReady: false//must only be made ready when the full size image is ready
+    property bool previewReady: false//must be made true when preview OR full size is ready
+    property bool noImage: true//gets turned false once any image is loaded, and stays false
+
     property bool requestingCropping: false
     property bool cropping: false
+    property int cropMarkFlashCount: 0
+    property bool cropMarkFlash: false
     property bool cancelCropping: false
     property real cropMargin: 50//200
+
+    property bool requestingLeveling: false
+    property bool leveling: false
+    property bool cancelLeveling: false
+    property real tempCropHeight: 0
+
+    property bool onEditTab
 
     onRequestingCroppingChanged: {
         if (requestingCropping == true) {
@@ -32,17 +44,26 @@ SlimSplitView {
                 imageRect.cropAspect = paramManager.cropAspect
                 imageRect.cropVoffset = paramManager.cropVoffset
                 imageRect.cropHoffset = paramManager.cropHoffset
-                paramManager.cropHeight = 0
+                paramManager.cropHeight = 0 //signal to image pipeline to disable cropping
             }
         } else {//we're done cropping
             if (!cancelCropping) {//accepted the crop
+                if (imageRect.noCrop) {
+                    //if the crop is the full image, we want to set it to 0
+                    //if we don't, if you rotate the image 90 degrees it keeps the aspect ratio
+                    paramManager.cropHeight = 0
+                    paramManager.cropAspect = 0
+                    paramManager.cropVoffset = 0
+                    paramManager.cropHoffset = 0
+                } else {//the crop isn't the entire image
+                    paramManager.cropHeight = imageRect.readHeight
+                    paramManager.cropAspect = imageRect.readAspect
+                    paramManager.cropVoffset = imageRect.readVoffset
+                    paramManager.cropHoffset = imageRect.readHoffset
+                }
                 //send stuff back to database
-                paramManager.cropHeight = imageRect.readHeight
-                paramManager.cropAspect = imageRect.readAspect
-                paramManager.cropVoffset = imageRect.readVoffset
-                paramManager.cropHoffset = imageRect.readHoffset
                 paramManager.writeback()
-            } else {
+            } else { //canceling crop, so no writeback
                 cancelCropping = false
             }
         }
@@ -55,7 +76,66 @@ SlimSplitView {
         flicky.returnToBounds()
         flicky.contentX = flicky.contentX + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
         flicky.contentY = flicky.contentY + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
+        if (cropping) {
+            //Flash the crop mark
+            cropMarkFlash = true
+            cropMarkTimer.start()
+        } else {
+            cropMarkTimer.stop()
+            cropMarkFlash = false
+            cropMarkFlashCount = 0
+        }
     }
+    Timer {
+        id: cropMarkTimer
+        interval: 250
+        onTriggered: {
+            if (cropMarkFlashCount < 3) {
+                cropMarkFlash = !cropMarkFlash
+                cropMarkFlashCount += 1
+                cropMarkTimer.restart()
+            }
+        }
+    }
+
+    onRequestingLevelingChanged: {
+        if (requestingLeveling == true) {
+            //set up the leveling variables
+            imageRect.rotationAngle = paramManager.rotationAngle
+            if (paramManager.rotationPointX >= 0 || paramManager.rotationPointY >= 0) {//the database has a point already
+                rotationDrag.notClickedYet = false
+            } else {
+                rotationDrag.notClickedYet = true //have it follow the cursor around until it's clicked
+            }
+
+            imageRect.readRotationPointX = paramManager.rotationPointX
+            imageRect.readRotationPointY = paramManager.rotationPointY
+            if (paramManager.rotationAngle == 0) {
+                //we don't need to update the image, so just turn on cropping
+                leveling = true
+            } else { //we need to disable rotation; -50 will indicate to the pipeline that this is disabled.
+                paramManager.rotationAngle = -50
+                //when the image is ready, then cropping will be set to true by topImage
+            }
+            root.tempCropHeight = paramManager.cropHeight
+            paramManager.cropHeight = 0
+        } else {//we're done leveling
+            if (!cancelLeveling) {//accepted the leveling
+                paramManager.rotationPointX = imageRect.readRotationPointX
+                paramManager.rotationPointY = imageRect.readRotationPointY
+                paramManager.rotationAngle = imageRect.rotationAngle
+                paramManager.cropHeight = root.tempCropHeight
+                paramManager.writeback()
+            } else {
+                cancelLeveling = false
+            }
+        }
+    }
+
+    onLevelingChanged: {
+        flicky.returnToBounds()
+    }
+
     signal tooltipWanted(string text, int x, int y)
 
     //This is for telling the queue the latest image source so it can show it until the thumb updates.
@@ -76,6 +156,30 @@ SlimSplitView {
             width: parent.width
             height: Math.floor(parent.height - 30 * uiScale)
             color: photoBox.backgroundColor == 2 ? "white" : photoBox.backgroundColor == 1 ? "gray" : "black"
+
+            Rectangle {
+                id: noPictureBox
+                width: 400 * uiScale
+                height: noPictureText.contentHeight + 40 * uiScale
+                anchors.centerIn: parent
+                color: Colors.darkGray
+                border.color: Colors.lowGray
+                border.width: 2 * uiScale
+                radius: 10 * uiScale
+                visible: root.noImage
+
+                Text {
+                    id: noPictureText
+                    width: 350 * uiScale
+                    anchors.centerIn: parent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: "white"
+                    font.pixelSize: 14.0 * uiScale
+                    wrapMode: Text.Wrap
+                    text: qsTr("Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.\n\nRate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.")
+                }
+            }
         }
 
         Flickable {
@@ -140,9 +244,11 @@ SlimSplitView {
                             //selectImage still emits update image via paramChargeWrapper so we don't need to do any more
                         }
                         function onUpdateImage(newImage) {
-                            if (newImage) {//If this comes from paramManager.selectImage, then we want to cancel crop.
+                            if (newImage) {//If this comes from paramManager.selectImage, then we want to cancel crop or leveling
                                 cancelCropping = true
                                 requestingCropping = false
+                                cancelLeveling = true
+                                requestingLeveling = false
                             }
 
                             //Irrespective of that
@@ -174,8 +280,15 @@ SlimSplitView {
                     }
 
                     onStatusChanged: {
+                        var num
+                        var s
+                        var size
+                        console.log("topImage state: " + topImage.state)
+                        console.log("topImage status: " + topImage.status)
                         if (topImage.status == Image.Ready) { //if the image is now ready
-                            // First, we copy to the bottom image, regardless of what else.
+                            //First, we turn off the no-image-text
+                            root.noImage = false
+                            //Next, we copy to the bottom image, regardless of what else.
                             console.log("top image ready")
                             var topFitScaleX = flicky.width/topImage.width
                             var topFitScaleY = flicky.height/topImage.height
@@ -192,30 +305,33 @@ SlimSplitView {
                                 //This has to happen after the size actually changes. It's put below.
                             }
 
-                            console.log("TopImage state: " + topImage.state)
 
                             if (topImage.state == "lf") {//it was loading the full image
                                 topImage.state = "sf"//showing full image
                                 root.imageReady = true
+                                root.previewReady = true
                                 root.imageURL(topImage.source)//replace the thumbnail in the queue with the live image
+                                filmProvider.writeThumbnail(paramManager.imageIndex)
                             }
                             else {//it was loading the thumb or the quick image
                                 root.imageReady = false
                                 //Increment the image index
-                                var num = (topImage.index + 1) % 1000000//1 in a million
+                                num = (topImage.index + 1) % 1000000//1 in a million
                                 topImage.index = num;
-                                var s = num+"";
-                                var size = 6 //6 digit number
+                                s = num+"";
+                                size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
                                 topImage.indexString = s
 
                                 //now actually ask for the image
                                 if (topImage.state == "lt") {//it was loading the thumbnail
                                     topImage.state = "lq"//loading quick pipe
+                                    root.previewReady = false
                                     topImage.source = "image://filmy/q" + topImage.indexString
                                 }
                                 else if (topImage.state == "lq") {//it was loading the quick image
                                     topImage.state = "lf"//loading full image
+                                    root.previewReady = true
                                     topImage.source = "image://filmy/f" + topImage.indexString
                                 }
                             }
@@ -228,6 +344,12 @@ SlimSplitView {
                             } else {
                                 root.cropping = false
                             }
+                            //Same for leveling
+                            if (root.requestingLeveling) {
+                                root.leveling = true
+                            } else {
+                                root.leveling = false
+                            }
                         }
                         else if (photoBox.loadingError) {//the source file is not available
                             //This needed to be added in case you click on an unavailable image before any image is loaded
@@ -239,17 +361,19 @@ SlimSplitView {
                             root.imageReady = false
                             console.log("top image errored")
                             //Increment the image index
-                            var num = (topImage.index + 1) % 1000000//1 in a million
+                            num = (topImage.index + 1) % 1000000//1 in a million
                             topImage.index = num;
-                            var s = num+"";
-                            var size = 6 //6 digit number
+                            s = num+"";
+                            size = 6 //6 digit number
                             while (s.length < size) {s = "0" + s}
                             topImage.indexString = s
 
                             //now actually ask for the image
+                            //we always go back to loading quick even when the full image fails
                             topImage.state = "lq"//loading quick pipe
                             topImage.source = "image://filmy/q" + topImage.indexString
                         }
+                        console.log("topImage state became: " + topImage.state)
                     }
                 }
                 Image {
@@ -262,6 +386,7 @@ SlimSplitView {
                     transformOrigin: Item.TopLeft
                     onStatusChanged: {
                         if (bottomImage.status == Image.Ready) {
+                            console.log("bottom image ready")
                             if (flicky.fit) {
                                 //This is probably not necessary, but I don't want rounding errors to crop up.
                                 bottomImage.scale = flicky.fitScale
@@ -521,7 +646,7 @@ SlimSplitView {
                     id: cropleft
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeLeft.handleVisible
+                    visible: root.cropping && (cropResizeLeft.handleVisible || root.cropMarkFlash)
                     width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.top: cropmarker.top
                     anchors.bottom: cropmarker.bottom
@@ -537,7 +662,7 @@ SlimSplitView {
                     id: cropright
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeRight.handleVisible
+                    visible: root.cropping && (cropResizeRight.handleVisible || root.cropMarkFlash)
                     width: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.top: cropmarker.top
                     anchors.bottom: cropmarker.bottom
@@ -553,7 +678,7 @@ SlimSplitView {
                     id: croptop
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeTop.handleVisible
+                    visible: root.cropping && (cropResizeTop.handleVisible || root.cropMarkFlash)
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.left: cropmarker.left
                     anchors.right: cropmarker.right
@@ -569,7 +694,7 @@ SlimSplitView {
                     id: cropbottom
                     color: 'blue'
                     opacity: 0.5
-                    visible: root.cropping && cropResizeBottom.handleVisible
+                    visible: root.cropping && (cropResizeBottom.handleVisible || root.cropMarkFlash)
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     anchors.left: cropmarker.left
                     anchors.right: cropmarker.right
@@ -585,7 +710,7 @@ SlimSplitView {
                     id: croptopleft
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeTopLeft.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeTopLeft.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -601,7 +726,7 @@ SlimSplitView {
                     id: croptopright
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeTopRight.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeTopRight.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -617,7 +742,7 @@ SlimSplitView {
                     id: cropbottomleft
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeBottomLeft.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeBottomLeft.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width-2*width)*bottomImage.scale + (cropmarker.hoffset - cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -633,7 +758,7 @@ SlimSplitView {
                     id: cropbottomright
                     color: 'purple'
                     opacity: 0.5
-                    visible: root.cropping && (cropResizeBottomRight.handleVisible || cropmarker.tooSmall)
+                    visible: root.cropping && (cropResizeBottomRight.handleVisible || cropmarker.tooSmall || root.cropMarkFlash)
                     width:  imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     height: imageRect.cropHandleWidth*uiScale/bottomImage.scale
                     x: bottomImage.x + Math.round(0.5*(bottomImage.width)*bottomImage.scale + (cropmarker.hoffset + cropmarker.width/(2*bottomImage.width))*bottomImage.width*bottomImage.scale)
@@ -651,6 +776,8 @@ SlimSplitView {
                 property real readAspect: cropmarker.width / cropmarker.height
                 property real readVoffset: cropmarker.voffset
                 property real readHoffset: cropmarker.hoffset
+                //Readout for checking whether the crop is the entire image or not
+                property bool noCrop: cropmarker.height===bottomImage.height && cropmarker.width===bottomImage.width
                 //For showing on the screen
                 property real displayWidth:  cropmarker.width
                 property real displayHeight: cropmarker.height
@@ -1607,6 +1734,216 @@ SlimSplitView {
                         cropDrag.updatePosition()
                     }
                 }
+
+                //Leveling tool stuff.
+
+                //We'll store one point relative to the image boundaries, and the angle.
+                //The point will be defined relative to the image width and height.
+                // We don't care if it moves somewhere unrelated when copy/pasting between images.
+                // When you rotate the image by 90 degrees, it'll move with the image.
+                //The angle is going to be restricted to between -45 and +45 degrees.
+                property real rotationAngle
+                property real readRotationPointX
+                property real readRotationPointY
+                property real displayRotationPointX: readRotationPointX*bottomImage.width
+                property real displayRotationPointY: readRotationPointY*bottomImage.height
+                //When you rotate farther it'll modulo back.
+
+                //Next is the visible stuff.
+                //We make them invisible when the coordinates are negative
+                Rectangle {
+                    id: verticalAngleMark
+                    width: 1
+                    height: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
+                    x: bottomImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
+                    color: (rotationDrag.overCross && !rotationDrag.centering) ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    rotation: imageRect.rotationAngle
+                    visible: root.leveling && (imageRect.readRotationPointX >= 0) && (imageRect.readRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
+                }
+                Rectangle {
+                    id: horizontalAngleMark
+                    width: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
+                    height: 1
+                    x: bottomImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
+                    color: (rotationDrag.overCross && !rotationDrag.centering) ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    rotation: imageRect.rotationAngle
+                    visible: root.leveling && (imageRect.readRotationPointX >= 0) && (imageRect.readRotationPointY >= 0) && (root.imageReady || root.previewReady) && root.requestingLeveling
+                }
+                Rectangle {
+                    id: rotationCenterMark
+                    width: 40 * uiScale
+                    height: width
+                    x: bottomImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
+                    radius: width/2
+                    color: "#00000000"
+                    border.width: 2 * uiScale
+                    border.color: Colors.medOrange
+                    visible: root.leveling && (rotationDrag.overPoint || rotationDrag.centering) && (root.imageReady || root.previewReady) && root.requestingLeveling
+                }
+
+                MouseArea {
+                    id: rotationDrag
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    width: bottomImage.width
+                    height: bottomImage.height
+                    x: bottomImage.x
+                    y: bottomImage.y
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    enabled: root.leveling && (root.imageReady || root.previewReady) && root.requestingLeveling
+                    visible: root.leveling && (root.imageReady || root.previewReady) && root.requestingLeveling
+                    hoverEnabled: true
+                    preventStealing: false//root.leveling && root.imageReady
+
+                    property bool notClickedYet: true
+                    property bool centering: false
+                    property bool rotating: false
+                    property bool overPoint: false
+                    property bool overCross: false
+                    property real oldAngle: 0
+                    property real oldX: 0
+                    property real oldY: 0
+                    property real tempRotationPointX: -1
+                    property real tempRotationPointY: -1
+
+                    property real oldImageWidth: 1
+                    property real oldImageHeight: 1
+
+                    onPressed: {
+                        if (pressedButtons & Qt.LeftButton) {
+                            flicky.returnToBounds()
+                            if (notClickedYet) { //no center yet
+                                notClickedYet = false
+                                imageRect.readRotationPointX = mouse.x / bottomImage.width
+                                imageRect.readRotationPointY = mouse.y / bottomImage.height
+                                preventStealing = true
+                            } else { //the center has already been defined
+                                var distanceX = (mouse.x - imageRect.displayRotationPointX)*bottomImage.scale
+                                var distanceY = (mouse.y - imageRect.displayRotationPointY)*bottomImage.scale
+                                if (overPoint) {//drag the rotation reference point if it's close enough
+                                    centering = true
+                                    rotating = false
+                                    oldX = mouse.x
+                                    oldY = mouse.y
+                                    tempRotationPointX = imageRect.readRotationPointX
+                                    tempRotationPointY = imageRect.readRotationPointY
+                                    preventStealing = true
+                                } else if (overCross){ //rotation
+                                    centering = false
+                                    rotating = true
+                                    oldAngle = Math.atan2(mouse.y-imageRect.displayRotationPointY, mouse.x-imageRect.displayRotationPointX)*180/Math.PI
+                                    preventStealing = true
+                                }
+                            }
+                        }
+                    }
+                    onPositionChanged: {
+                        if (notClickedYet) { //display the cursors where the mouse is
+                            imageRect.readRotationPointX = mouse.x / bottomImage.width
+                            imageRect.readRotationPointY = mouse.y / bottomImage.height
+                        } else {
+                            if (rotationDrag.pressed && (pressedButtons & Qt.LeftButton)) {
+                                if (centering) { //drag the rotation reference point
+                                    var deltaX = mouse.x - oldX
+                                    var deltaY = mouse.y - oldY
+                                    tempRotationPointX += deltaX / bottomImage.width
+                                    tempRotationPointY += deltaY / bottomImage.height
+                                    imageRect.readRotationPointX = Math.max(0, Math.min(1, tempRotationPointX))
+                                    imageRect.readRotationPointY = Math.max(0, Math.min(1, tempRotationPointY))
+                                    oldX = mouse.x
+                                    oldY = mouse.y
+                                } else if (rotating) {
+                                    var newAngle = Math.atan2(mouse.y-imageRect.displayRotationPointY, mouse.x-imageRect.displayRotationPointX)*180/Math.PI
+                                    var delta = newAngle - oldAngle
+                                    imageRect.rotationAngle += delta
+                                    if (imageRect.rotationAngle > 45) { //more than 45 degrees either way
+                                        imageRect.rotationAngle -= 90
+                                    } else if (imageRect.rotationAngle < -45) {
+                                        imageRect.rotationAngle += 90
+                                    }
+
+                                    oldAngle = newAngle
+                                }
+                            }
+                            var distanceX = (mouse.x - imageRect.displayRotationPointX)*bottomImage.scale
+                            var distanceY = (mouse.y - imageRect.displayRotationPointY)*bottomImage.scale
+                            var radius = Math.sqrt(distanceX*distanceX + distanceY*distanceY)
+                            var mouseAngle = Math.atan2(mouse.y-imageRect.displayRotationPointY, mouse.x-imageRect.displayRotationPointX)*180/Math.PI
+                            if (mouseAngle > 90) {
+                                mouseAngle -= 90
+                            }
+                            if (mouseAngle < -90) {
+                                mouseAngle += 90
+                            }
+                            if (mouseAngle > 45) {
+                                mouseAngle -= 90
+                            }
+                            if (mouseAngle < -45) {
+                                mouseAngle += 90
+                            }
+                            var deltaAngle = Math.abs(mouseAngle - imageRect.rotationAngle)
+
+                            if (radius < rotationCenterMark.radius) {
+                                overPoint = true
+                                overCross = false
+                            } else {
+                                overPoint = false
+                                if(radius * Math.sin(deltaAngle*Math.PI/180) < 30*uiScale) {
+                                    overCross = true
+                                } else {
+                                    overCross = false
+                                }
+                            }
+                        }
+                    }
+                    onReleased: {
+                        imageRect.readRotationPointX = Math.max(0, Math.min(1, imageRect.readRotationPointX))
+                        imageRect.readRotationPointX = Math.max(0, Math.min(1, imageRect.readRotationPointX))
+                        centering = false
+                        rotating = false
+                        preventStealing = false
+                    }
+                    onDoubleClicked: {
+                        if (pressedButtons & Qt.RightButton) {
+                            imageRect.rotationAngle = 0
+                        }
+                    }
+                    onExited: {
+                        if (!rotationDrag.pressed) {
+                            overPoint = false
+                            overCross = false
+                        }
+                    }
+                    Connections {
+                        target: bottomImage
+                        function onWidthChanged() {
+                            if (rotationDrag.pressed) {
+                                console.log("updating oldx")
+                                console.log(rotationDrag.oldX)
+                                rotationDrag.oldX = rotationDrag.oldX*bottomImage.width/rotationDrag.oldImageWidth
+                                console.log(rotationDrag.oldX)
+                            }
+                            rotationDrag.oldImageWidth = bottomImage.width
+                        }
+                        function onHeightChanged() {
+                            if (rotationDrag.pressed) {
+                                console.log("updating oldy")
+                                console.log(rotationDrag.oldY)
+                                rotationDrag.oldY = rotationDrag.oldY*bottomImage.height/rotationDrag.oldImageHeight
+                                console.log(rotationDrag.oldY)
+                            }
+                            rotationDrag.oldImageHeight = bottomImage.height
+                        }
+                    }
+                }
             }
         }
         MouseArea {
@@ -1622,8 +1959,8 @@ SlimSplitView {
                     bottomImage.scale *= zoomFactor;
                     flicky.contentX = oldMouseX*zoomFactor - wheel.x + Math.max(0, 0.5*(flicky.width  - bottomImage.width*bottomImage.scale))  + Math.floor(cropMargin*uiScale*cropping)
                     flicky.contentY = oldMouseY*zoomFactor - wheel.y + Math.max(0, 0.5*(flicky.height - bottomImage.height*bottomImage.scale)) + Math.floor(cropMargin*uiScale*cropping)
-                    //For cropping, we don't want any surprise motions.
-                    if (root.cropping) {
+                    //For cropping and leveling, we don't want any surprise motions.
+                    if (root.cropping || root.leveling) {
                         flicky.returnToBounds()
                     }
                 }
@@ -1635,6 +1972,82 @@ SlimSplitView {
                 }
                 if (bottomImage.scale == flicky.fitScale) {flicky.fit = true}
                 else {flicky.fit = false}
+            }
+        }
+
+        Rectangle {
+            id: savedIndicator
+            anchors.centerIn: flicky
+            width: savedText.contentWidth + 20 * uiScale
+            height: 30 * uiScale
+            color: "black"
+            border.color: "gray"
+            radius: 10 * uiScale
+            Text {
+                id: savedText
+                anchors.centerIn: parent
+                width: parent.width
+                color: "white"
+                text: qsTr("Image Saved")
+                font.pixelSize: 20 * uiScale
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            state: "notVisible"
+            states: [
+                State {
+                    name: "notVisible"
+                    PropertyChanges {
+                        target: savedIndicator
+                        opacity: 0
+                    }
+                },
+                State {
+                    name: "isVisible"
+                    PropertyChanges {
+                        target: savedIndicator
+                        opacity: 1
+                    }
+                }
+            ]
+            transitions: [
+                Transition {
+                    from: "isVisible"
+                    to: "notVisible"
+                    PropertyAnimation {
+                        target: savedIndicator
+                        properties: "opacity"
+                        duration: 600
+                    }
+                },
+                Transition {
+                    from: "notVisible"
+                    to: "isVisible"
+                    PropertyAnimation {
+                        target: savedIndicator
+                        properties: "opacity"
+                        duration: 0
+                    }
+                }
+            ]
+            Connections {
+                target: editTools
+                function onSaveStatusChanged() {
+                    if (editTools.saveStatus == "") {
+                        savedIndicator.state = "notVisible"
+                    } else {
+                        savedIndicator.state = "isVisible"
+                        savedIndicatorTimer.start()
+                    }
+                }
+            }
+            Timer {
+                id: savedIndicatorTimer
+                interval: 1500
+                onTriggered: {
+                    savedIndicator.state = "notVisible"
+                    editTools.saveStatus = ""
+                }
             }
         }
 
@@ -1656,7 +2069,7 @@ SlimSplitView {
             text: "f/" + paramManager.aperture
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !root.cropping && !parent.loadingError
+            visible: !root.cropping && !root.leveling && !parent.loadingError
         }
         Text {
             id: shutterText
@@ -1666,7 +2079,7 @@ SlimSplitView {
             text: paramManager.exposureTime + " s"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !root.cropping && !parent.loadingError
+            visible: !root.cropping && !root.leveling && !parent.loadingError
         }
         Text {
             id: focallengthText
@@ -1676,7 +2089,7 @@ SlimSplitView {
             text: paramManager.focalLength.toFixed(1) + "mm"
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !root.cropping && !parent.loadingError
+            visible: !root.cropping && !root.leveling && !parent.loadingError
         }
         Text {
             id: isoText
@@ -1686,7 +2099,7 @@ SlimSplitView {
             text: "ISO " + paramManager.sensitivity
             font.pixelSize: 12.0 * uiScale
             elide: Text.ElideRight
-            visible: !root.cropping && !parent.loadingError
+            visible: !root.cropping && !root.leveling && !parent.loadingError
         }
         Text {
             id: filenameText
@@ -1758,6 +2171,16 @@ SlimSplitView {
             elide: Text.ElideRight
             visible: root.cropping && !parent.loadingError
         }
+        Text {
+            id: rotationText
+            x: 202 * uiScale
+            y: 1 * uiScale
+            color: "white"
+            text: qsTr("Rotation: ") + imageRect.rotationAngle.toFixed(2) + "°"
+            font.pixelSize: 12.0 * uiScale
+            elide: Text.ElideRight
+            visible: root.leveling && !parent.loadingError
+        }
 
         Rectangle {
             id: errorBox
@@ -1796,9 +2219,12 @@ SlimSplitView {
 
         Rectangle {
             id: lensfunBox
-            anchors.right: leftButtonSpacer.left
+            x: leftButtonSpacer.x - 320 * uiScale //not width because we don't want it to move when it resizes
             y: 0 * uiScale
-            width: 350 * uiScale
+            z: active ? 1 : 0
+            //resize when active to make room for german translation of buttons at bottom
+            //120 is the width of the buttons, 2 is the padding to make the rightmost button stationary
+            width: active ? (150 + 2 + 320) * uiScale : 320 * uiScale
             height: active ? 400 * uiScale : 30 * uiScale
             radius: 5 * uiScale
             visible: !photoBox.loadingError
@@ -1809,7 +2235,7 @@ SlimSplitView {
                 id: lensFunMenuButton
                 x: 0 * uiScale
                 y: 0 * uiScale
-                tooltipText: qsTr("Select the lens that was used in order to use lens corrections.\n\nType the lens name in the box to the right. Normally it will only search lenses for the camera's mount, but if the first character is a backslash (\"\\\") then it will search lenses from all mounts.\n\nDouble-click a lens to select it.")
+                tooltipText: qsTr("Select the lens that was used in order to use lens corrections.\n\nType the lens name in the box to the right. Normally it will only search lenses for the camera's mount, but if the first character is a backslash (\"")+"\\"+qsTr("\") then it will search lenses from all mounts.\n\nDouble-click a lens to select it.")
                 Image {
                     id: lensFunMenuButtonImage
                     width: 14 * uiScale
@@ -1857,7 +2283,7 @@ SlimSplitView {
                     font.pixelSize: 12.0 * uiScale
                     clip: true
                     visible: !lensfunBox.active
-                    text: (parent.selectedLens == "") ? "No lens selected" : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
+                    text: (parent.selectedLens == "") ? qsTr("No lens selected") : (parent.selectedLens.charAt(0)=="\\") ? parent.selectedLens.slice(1) : parent.selectedLens
                 }
 
                 MouseArea {
@@ -1928,6 +2354,18 @@ SlimSplitView {
                 orientation: ListView.Vertical
                 spacing: 3 * uiScale
                 clip: true
+
+                boundsBehavior: Flickable.StopAtBounds
+                flickDeceleration: 6000 * uiScale
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
+
                 delegate: Rectangle {
                     id: lensListDelegate
                     width: lensListBox.width - 6 * uiScale
@@ -1967,6 +2405,164 @@ SlimSplitView {
                         onDoubleClicked: {
                             textEntryRect.selectedLens = parent.fullLensName
                             lensfunBox.active = false
+                        }
+                    }
+                }
+                Item {
+                    id: scrollbarHolderLensListBox
+                    x: parent.width - 10*uiScale
+                    y: 0
+                    width: 10*uiScale
+                    height: parent.height
+
+                    Rectangle {
+                        id: scrollbarBackgroundLensListBox
+                        color: Colors.darkGray
+                        opacity: 0
+
+                        x: parent.width-width - 1*uiScale
+                        width: 3 * uiScale
+
+                        y: 0
+                        height: parent.height
+
+                        transitions: Transition {
+                            NumberAnimation {
+                                property: "width"
+                                duration: 200
+                            }
+                            NumberAnimation {
+                                property: "opacity"
+                                duration: 200
+                            }
+                        }
+                        states: State {
+                            name: "hovered"
+                            when: scrollbarMouseAreaLensListBox.containsMouse || scrollbarMouseAreaLensListBox.pressed
+                            PropertyChanges {
+                                target: scrollbarBackgroundLensListBox
+                                width: 8 * uiScale
+                                opacity: 0.5
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        id: scrollbarLensListBox
+                        color: scrollbarMouseAreaLensListBox.pressed ? Colors.medOrange : scrollbarMouseAreaLensListBox.containsMouse ? Colors.weakOrange : Colors.middleGray
+                        radius: 1.5*uiScale
+
+                        x: parent.width-width - 1 * uiScale
+                        width: 3 * uiScale
+
+                        y: 1 * uiScale + (0.99*lensListBox.visibleArea.yPosition) * (parent.height - 2*uiScale)
+                        height: (0.99*lensListBox.visibleArea.heightRatio + 0.01) * (parent.height - 2*uiScale)
+
+                        transitions: Transition {
+                            NumberAnimation {
+                                property: "width"
+                                duration: 200
+                            }
+                        }
+                        states: State {
+                            name: "hovered"
+                            when: scrollbarMouseAreaLensListBox.containsMouse || scrollbarMouseAreaLensListBox.pressed
+                            PropertyChanges {
+                                target: scrollbarLensListBox
+                                width: 8 * uiScale
+                            }
+                        }
+                    }
+                    MouseArea {
+                        id: scrollbarMouseAreaLensListBox
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton
+                        onWheel: {
+                            //See the Queue.qml file for the math behind this.
+
+                            //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                            //Set the scroll deceleration and max speed higher for wheel scrolling.
+                            //It should be reset when the view stops moving.
+                            //For now, this is 10x higher than standard.
+                            var deceleration = 6000 * 10
+                            lensListBox.flickDeceleration = deceleration * uiScale
+                            lensListBox.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                            var velocity = lensListBox.verticalVelocity/uiScale
+                            var newVelocity = velocity
+
+                            var distance = 100
+                            if (wheel.angleDelta.y > 0 && !lensListBox.atXBeginning && !root.dragging) {
+                                //Leftward; up on the scroll wheel.
+                                newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                                newVelocity = Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                                lensListBox.flick(0,1)
+                                lensListBox.flick(0, newVelocity)
+                            } else if (wheel.angleDelta.y < 0 && !lensListBox.atXEnd && !root.dragging) {
+                                //Rightward; down on the scroll wheel.
+                                newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                                newVelocity = -Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                                lensListBox.flick(0,-1)
+                                lensListBox.flick(0, newVelocity)
+                            }
+                        }
+
+                        property bool overDragThresh: false
+                        property real pressY
+                        property real viewY
+                        onPositionChanged: {
+                            if (pressed) {
+                                var deltaY = mouse.y - pressY
+                                var scrollHeight = scrollbarMouseAreaLensListBox.height - scrollbarLensListBox.height - 2*uiScale
+                                var relativeDelta = deltaY / scrollHeight
+                                var scrollMargin = lensListBox.contentHeight - lensListBox.height
+                                lensListBox.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
+                            }
+                        }
+
+                        onPressed: {
+                            preventStealing = true
+                            lensListBox.cancelFlick()
+                            pressY = mouse.y
+                            viewY = lensListBox.contentY
+                        }
+                        onReleased: {
+                            preventStealing = false
+                        }
+                    }
+                }
+                MouseArea {
+                    id: wheelStealer
+                    //Custom scrolling implementation because the default flickable one sucks.
+                    anchors.fill: lensListBox
+                    acceptedButtons: Qt.NoButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 2
+                        lensListBox.flickDeceleration = deceleration * uiScale
+                        lensListBox.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*2)
+
+                        var velocity = lensListBox.verticalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 30 //the tool list is relatively short so it needs less scrolling
+                        if (wheel.angleDelta.y > 0 && !lensListBox.atYBeginning) {
+                            //up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                            lensListBox.flick(0,1)
+                            lensListBox.flick(0, newVelocity)
+                        } else if (wheel.angleDelta.y < 0 && !lensListBox.atYEnd) {
+                            //down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, lensListBox.maximumFlickVelocity)
+                            lensListBox.flick(0,-1)
+                            lensListBox.flick(0, newVelocity)
                         }
                     }
                 }
@@ -2022,7 +2618,7 @@ SlimSplitView {
             id: backgroundBrightness
             anchors.right: crop.left
             y: 0 * uiScale
-            tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.")
+            tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.\n\nShortcut: B")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2039,6 +2635,22 @@ SlimSplitView {
                     photoBox.backgroundColor = 0
                 }
             }
+
+            Shortcut {
+                sequence: "b"
+                onActivated: {
+                    if (root.onEditTab) {
+                        if (photoBox.backgroundColor == 0) {
+                            photoBox.backgroundColor = 1
+                        } else if (photoBox.backgroundColor == 1) {
+                            photoBox.backgroundColor = 2
+                        } else {
+                            photoBox.backgroundColor = 0
+                        }
+                    }
+                }
+            }
+
             Component.onCompleted: {
                 backgroundBrightness.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2049,8 +2661,8 @@ SlimSplitView {
             id: crop
             anchors.right: rotateLeft.left
             y: 0 * uiScale
-            notDisabled: root.imageReady
-            tooltipText: root.cropping ? qsTr("Click this to save your crop.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center."): qsTr("Click this to begin cropping.\n\nHold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.")
+            notDisabled: root.imageReady && !root.leveling
+            tooltipText: (root.cropping ? qsTr("Click this to save your crop."): qsTr("Click this to begin cropping.")) + "\n\n" + qsTr("Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2065,10 +2677,27 @@ SlimSplitView {
                     root.requestingCropping = true
                 } else {
                     filmProvider.enableThumbnailWrite()
-                    root.cancelCropping = false
+                    root.cancelCropping = false //we're saving the crop, not canceling it
                     root.requestingCropping = false
                 }
             }
+
+            Shortcut {
+                sequence: "c"
+                onActivated: {
+                    if (crop.notDisabled && root.onEditTab) {
+                        if (!root.cropping) {
+                            filmProvider.disableThumbnailWrite()
+                            root.requestingCropping = true
+                        } else {
+                            filmProvider.enableThumbnailWrite()
+                            root.cancelCropping = false //we're saving the crop, not canceling it
+                            root.requestingCropping = false
+                        }
+                    }
+                }
+            }
+
             Component.onCompleted: {
                 crop.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2077,8 +2706,9 @@ SlimSplitView {
 
         ToolButton {
             id: rotateLeft
-            anchors.right: rotateRight.left
+            anchors.right: level.left
             y: 0 * uiScale
+            notDisabled: root.imageReady && !root.cropping && !root.leveling
             tooltipText: qsTr("Rotate image 90 degrees left.")
             Image {
                 width: 14 * uiScale
@@ -2086,6 +2716,7 @@ SlimSplitView {
                 anchors.centerIn: parent
                 source: "qrc:///icons/rotateleft.png"
                 antialiasing: true
+                opacity: rotateLeft.notDisabled ? 1 : 0.5
             }
             onTriggered: {
                 paramManager.rotateLeft()
@@ -2097,9 +2728,66 @@ SlimSplitView {
         }
 
         ToolButton {
+            id: level
+            anchors.right: rotateRight.left
+            y: 0 * uiScale
+            notDisabled: root.previewReady && !root.cropping
+            tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\" or double right clicking.\n\nShortcut: L")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: root.requestingLeveling ? "qrc:///icons/levelactive.png" : "qrc:///icons/level.png"
+                antialiasing: true
+                opacity: level.notDisabled ? 1 : 0.5
+            }
+            onTriggered: {
+                if (!root.leveling) {
+                    filmProvider.disableThumbnailWrite()
+                    root.requestingLeveling = true
+                } else {
+                    filmProvider.enableThumbnailWrite()
+                    root.cancelLeveling = false //we're saving the leveling, not canceling it
+                    root.requestingLeveling = false
+                }
+            }
+
+            Shortcut {
+                sequence: "l"
+                onActivated: {
+                    if (level.notDisabled && root.onEditTab) {
+                        if (!root.leveling) {
+                            filmProvider.disableThumbnailWrite()
+                            root.requestingLeveling = true
+                        } else {
+                            filmProvider.enableThumbnailWrite()
+                            root.cancelLeveling = false //we're saving the leveling, not canceling it
+                            root.requestingLeveling = false
+                        }
+                    }
+                }
+            }
+
+            Shortcut {
+                sequence: "Shift+l"
+                onActivated: {
+                    if (root.leveling && root.previewReady) {
+                        imageRect.rotationAngle = 0
+                    }
+                }
+            }
+
+            Component.onCompleted: {
+                level.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
             id: rotateRight
             anchors.right: rightSpacer.left
             y: 0 * uiScale
+            notDisabled: root.imageReady && !root.cropping && !root.leveling
             tooltipText: qsTr("Rotate image 90 degrees right.")
             Image {
                 width: 14 * uiScale
@@ -2108,6 +2796,7 @@ SlimSplitView {
                 source: "qrc:///icons/rotateleft.png"
                 mirror: true
                 antialiasing: true
+                opacity: rotateRight.notDisabled ? 1 : 0.5
             }
             onTriggered: {
                 paramManager.rotateRight()
@@ -2142,6 +2831,7 @@ SlimSplitView {
         uiScale: root.uiScale
         imageReady: root.imageReady
         cropping: root.requestingCropping || root.cropping
+        onEditTab: root.onEditTab
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)
         }

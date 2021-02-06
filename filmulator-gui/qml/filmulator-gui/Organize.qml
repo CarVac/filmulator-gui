@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Layouts 1.12
-import Qt.labs.calendar 1.0
 import "gui_components"
 import "colors.js" as Colors
 
@@ -10,6 +9,10 @@ SlimSplitView {
     Layout.fillHeight: true
     orientation: Qt.Horizontal
     property real uiScale: 1
+
+    property int itemCount: organizeModel.imageCount
+
+    property bool onOrganizeTab
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -42,7 +45,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: timezoneOffset
-                    title: qsTr("Time zone")
+                    title: qsTr("Time Zone")
                     tooltipText: qsTr("Controls when the day is divided for the date filters.")
                     minimumValue: -14
                     maximumValue: 14
@@ -66,220 +69,17 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
-                Rectangle {
-                    id: calendarRect
-                    color: Colors.darkGray
-                    Layout.fillWidth: true
-                    height: 250 * uiScale
-
-                    property date selectedDate: settings.getOrganizeCaptureDate()
-                    property int selectedDay: selectedDate.getDate()
-                    property int selectedMonth: selectedDate.getMonth()
-                    property int selectedYear: selectedDate.getFullYear()
-
-                    property date calendarDate: settings.getOrganizeCaptureDate()
-                    property int day: calendarDate.getDate()
-                    property int month: calendarDate.getMonth()
-                    property int year: calendarDate.getFullYear()
-
-                    property bool notCompleted: true
-
-                    Component.onCompleted: {
-                        organizeModel.setMinMaxCaptureTime(settings.getOrganizeCaptureDate())
-                        calendarRect.calendarDate = settings.getOrganizeCaptureDate()
-                        calendarRect.selectedDate = settings.getOrganizeCaptureDate()
-                        calendarRect.notCompleted = false
-                    }
-
-                    Connections {
-                        target: organizeModel
-                        function onCaptureDateChanged() {
-                            if (!calendarRect.notCompleted) {
-                                var newDate = organizeModel.getSelectedDate()
-                                calendarRect.selectedDate = newDate
-                                calendarRect.calendarDate = newDate
-                                settings.organizeCaptureDate = newDate
-                            }
-                        }
-                    }
-
-                    //navigation
-                    ToolButton {
-                        id: backYear
-                        text: "<<"
-                        tooltipText: qsTr("Go to previous year")
-                        width: 30 * uiScale
-                        height: 30 * uiScale
-                        x: 0 * uiScale
-                        y: 0 * uiScale
-                        onTriggered: {
-                            calendarRect.calendarDate = new Date(calendarRect.year - 1, calendarRect.month)
-                        }
-                        Component.onCompleted: {
-                            backYear.tooltipWanted.connect(root.tooltipWanted)
-                        }
-                        uiScale: root.uiScale
-                    }
-                    ToolButton {
-                        id: backMonth
-                        text: "<"
-                        tooltipText: qsTr("Go to previous month")
-                        width: 30 * uiScale
-                        height: 30 * uiScale
-                        x: 30 * uiScale
-                        y: 0 * uiScale
-                        onTriggered: {
-                            var newMonth = calendarRect.month - 1
-                            var newYear = calendarRect.year
-                            if (newMonth < 0) {
-                                newMonth = 11
-                                newYear = newYear - 1
-                            }
-                            calendarRect.calendarDate = new Date(newYear, newMonth)
-                        }
-                        Component.onCompleted: {
-                            backMonth.tooltipWanted.connect(root.tooltipWanted)
-                        }
-                        uiScale: root.uiScale
-                    }
-                    Text {
-                        text: parent.year + "/" + (parent.month < 9 ? "0" : "") + (parent.month + 1)
-                        width: parent.width - 120 * uiScale
-                        height: 30 * uiScale
-                        x: 60 * uiScale
-                        y: 0 * uiScale
-                        color: "white"
-                        font.pixelSize: 12.0 * uiScale
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    ToolButton {
-                        id: forwardMonth
-                        text: ">"
-                        tooltipText: qsTr("Go to next month")
-                        width: 30 * uiScale
-                        height: 30 * uiScale
-                        x: parent.width - 60 * uiScale
-                        y: 0 * uiScale
-                        onTriggered: {
-                            var newMonth = calendarRect.month + 1
-                            var newYear = calendarRect.year
-                            if (newMonth > 11) {
-                                newMonth = 0
-                                newYear = newYear + 1
-                            }
-                            calendarRect.calendarDate = new Date(newYear, newMonth)
-                        }
-                        Component.onCompleted: {
-                            forwardMonth.tooltipWanted.connect(root.tooltipWanted)
-                        }
-                        uiScale: root.uiScale
-                    }
-                    ToolButton {
-                        id: forwardYear
-                        text: ">>"
-                        tooltipText: qsTr("Go to next year")
-                        width: 30 * uiScale
-                        height: 30 * uiScale
-                        x: parent.width - 30 * uiScale
-                        y: 0 * uiScale
-                        onTriggered: {
-                            calendarRect.calendarDate = new Date(calendarRect.year + 1, calendarRect.month)
-                        }
-                        Component.onCompleted: {
-                            forwardYear.tooltipWanted.connect(root.tooltipWanted)
-                        }
-                        uiScale: root.uiScale
-                    }
-
-                    ColumnLayout {
-                        y: 30 * uiScale
-                        width: parent.width
-                        height: 220 * uiScale
-                        DayOfWeekRow {
-                            locale: Qt.locale("en_US")
-                            Layout.fillWidth: true
-                            height: 24 * uiScale
-                            delegate: Text {
-                                text: model.shortName
-                                color: "white"
-                                font.pixelSize: 12.0 * uiScale
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                        }
-                        MonthGrid {
-                            locale: Qt.locale("en_US")
-                            month: calendarRect.month
-                            year: calendarRect.year
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            delegate: Text {
-                                text: model.day
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                color: model.month === calendarRect.month ? "#FFFFFFFF" : "#88FFFFFF"
-                                font.pixelSize: 12.0 * uiScale
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                                Rectangle {
-                                    id: dayRectangle
-                                    anchors.fill: parent
-                                    z: -1
-                                    color: Colors.darkGray
-                                    border.color: (model.day === calendarRect.selectedDay && model.month === calendarRect.selectedMonth && model.year === calendarRect.selectedYear) ? Colors.medOrange : Colors.darkGray
-                                    border.width: 2 * uiScale
-                                    radius: 5 * uiScale
-                                }
-                                MouseArea {
-                                    id: dayMouseArea
-                                    anchors.fill: parent
-                                    property int oldYear
-                                    property int oldMonth
-                                    property int oldDay
-                                    onPressed: {
-                                        filterListFlick.interactive = false
-                                        //only respond to clicks in the current month
-                                        oldYear = model.year
-                                        oldMonth = model.month
-                                        oldDay = model.day
-                                        if (model.month === calendarRect.month) {
-                                            var monthOne = model.month+1
-                                            var monthStr = (monthOne < 10) ? ("0" + monthOne) : ("" + monthOne)
-                                            var dayStr = (model.day < 10) ? ("0" + model.day) : ("" + model.day)
-                                            var captureTimeString = model.year + "/" + monthStr + "/" + dayStr
-                                            organizeModel.setMinMaxCaptureTimeString(captureTimeString)
-                                            settings.organizeCaptureDate = new Date(model.year, model.month, model.day)
-                                        }
-                                    }
-                                    onReleased: {
-                                        var changed = (oldYear !== model.year) || (oldMonth !== model.month) || (oldDay !== model.day)
-                                        if (model.month === calendarRect.month && changed) {
-                                            var monthOne = model.month+1
-                                            var monthStr = (monthOne < 10) ? ("0" + monthOne) : ("" + monthOne)
-                                            var dayStr = (model.day < 10) ? ("0" + model.day) : ("" + model.day)
-                                            var captureTimeString = model.year + "/" + monthStr + "/" + dayStr
-                                            organizeModel.setMinMaxCaptureTimeString(captureTimeString)
-                                            settings.organizeCaptureDate = new Date(model.year, model.month, model.day)
-                                        }
-                                        filterListFlick.interactive = true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
                 ToolSlider {
                     id: minRatingSlider
                     title: qsTr("Min Rating")
-                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    tooltipText: qsTr("Controls the minimum rating of images to display.")
                     minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
                     tickmarksEnabled: true
                     value: settings.getOrganizeRating()
                     defaultValue: settings.getOrganizeRating()
+                    valueText: value < 0 ? "X" : value
                     onValueChanged: {
                         settings.organizeRating = value
                         organizeModel.minRating = value
@@ -303,13 +103,14 @@ SlimSplitView {
 
                 ToolSlider {
                     id: maxRatingSlider
-                    title: qsTr("Min Rating")
-                    tooltipText: qsTr("Controls the minimum rating to display.")
+                    title: qsTr("Max Rating")
+                    tooltipText: qsTr("Controls the maximum rating of images to display.")
                     minimumValue: -1
                     maximumValue: 5
                     stepSize: 1
                     tickmarksEnabled: true
                     value: settings.getMaxOrganizeRating()
+                    valueText: value < 0 ? "X" : value
                     defaultValue: settings.getMaxOrganizeRating()
                     onValueChanged: {
                         settings.maxOrganizeRating = value
@@ -359,13 +160,27 @@ SlimSplitView {
 
             GridView {
                 id: dateHistoView
-                anchors.fill: parent
+                x: 0
+                y: 0
+                width: parent.width
+                height: parent.height
                 flow: GridView.FlowTopToBottom
                 layoutDirection: Qt.LeftToRight
                 cellWidth: 5 * uiScale
-                cellHeight: dateHistogram.height
-                boundsBehavior: Flickable.StopAtBounds
+                cellHeight: height
 
+                property real trueContentWidth: Math.max(width, cellWidth*dateHistoModel.dateHistoSize)
+
+                boundsBehavior: Flickable.StopAtBounds
+                flickDeceleration: 6000 * uiScale
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
 
                 delegate: Rectangle {
                     id: dateHistoDelegate
@@ -378,7 +193,7 @@ SlimSplitView {
                     property int day: theday
                     property real contentAmount: Math.min(1, (count > 0) ? (Math.log(count)+1)/16 : 0)
                     property bool sel: organizeModel.isDateSelected(theDate)//selectedDate == theDate
-                    height: dateHistogram.height
+                    height: dateHistoView.height
                     color: (1===themonth%2) ? (sel ? Colors.darkOrangeH : Colors.darkGrayH) : (sel ? Colors.darkOrangeL : Colors.darkGrayL)
                     clip: true
                     Text {
@@ -403,7 +218,7 @@ SlimSplitView {
                     ToolTip {
                         id: dateHistoTooltip
                         anchors.fill: parent
-                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Count: ') + parent.count
+                        tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Photos: ') + parent.count
                         milliSecondDelay: 0
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
@@ -467,6 +282,134 @@ SlimSplitView {
                     positionViewAtEnd()
                 }
             }
+
+            Item {
+                id: scrollbarHolderDateHisto
+                x: 0
+                y: 0
+                width: parent.width
+                height: 15*uiScale
+
+                Rectangle {
+                    id: scrollbarDateHisto
+                    color: scrollbarMouseAreaDateHisto.pressed ? Colors.medOrange : scrollbarMouseAreaDateHisto.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    opacity: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed ? 0.65 : 1
+                    radius: 1.5*uiScale
+
+                    y: 1 * uiScale
+                    height: 3 * uiScale
+
+                    x: 1 * uiScale + (0.99*dateHistoView.visibleArea.xPosition) * (parent.width - 2*uiScale)
+                    width: (0.99*dateHistoView.visibleArea.widthRatio + 0.01) * (parent.width - 2*uiScale)
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "height"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaDateHisto.containsMouse || scrollbarMouseAreaDateHisto.pressed
+                        PropertyChanges {
+                            target: scrollbarDateHisto
+                            height: 12 * uiScale
+                        }
+                    }
+                }
+                MouseArea {
+                    id: scrollbarMouseAreaDateHisto
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 10
+                        dateHistoView.flickDeceleration = deceleration * uiScale
+                        dateHistoView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                        var velocity = dateHistoView.horizontalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 100
+                        if (wheel.angleDelta.y > 0 && !dateHistoView.atXBeginning && !root.dragging) {
+                            //Leftward; up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                            dateHistoView.flick(1,0)
+                            dateHistoView.flick(newVelocity, 0)
+                        } else if (wheel.angleDelta.y < 0 && !dateHistoView.atXEnd && !root.dragging) {
+                            //Rightward; down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                            dateHistoView.flick(-1,0)
+                            dateHistoView.flick(newVelocity, 0)
+                        }
+                    }
+
+                    property bool overDragThresh: false
+                    property real pressX
+                    property real viewX
+                    onPositionChanged: {
+                        if (pressed) {
+                            var deltaX = mouse.x - pressX
+                            var scrollWidth = scrollbarMouseAreaDateHisto.width - scrollbarDateHisto.width - 2*uiScale
+                            var relativeDelta = deltaX / scrollWidth
+                            var scrollMargin = dateHistoView.trueContentWidth - dateHistoView.width
+                            dateHistoView.contentX = Math.max(0, Math.min(scrollMargin, viewX + relativeDelta * scrollMargin))
+                        }
+                    }
+
+                    onPressed: {
+                        preventStealing = true
+                        dateHistoView.cancelFlick()
+                        pressX = mouse.x
+                        viewX = dateHistoView.contentX
+                    }
+                    onReleased: {
+                        preventStealing = false
+                    }
+                }
+            }
+
+            MouseArea {
+                id: wheelstealerDateHisto
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                onWheel: {
+                    //See the Queue.qml file for the math behind this.
+
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    dateHistoView.flickDeceleration = deceleration * uiScale
+                    dateHistoView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = dateHistoView.horizontalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
+                    if (wheel.angleDelta.y > 0 && !dateHistoView.atXBeginning && !root.dragging) {
+                        //Leftward; up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                        dateHistoView.flick(1,0)
+                        dateHistoView.flick(newVelocity, 0)
+                    } else if (wheel.angleDelta.y < 0 && !dateHistoView.atXEnd && !root.dragging) {
+                        //Rightward; down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, dateHistoView.maximumFlickVelocity)
+                        dateHistoView.flick(-1,0)
+                        dateHistoView.flick(newVelocity, 0)
+                    }
+                }
+            }
         }
 
         Rectangle {
@@ -476,15 +419,31 @@ SlimSplitView {
 
             GridView {
                 id: gridView
-                anchors.fill: parent
+                x: 0
+                y: 0
+                width: parent.width - 5*uiScale
+                height: parent.height
 
                 cellWidth: 320 * uiScale
                 cellHeight: 320 * uiScale
 
+                property int colCount: Math.floor(width/cellWidth)
+                property int rowCount: Math.ceil(organizeModel.imageCount/colCount)
+
+                property real trueContentHeight: Math.max(height, cellHeight*rowCount)
+
+                clip: true
+
                 boundsBehavior: Flickable.StopAtBounds
                 flickDeceleration: 6000 * uiScale
-                maximumFlickVelocity: 50000 * Math.sqrt(uiScale)
-                clip: true
+                maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+                onMovingChanged: { //reset params after mouse scrolling
+                    if (!moving) {
+                        flickDeceleration = 6000 * uiScale
+                        maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                    }
+                }
 
                 delegate: OrganizeDelegate {
                     id: organizeDelegate
@@ -546,27 +505,223 @@ SlimSplitView {
                     gridView.model = organizeModel
                 }
             }
+
+            Item {
+                id: scrollbarHolderGridView
+                x: parent.width - 15*uiScale
+                y: 0
+                width: 15*uiScale
+                height: parent.height
+
+                Rectangle {
+                    id: scrollbarBackgroundGridView
+                    color: Colors.darkGray
+                    opacity: 0
+
+                    x: parent.width-width - 1*uiScale
+                    width: 3 * uiScale
+
+                    y: 0
+                    height: parent.height
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "width"
+                            duration: 200
+                        }
+                        NumberAnimation {
+                            property: "opacity"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaGridView.containsMouse || scrollbarMouseAreaGridView.pressed
+                        PropertyChanges {
+                            target: scrollbarBackgroundGridView
+                            width: 12 * uiScale
+                            opacity: 0.5
+                        }
+                    }
+                }
+
+                Rectangle {
+                    id: scrollbarGridView
+                    color: scrollbarMouseAreaGridView.pressed ? Colors.medOrange : scrollbarMouseAreaGridView.containsMouse ? Colors.weakOrange : Colors.middleGray
+                    radius: 1.5*uiScale
+
+                    x: parent.width-width - 1 * uiScale
+                    width: 3 * uiScale
+
+                    y: 1 * uiScale + (0.99*gridView.visibleArea.yPosition) * (parent.height - 2*uiScale)
+                    height: (0.99*gridView.visibleArea.heightRatio + 0.01) * (parent.height - 2*uiScale)
+
+                    transitions: Transition {
+                        NumberAnimation {
+                            property: "width"
+                            duration: 200
+                        }
+                    }
+                    states: State {
+                        name: "hovered"
+                        when: scrollbarMouseAreaGridView.containsMouse || scrollbarMouseAreaGridView.pressed
+                        PropertyChanges {
+                            target: scrollbarGridView
+                            width: 12 * uiScale
+                        }
+                    }
+                }
+                MouseArea {
+                    id: scrollbarMouseAreaGridView
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    onWheel: {
+                        //See the Queue.qml file for the math behind this.
+
+                        //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                        //Set the scroll deceleration and max speed higher for wheel scrolling.
+                        //It should be reset when the view stops moving.
+                        //For now, this is 10x higher than standard.
+                        var deceleration = 6000 * 10
+                        gridView.flickDeceleration = deceleration * uiScale
+                        gridView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                        var velocity = gridView.verticalVelocity/uiScale
+                        var newVelocity = velocity
+
+                        var distance = 100
+                        if (wheel.angleDelta.y > 0 && !gridView.atXBeginning && !root.dragging) {
+                            //Leftward; up on the scroll wheel.
+                            newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                            newVelocity = Math.min(newVelocity, gridView.maximumFlickVelocity)
+                            gridView.flick(0,1)
+                            gridView.flick(0, newVelocity)
+                        } else if (wheel.angleDelta.y < 0 && !gridView.atXEnd && !root.dragging) {
+                            //Rightward; down on the scroll wheel.
+                            newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                            newVelocity = -Math.min(newVelocity, gridView.maximumFlickVelocity)
+                            gridView.flick(0,-1)
+                            gridView.flick(0, newVelocity)
+                        }
+                    }
+
+                    property bool overDragThresh: false
+                    property real pressY
+                    property real viewY
+                    onPositionChanged: {
+                        if (pressed) {
+                            var deltaY = mouse.y - pressY
+                            var scrollHeight = scrollbarMouseAreaGridView.height - scrollbarGridView.height - 2*uiScale
+                            var relativeDelta = deltaY / scrollHeight
+                            var scrollMargin = gridView.trueContentHeight - gridView.height
+                            gridView.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
+                        }
+                    }
+
+                    onPressed: {
+                        preventStealing = true
+                        gridView.cancelFlick()
+                        pressY = mouse.y
+                        viewY = gridView.contentY
+                    }
+                    onReleased: {
+                        preventStealing = false
+                    }
+                }
+            }
+
+            Rectangle {
+                id: noImageTopBox
+                width: 400 * uiScale
+                height: noImageTopText.contentHeight + 30 * uiScale
+                x: (parent.width-width)/2
+                y: 20 * uiScale
+                color: Colors.darkGray
+                border.color: Colors.lowGray
+                border.width: 2 * uiScale
+                radius: 10 * uiScale
+                visible: root.itemCount < 1
+
+                Text {
+                    id: noImageTopText
+                    width: 375 * uiScale
+                    anchors.centerIn: parent
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: "white"
+                    font.pixelSize: 14.0 * uiScale
+                    wrapMode: Text.Wrap
+                    text: qsTr("Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range. Press right/left to switch days, and shift to select multiple days.")
+                }
+            }
+
             MouseArea {
                 id: wheelstealer
                 //Custom scrolling implementation because the default flickable one sucks.
                 anchors.fill: gridView
                 acceptedButtons: Qt.NoButton
                 onWheel: {
-                    var velocity = gridView.verticalVelocity
+                    //See the Queue.qml file for the math behind this.
+
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    gridView.flickDeceleration = deceleration * uiScale
+                    gridView.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = gridView.verticalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
                     if (wheel.angleDelta.y > 0 && !gridView.atYBeginning) {
-                        //up
-                        //This formula makes each click of the wheel advance the 'target' a fixed distance.
-                        //It uses the angle delta to handle smooth scrolling touchpads.
-                        gridView.flick(0, uiScale*(velocity < 0 ? Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/120) : (velocity == 0 ? 500 : 0)))
-                        //It's not 1,000,000 (1000 squared) because it feels slightly sluggish at that level.
-                        //And 1000 isn't higher because otherwise a single scroll click is too far.
-                    }
-                    else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
-                        //down
-                        gridView.flick(0, uiScale*(velocity > 0 ? -Math.sqrt(velocity*velocity/(uiScale*uiScale) + 2000000*wheel.angleDelta.y/(-120)) : (velocity == 0 ? -500 : 0)))
+                        //up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, gridView.maximumFlickVelocity)
+                        gridView.flick(0,1)
+                        gridView.flick(0, newVelocity)
+                    } else if (wheel.angleDelta.y < 0 && !gridView.atYEnd) {
+                        //down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, gridView.maximumFlickVelocity)
+                        gridView.flick(0,-1)
+                        gridView.flick(0, newVelocity)
                     }
                 }
             }
+        }
+    }
+    Shortcut {
+        id: prevDay
+        sequence: StandardKey.MoveToPreviousChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.incrementCaptureTime(-1)
+        }
+    }
+    Shortcut {
+        id: nextDay
+        sequence: StandardKey.MoveToNextChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.incrementCaptureTime(1)
+        }
+    }
+    Shortcut {
+        id: prevDayRange
+        sequence: StandardKey.SelectPreviousChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.extendCaptureTimeRange(-1)
+        }
+    }
+    Shortcut {
+        id: nextDayRange
+        sequence: StandardKey.SelectNextChar
+        enabled: onOrganizeTab
+        onActivated: {
+            organizeModel.extendCaptureTimeRange(1)
         }
     }
 }

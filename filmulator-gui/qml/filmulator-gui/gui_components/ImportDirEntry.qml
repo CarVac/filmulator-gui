@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-//import QtQuick.Dialogs 1.3
 import Qt.labs.platform 1.0
 import "../colors.js" as Colors
 import "."
@@ -17,6 +16,7 @@ Rectangle {
     property alias dirDialogTitle: dirDialog.title
     property alias enteredText: textEntryBox.text
     property bool erroneous: false
+    property bool clearError: false
     property bool highlight: false
 
     color: highlight ? Colors.darkOrangeH : Colors.darkGray
@@ -56,6 +56,13 @@ Rectangle {
             source: "qrc:///icons/errortriangle.png"
             antialiasing: true
             visible: root.erroneous
+            MouseArea {
+                id: errorMouse
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                enabled: root.erroneous
+                onDoubleClicked: root.clearError = true
+            }
         }
 
         TextInput {
@@ -74,7 +81,7 @@ Rectangle {
 
     Button {
         id: openDirButton
-        width: 120 * uiScale
+        width: 160 * uiScale
         height: 25 * uiScale
         x: root.width - width - __padding
         y: __padding
@@ -110,7 +117,17 @@ Rectangle {
     FolderDialog {
         id: dirDialog
         onAccepted: {
-            root.enteredText = folder.toString().substring(Qt.platform.os == "windows" ? 8 : 7)
+            var folderDir = folder.toString()
+            if (Qt.platform.os == "windows") {
+                if (folderDir.substring(0,8) === "file:///") {
+                    // standard drive letter file path has an extra / on windows
+                    root.enteredText = folderDir.substring(8)
+                } else { // UNC file paths have zero extra slashes.
+                    root.enteredText = folderDir.substring(5)
+                }
+            } else {
+                root.enteredText = folderDir.substring(7)
+            }
         }
     }
 

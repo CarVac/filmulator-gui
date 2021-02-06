@@ -20,6 +20,14 @@ OrganizeModel::OrganizeModel(QObject *parent) :
     processedSort = 0;
     importSort = 0;
     dateHistogramSet = false;
+    startCaptureDate = QDate::currentDate();
+    endCaptureDate = startCaptureDate;
+    minCaptureDate = startCaptureDate;
+    maxCaptureDate = startCaptureDate;
+    QDateTime morning = QDateTime(minCaptureDate, QTime(0,0,0,0), Qt::OffsetFromUTC, m_timeZone*3600);
+    QDateTime evening = QDateTime(maxCaptureDate, QTime(23,59,59,999), Qt::OffsetFromUTC, m_timeZone*3600);
+    minCaptureTime = morning.toSecsSinceEpoch();
+    maxCaptureTime = evening.toSecsSinceEpoch();
 }
 
 QSqlQuery OrganizeModel::modelQuery()
@@ -60,28 +68,28 @@ QString OrganizeModel::adaptableModelQuery(const bool searchIDOnly)
     if (1)//maxCaptureTime != 0)
     {
         queryString.append("SearchTable.STcaptureTime <= ");
-        queryString.append(std::to_string(maxCaptureTime_i));
+        queryString.append(std::to_string(maxCaptureTime));
         queryString.append(" ");
         queryString.append("AND SearchTable.STcaptureTime >= ");
-        queryString.append(std::to_string(minCaptureTime_i));
+        queryString.append(std::to_string(minCaptureTime));
         queryString.append(" ");
     }
     if (0)//maxImportTime != 0)
     {
         queryString.append("AND SearchTable.STimportTime <= ");
-        queryString.append(std::to_string(maxImportTime_i));
+        queryString.append(std::to_string(maxImportTime));
         queryString.append(" ");
         queryString.append("AND SearchTable.STimportTime >= ");
-        queryString.append(std::to_string(minImportTime_i));
+        queryString.append(std::to_string(minImportTime));
         queryString.append(" ");
     }
     if (0)//maxProcessedTime != 0)
     {
         queryString.append("AND SearchTable.STlastProcessedTime <= ");
-        queryString.append(std::to_string(maxProcessedTime_i));
+        queryString.append(std::to_string(maxProcessedTime));
         queryString.append(" ");
         queryString.append("AND SearchTable.STlastProcessedTime >= ");
-        queryString.append(std::to_string(minProcessedTime_i));
+        queryString.append(std::to_string(minProcessedTime));
         queryString.append(" ");
     }
     if (1)//maxRating >= 0)
@@ -135,6 +143,8 @@ void OrganizeModel::setOrganizeQuery()
         queryModel.fetchMore();
     }
 //    cout << "organize row count: " << rowCount() << endl;
+    m_imageCount = queryModel.rowCount();
+    emit imageCountChanged();
 }
 
 void OrganizeModel::setDateHistoQuery()
@@ -164,22 +174,75 @@ QString OrganizeModel::thumbDir()
     return dirstr;
 }
 
-void OrganizeModel::setRating(QString searchID, int rating)
+void OrganizeModel::setRating(const QString searchID, const int rating)
 {
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
 
     QSqlQuery query(db);
     query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
-    query.bindValue(0, QVariant(max(min(rating,5),-5)));
+    query.bindValue(0, QVariant(max(min(rating,5),-6)));
     query.bindValue(1, searchID);
     query.exec();
     emit updateTableOut("SearchTable", 0);//An edit made to the search table.
     emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
 }
 
-QString OrganizeModel::getDateTimeString(int unixTimeIn)
+void OrganizeModel::incrementRating(const QString searchID, const int ratingChange)
 {
-    QDateTime tempTime = QDateTime::fromTime_t(unixTimeIn, Qt::OffsetFromUTC, m_timeZone*3600);
+    if (searchID == "")
+    {
+        return;
+    }
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    QSqlQuery query(db);
+    query.prepare("SELECT STrating FROM SearchTable WHERE STsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    int rating = query.value(0).toInt();
+
+    if (rating < 0)
+    {
+        //don't change negative ratings unless rating change is positive, and then start it at -1
+        if (ratingChange > 0)
+        {
+            rating = -1 + ratingChange;
+        }
+    } else if (rating + ratingChange < 0)
+    {
+        rating = -1;
+    } else {
+        rating = rating + ratingChange;
+    }
+
+    query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
+    query.bindValue(0, QVariant(max(min(rating,5),-6)));
+    query.bindValue(1, searchID);
+    query.exec();
+    emit updateTableOut("SearchTable", 0);//An edit made to the search table.
+    emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
+}
+
+void OrganizeModel::markDeletion(QString searchID)
+{
+    //Each thread needs a unique database connection
+    QSqlDatabase db = getDB();
+
+    QSqlQuery query(db);
+    query.prepare("UPDATE SearchTable SET STrating = -1 - STrating WHERE STsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    emit updateTableOut("SearchTable", 0);//An edit made to the search table.
+    emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
+}
+
+QString OrganizeModel::getDateTimeString(qint64 unixTimeIn)
+{
+    QDateTime tempTime;
+    tempTime.setOffsetFromUtc(m_timeZone*3600);
+    tempTime.setSecsSinceEpoch(unixTimeIn);
     return tempTime.toString("ddd yyyy-MM-dd HH:mm:ss");
 }

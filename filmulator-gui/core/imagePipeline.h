@@ -18,8 +18,8 @@ public:
 
     //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
     matrix<unsigned short>& processImage(ParameterManager * paramManager,
-                                        Interface * histoInterface,
-                                        Exiv2::ExifData &exifOutput);
+                                         Interface * histoInterface,
+                                         Exiv2::ExifData &exifOutput);
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
     float getProgress(){return progress;}
@@ -34,6 +34,21 @@ public:
     //Variable relating to stealing the demosaiced data from another imagepipeline
     bool stealData = false;
     ImagePipeline * stealVictim;
+
+    //Method to straight up copy the data between imagepipelines
+    //This is used when copying preloaded pipeline data
+    void swapPipeline(ImagePipeline * copySource);
+
+    //This should be used after the full res pipeline is done
+    // so that the quick pipe gets refreshed from high res sampling
+    //This is important to keep the quick pipe sharp after level/distortion
+    // correction
+    //Only used for pipelines that already are based on the same image.
+    void copyAndDownsampleImages(ImagePipeline * copySource);
+
+    //This is related to the above; if the image changes but the pipeline is
+    // preloaded, we need to refresh the histograms
+    void rerunHistograms();
 
     //The resolution of a quick preview
     int resolution;
@@ -74,9 +89,10 @@ protected:
     bool isCR3;
 
     matrix<float> input_image;
-    matrix<float> scaled_image;
+    matrix<float> recovered_image;
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
+    Exiv2::ExifData basicExifData;//for tiff writing
     matrix<float> filmulated_image;
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;

@@ -101,8 +101,6 @@ Item {
                     if (__current) {
                         //console.log('thumb source changed and current')
                         var thumbSource = __thumbPath
-                        //filmProvider.writeThumbnail(thumbSource.slice(0, -4))
-                        filmProvider.writeThumbnail(searchID)
                         __waitingForThumb = true
                     }
                 }
@@ -137,6 +135,63 @@ Item {
         color: "red"
         rotation: -45
         visible: rating < 0
+    }
+
+    //Dots to show rating
+    Rectangle {
+        x: root.width * 0.1
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 1
+    }
+    Rectangle {
+        x: root.width * 0.2
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 2
+    }
+    Rectangle {
+        x: root.width * 0.3
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 3
+    }
+    Rectangle {
+        x: root.width * 0.4
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 4
+    }
+    Rectangle {
+        x: root.width * 0.5
+        y: root.width * 0.13125
+        width: root.width * 0.07
+        height: root.width * 0.07
+        color: "#DDCC33"
+        border.color: "black"
+        border.width: root.width * 0.007
+        radius: width/2
+        visible: rating >= 5
     }
 
     Component.onCompleted: {

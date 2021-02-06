@@ -3,6 +3,8 @@
 #include <iostream>
 #include "queueModel.h"
 #include "QThread"
+#include <libraw/libraw.h>
+
 using std::cout;
 using std::endl;
 
@@ -10,7 +12,7 @@ ImportWorker::ImportWorker(QObject *parent) : QObject(parent)
 {
 }
 
-void ImportWorker::importFile(const QFileInfo infoIn,
+QString ImportWorker::importFile(const QFileInfo infoIn,
                               const int importTZ,
                               const int cameraTZ,
                               const QString photoDir,
@@ -19,7 +21,8 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                               const QDateTime importStartTime,
                               const bool appendHash,
                               const bool importInPlace,
-                              const bool replaceLocation)
+                              const bool replaceLocation,
+                              const bool noThumbnail)
 {
     //Generate a hash of the raw file.
     QCryptographicHash hash(QCryptographicHash::Md5);
@@ -29,9 +32,42 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         qDebug("File couldn't be opened.");
     }
 
-    //Grab EXIF data from the file.
+    //Check that the raw file is readable by libraw before proceeding
     const std::string abspath = infoIn.absoluteFilePath().toStdString();
-    //We don't do this anymore because exiv2 doesn't support cr3 currently
+    cout << "importFile absolute file path: " << abspath << endl;
+
+    std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(abspath);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
+    const char *cstrfilename = abspath.c_str();
+    libraw_error = libraw->open_file(cstrfilename);
+#endif
+    if (libraw_error)
+    {
+        cout << "importFile: libraw could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        emit doneProcessing(false);
+        return "";
+    }
+    if (libraw->is_floating_point())
+    {
+        cout << "importFile: libraw cannot open a floating point raw" << endl;
+        emit doneProcessing(false);
+        return "";
+    }
+    libraw_error = libraw->unpack();
+    if (libraw_error)
+    {
+        cout << "importFile: libraw could not unpack input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        emit doneProcessing(false);
+        return "";
+    }
 
     //Load data into the hash function.
     while (!file.atEnd())
@@ -157,10 +193,6 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         }
     }
 
-
-
-
-
     //Check to see if it's already present in the database.
     //Open a new database connection for the thread
     QSqlDatabase db = getDB();
@@ -179,6 +211,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
     //And we're not updating locations
     //  (if we are updating locations, we don't want it to add new things to the db)
     bool changedST = false;
+    QString STsearchID;
     if (!inDatabaseAlready && !replaceLocation)
     {
         //Record the file location in the database.
@@ -234,12 +267,12 @@ void ImportWorker::importFile(const QFileInfo infoIn,
         }
 
         //Now create a profile and a search table entry, and a thumbnail.
-        QString STsearchID;
         STsearchID = createNewProfile(hashString,
                                       filename,
                                       exifUtcTime(abspath, cameraTZ),
                                       importStartTime,
-                                      abspath);
+                                      abspath,
+                                      noThumbnail);
 
         //Request that we enqueue the image.
         cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
@@ -308,7 +341,7 @@ void ImportWorker::importFile(const QFileInfo infoIn,
             fileInsert(hashString, infoIn.absoluteFilePath());
             cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
 
-            QString STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));
+            STsearchID = hashString.append(QString("%1").arg(1, 4, 10, QLatin1Char('0')));
             cout << "importWorker replace STsearchID: " << STsearchID.toStdString() << endl;
 
             if (QString("") != STsearchID)
@@ -316,9 +349,35 @@ void ImportWorker::importFile(const QFileInfo infoIn,
                 emit enqueueThis(STsearchID);
             }
         }
+    } else { //it's not in the database but we are hoping to replace the location.
+        //We only do this for CLI-based processing.
+        if (noThumbnail)
+        {
+            fileInsert(hashString, infoIn.absoluteFilePath());
+            cout << "importWorker replace location: " << infoIn.absoluteFilePath().toStdString() << endl;
+
+            //Now create a profile and a search table entry, and a thumbnail.
+            STsearchID = createNewProfile(hashString,
+                                          filename,
+                                          exifUtcTime(abspath, cameraTZ),
+                                          importStartTime,
+                                          abspath,
+                                          noThumbnail);
+
+            //Request that we enqueue the image.
+            cout << "importFile SearchID: " << STsearchID.toStdString() << endl;
+            if (QString("") != STsearchID)
+            {
+                emit enqueueThis(STsearchID);
+            }
+            //It might be ignored downstream, but that's not our problem here.
+
+            //Tell the views we need updating.
+            changedST = true;
+        }
     }
-    //else do nothing.
 
     //Tell the ImportModel whether we did anything to the SearchTable
     emit doneProcessing(changedST);
+    return STsearchID;
 }

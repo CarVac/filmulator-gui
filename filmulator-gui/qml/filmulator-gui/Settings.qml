@@ -18,7 +18,7 @@ Rectangle {
         spacing: 0 * uiScale
         x: 3 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 350 * uiScale
 
         ToolSlider {
             id: uiScaleSlider
@@ -32,6 +32,7 @@ Rectangle {
             minorTicksEnabled: true
             value: settings.getUiScale()
             defaultValue: settings.getUiScale()
+            valueText: value.toFixed(1)
             changed: false
             onValueChanged: {
                 if (Math.abs(value - defaultValue) < 0.05) {
@@ -42,6 +43,20 @@ Rectangle {
             }
             Component.onCompleted: {
                 uiScaleSlider.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolSwitch {
+            id: useSystemLanguageSwitch
+            text: qsTr("Use system language")
+            tooltipText: true ? qsTr("Turning this off will set the language to English.\n\nThis setting takes effect after applying settings and then restarting Filmulator.") : qsTr("Turning this off will let you select the interface language from a list.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
+            isOn: settings.getUseSystemLanguage()
+            defaultOn: settings.getUseSystemLanguage()
+            onIsOnChanged: useSystemLanguageSwitch.changed = true
+            Component.onCompleted: {
+                useSystemLanguageSwitch.tooltipWanted.connect(root.tooltipWanted)
+                useSystemLanguageSwitch.changed = false
             }
             uiScale: root.uiScale
         }
@@ -63,7 +78,7 @@ Rectangle {
         ToolSwitch {
             id: lowMemModeSwitch
             text: qsTr("Reduce memory usage")
-            tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off caching in the editor. It will consume less memory but moving any slider will cause it to recompute from the beginning.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
+            tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off high-resolution caching in the editor. It will consume less memory but the full resolution image will recompute from the beginning for any edit you make.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
             isOn: settings.getLowMemMode()
             defaultOn: settings.getLowMemMode()
             onIsOnChanged: lowMemModeSwitch.changed = true
@@ -117,11 +132,14 @@ Rectangle {
             tooltipText: qsTr("Apply settings and save for future use")
             width: settingsList.width
             height: 40 * uiScale
-            notDisabled: uiScaleSlider.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
+            notDisabled: uiScaleSlider.changed || useSystemLanguageSwitch.changed || mipmapSwitch.changed || lowMemModeSwitch.changed || quickPreviewSwitch.changed || previewResSlider.changed
             onTriggered: {
                 settings.uiScale = uiScaleSlider.value
                 uiScaleSlider.defaultValue = uiScaleSlider.value
                 uiScaleSlider.changed = false
+                settings.useSystemLanguage = useSystemLanguageSwitch.isOn
+                useSystemLanguageSwitch.defaultOn = useSystemLanguageSwitch.isOn
+                useSystemLanguageSwitch.changed = false
                 settings.mipmapView = mipmapSwitch.isOn
                 mipmapSwitch.defaultOn = mipmapSwitch.isOn
                 mipmapSwitch.changed = false
@@ -139,11 +157,11 @@ Rectangle {
         }
     }
     ColumnLayout {
-        id: lensfunList
+        id: dataUpdateList
         spacing: 0 * uiScale
-        x: 306 * uiScale
+        x: 358 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 400 * uiScale
 
         Rectangle {
             id: lensfunCheck
@@ -171,6 +189,29 @@ Rectangle {
                 y: 20*uiScale + parent.padding
                 color: "black"
 
+                property string lensfunStatus
+
+                Connections {
+                    target: settings
+                    function onLensfunStatusChanged() {
+                        if (settings.lensfunStatus === "checking") {
+                            checkResultBox.lensfunStatus = qsTr("Checking database version.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "unavail") {
+                            checkResultBox.lensfunStatus = qsTr("Database unavailable from server.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "nolocal") {
+                            checkResultBox.lensfunStatus = qsTr("No local database yet.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "avail") {
+                            checkResultBox.lensfunStatus = qsTr("Update available.", "lensfun database check")
+                        }
+                        if (settings.lensfunStatus === "uptodate") {
+                            checkResultBox.lensfunStatus = qsTr("Up to date.", "lensfun database check")
+                        }
+                    }
+                }
+
                 Text {
                     id: checkResult
                     color: "white"
@@ -179,13 +220,13 @@ Rectangle {
                     width: parent.width - x
                     height: parent.height - y
                     font.pixelSize: 12.0 * uiScale
-                    text: settings.lensfunStatus
+                    text: parent.lensfunStatus
                 }
             }
 
             ToolButton {
                 id: checkButton
-                width: 60 * uiScale
+                width: 100 * uiScale
                 height: 45 * uiScale
                 anchors.right: parent.right
                 y: 0 * uiScale
@@ -223,6 +264,35 @@ Rectangle {
                 y: 20*uiScale + parent.padding
                 color: "black"
 
+                property string updateStatus
+
+                Connections {
+                    target: settings
+                    function onUpdateStatusChanged() {
+                        if (settings.updateStatus === "updating") {
+                            updateBox.updateStatus = qsTr("Updating database.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "success") {
+                            updateBox.updateStatus = qsTr("Success. Please restart.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "uptodate") {
+                            updateBox.updateStatus = qsTr("Already up to date.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "unavail") {
+                            updateBox.updateStatus = qsTr("Unavailable from server.", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "initfail") {
+                            updateBox.updateStatus = qsTr("Failure (initialization)", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "filefail") {
+                            updateBox.updateStatus = qsTr("Failure (file)", "lensfun database update")
+                        }
+                        if (settings.updateStatus === "retrievefail") {
+                            updateBox.updateStatus = qsTr("Failure (retrieve)", "lensfun database update")
+                        }
+                    }
+                }
+
                 Text {
                     id: updateResult
                     color: "white"
@@ -231,13 +301,13 @@ Rectangle {
                     width: parent.width - x
                     height: parent.height - y
                     font.pixelSize: 12.0 * uiScale
-                    text: settings.updateStatus
+                    text: parent.updateStatus
                 }
             }
 
             ToolButton {
                 id: updateButton
-                width: 60 * uiScale
+                width: 100 * uiScale
                 height: 45 * uiScale
                 anchors.right: parent.right
                 y: 0 * uiScale
@@ -249,5 +319,91 @@ Rectangle {
                 uiScale: root.uiScale
             }
         }
+        Rectangle {
+            id: camconstSpacer
+            width: parent.width
+            height: 4 * uiScale
+            color: Colors.darkGray
+            opacity: 0
+        }
+        Rectangle {
+            id: camconstDownload
+            width: parent.width
+            height: 45 * uiScale
+            property real padding: 4 * uiScale
+
+            color: Colors.darkGray
+
+            Text {
+                id: camconstDownloadLabel
+                color: "white"
+                width: parent.width - downloadButton.width - 2*parent.padding
+                x: parent.padding
+                y: parent.padding
+                font.pixelSize: 12.0 * uiScale
+                text: qsTr("Download latest camera constants")
+            }
+            Rectangle {
+                id: camconstDownloadBox
+                width: parent.width - downloadButton.width - 2*parent.padding
+                height: 20 * uiScale
+                x: parent.padding
+                y: 20*uiScale + parent.padding
+                color: "black"
+
+                property string camconstDlStatus
+
+                Connections {
+                    target: settings
+                    function onCamconstDlStatusChanged() {
+                        if (settings.camconstDlStatus === "success") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Download successful.", "camconst.json update")
+                        }
+                        if (settings.camconstDlStatus === "initfail") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Failure (initialization)", "camconst.json update")
+                        }
+                        if (settings.camconstDlStatus === "fopenfail") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Failure (file)", "camconst.json update")
+                        }
+                        if (settings.camconstDlStatus === "retrievefail") {
+                            camconstDownloadBox.camconstDlStatus = qsTr("Failure (retrieve)", "camconst.json update")
+                        }
+                    }
+                }
+
+                Text {
+                    id: camconstDownloadResult
+                    color: "white"
+                    x: lensfunCheck.padding / 2
+                    y: 1 * uiScale
+                    width: parent.width - x
+                    height: parent.height - y
+                    font.pixelSize: 12.0 * uiScale
+                    text: parent.camconstDlStatus
+                }
+            }
+            ToolButton {
+                id: downloadButton
+                width: 100 * uiScale
+                height: 45 * uiScale
+                anchors.right: parent.right
+                y: 0 * uiScale
+                text: qsTr("Download","Download new camconst.json")
+                onTriggered: {
+                    settings.downloadCamConst()
+                }
+
+                uiScale: root.uiScale
+            }
+        }
+    }
+    Text {
+        id: versionText
+        color: "white"
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 4 * uiScale
+        font.pixelSize: 12.0 * uiScale
+        text: "nlmeans test" + " "
     }
 }

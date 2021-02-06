@@ -3,6 +3,7 @@
 
 //for lensfun
 #include "../database/rawproc_lensfun/lensfun_dbupdate.h"
+#include "../database/camconst.h"
 #include <QDir>
 #include <QStandardPaths>
 
@@ -19,6 +20,7 @@ Settings::Settings(QObject *parent) :
     importTZ = settings.value("photoDB/importTZ", 0).toInt();
     lensfunStatus = "";
     updateStatus = "";
+    camconstDlStatus = "";
 }
 
 void Settings::setPhotoStorageDir(QString dirIn)
@@ -286,35 +288,52 @@ int Settings::getPreviewResolution()
     return previewResolution;
 }
 
+void Settings::setUseSystemLanguage(bool useSystemLanguageIn)
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    useSystemLanguage = useSystemLanguageIn;
+    settings.setValue("ui/useSystemLanguage", useSystemLanguageIn);
+    emit useSystemLanguageChanged();
+}
+
+bool Settings::getUseSystemLanguage()
+{
+    QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
+    //Default: 1; it should default to being on.
+    useSystemLanguage = settings.value("ui/useSystemLanguage", 1).toBool();
+    emit useSystemLanguageChanged();
+    return useSystemLanguage;
+}
+
 void Settings::checkLensfunStatus()
 {
     QDir dir = QDir::home();
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator");
 
-    lensfunStatus = "Checking database version";
+    lensfunStatus = "checking";
     emit lensfunStatusChanged();
 
     lf_db_return dbStatus = lensfun_dbcheck(2, dirstr.toStdString());
 
     if (dbStatus == LENSFUN_DBUPDATE_NOVERSION)
     {
-        lensfunStatus = "Database unavailable from server.";
+        lensfunStatus = "unavail";
         emit lensfunStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_NODATABASE)
     {
-        lensfunStatus = "No local database yet.";
+        lensfunStatus = "nolocal";
         emit lensfunStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_OLDVERSION)
     {
-        lensfunStatus = "Updated database available.";
+        lensfunStatus = "avail";
         emit lensfunStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION)
     {
-        lensfunStatus = "Database is up to date.";
+        lensfunStatus = "uptodate";
         emit lensfunStatusChanged();
     }
 }
@@ -324,39 +343,64 @@ void Settings::updateLensfun()
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator");
 
-    updateStatus = "Updating database";
+    updateStatus = "updating";
     emit updateStatusChanged();
 
     lf_db_return dbStatus = lensfun_dbupdate(2, dirstr.toStdString());
 
     if (dbStatus == LENSFUN_DBUPDATE_OK)
     {
-        updateStatus = "Database updated successfully.";
+        updateStatus = "success";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION)
     {
-        updateStatus = "Database is up to date.";
+        updateStatus = "uptodate";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_NOVERSION)
     {
-        updateStatus = "No database available from server.";
+        updateStatus = "unavail";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_INITFAILED)
     {
-        updateStatus = "Database retrieve failed (init).";
+        updateStatus = "initfail";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_FILEOPENFAILED)
     {
-        updateStatus = "Database retrieve failed (file).";
+        updateStatus = "filefail";
         emit updateStatusChanged();
     }
     if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_RETRIEVEFAILED)
     {
-        updateStatus = "Database retrieve failed (retrieve).";
+        updateStatus = "retrievefail";
         emit updateStatusChanged();
+    }
+}
+
+void Settings::downloadCamConst()
+{
+    camconst_status status = camconst_download();
+    if (status == CAMCONST_DL_OK)
+    {
+        camconstDlStatus = "success";
+        emit camconstDlStatusChanged();
+    }
+    if (status == CAMCONST_DL_INITFAILED)
+    {
+        camconstDlStatus = "initfail";
+        emit camconstDlStatusChanged();
+    }
+    if (status == CAMCONST_DL_FOPENFAILED)
+    {
+        camconstDlStatus = "fopenfail";
+        emit camconstDlStatusChanged();
+    }
+    if (status == CAMCONST_DL_RETRIEVEFAILED)
+    {
+        camconstDlStatus = "retrievefail";
+        emit camconstDlStatusChanged();
     }
 }

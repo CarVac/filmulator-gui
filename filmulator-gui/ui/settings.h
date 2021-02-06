@@ -24,8 +24,12 @@ class Settings : public QObject
     Q_PROPERTY(bool lowMemMode READ getLowMemMode WRITE setLowMemMode NOTIFY lowMemModeChanged)
     Q_PROPERTY(bool quickPreview READ getQuickPreview WRITE setQuickPreview NOTIFY quickPreviewChanged)
     Q_PROPERTY(int previewResolution READ getPreviewResolution WRITE setPreviewResolution NOTIFY previewResolutionChanged)
+    Q_PROPERTY(bool useSystemLanguage READ getUseSystemLanguage WRITE setUseSystemLanguage NOTIFY useSystemLanguageChanged)
+
     Q_PROPERTY(QString lensfunStatus READ getLensfunStatus NOTIFY lensfunStatusChanged)
     Q_PROPERTY(QString updateStatus READ getUpdateStatus NOTIFY updateStatusChanged)
+
+    Q_PROPERTY(QString camconstDlStatus READ getCamconstDlStatus NOTIFY camconstDlStatusChanged)
 
 public:
     explicit Settings(QObject *parent = 0);
@@ -45,6 +49,7 @@ public:
     void setLowMemMode(bool lowMemModeIn);
     void setQuickPreview(bool quickPreviewIn);
     void setPreviewResolution(int resolutionIn);
+    void setUseSystemLanguage(bool useSystemLanguageIn);
 
     Q_INVOKABLE QString getPhotoStorageDir();
     Q_INVOKABLE QString getPhotoBackupDir();
@@ -62,11 +67,15 @@ public:
     Q_INVOKABLE bool getLowMemMode();
     Q_INVOKABLE bool getQuickPreview();
     Q_INVOKABLE int getPreviewResolution();
-    Q_INVOKABLE QString getLensfunStatus() {return lensfunStatus;};
-    Q_INVOKABLE QString getUpdateStatus() {return updateStatus;};
+    Q_INVOKABLE bool getUseSystemLanguage();
 
+    Q_INVOKABLE QString getLensfunStatus() {return lensfunStatus;}
+    Q_INVOKABLE QString getUpdateStatus() {return updateStatus;}
     Q_INVOKABLE void checkLensfunStatus();
     Q_INVOKABLE void updateLensfun();
+
+    Q_INVOKABLE QString getCamconstDlStatus() {return camconstDlStatus;}
+    Q_INVOKABLE void downloadCamConst();
 
 protected:
     QString photoStorageDir;
@@ -85,8 +94,12 @@ protected:
     bool lowMemMode;
     bool quickPreview;
     int previewResolution;
+    bool useSystemLanguage;
+
     QString lensfunStatus;
     QString updateStatus;
+
+    QString camconstDlStatus;
 
 signals:
     void photoStorageDirChanged();
@@ -105,8 +118,12 @@ signals:
     void lowMemModeChanged();
     void quickPreviewChanged();
     void previewResolutionChanged();
+    void useSystemLanguageChanged();
+
     void lensfunStatusChanged();
     void updateStatusChanged();
+
+    void camconstDlStatusChanged();
 };
 
 #endif // SETTINGS_H

@@ -31,7 +31,7 @@ eigen3
 ```
 We highly encourage you to compile libraw yourself to ensure you have support for recent cameras.
 
-It also requires Qt 5.14 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
+It also requires Qt 5.15 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
 
 Download Eigen3 and unpack it in the git root directory in a folder named simply `eigen`.
 

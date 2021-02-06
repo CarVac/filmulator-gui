@@ -21,7 +21,9 @@
 #include <limits>
 #include <algorithm>
 #include "math.h"
+#ifdef __SSE2__
 #include <emmintrin.h>
+#endif
 #include <iostream>
 #include <memory>
 #include <omp.h>
@@ -30,7 +32,9 @@
 #define dout cout
 #else
 #define dout 0 && cout
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #endif
 
 #include "assert.h" //Included later so NDEBUG has an effect
@@ -45,6 +49,7 @@ class matrix
         int num_rows;
         int num_cols;
         inline void slow_transpose_to(const matrix<T> &target) const;
+#ifdef __SSE2__
         inline void fast_transpose_to(const matrix<T> &target) const;
         inline void transpose4x4_SSE(float *A, float *B, const int lda,
                                      const int ldb) const;
@@ -52,6 +57,7 @@ class matrix
                                            const int m, const int lda,
                                            const int ldb,
                                            const int block_size) const;
+#endif
         inline void transpose_scalar_block(float *A, float *B, const int lda,
                                      const int ldb, const int block_size) const;
         inline void transpose_block(float *A, float *B, const int n,
@@ -67,6 +73,8 @@ class matrix
         int nr() const;
         int nc() const;
         T& operator()(const int row, const int col) const;
+
+        void swap(matrix<T> &swapTarget);
 
         //for use with librtprocess
         T* operator[](const int index) const // use with indices
@@ -316,6 +324,28 @@ matrix<T>& matrix<T>::operator=(matrix<T> &&toMove)
     return *this;
 }
 
+template <class T>
+void matrix<T>::swap(matrix<T> &swapTarget)
+{
+    if(this != &swapTarget) {
+        auto temp_ua = ua_data;
+        ua_data = swapTarget.ua_data;
+        swapTarget.ua_data = temp_ua;
+        auto temp_data = data;
+        data = swapTarget.data;
+        swapTarget.data = temp_data;
+        auto temp_ptr = ptr;
+        ptr = swapTarget.ptr;
+        swapTarget.ptr = temp_ptr;
+        auto temp_nr = num_rows;
+        num_rows = swapTarget.num_rows;
+        swapTarget.num_rows = temp_nr;
+        auto temp_nc = num_cols;
+        num_cols = swapTarget.num_cols;
+        swapTarget.num_cols = temp_nc;
+    }
+}
+
 template <class T> template<class U>
 matrix<T>& matrix<T>::operator=(const U value)
 {
@@ -470,6 +500,7 @@ inline void matrix<T>::slow_transpose_to (const matrix<T> &target) const
                 data[row*num_cols + col];
 }
 
+#ifdef __SSE2__
 template<>
 inline void matrix<float>::fast_transpose_to (const matrix<float> &target) const
 {
@@ -485,6 +516,7 @@ inline void matrix<T>::fast_transpose_to (const matrix<T> &target) const
 {
     slow_transpose_to(target);
 }
+#endif
 
 template <class T>
 inline void matrix<T>::transpose_to (const matrix<T> &target) const
@@ -495,13 +527,18 @@ inline void matrix<T>::transpose_to (const matrix<T> &target) const
 template<>
 inline void matrix<float>::transpose_to (const matrix<float> &target) const
 {
+#ifdef __SSE2__
     //Fast transpose only work with matricies with dimensions of multiples of 16
     if((num_rows%16 != 0) || (num_cols%16 !=0))
+#endif
         slow_transpose_to(target);
+#ifdef __SSE2__
     else
         fast_transpose_to(target);
+#endif
 }
 
+#ifdef __SSE2__
 template<class T>
 inline void matrix<T>::transpose4x4_SSE(float *A, float *B, const int lda,
                                         const int ldb) const
@@ -535,6 +572,7 @@ inline void matrix<T>::transpose_block_SSE4x4(float *A, float *B, const int n,
                 
         }
 }
+#endif
 
 template<class T>
 inline void matrix<T>::transpose_scalar_block(float *A, float *B, const int lda, const int ldb, const int block_size) const {

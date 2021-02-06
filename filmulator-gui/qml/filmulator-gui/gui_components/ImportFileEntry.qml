@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-//import QtQuick.Dialogs 1.3
 import Qt.labs.platform 1.0
 import "../colors.js" as Colors
 import "."
@@ -18,7 +17,9 @@ Rectangle {
     property alias enteredText: textEntryBox.text
     property alias nameFilters: fileDialog.nameFilters
     property bool erroneous: false
+    property bool clearError: false
     property bool highlight: false
+    property bool multiSelect: true
 
     color: highlight ? Colors.darkOrangeH : Colors.darkGray
 
@@ -57,6 +58,13 @@ Rectangle {
             source: "qrc:///icons/errortriangle.png"
             antialiasing: true
             visible: root.erroneous
+            MouseArea {
+                id: errorMouse
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton
+                enabled: root.erroneous
+                onDoubleClicked: root.clearError = true
+            }
         }
 
         TextInput {
@@ -75,11 +83,11 @@ Rectangle {
 
     Button {
         id: openFileButton
-        width: 120 * uiScale
+        width: 160 * uiScale
         height: 25 * uiScale
         x: root.width - width - __padding
         y: __padding
-        text: qsTr("Select files")
+        text: root.multiSelect ? qsTr("Select files") : qsTr("Select a file")
         action: Action {
             onTriggered: {
                 fileDialog.folder = textEntryBox.text
@@ -110,8 +118,9 @@ Rectangle {
     }
     FileDialog {
         id: fileDialog
-        fileMode: FileDialog.OpenFiles
+        fileMode: root.multiSelect ? FileDialog.OpenFiles : FileDialog.OpenFile
         onAccepted: {
+            root.enteredText = ""
             //root.enteredText = fileUrls.toString()//.substring(7)
             for (var i=0; i < files.length; i++) {
                 root.enteredText += files[i].toString()

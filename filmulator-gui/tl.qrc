@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/translations">
+        <file>translations/filmulator-gui.de.qm</file>
+    </qresource>
+</RCC>

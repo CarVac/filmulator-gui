@@ -53,6 +53,9 @@ struct LoadParams {
 struct DemosaicParams {
     int caEnabled;
     int highlights;
+    int nlClusters;
+    float nlThresh;
+    float nlStrength;
     QString cameraName;
     QString lensName;
     bool lensfunCA;
@@ -60,6 +63,7 @@ struct DemosaicParams {
     bool lensfunDistortion;
     float focalLength;
     float fnumber;
+    float rotationAngle;
 };
 
 struct PrefilmParams {
@@ -139,19 +143,31 @@ class ParameterManager : public QObject
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
 
     //Demosaic
-    Q_PROPERTY(int caEnabled       MEMBER s_caEnabled   WRITE setCaEnabled   NOTIFY caEnabledChanged)
-    Q_PROPERTY(int highlights      MEMBER m_highlights  WRITE setHighlights  NOTIFY highlightsChanged)
-    Q_PROPERTY(QString lensfunName MEMBER s_lensfunName WRITE setLensfunName NOTIFY lensfunNameChanged)
-    Q_PROPERTY(int lensfunCa       MEMBER s_lensfunCa   WRITE setLensfunCa   NOTIFY lensfunCaChanged)
-    Q_PROPERTY(int lensfunVign     MEMBER s_lensfunVign WRITE setLensfunVign NOTIFY lensfunVignChanged)
-    Q_PROPERTY(int lensfunDist     MEMBER s_lensfunDist WRITE setLensfunDist NOTIFY lensfunDistChanged)
+    Q_PROPERTY(int caEnabled        MEMBER s_caEnabled      WRITE setCaEnabled      NOTIFY caEnabledChanged)
+    Q_PROPERTY(int highlights       MEMBER m_highlights     WRITE setHighlights     NOTIFY highlightsChanged)
+    Q_PROPERTY(int nlClusters       MEMBER m_nlClusters     WRITE setNlClusters     NOTIFY nlClustersChanged)
+    Q_PROPERTY(float nlThresh       MEMBER m_nlThresh       WRITE setNlThresh       NOTIFY nlThreshChanged)
+    Q_PROPERTY(float nlStrength     MEMBER m_nlStrength     WRITE setNlStrength     NOTIFY nlStrengthChanged)
+    Q_PROPERTY(QString lensfunName  MEMBER s_lensfunName    WRITE setLensfunName    NOTIFY lensfunNameChanged)
+    Q_PROPERTY(int lensfunCa        MEMBER s_lensfunCa      WRITE setLensfunCa      NOTIFY lensfunCaChanged)
+    Q_PROPERTY(int lensfunVign      MEMBER s_lensfunVign    WRITE setLensfunVign    NOTIFY lensfunVignChanged)
+    Q_PROPERTY(int lensfunDist      MEMBER s_lensfunDist    WRITE setLensfunDist    NOTIFY lensfunDistChanged)
+    Q_PROPERTY(float rotationAngle  MEMBER m_rotationAngle  WRITE setRotationAngle  NOTIFY rotationAngleChanged)
+    Q_PROPERTY(float rotationPointX MEMBER m_rotationPointX WRITE setRotationPointX NOTIFY rotationPointXChanged)
+    Q_PROPERTY(float rotationPointY MEMBER m_rotationPointY WRITE setRotationPointY NOTIFY rotationPointYChanged)
 
-    Q_PROPERTY(int defCaEnabled  READ getDefCaEnabled  NOTIFY defCaEnabledChanged)
-    Q_PROPERTY(int defHighlights READ getDefHighlights NOTIFY defHighlightsChanged)
-    Q_PROPERTY(QString defLensfunName READ getDefLensfunName NOTIFY defLensfunNameChanged)
-    Q_PROPERTY(int defLensfunCa       READ getDefLensfunCa   NOTIFY defLensfunCaChanged)
-    Q_PROPERTY(int defLensfunVign     READ getDefLensfunVign NOTIFY defLensfunVignChanged)
-    Q_PROPERTY(int defLensfunDist     READ getDefLensfunDist NOTIFY defLensfunDistChanged)
+    Q_PROPERTY(int defCaEnabled        READ getDefCaEnabled      NOTIFY defCaEnabledChanged)
+    Q_PROPERTY(int defHighlights       READ getDefHighlights     NOTIFY defHighlightsChanged)
+    Q_PROPERTY(int defNlClusters       READ getDefNlClusters     NOTIFY defNlClustersChanged)
+    Q_PROPERTY(float defNlThresh       READ getDefNlThresh       NOTIFY defNlThreshChanged)
+    Q_PROPERTY(float defNlStrength     READ getDefNlStrength     NOTIFY defNlStrengthChanged)
+    Q_PROPERTY(QString defLensfunName  READ getDefLensfunName    NOTIFY defLensfunNameChanged)
+    Q_PROPERTY(int defLensfunCa        READ getDefLensfunCa      NOTIFY defLensfunCaChanged)
+    Q_PROPERTY(int defLensfunVign      READ getDefLensfunVign    NOTIFY defLensfunVignChanged)
+    Q_PROPERTY(int defLensfunDist      READ getDefLensfunDist    NOTIFY defLensfunDistChanged)
+    Q_PROPERTY(float defRotationAngle  READ getDefRotationAngle  NOTIFY defRotationAngleChanged)
+    Q_PROPERTY(float defRotationPointX READ getDefRotationPointX NOTIFY defRotationPointXChanged)
+    Q_PROPERTY(float defRotationPointY READ getDefRotationPointY NOTIFY defRotationPointYChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -305,13 +321,171 @@ public:
     Valid markFilmLikeCurvesComplete();
 
     Valid getValid();
+    Valid getValidityWhenCanceled();
+    void setValid(Valid validityIn);
+
+    void markStartOfProcessing(){changeMadeSinceCheck = false;}
 
     std::string getFullFilename(){return m_fullFilename;}
 
     void setClone(){isClone = true;}
 
+    //Getters for read-only properties.
+    QString getImageIndex(){return imageIndex;}
+
+    QString getFilename(){return filename;}
+    QString getFullFilenameQstr(){return fullFilenameQstr;}
+    int getSensitivity(){return sensitivity;}
+    QString getExposureTime(){return exposureTime;}
+    QString getAperture(){return aperture;}
+    float getFocalLength(){return focalLength;}
+    QString getMake(){return make;}
+    QString getModel(){return model;}
+    QString getExifLensName(){return exifLensName;}
+    bool getAutoCaAvail(){return autoCaAvail;}
+    bool getLensfunCaAvail(){return lensfunCaAvail;}
+    bool getLensfunVignAvail(){return lensfunVignAvail;}
+    bool getLensfunDistAvail(){return lensfunDistAvail;}
+
+    bool getPasteable(){return pasteable;}
+
+    //Getters for the defaults
+    //Demosaic
+    int getDefCaEnabled(){return d_caEnabled;}
+    int getDefHighlights(){return d_highlights;}
+    int getDefNlClusters(){return d_nlClusters;}
+    float getDefNlThresh(){return d_nlThresh;}
+    float getDefNlStrength(){return d_nlStrength;}
+    QString getDefLensfunName(){return d_lensfunName;}
+    int getDefLensfunCa(){return d_lensfunCa;}
+    int getDefLensfunVign(){return d_lensfunVign;}
+    int getDefLensfunDist(){return d_lensfunDist;}
+    float getDefRotationAngle(){return d_rotationAngle;}
+    float getDefRotationPointX(){return d_rotationPointX;}
+    float getDefRotationPointY(){return d_rotationPointY;}
+
+    //Prefilmulation
+    float getDefExposureComp(){return d_exposureComp;}
+    float getDefTemperature(){return d_temperature;}
+    float getDefTint(){return d_tint;}
+
+    //Filmulation
+    float getDefInitialDeveloperConcentration(){return d_initialDeveloperConcentration;}
+    float getDefReservoirThickness(){return d_reservoirThickness;}
+    float getDefActiveLayerThickness(){return d_activeLayerThickness;}
+    float getDefCrystalsPerPixel(){return d_crystalsPerPixel;}
+    float getDefInitialCrystalRadius(){return d_initialCrystalRadius;}
+    float getDefInitialSilverSaltDensity(){return d_initialSilverSaltDensity;}
+    float getDefDeveloperConsumptionConst(){return d_developerConsumptionConst;}
+    float getDefCrystalGrowthConst(){return d_crystalGrowthConst;}
+    float getDefSilverSaltConsumptionConst(){return d_silverSaltConsumptionConst;}
+    float getDefTotalDevelopmentTime(){return d_totalDevelopmentTime;}
+    int   getDefAgitateCount(){return d_agitateCount;}
+    int   getDefDevelopmentSteps(){return d_developmentSteps;}
+    float getDefFilmArea(){return d_filmArea;}
+    float getDefSigmaConst(){return d_sigmaConst;}
+    float getDefLayerMixConst(){return d_layerMixConst;}
+    float getDefLayerTimeDivisor(){return d_layerTimeDivisor;}
+    float getDefRolloffBoundary(){return d_rolloffBoundary;}
+    float getDefToeBoundary(){return d_toeBoundary;}
+
+    //Whitepoint & blackpoint
+    float getDefBlackpoint(){return d_blackpoint;}
+    float getDefWhitepoint(){return d_whitepoint;}
+
+    //Global all-color curves.
+    float getDefShadowsX(){return d_shadowsX;}
+    float getDefShadowsY(){return d_shadowsY;}
+    float getDefHighlightsX(){return d_highlightsX;}
+    float getDefHighlightsY(){return d_highlightsY;}
+    float getDefVibrance(){return d_vibrance;}
+    float getDefSaturation(){return d_saturation;}
+    bool  getDefMonochrome(){return d_monochrome;}
+    float getDefBwRmult(){return d_bwRmult;}
+    float getDefBwGmult(){return d_bwGmult;}
+    float getDefBwBmult(){return d_bwBmult;}
+
+    //Rotation
+    int getDefRotation(){return d_rotation;}
+
+
+    //Getters for the actual params
+    //Loading
+    bool getTiffIn(){return m_tiffIn;}
+    bool getJpegIn(){return m_jpegIn;}
+
+    //Demosaic
+    int getCaEnabled(){return s_caEnabled;}
+    int getHighlights(){return m_highlights;}
+    int getNlClusters(){return m_nlClusters;}
+    float getNlThresh(){return m_nlThresh;}
+    float getNlStrength(){return m_nlStrength;}
+    QString getLensfunName(){return s_lensfunName;}
+    int getLensfunCa(){return s_lensfunCa;}
+    int getLensfunVign(){return s_lensfunVign;}
+    int getLensfunDist(){return s_lensfunDist;}
+    float getRotationAngle(){return m_rotationAngle;}
+    float getRotationPointX(){return m_rotationPointX;}
+    float getRotationPointY(){return m_rotationPointY;}
+
+    //Prefilmulation
+    float getExposureComp(){return m_exposureComp;}
+    float getTemperature(){return m_temperature;}
+    float getTint(){return m_tint;}
+
+    //Filmulation
+    float getInitialDeveloperConcentration(){return m_initialDeveloperConcentration;}
+    float getReservoirThickness(){return m_reservoirThickness;}
+    float getActiveLayerThickness(){return m_activeLayerThickness;}
+    float getCrystalsPerPixel(){return m_crystalsPerPixel;}
+    float getInitialCrystalRadius(){return m_initialCrystalRadius;}
+    float getInitialSilverSaltDensity(){return m_initialSilverSaltDensity;}
+    float getDeveloperConsumptionConst(){return m_developerConsumptionConst;}
+    float getCrystalGrowthConst(){return m_crystalGrowthConst;}
+    float getSilverSaltConsumptionConst(){return m_silverSaltConsumptionConst;}
+    float getTotalDevelopmentTime(){return m_totalDevelopmentTime;}
+    int   getAgitateCount(){return m_agitateCount;}
+    int   getDevelopmentSteps(){return m_developmentSteps;}
+    float getFilmArea(){return m_filmArea;}
+    float getSigmaConst(){return m_sigmaConst;}
+    float getLayerMixConst(){return m_layerMixConst;}
+    float getLayerTimeDivisor(){return m_layerTimeDivisor;}
+    float getRolloffBoundary(){return m_rolloffBoundary;}
+    float getToeBoundary(){return m_toeBoundary;}
+
+    //Whitepoint & blackpoint
+    float getBlackpoint(){return m_blackpoint;}
+    float getWhitepoint(){return m_whitepoint;}
+    float getCropHeight(){return m_cropHeight;}
+    float getCropAspect(){return m_cropAspect;}
+    float getCropVoffset(){return m_cropVoffset;}
+    float getCropHoffset(){return m_cropHoffset;}
+
+    //Global all-color curves.
+    float getShadowsX(){return m_shadowsX;}
+    float getShadowsY(){return m_shadowsY;}
+    float getHighlightsX(){return m_highlightsX;}
+    float getHighlightsY(){return m_highlightsY;}
+    float getVibrance(){return m_vibrance;}
+    float getSaturation(){return m_saturation;}
+    bool  getMonochrome(){return m_monochrome;}
+    float getBwRmult(){return m_bwRmult;}
+    float getBwGmult(){return m_bwGmult;}
+    float getBwBmult(){return m_bwBmult;}
+
+    //Rotation
+    int getRotation(){return m_rotation;}
+
+
 public slots:
+    //When the quick pipeline gets the params changed, we'll automatically
+    // have the clone pipeline update its params.
+    //This will turn changeMadeSinceCheck true, but only if it's a clone
     void cloneParams(ParameterManager * sourceParams);
+
+    //If this is a preload pipeline, we need to stop computation
+    // when *another* pipeline changes, but we don't need params copied
+    void cancelComputation();
 
 protected:
     //This is here for the sql insertion to pull the values from.
@@ -366,6 +540,10 @@ protected:
     bool lensfunDistAvail;
 
     Valid validity;
+    Valid validityWhenCanceled;
+
+    //this is for dealing with the validity when canceled
+    bool processedYet = false;
 
     //Input
     std::string m_fullFilename;
@@ -376,6 +554,9 @@ protected:
     int s_caEnabled;//similar to the lensfun stuff
     int m_caEnabled;
     int m_highlights;
+    int m_nlClusters;
+    float m_nlThresh;
+    float m_nlStrength;
     QString s_lensfunName;//staging params filled at load and also when manually changed
     int s_lensfunCa;      //These don't get written back
     int s_lensfunVign;
@@ -384,13 +565,22 @@ protected:
     int m_lensfunCa;      //When the UI sets the s_ params, these get changed so the db gets the changes too.
     int m_lensfunVign;    //On the same token, when the UI *resets*,
     int m_lensfunDist;    // these have to go back to "" or -1, not to the default.
+    float m_rotationAngle;
+    float m_rotationPointX;
+    float m_rotationPointY;
 
     int d_caEnabled; //d_'s are for default values
     int d_highlights;
+    int d_nlClusters;
+    float d_nlThresh;
+    float d_nlStrength;
     QString d_lensfunName;//*not* a blank string, but actually the lens that is either exif-automatched or in prefs
     int d_lensfunCa;      //*not* -1, but actually from prefs
     int d_lensfunVign;    //They get filled a) at loading time, or b) when lens prefs are set or erased
     int d_lensfunDist;
+    float d_rotationAngle;
+    float d_rotationPointX;
+    float d_rotationPointY;
 
     //Prefilmulation
     float m_exposureComp;
@@ -479,139 +669,6 @@ protected:
 
     int d_rotation;
 
-    //Getters for read-only properties.
-    QString getImageIndex(){return imageIndex;}
-
-    QString getFilename(){return filename;}
-    QString getFullFilenameQstr(){return fullFilenameQstr;}
-    int getSensitivity(){return sensitivity;}
-    QString getExposureTime(){return exposureTime;}
-    QString getAperture(){return aperture;}
-    float getFocalLength(){return focalLength;}
-    QString getMake(){return make;}
-    QString getModel(){return model;}
-    QString getExifLensName(){return exifLensName;}
-    bool getAutoCaAvail(){return autoCaAvail;}
-    bool getLensfunCaAvail(){return lensfunCaAvail;}
-    bool getLensfunVignAvail(){return lensfunVignAvail;}
-    bool getLensfunDistAvail(){return lensfunDistAvail;}
-
-    bool getPasteable(){return pasteable;}
-
-    //Getters for the defaults
-    //Demosaic
-    int getDefCaEnabled(){return d_caEnabled;}
-    int getDefHighlights(){return d_highlights;}
-    QString getDefLensfunName(){return d_lensfunName;}
-    int getDefLensfunCa(){return d_lensfunCa;}
-    int getDefLensfunVign(){return d_lensfunVign;}
-    int getDefLensfunDist(){return d_lensfunDist;}
-
-    //Prefilmulation
-    float getDefExposureComp(){return d_exposureComp;}
-    float getDefTemperature(){return d_temperature;}
-    float getDefTint(){return d_tint;}
-
-    //Filmulation
-    float getDefInitialDeveloperConcentration(){return d_initialDeveloperConcentration;}
-    float getDefReservoirThickness(){return d_reservoirThickness;}
-    float getDefActiveLayerThickness(){return d_activeLayerThickness;}
-    float getDefCrystalsPerPixel(){return d_crystalsPerPixel;}
-    float getDefInitialCrystalRadius(){return d_initialCrystalRadius;}
-    float getDefInitialSilverSaltDensity(){return d_initialSilverSaltDensity;}
-    float getDefDeveloperConsumptionConst(){return d_developerConsumptionConst;}
-    float getDefCrystalGrowthConst(){return d_crystalGrowthConst;}
-    float getDefSilverSaltConsumptionConst(){return d_silverSaltConsumptionConst;}
-    float getDefTotalDevelopmentTime(){return d_totalDevelopmentTime;}
-    int   getDefAgitateCount(){return d_agitateCount;}
-    int   getDefDevelopmentSteps(){return d_developmentSteps;}
-    float getDefFilmArea(){return d_filmArea;}
-    float getDefSigmaConst(){return d_sigmaConst;}
-    float getDefLayerMixConst(){return d_layerMixConst;}
-    float getDefLayerTimeDivisor(){return d_layerTimeDivisor;}
-    float getDefRolloffBoundary(){return d_rolloffBoundary;}
-    float getDefToeBoundary(){return d_toeBoundary;}
-
-    //Whitepoint & blackpoint
-    float getDefBlackpoint(){return d_blackpoint;}
-    float getDefWhitepoint(){return d_whitepoint;}
-
-    //Global all-color curves.
-    float getDefShadowsX(){return d_shadowsX;}
-    float getDefShadowsY(){return d_shadowsY;}
-    float getDefHighlightsX(){return d_highlightsX;}
-    float getDefHighlightsY(){return d_highlightsY;}
-    float getDefVibrance(){return d_vibrance;}
-    float getDefSaturation(){return d_saturation;}
-    bool  getDefMonochrome(){return d_monochrome;}
-    float getDefBwRmult(){return d_bwRmult;}
-    float getDefBwGmult(){return d_bwGmult;}
-    float getDefBwBmult(){return d_bwBmult;}
-
-    //Rotation
-    int getDefRotation(){return d_rotation;}
-
-
-    //Getters for the actual params
-    //Loading
-    bool getTiffIn(){return m_tiffIn;}
-    bool getJpegIn(){return m_jpegIn;}
-    //Demosaic
-    int getCaEnabled(){return s_caEnabled;}
-    int getHighlights(){return m_highlights;}
-    QString getLensfunName(){return s_lensfunName;}
-    int getLensfunCa(){return s_lensfunCa;}
-    int getLensfunVign(){return s_lensfunVign;}
-    int getLensfunDist(){return s_lensfunDist;}
-
-    //Prefilmulation
-    float getExposureComp(){return m_exposureComp;}
-    float getTemperature(){return m_temperature;}
-    float getTint(){return m_tint;}
-
-    //Filmulation
-    float getInitialDeveloperConcentration(){return m_initialDeveloperConcentration;}
-    float getReservoirThickness(){return m_reservoirThickness;}
-    float getActiveLayerThickness(){return m_activeLayerThickness;}
-    float getCrystalsPerPixel(){return m_crystalsPerPixel;}
-    float getInitialCrystalRadius(){return m_initialCrystalRadius;}
-    float getInitialSilverSaltDensity(){return m_initialSilverSaltDensity;}
-    float getDeveloperConsumptionConst(){return m_developerConsumptionConst;}
-    float getCrystalGrowthConst(){return m_crystalGrowthConst;}
-    float getSilverSaltConsumptionConst(){return m_silverSaltConsumptionConst;}
-    float getTotalDevelopmentTime(){return m_totalDevelopmentTime;}
-    int   getAgitateCount(){return m_agitateCount;}
-    int   getDevelopmentSteps(){return m_developmentSteps;}
-    float getFilmArea(){return m_filmArea;}
-    float getSigmaConst(){return m_sigmaConst;}
-    float getLayerMixConst(){return m_layerMixConst;}
-    float getLayerTimeDivisor(){return m_layerTimeDivisor;}
-    float getRolloffBoundary(){return m_rolloffBoundary;}
-    float getToeBoundary(){return m_toeBoundary;}
-
-    //Whitepoint & blackpoint
-    float getBlackpoint(){return m_blackpoint;}
-    float getWhitepoint(){return m_whitepoint;}
-    float getCropHeight(){return m_cropHeight;}
-    float getCropAspect(){return m_cropAspect;}
-    float getCropVoffset(){return m_cropVoffset;}
-    float getCropHoffset(){return m_cropHoffset;}
-
-    //Global all-color curves.
-    float getShadowsX(){return m_shadowsX;}
-    float getShadowsY(){return m_shadowsY;}
-    float getHighlightsX(){return m_highlightsX;}
-    float getHighlightsY(){return m_highlightsY;}
-    float getVibrance(){return m_vibrance;}
-    float getSaturation(){return m_saturation;}
-    bool  getMonochrome(){return m_monochrome;}
-    float getBwRmult(){return m_bwRmult;}
-    float getBwGmult(){return m_bwGmult;}
-    float getBwBmult(){return m_bwBmult;}
-
-    //Rotation
-    int getRotation(){return m_rotation;}
-
     //Setters for the properties.
     //Loading
     void setTiffIn(bool);
@@ -620,10 +677,16 @@ protected:
     //Demosaic
     void setCaEnabled(int);
     void setHighlights(int);
+    void setNlClusters(int);
+    void setNlThresh(float);
+    void setNlStrength(float);
     void setLensfunName(QString);
     void setLensfunCa(int);
     void setLensfunVign(int);
     void setLensfunDist(int);
+    void setRotationAngle(float);
+    void setRotationPointX(float);
+    void setRotationPointY(float);
 
     //Prefilmulation
     void setExposureComp(float);
@@ -702,17 +765,29 @@ signals:
     //Demosaic
     void caEnabledChanged();
     void highlightsChanged();
+    void nlClustersChanged();
+    void nlThreshChanged();
+    void nlStrengthChanged();
     void lensfunNameChanged();
     void lensfunCaChanged();
     void lensfunVignChanged();
     void lensfunDistChanged();
+    void rotationAngleChanged();
+    void rotationPointXChanged();
+    void rotationPointYChanged();
 
     void defCaEnabledChanged();
     void defHighlightsChanged();
+    void defNlClustersChanged();
+    void defNlThreshChanged();
+    void defNlStrengthChanged();
     void defLensfunNameChanged();
     void defLensfunCaChanged();
     void defLensfunVignChanged();
     void defLensfunDistChanged();
+    void defRotationAngleChanged();
+    void defRotationPointXChanged();
+    void defRotationPointYChanged();
 
     //Prefilmulation
     void exposureCompChanged();

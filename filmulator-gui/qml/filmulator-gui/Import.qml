@@ -24,7 +24,7 @@ Rectangle {
         spacing: 0
         x: 3 * uiScale
         y: 3 * uiScale
-        width: 300 * uiScale
+        width: 350 * uiScale
 
         ToolSlider {
             id: cameraOffset
@@ -109,13 +109,14 @@ Rectangle {
             title: qsTr("Source Directory")
             tooltipText: qsTr("Select or type in the directory containing photos to be imported.")
             dirDialogTitle: qsTr("Select the directory containing the photos to import. It will only import raw files.")
-            warningTooltipText: empty ? qsTr("Choose a directory to import from.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
-            erroneous: (empty || (importInPlace && containsDCIM))
+            warningTooltipText: empty ? qsTr("Choose a directory to import from.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.\n\nDouble-click the error icon to proceed.")
+            erroneous: (empty || (importInPlace && containsDCIM && !clearError))
             property bool containsDCIM: false
             property bool empty: enteredText === ""
             onEnteredTextChanged: {
                 root.folderPath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, false)
+                clearError = false;
             }
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
@@ -130,14 +131,15 @@ Rectangle {
             title: qsTr("Source Files")
             tooltipText: qsTr("Select one or more files to import.")
             fileDialogTitle: qsTr("Select the file(s) to import.")
-            warningTooltipText: !(importInPlace && containsDCIM) ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.")
-            erroneous: (invalid || (importInPlace && containsDCIM) || enteredText == "")
+            warningTooltipText: !(importInPlace && containsDCIM && !clearError) ? qsTr("Choose a valid file.") : qsTr("You may be importing in place from a memory card. The photos will be lost if you format the card.\n\nDouble-click the error icon to proceed.")
+            erroneous: (invalid || (importInPlace && containsDCIM && !clearError) || enteredText == "")
             property bool containsDCIM: false
             property bool invalid: false
             nameFilters: importModel.getNameFilters();
             onEnteredTextChanged: {
                 root.filePath = enteredText
                 containsDCIM = importModel.pathContainsDCIM(enteredText, true)
+                clearError = false
                 invalid = false //If it was invalid, we need to at least let them try to import again once they change the contents
             }
             Connections {
@@ -373,8 +375,10 @@ Rectangle {
             onTriggered: {
                 if (root.sourceIsFolder) {
                     importModel.importDirectory_r(root.folderPath, root.importInPlace, root.replace)
+                    sourceDirEntry.clearError = false
                 } else {
                     importModel.importFileList(root.filePath, root.importInPlace, root.replace)
+                    sourceFileEntry.clearError = false
                 }
             }
             Component.onCompleted: {
@@ -396,6 +400,123 @@ Rectangle {
                 importProgress.tooltipWanted.connect(root.tooltipWanted)
             }
 
+            uiScale: root.uiScale
+        }
+    }
+
+    ColumnLayout {
+        id: scenarioList
+        spacing: 0
+        x: 600 * uiScale
+        y: 20 * uiScale
+        width: 350 * uiScale
+
+        Rectangle {
+            id: scenarioLabelBox
+            width: parent.width
+            height: 20 * uiScale
+            color: Colors.darkGray
+
+            Text {
+                id: scenarioLabelText
+                x: 3 * uiScale
+                y: 0
+                width: parent.width-x
+                height: parent.height
+                color: "white"
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 12.0 * uiScale
+                text: qsTr("Common import scenarios:")
+            }
+        }
+
+        ToolButton {
+            id: memoryCardScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Import new photos from a memory card","Put a line break in if it gets much longer")
+            tooltipText: qsTr("This setup will copy photos from a memory card to a destination directory, and load all newly imported photos into the queue.")
+            highlight: root.sourceIsFolder && !root.importInPlace && appendSwitch.isOn && enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                sourceDirButton.checked = true
+                importAndMoveButton.checked = true
+                appendSwitch.isOn = true
+                enqueueSwitch.isOn = true
+                console.log("sourceisfolder " + root.sourceIsFolder)
+                console.log("import in place " + root.importInPlace)
+                console.log("append " + importModel.appendHash)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                memoryCardScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        ToolButton {
+            id: existingPhotosScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Import existing photos")
+            tooltipText: qsTr("This setup will import photos that are already on your computer, and load all newly imported photos into the queue.")
+            highlight: root.importInPlace && !replaceLocationSwitch.isOn && enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                importInPlaceButton.checked = true
+                replaceLocationSwitch.isOn = false
+                enqueueSwitch.isOn = true
+                console.log("import in place " + root.importInPlace)
+                console.log("replace location " + root.replace)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                existingPhotosScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        ToolButton {
+            id: findBackupScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Update locations of files that have moved","Put a line break in if it gets much longer")
+            tooltipText: qsTr("If a photo in the database has its raw file moved, use this setup to re-import the photo. It will not load anything into the queue.\n\nThis is useful when you remove photos from your main directory and want to work from a backup location.")
+            highlight: root.sourceIsFolder && root.importInPlace && replaceLocationSwitch.isOn && !enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                sourceDirButton.checked = true
+                importInPlaceButton.checked = true
+                replaceLocationSwitch.isOn = true
+                enqueueSwitch.isOn = false
+                console.log("sourceisfolder " + root.sourceIsFolder)
+                console.log("import in place " + root.importInPlace)
+                console.log("replace location " + root.replace)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                findBackupScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+        ToolButton {
+            id: enqueueFileScenario
+            width: parent.width
+            height: 60 * uiScale
+            text: qsTr("Bring previously-imported files into the queue","Put a line break in if it gets much longer")
+            tooltipText: qsTr("If a file is in the database but you don't know when it was taken, just re-import it with this setup to load it into the queue.")
+            highlight: root.importInPlace && replaceLocationSwitch.isOn && enqueueSwitch.isOn
+            noOutlineClick: true
+            onTriggered: {
+                importInPlaceButton.checked = true
+                replaceLocationSwitch.isOn = true
+                enqueueSwitch.isOn = true
+                console.log("import in place " + root.importInPlace)
+                console.log("replace location " + root.replace)
+                console.log("enqueue " + importModel.enqueue)
+            }
+            Component.onCompleted: {
+                findBackupScenario.tooltipWanted.connect(root.tooltipWanted)
+            }
             uiScale: root.uiScale
         }
     }

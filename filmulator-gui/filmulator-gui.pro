@@ -40,6 +40,8 @@ SOURCES += main.cpp \
     core/whiteBalance.cpp \
     core/whitepointBlackpoint.cpp \
     database/basicSqlModel.cpp \
+    database/cJSON.c \
+    database/camconst.cpp \
     database/dateHistogramModel.cpp \
     database/dbSetup.cpp \
     database/exifFunctions.cpp \
@@ -65,8 +67,6 @@ lupdate_only {
 SOURCES += qml/filmulator-gui/*.qml \
     qml/filmulator-gui/gui_components/*.qml
 }
-
-TRANSLATIONS = translations/filmulator-gui_de.ts
 
 # Installation path
 unix:target.path = /usr/lib/filmulator-gui
@@ -107,6 +107,8 @@ HEADERS += \
     core/nlmeans/nlmeans.hpp \
     database/backgroundQueue.h \
     database/basicSqlModel.h \
+    database/cJSON.h \
+    database/camconst.h \
     database/dateHistogramModel.h \
     database/exifFunctions.h \
     database/filmulatorDB.h \

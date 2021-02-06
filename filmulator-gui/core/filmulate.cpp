@@ -208,7 +208,7 @@ bool ImagePipeline::filmulate(matrix<float> &input_image,
     
     //Now we compute the density (opacity) of the film.
     //We assume that overlapping crystals or dye clouds are
-    //nonexistant. It works okay, for now...
+    //nonexistent. It works okay, for now...
     //The output is crystal_radius^2 * active_crystals_per_pixel
     struct timeval mult_start;
     gettimeofday(&mult_start,NULL);

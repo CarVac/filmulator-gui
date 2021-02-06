@@ -1,7 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
-import QtQuick.Dialogs 1.3
 import "gui_components"
 import "colors.js" as Colors
 
@@ -18,7 +17,6 @@ ApplicationWindow {
     signal tooltipWanted(string text, int x, int y)
     signal imageURL(string newURL)
     property bool cropping: false
-
 
     onClosing: {
         close.accepted = false
@@ -53,6 +51,29 @@ ApplicationWindow {
                 property real rectx: 4
                 property real recty: 28.5
                 property real rectheight: 54
+
+                Shortcut {
+                    sequence: "Ctrl+1"
+                    onActivated: tabs.currentIndex = 0
+                }
+                Shortcut {
+                    sequence: "Ctrl+2"
+                    onActivated: tabs.currentIndex = 1
+                }
+                Shortcut {
+                    sequence: "Ctrl+3"
+                    onActivated: tabs.currentIndex = 2
+                }
+                Shortcut {
+                    sequence: "Ctrl+4"
+                    onActivated: tabs.currentIndex = 3
+                }
+                Connections {
+                    target: queueItem
+                    function onDoubleClicked() {
+                        tabs.currentIndex = 2
+                    }
+                }
 
                 TabButton {
                     id: importButton
@@ -248,6 +269,7 @@ ApplicationWindow {
 
                 Organize {
                     id: organizeItem
+                    onOrganizeTab: tabs.currentIndex == 1
                     Component.onCompleted: {
                         organizeItem.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -256,9 +278,14 @@ ApplicationWindow {
 
                 Edit {
                     id: editItem
+                    onEditTab: tabs.currentIndex == 2
                     Component.onCompleted: {
                         editItem.tooltipWanted.connect(root.tooltipWanted)
                         editItem.imageURL.connect(root.imageURL)
+                        if (startOnFilmulate)
+                        {
+                            tabs.currentIndex = 2
+                        }
                     }
                     onRequestingCroppingChanged: {
                         root.cropping = editItem.requestingCropping
@@ -293,6 +320,7 @@ ApplicationWindow {
 
             Queue {
                 id: queueItem
+                onEditTab: tabs.currentIndex == 2
                 anchors.fill: parent
                 uiScale: root.uiScale
                 Connections {
@@ -398,10 +426,10 @@ ApplicationWindow {
     }
 
     //Global keyboard shortcut handling
-    Action {
+    Shortcut {
         id: fullscreenAction
-        shortcut: "f11"
-        onTriggered: {
+        sequence: StandardKey.FullScreen
+        onActivated: {
             if (root.visibility !== 5) {
                 root.tempVisibility = root.visibility
                 root.visibility = 5//"FullScreen"
@@ -409,6 +437,21 @@ ApplicationWindow {
             else {
                 root.visibility = root.tempVisibility
             }
+        }
+    }
+    Shortcut {
+        id: enterEater
+        sequence: StandardKey.InsertParagraphSeparator
+        onActivated: {
+            //do nothing
+            //this doesn't seem to be activated, but just in case...
+        }
+    }
+    Shortcut {
+        id: spaceEater
+        sequence: " "
+        onActivated: {
+            //do nothing
         }
     }
 }

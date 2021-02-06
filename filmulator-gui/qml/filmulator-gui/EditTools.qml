@@ -17,6 +17,8 @@ SlimSplitView {
     property bool imageReady
     property bool cropping
     property bool imageError
+    property bool onEditTab
+    property string saveStatus: ""
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -54,17 +56,28 @@ SlimSplitView {
         Layout.fillHeight: true
         Flickable {
             id: toolList
-            width: parent.width
+            width: parent.width - 3 * uiScale
             height: parent.height
             flickableDirection: Qt.Vertical
             clip: true
             contentHeight: toolLayout.height
+
             boundsBehavior: Flickable.StopAtBounds
+            flickDeceleration: 6000 * uiScale
+            maximumFlickVelocity: 10000 * Math.sqrt(uiScale)
+
+            onMovingChanged: { //reset params after mouse scrolling
+                if (!moving) {
+                    flickDeceleration = 6000 * uiScale
+                    maximumFlickVelocity = 10000 * Math.sqrt(uiScale)
+                }
+            }
+
             ColumnLayout {
                 id: toolLayout
                 spacing: 0 * uiScale
                 x: 3 * uiScale
-                width: toolListItem.width - 6 * uiScale
+                width: toolList.width - 6 * uiScale
 
                 Rectangle {
                     id: topSpacer
@@ -108,7 +121,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: autoCASlider
-                    title: qsTr("Auto CA correction")
+                    title: qsTr("Auto CA Correction")
                     tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.\n\nNot available for non-Bayer photos.")
                     minimumValue: 0
                     maximumValue: 5
@@ -243,6 +256,101 @@ SlimSplitView {
                     }
                     Component.onCompleted: {
                         lensfunDistSwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: nlClustersSlider
+                    title: qsTr("nlmeans clusters")
+                    tooltipText: qsTr("Max number of clusters per tile, I think")
+                    minimumValue: 5
+                    maximumValue: 200
+                    stepSize: 1
+                    value: paramManager.nlClusters
+                    defaultValue: paramManager.defNlClusters
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.nlClusters = value
+                        }
+                    }
+                    //onEditComplete: //it's not stored in the database
+                    Connections {
+                        target: paramManager
+                        function onNlClustersChanged() {
+                            nlClustersSlider.value = paramManager.nlClusters
+                        }
+                        function onDefNlClustersChanged() {
+                            nlClustersSlider.defaultValue = paramManager.defNlClusters
+                        }
+                    }
+                    Component.onCompleted: {
+                        nlClustersSlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: nlThreshSlider
+                    title: qsTr("nlmeans cluster threshold")
+                    tooltipText: qsTr("I think this is the smallest a cluster can be in terms of difference")
+                    minimumValue: -9*Math.log(10)
+                    maximumValue: 1*Math.log(10)
+                    value: Math.log(paramManager.nlThresh)
+                    defaultValue: Math.log(paramManager.defNlThresh)
+                    valueText: Math.exp(value).toExponential(3)
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.nlThresh = Math.exp(value)
+                        }
+                    }
+                    //onEditComplete: //it's not stored in the database
+                    Connections {
+                        target: paramManager
+                        function onNlThreshChanged() {
+                            nlThreshSlider.value = Math.log(paramManager.nlThresh)
+                        }
+                        function onDefNlThreshChanged() {
+                            nlThreshSlider.defaultValue = Math.log(paramManager.defNlThresh)
+                        }
+                    }
+                    Component.onCompleted: {
+                        nlThreshSlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: nlStrengthSlider
+                    title: qsTr("nlmeans strength")
+                    tooltipText: qsTr("Some control of strength. Not sure what. When set to zero, this disables nlmeans.")
+                    minimumValue: 0
+                    maximumValue: 0.5
+                    value: paramManager.nlStrength
+                    defaultValue: paramManager.defNlStrength
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.nlStrength = value
+                        }
+                    }
+                    //onEditComplete: //it's not stored in the database
+                    Connections {
+                        target: paramManager
+                        function onNlStrengthChanged() {
+                            nlStrengthSlider.value = paramManager.nlStrength
+                        }
+                        function onDefNlStrengthChanged() {
+                            nlStrengthSlider.defaultValue = paramManager.defNlStrength
+                        }
+                    }
+                    Component.onCompleted: {
+                        nlStrengthSlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale
                 }
@@ -485,7 +593,7 @@ SlimSplitView {
                     defaultValue: Math.log(Math.sqrt(paramManager.defFilmArea))
                     //The following thresholds are 24mmx65mm and twice 6x9cm film's
                     // areas, respectively.
-                    valueText: (Math.exp(value*2) < 1560) ? "SF" : (Math.exp(value*2) < 9408) ? "MF" : "LF"
+                    valueText: (Math.exp(value*2)).toFixed(1)//(Math.exp(value*2) < 1560) ? "SF" : (Math.exp(value*2) < 9408) ? "MF" : "LF"
                     onValueChanged: {
                         paramManager.filmArea = Math.exp(value*2)
                     }
@@ -912,6 +1020,166 @@ SlimSplitView {
                 }
             }
         }
+
+        Item {
+            id: scrollbarHolderToolList
+            x: parent.width - 10*uiScale
+            y: 0
+            width: 10*uiScale
+            height: parent.height
+
+            Rectangle {
+                id: scrollbarBackgroundToolList
+                color: Colors.darkGray
+                opacity: 0
+
+                x: parent.width-width - 1*uiScale
+                width: 3 * uiScale
+
+                y: 0
+                height: parent.height
+
+                transitions: Transition {
+                    NumberAnimation {
+                        property: "width"
+                        duration: 200
+                    }
+                    NumberAnimation {
+                        property: "opacity"
+                        duration: 200
+                    }
+                }
+                states: State {
+                    name: "hovered"
+                    when: scrollbarMouseAreaToolList.containsMouse || scrollbarMouseAreaToolList.pressed
+                    PropertyChanges {
+                        target: scrollbarBackgroundToolList
+                        width: 8 * uiScale
+                        opacity: 0.5
+                    }
+                }
+            }
+
+            Rectangle {
+                id: scrollbarToolList
+                color: scrollbarMouseAreaToolList.pressed ? Colors.medOrange : scrollbarMouseAreaToolList.containsMouse ? Colors.weakOrange : Colors.middleGray
+                radius: 1.5*uiScale
+
+                x: parent.width-width - 1 * uiScale
+                width: 3 * uiScale
+
+                y: 1 * uiScale + (0.99*toolList.visibleArea.yPosition) * (parent.height - 2*uiScale)
+                height: (0.99*toolList.visibleArea.heightRatio + 0.01) * (parent.height - 2*uiScale)
+
+                transitions: Transition {
+                    NumberAnimation {
+                        property: "width"
+                        duration: 200
+                    }
+                }
+                states: State {
+                    name: "hovered"
+                    when: scrollbarMouseAreaToolList.containsMouse || scrollbarMouseAreaToolList.pressed
+                    PropertyChanges {
+                        target: scrollbarToolList
+                        width: 8 * uiScale
+                    }
+                }
+            }
+            MouseArea {
+                id: scrollbarMouseAreaToolList
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: Qt.LeftButton
+                onWheel: {
+                    //See the Queue.qml file for the math behind this.
+
+                    //We have to duplicate the wheelstealer one because this has higher priority for some reason.
+                    //Set the scroll deceleration and max speed higher for wheel scrolling.
+                    //It should be reset when the view stops moving.
+                    //For now, this is 10x higher than standard.
+                    var deceleration = 6000 * 10
+                    toolList.flickDeceleration = deceleration * uiScale
+                    toolList.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*10)
+
+                    var velocity = toolList.verticalVelocity/uiScale
+                    var newVelocity = velocity
+
+                    var distance = 100
+                    if (wheel.angleDelta.y > 0 && !toolList.atXBeginning && !root.dragging) {
+                        //Leftward; up on the scroll wheel.
+                        newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                        newVelocity = Math.min(newVelocity, toolList.maximumFlickVelocity)
+                        toolList.flick(0,1)
+                        toolList.flick(0, newVelocity)
+                    } else if (wheel.angleDelta.y < 0 && !toolList.atXEnd && !root.dragging) {
+                        //Rightward; down on the scroll wheel.
+                        newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                        newVelocity = -Math.min(newVelocity, toolList.maximumFlickVelocity)
+                        toolList.flick(0,-1)
+                        toolList.flick(0, newVelocity)
+                    }
+                }
+
+                property bool overDragThresh: false
+                property real pressY
+                property real viewY
+                onPositionChanged: {
+                    if (pressed) {
+                        var deltaY = mouse.y - pressY
+                        var scrollHeight = scrollbarMouseAreaToolList.height - scrollbarToolList.height - 2*uiScale
+                        var relativeDelta = deltaY / scrollHeight
+                        var scrollMargin = toolList.contentHeight - toolList.height
+                        toolList.contentY = Math.max(0, Math.min(scrollMargin, viewY + relativeDelta * scrollMargin))
+                    }
+                }
+
+                onPressed: {
+                    preventStealing = true
+                    toolList.cancelFlick()
+                    pressY = mouse.y
+                    viewY = toolList.contentY
+                }
+                onReleased: {
+                    preventStealing = false
+                }
+            }
+        }
+
+        MouseArea {
+            id: wheelstealer
+            //Custom scrolling implementation because the default flickable one sucks.
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton
+            onWheel: {
+                //See the Queue.qml file for the math behind this.
+
+                //Set the scroll deceleration and max speed higher for wheel scrolling.
+                //It should be reset when the view stops moving.
+                //For now, this is 10x higher than standard.
+                var deceleration = 6000 * 2
+                toolList.flickDeceleration = deceleration * uiScale
+                toolList.maximumFlickVelocity = 10000 * Math.sqrt(uiScale*2)
+
+                var velocity = toolList.verticalVelocity/uiScale
+                var newVelocity = velocity
+
+                var distance = 30 //the tool list is relatively short so it needs less scrolling
+                if (wheel.angleDelta.y > 0 && !toolList.atYBeginning) {
+                    //up on the scroll wheel.
+                    newVelocity = uiScale*(velocity <= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(120))*4*deceleration) : 0)
+                    newVelocity = Math.min(newVelocity, toolList.maximumFlickVelocity)
+                    toolList.flick(0,1)
+                    toolList.flick(0, newVelocity)
+                } else if (wheel.angleDelta.y < 0 && !toolList.atYEnd) {
+                    //down on the scroll wheel.
+                    newVelocity = uiScale*(velocity >= 0 ? Math.sqrt((velocity*velocity/(4*deceleration) + distance*wheel.angleDelta.y/(-120))*4*deceleration) : 0)
+                    newVelocity = -Math.min(newVelocity, toolList.maximumFlickVelocity)
+                    toolList.flick(0,-1)
+                    toolList.flick(0, newVelocity)
+                }
+            }
+        }
     }
 
     Item {
@@ -933,6 +1201,7 @@ SlimSplitView {
             onTriggered: {
                 filmProvider.writeTiff()
                 queueModel.markSaved(paramManager.imageIndex)
+                root.saveStatus = "saved"
             }
             Component.onCompleted: {
                 saveTIFFButton.tooltipWanted.connect(root.tooltipWanted)
@@ -951,7 +1220,20 @@ SlimSplitView {
             onTriggered: {
                 filmProvider.writeJpeg()
                 queueModel.markSaved(paramManager.imageIndex)
+                root.saveStatus = "saved"
             }
+
+            Shortcut {
+                sequence: StandardKey.Save
+                onActivated: {
+                    if (saveJPEGButton.notDisabled && root.onEditTab) {
+                        filmProvider.writeJpeg()
+                        queueModel.markSaved(paramManager.imageIndex)
+                        root.saveStatus = "saved"
+                    }
+                }
+            }
+
             Component.onCompleted: {
                 saveJPEGButton.tooltipWanted.connect(root.tooltipWanted)
             }

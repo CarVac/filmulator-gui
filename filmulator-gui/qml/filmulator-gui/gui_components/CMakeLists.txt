@@ -10,7 +10,6 @@ if(APPLE)
             OrganizeDelegate.qml
             ImportTextEntry.qml
             ImportFileEntry.qml
-            ToolCalendar.qml
             QueueDelegate.qml
             ToolTip.qml
             SlideySwitch.qml
@@ -35,7 +34,6 @@ elseif(WIN32)
             OrganizeDelegate.qml
             ImportTextEntry.qml
             ImportFileEntry.qml
-            ToolCalendar.qml
             QueueDelegate.qml
             ToolTip.qml
             SlideySwitch.qml
@@ -57,7 +55,6 @@ else()
             OrganizeDelegate.qml
             ImportTextEntry.qml
             ImportFileEntry.qml
-            ToolCalendar.qml
             QueueDelegate.qml
             ToolTip.qml
             SlideySwitch.qml

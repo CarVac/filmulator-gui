@@ -30,6 +30,7 @@ void fileInsert(const QString hash,
 
     if (inDatabaseAlready)
     {
+        cout << "it's in the db file table" << endl;
         query.prepare("UPDATE FileTable "
                       "SET FTfilePath = ? "
                       "WHERE (FTfileID = ?);");
@@ -39,14 +40,22 @@ void fileInsert(const QString hash,
     }
     else
     {
+        cout << "it's not in the db file table" << endl;
         std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
+
+        int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+        std::wstring wstr = fullFilename.toStdWString();
+        libraw_error = libraw->open_file(wstr.c_str());
+#else
         std::string filenameStr = fullFilename.toStdString();
         const char *cstr = filenameStr.c_str();
-        int libraw_error = libraw->open_file(cstr);
+        libraw_error = libraw->open_file(cstr);
+#endif
         if (0 != libraw_error)
         {
             cout << "exifLocalDateString: Could not read input file!" << endl;
-            cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;;
+            cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
         }
 
         query.prepare("INSERT INTO FileTable values (?,?,?,?,?,?,?,?,?);");
@@ -80,7 +89,8 @@ QString createNewProfile(const QString fileHash,
                          const QString fileName,
                          const QDateTime captureTime,
                          const QDateTime importStartTime,
-                         const std::string fullFilename)
+                         const std::string fullFilename,
+                         const bool noThumbnail)
 {
     //Each thread needs a unique database connection
     QSqlDatabase db = getDB();
@@ -124,7 +134,7 @@ QString createNewProfile(const QString fileHash,
     searchID.append(QString("%1").arg(increment, 4, 10, QLatin1Char('0')));
     query.bindValue(0, searchID);
     //captureTime (unix time)
-    query.bindValue(1, captureTime.toTime_t());
+    query.bindValue(1, captureTime.toSecsSinceEpoch());
     //name (of instance)
     query.bindValue(2, "");
     //filename
@@ -142,12 +152,12 @@ QString createNewProfile(const QString fileHash,
     query.bindValue(7, 0);
     QDateTime now = QDateTime::currentDateTime();
     //importTime (unix time)
-    query.bindValue(8, now.toTime_t());
+    query.bindValue(8, now.toSecsSinceEpoch());
     //lastProcessedTime (unix time)
     //It's the same as above, since we're making a new one.
-    query.bindValue(9, now.toTime_t());
+    query.bindValue(9, now.toSecsSinceEpoch());
     //importStartTime (unix time): lets us group together import batches.
-    query.bindValue(10, importStartTime.toTime_t());
+    query.bindValue(10, importStartTime.toSecsSinceEpoch());
     //thumbWritten
     query.bindValue(11, 0);
     //bigThumbWritten (the preview)
@@ -166,6 +176,14 @@ QString createNewProfile(const QString fileHash,
 
     ParameterManager paramManager;
     paramManager.selectImage(searchID);
+
+    //If we're loading from CLI, we don't need to generate a thumbnail since we go right into editing.
+    //So we just stop here.
+    if (noThumbnail)
+    {
+        return searchID;
+    }
+
 
     //Next, we prepare a dummy exif object because we don't care about the thumbnail's exif.
     Exiv2::ExifData exif;

@@ -42,7 +42,20 @@ bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
     //Magic below
     TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+    if(!TIFFSetField(out, TIFFTAG_COMPRESSION, COMPRESSION_NONE)) {cout << "couldn't set tiff compression" << endl;}
     //End Magic
+
+    std::string make = exifData["Exif.Image.Make"].toString();
+    TIFFSetField(out, TIFFTAG_MAKE, make.c_str());
+    std::string model = exifData["Exif.Image.Model"].toString();
+    TIFFSetField(out, TIFFTAG_MODEL, model.c_str());
+    TIFFSetField(out, TIFFTAG_SOFTWARE, "Filmulator");
+    std::string copyright = exifData["Exif.Image.Copyright"].toString();
+    TIFFSetField(out, TIFFTAG_COPYRIGHT, copyright.c_str());
+    std::string lensinfo = exifData["Exif.Image.LensInfo"].toString();
+    TIFFSetField(out, TIFFTAG_LENSINFO, lensinfo.c_str());
+    std::string datetime = exifData["Exif.Image.DateTime"].toString();
+    TIFFSetField(out, TIFFTAG_DATETIME, datetime.c_str());
 
     tsize_t linebytes = 3 * xsize * 2;//Size in bytes of a line
     unsigned short *buf = NULL;
@@ -58,22 +71,29 @@ bool imwrite_tiff(const matrix<unsigned short>& output, string outputfilename,
         if (TIFFWriteScanline(out, buf, j, 0) < 0)
             break;
     }
+
+    TIFFWriteDirectory(out);
+
     (void) TIFFClose(out);
 
     if (buf)
         _TIFFfree(buf);
 
-    exifData["Exif.Image.Orientation"] = 1;//set all images to unrotated
-    exifData["Exif.Image.ImageWidth"] = output.nc()/3;
-    exifData["Exif.Image.ImageLength"] = output.nr();
-    exifData["Exif.Photo.ColorSpace"] = 1;
-    exifData["Exif.Image.ProcessingSoftware"] = "Filmulator";
+    //Programs reading tiffs really freak out if you write the full exif data
+    //So we write only the basics here.
+    Exiv2::ExifData minimumData;
+    minimumData["Exif.Photo.ISOSpeedRatings"] = exifData["Exif.Photo.ISOSpeedRatings"];
+    minimumData["Exif.Photo.ExposureTime"]    = exifData["Exif.Photo.ExposureTime"];
+    minimumData["Exif.Photo.FNumber"]         = exifData["Exif.Photo.FNumber"];
+    minimumData["Exif.Photo.FocalLength"]     = exifData["Exif.Photo.FocalLength"];
 
-    auto image = Exiv2::ImageFactory::open(outputfilename.c_str());
+    minimumData.sortByTag(); //darktable's does this so maybe we should
+
+    auto image = Exiv2::ImageFactory::open(outputfilename);
     assert(image.get() != 0);
 
-    image->setExifData(exifData);
-    //image->writeMetadata();
+    image->setExifData(minimumData);
+    image->writeMetadata();
 
     return 0;
 }

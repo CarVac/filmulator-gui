@@ -14,6 +14,8 @@ ParameterManager::ParameterManager() : QObject(0)
     justInitialized = true;
     paramChangeEnabled = true;
 
+    imageIndex = "";
+
     cout << "ParamManager load defaults to params" << endl;
 
     //Load the defaults, copy to the parameters, there's no filename yet.
@@ -77,12 +79,12 @@ std::tuple<Valid,AbortStatus,LoadParams> ParameterManager::claimLoadParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
-    changeMadeSinceCheck = false;//We can't have it abort first thing in the pipeline.
     if (validity < Valid::none)//If something earlier than this has changed
     {
         abort = AbortStatus::restart;//not actually possible
+        cout << "claimLoadParams validity abort" << endl;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -108,7 +110,7 @@ AbortStatus ParameterManager::claimLoadAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -123,6 +125,7 @@ AbortStatus ParameterManager::claimLoadAbort()
 Valid ParameterManager::markLoadComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partload == validity)
     {
         validity = Valid::load;//mark step complete (duh)
@@ -164,7 +167,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -182,6 +185,9 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     DemosaicParams demParams;
     demParams.caEnabled = s_caEnabled;
     demParams.highlights = m_highlights;
+    demParams.nlClusters = m_nlClusters;
+    demParams.nlThresh = m_nlThresh;
+    demParams.nlStrength = m_nlStrength;
     demParams.cameraName = model;
     demParams.lensName = s_lensfunName;//we use the staging ones because they're always populated
     demParams.lensfunCA = s_lensfunCa >= 1;
@@ -189,6 +195,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     demParams.lensfunDistortion = s_lensfunDist >= 1;
     demParams.focalLength = focalLength;
     demParams.fnumber = fnumber;
+    demParams.rotationAngle = m_rotationAngle;
     std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
@@ -201,7 +208,7 @@ AbortStatus ParameterManager::claimDemosaicAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -216,6 +223,7 @@ AbortStatus ParameterManager::claimDemosaicAbort()
 Valid ParameterManager::markDemosaicComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partdemosaic == validity)
     {
         validity = Valid::demosaic;
@@ -247,6 +255,44 @@ void ParameterManager::setHighlights(int highlights)
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setHighlights"));
+    }
+}
+
+//nlmeans stuff (temp)
+void ParameterManager::setNlClusters(int numClusters)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_nlClusters = numClusters;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setNlClusters"));
+    }
+}
+void ParameterManager::setNlThresh(float clusterThreshold)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_nlThresh = clusterThreshold;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setNlThresh"));
+    }
+}
+void ParameterManager::setNlStrength(float strength)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_nlStrength = strength;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setNlStrength"));
     }
 }
 
@@ -311,6 +357,41 @@ void ParameterManager::setLensfunDist(int distEnabled)
     }
 }
 
+void ParameterManager::setRotationAngle(float angleIn)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_rotationAngle = angleIn;
+        validity = min(validity, Valid::load);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotationAngle"));
+    }
+}
+
+void ParameterManager::setRotationPointX(float rowIn)
+{
+    if (!justInitialized)
+    {
+        //no need to lock the paramMutex, since this doesn't affect the image at all
+        m_rotationPointX = rowIn;
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotationPointX"));
+    }
+}
+
+void ParameterManager::setRotationPointY(float colIn)
+{
+    if (!justInitialized)
+    {
+        //no need to lock the paramMutex, since this doesn't affect the image at all
+        m_rotationPointY = colIn;
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setRotationPointY"));
+    }
+}
+
 std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
 {
     QMutexLocker paramLocker(&paramMutex);
@@ -319,7 +400,7 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -346,7 +427,7 @@ AbortStatus ParameterManager::claimPrefilmAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -361,6 +442,7 @@ AbortStatus ParameterManager::claimPrefilmAbort()
 Valid ParameterManager::markPrefilmComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partprefilmulation == validity)
     {
         validity = Valid::prefilmulation;
@@ -417,7 +499,7 @@ std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -458,7 +540,7 @@ AbortStatus ParameterManager::claimFilmAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -473,6 +555,7 @@ AbortStatus ParameterManager::claimFilmAbort()
 Valid ParameterManager::markFilmComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partfilmulation == validity)
     {
         validity = Valid::filmulation;
@@ -722,7 +805,7 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -752,7 +835,7 @@ AbortStatus ParameterManager::claimBlackWhiteAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -767,6 +850,7 @@ AbortStatus ParameterManager::claimBlackWhiteAbort()
 Valid ParameterManager::markBlackWhiteComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partblackwhite == validity)
     {
         validity = Valid::blackwhite;
@@ -906,6 +990,7 @@ void ParameterManager::rotateLeft()
 Valid ParameterManager::markColorCurvesComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::blackwhite == validity)
     {
         validity = Valid::colorcurve;
@@ -925,7 +1010,7 @@ std::tuple<Valid,AbortStatus,FilmlikeCurvesParams> ParameterManager::claimFilmli
     {
         abort = AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         abort = AbortStatus::restart;
     }
@@ -958,7 +1043,7 @@ AbortStatus ParameterManager::claimFilmLikeCurvesAbort()
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
     }
-    else if (isClone && changeMadeSinceCheck)
+    else if (changeMadeSinceCheck)
     {
         changeMadeSinceCheck = false;
         return AbortStatus::restart;
@@ -973,6 +1058,7 @@ AbortStatus ParameterManager::claimFilmLikeCurvesAbort()
 Valid ParameterManager::markFilmLikeCurvesComplete()
 {
     QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
     if (Valid::partfilmlikecurve == validity)
     {
         validity = Valid::filmlikecurve;
@@ -1114,7 +1200,29 @@ void ParameterManager::setBwBmult(float Bmult)
 Valid ParameterManager::getValid()
 {
     QMutexLocker paramLocker(&paramMutex);
-    return validity;
+    if (processedYet)
+    {
+        return validity;
+    } else {
+        return Valid::none;
+    }
+}
+
+void ParameterManager::setValid(Valid validityIn)
+{
+    QMutexLocker paramLocker(&paramMutex);
+    validity = validityIn;
+    if (validity != Valid::none)
+    {
+        //we know it had been processed
+        processedYet = true;
+    }
+}
+
+Valid ParameterManager::getValidityWhenCanceled()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    return validityWhenCanceled;
 }
 
 //This gets called by a slider (from qml) when it is released.
@@ -1184,10 +1292,13 @@ void ParameterManager::writeToDB(QString imageID)
                   "ProcTlensfunName, "                    //41
                   "ProcTlensfunCa, "                      //42
                   "ProcTlensfunVign, "                    //43
-                  "ProcTlensfunDist) "                    //44
-                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4
-                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4
+                  "ProcTlensfunDist, "                    //44
+                  "ProcTrotationAngle, "                  //45
+                  "ProcTrotationPointX, "                 //46
+                  "ProcTrotationPointY) "                 //47
+                  " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+                  //                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4
+                  //        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7
     query.bindValue( 0, imageID);
     query.bindValue( 1, m_initialDeveloperConcentration);
     query.bindValue( 2, m_reservoirThickness);
@@ -1233,6 +1344,9 @@ void ParameterManager::writeToDB(QString imageID)
     query.bindValue(42, m_lensfunCa);
     query.bindValue(43, m_lensfunVign);
     query.bindValue(44, m_lensfunDist);
+    query.bindValue(45, m_rotationAngle);
+    query.bindValue(46, m_rotationPointX);
+    query.bindValue(47, m_rotationPointY);
     query.exec();
     //Write that it's been edited to the SearchTable (actually writing the edit time)
     QDateTime now = QDateTime::currentDateTime();
@@ -1240,7 +1354,7 @@ void ParameterManager::writeToDB(QString imageID)
                   "STthumbWritten = 0, "
                   "STbigThumbWritten = 0 "
                   "WHERE STsearchID = ?;");
-    query.bindValue(0, QVariant(now.toTime_t()));
+    query.bindValue(0, QVariant(now.toSecsSinceEpoch()));
     query.bindValue(1, imageID);
     query.exec();
     //Write that it's been edited to the QueueTable
@@ -1270,8 +1384,15 @@ void ParameterManager::selectImage(const QString imageID)
     if (imageIndex != imageID)
     {
         imageIndex = imageID;
-        emit imageIndexChanged();
+        if (processedYet)
+        {
+            validityWhenCanceled = validity;
+            processedYet = false;
+        } else {
+            validityWhenCanceled = Valid::none;
+        }
         validity = Valid::none;
+        emit imageIndexChanged();
     }
 
     QString tempString = imageID;
@@ -1374,7 +1495,7 @@ void ParameterManager::selectImage(const QString imageID)
     emit modelChanged();
 
     exifLensName = exifLens(m_fullFilename);
-    cout << "parammanager exifLensName: " << exifLensName.toStdString() << endl;
+    //cout << "parammanager exifLensName: " << exifLensName.toStdString() << endl;
     emit exifLensNameChanged();
 
     //Copy all of the processing parameters from the db into this param manager.
@@ -1414,7 +1535,7 @@ void ParameterManager::selectImage(const QString imageID)
     const bool hasPreferences = (query.value(0).toInt() > 0);
     if (hasPreferences)
     {
-        cout << "Has lens preferences" << endl;
+        //cout << "Has lens preferences" << endl;
         query.prepare("SELECT LensfunLens, LensfunCa, LensfunVign, LensfunDist, AutoCa FROM LensPrefs  WHERE ExifCamera = ? AND ExifLens = ?;");
         query.bindValue(0, model);
         query.bindValue(1, exifLensName);
@@ -1449,11 +1570,11 @@ void ParameterManager::selectImage(const QString imageID)
         s_caEnabled = d_caEnabled;
     } else {
         //No preferences
-        cout << "Has no lens preferences" << endl;
+        //cout << "Has no lens preferences" << endl;
         //If there's a match for the exif lens, use that
         d_lensfunName = identifyLens(m_fullFilename);
         s_lensfunName = d_lensfunName;
-        cout << "Found lens: " << d_lensfunName.toStdString() << endl;
+        //cout << "Found lens: " << d_lensfunName.toStdString() << endl;
         //There are no global preferences, so we turn off all the corrections
         d_caEnabled = 0;
         s_caEnabled = 0;
@@ -1469,7 +1590,7 @@ void ParameterManager::selectImage(const QString imageID)
     if (m_lensfunName != "NoLens")
     {
         s_lensfunName = m_lensfunName;
-        cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
+        //cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
         if (m_caEnabled > -1)
         {
             s_caEnabled = m_caEnabled;
@@ -1488,22 +1609,42 @@ void ParameterManager::selectImage(const QString imageID)
         }
     } else {
         //If there's no matching lens, disable all the lensfun corrections.
-        cout << "No lens found" << endl;
-        //s_caEnabled can stay whatever it was because it doesn't depend on lensfun
+        //cout << "No lens found" << endl;
+        //s_caEnabled needs to be changed to whatever the database said though.
+        if (m_caEnabled > -1)
+        {
+            s_caEnabled = m_caEnabled;
+        }
         s_lensfunCa = 0;
         s_lensfunVign = 0;
         s_lensfunDist = 0;
     }
-    cout << "Default lens: " << d_lensfunName.toStdString() << endl;
+    //cout << "Default lens: " << d_lensfunName.toStdString() << endl;
 
     //Finally, we need to change the availability for the various lens corrections
     //First is Auto CA Correct, which only works with Bayer CFAs.
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
-    libraw->open_file(m_fullFilename.c_str());
+    int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+    const QString tempFilename = QString::fromStdString(m_fullFilename);
+    std::wstring wstr = tempFilename.toStdWString();
+    libraw_error = libraw->open_file(wstr.c_str());
+#else
+    const char *cstr = m_fullFilename.c_str();
+    libraw_error = libraw->open_file(cstr);
+#endif
+    if (libraw_error)
+    {
+        cout << "selectImage: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        emit fileError();
+        return;
+    }
+
     bool isSraw = libraw->is_sraw();
-    cout << "Is sraw: " << isSraw << endl;
+    //cout << "Is sraw: " << isSraw << endl;
     bool isWeird = libraw->COLOR(0,0)==6;
-    cout << "Is weird: " << isWeird << endl;
+    //cout << "Is weird: " << isWeird << endl;
     int maxXtrans = 0;
     for (int i=0; i<6; i++)
     {
@@ -1513,9 +1654,9 @@ void ParameterManager::selectImage(const QString imageID)
         }
     }
     bool isXtrans = maxXtrans > 0;
-    cout << "Is xtrans: " << isXtrans << endl;
+    //cout << "Is xtrans: " << isXtrans << endl;
     autoCaAvail = !isSraw && !isWeird && !isXtrans;
-    cout << "Auto CA is available: " << autoCaAvail << endl;
+    //cout << "Auto CA is available: " << autoCaAvail << endl;
     emit autoCaAvailChanged();
 
     //Then is lensfun, which depends on the camera and lens.
@@ -1526,10 +1667,16 @@ void ParameterManager::selectImage(const QString imageID)
     //Emit that the things have changed.
     emit caEnabledChanged();
     emit highlightsChanged();
+    emit nlClustersChanged();//=============================
+    emit nlThreshChanged();//========================
+    emit nlStrengthChanged();//====================
     emit lensfunNameChanged();
     emit lensfunCaChanged();
     emit lensfunVignChanged();
     emit lensfunDistChanged();
+    emit rotationAngleChanged();
+    emit rotationPointXChanged();
+    emit rotationPointYChanged();
     emit exposureCompChanged();
     emit temperatureChanged();
     emit tintChanged();
@@ -1571,10 +1718,16 @@ void ParameterManager::selectImage(const QString imageID)
 
     emit defCaEnabledChanged();
     emit defHighlightsChanged();
+    emit defNlClustersChanged();//========================
+    emit defNlThreshChanged();//========================
+    emit defNlStrengthChanged();//========================
     emit defLensfunNameChanged();
     emit defLensfunCaChanged();
     emit defLensfunVignChanged();
     emit defLensfunDistChanged();
+    emit defRotationAngleChanged();
+    emit defRotationPointXChanged();
+    emit defRotationPointYChanged();
     emit defExposureCompChanged();
     emit defTemperatureChanged();
     emit defTintChanged();
@@ -1608,7 +1761,6 @@ void ParameterManager::selectImage(const QString imageID)
     emit defBwGmultChanged();
     emit defBwBmultChanged();
     emit defToeBoundaryChanged();
-
 
     //Mark that it's safe for sliders to move again.
     QMutexLocker signalLocker(&signalMutex);
@@ -1664,6 +1816,23 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
         m_highlights = temp_highlights;
     }
 
+    //nlmeans stuff (temporary)
+    d_nlClusters = 50;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_nlClusters = d_nlClusters;
+    }
+    d_nlThresh = 1e-5;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_nlThresh = d_nlThresh;
+    }
+    d_nlStrength = 0;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_nlStrength = d_nlStrength;
+    }
+
     //The lens correction parameters don't actually have the defaults loaded into the d_ params.
     //If it's "loadtoparams" then we copy them only into the m_ params,
     // so that they can be written back to the database.
@@ -1689,6 +1858,34 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
         nameCol = rec.indexOf("ProfTlensfunDist");
         if (-1 == nameCol) { std::cout << "paramManager ProfTlensfunDist" << endl; }
         m_lensfunDist = query.value(nameCol).toInt();
+    }
+
+    //Fine rotation angle
+    nameCol = rec.indexOf("ProfTrotationAngle");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrotationAngle" << endl; }
+    const float temp_rotationAngle = query.value(nameCol).toFloat();
+    d_rotationAngle = temp_rotationAngle;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rotationAngle = temp_rotationAngle;
+    }
+
+    //Rotation reference point coordinates
+    nameCol = rec.indexOf("ProfTrotationPointX");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrotationPointX" << endl; }
+    const float temp_rotationPointX = query.value(nameCol).toFloat();
+    d_rotationPointX = temp_rotationPointX;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rotationPointX = temp_rotationPointX;
+    }
+    nameCol = rec.indexOf("ProfTrotationPointY");
+    if (-1 == nameCol) { std::cout << "paramManager ProfTrotationPointY" << endl; }
+    const float temp_rotationPointY = query.value(nameCol).toFloat();
+    d_rotationPointY = temp_rotationPointY;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_rotationPointY = temp_rotationPointY;
     }
 
     //Exposure compensation
@@ -2113,6 +2310,23 @@ void ParameterManager::loadParams(QString imageID)
         validity = min(validity, Valid::load);
     }
 
+    //nlmeans stuff (temp)
+    if (m_nlClusters != d_nlClusters)
+    {
+        m_nlClusters = d_nlClusters;
+        validity = min(validity, Valid::load);
+    }
+    if (m_nlThresh != d_nlThresh)
+    {
+        m_nlThresh = d_nlThresh;
+        validity = min(validity, Valid::load);
+    }
+    if (m_nlStrength != d_nlStrength)
+    {
+        m_nlStrength = d_nlStrength;
+        validity = min(validity, Valid::load);
+    }
+
     //Lensfun lens name
     nameCol = rec.indexOf("ProcTlensfunName");
     if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunName" << endl; }
@@ -2128,7 +2342,7 @@ void ParameterManager::loadParams(QString imageID)
     nameCol = rec.indexOf("ProcTlensfunCa");
     if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunCa" << endl; }
     const int temp_lensfunCa = query.value(nameCol).toInt();
-    if (temp_lensfunCa != m_caEnabled)
+    if (temp_lensfunCa != m_lensfunCa)
     {
         //cout << "ParameterManager::loadParams lensfunCa" << endl;
         m_lensfunCa = temp_lensfunCa;
@@ -2155,6 +2369,37 @@ void ParameterManager::loadParams(QString imageID)
         //cout << "ParameterManager::loadParams lensfunDist" << endl;
         m_lensfunDist = temp_lensfunDist;
         validity = min(validity, Valid::load);
+    }
+
+    //Fine rotation angle
+    nameCol = rec.indexOf("ProcTrotationAngle");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotationAngle" << endl; }
+    const float temp_rotationAngle = query.value(nameCol).toFloat();
+    if (temp_rotationAngle != m_rotationAngle)
+    {
+        //cout << "ParameterManager::loadParams rotationAngle" << endl;
+        m_rotationAngle = temp_rotationAngle;
+        validity = min(validity, Valid::load);
+    }
+
+    //Rotation reference point coordinates
+    nameCol = rec.indexOf("ProcTrotationPointX");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotationPointX" << endl; }
+    const float temp_rotationPointX = query.value(nameCol).toFloat();
+    if (temp_rotationPointX != m_rotationPointX)
+    {
+        //cout << "ParameterManager::loadParams rotationPointX" << endl;
+        m_rotationPointX = temp_rotationPointX;
+        //the reference coordinates don't affect validity at all
+    }
+    nameCol = rec.indexOf("ProcTrotationPointY");
+    if (-1 == nameCol) { std::cout << "paramManager ProcTrotationPointY" << endl; }
+    const float temp_rotationPointY = query.value(nameCol).toFloat();
+    if (temp_rotationPointY != m_rotationPointY)
+    {
+        //cout << "ParameterManager::loadParams rotationPointY" << endl;
+        m_rotationPointY = temp_rotationPointY;
+        //the reference coordinates don't affect validity at all
     }
 
     //Exposure compensation
@@ -2582,15 +2827,21 @@ void ParameterManager::loadParams(QString imageID)
 //The other param manager emits updateClone.
 //
 //This is very similar to selectImage but it doesn't have to worry about defaults at all
+//
+//When the parameter manager is a clone, then it cancels computation using
+// changeMadeSinceCheck.
 void ParameterManager::cloneParams(ParameterManager * sourceParams)
 {
     QMutexLocker paramLocker(&paramMutex);//Make all the param changes happen together.
     disableParamChange();//Prevent aborting of computation.
 
     //Make sure that we always abort after any change while executing,
-    //even if it's later in the pipeline,
-    //Because we want to redo the small preview immediately.
-    changeMadeSinceCheck = true;
+    // even if it's later in the pipeline,
+    // because we want to redo the small preview immediately.
+    if (isClone)
+    {
+        changeMadeSinceCheck = true;
+    }
 
     //Load the image index
     const QString temp_imageIndex = sourceParams->getImageIndex();
@@ -2728,6 +2979,30 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
         validity = min(validity, Valid::load);
     }
 
+    //nlmeans number of clusters
+    const int temp_nlClusters = sourceParams->getNlClusters();
+    if (temp_nlClusters != m_nlClusters)
+    {
+        m_nlClusters = temp_nlClusters;
+        validity = min(validity, Valid::load);
+    }
+
+    //nlmeans cluster threshold
+    const float temp_nlThresh = sourceParams->getNlThresh();
+    if (temp_nlThresh != m_nlThresh)
+    {
+        m_nlThresh = temp_nlThresh;
+        validity = min(validity, Valid::load);
+    }
+
+    //nlmeans strength
+    const float temp_nlStrength = sourceParams->getNlStrength();
+    if (temp_nlStrength != m_nlStrength)
+    {
+        m_nlStrength = temp_nlStrength;
+        validity = min(validity, Valid::load);
+    }
+
     //Lensfun lens name
     const QString temp_lensfunName = sourceParams->getLensfunName();
     if (temp_lensfunName != s_lensfunName)
@@ -2761,6 +3036,31 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams lensfunDist" << endl;
         s_lensfunDist = temp_lensfunDist;
+        validity = min(validity, Valid::load);
+    }
+
+    //Fine rotation angle
+    const float temp_rotationAngle = sourceParams->getRotationAngle();
+    if (temp_rotationAngle != m_rotationAngle)
+    {
+        //cout << "ParameterManager::cloneParams rotationAngle" << endl;
+        m_rotationAngle = temp_rotationAngle;
+        validity = min(validity, Valid::load);
+    }
+
+    //Rotation reference point coordinates
+    const float temp_rotationPointX = sourceParams->getRotationPointX();
+    if (temp_rotationPointX != m_rotationPointX)
+    {
+        //cout << "ParameterManager::cloneParams rotationPointX" << endl;
+        m_rotationPointX = temp_rotationPointX;
+        validity = min(validity, Valid::load);
+    }
+    const float temp_rotationPointY = sourceParams->getRotationPointY();
+    if (temp_rotationPointY != m_rotationPointY)
+    {
+        //cout << "ParameterManager::cloneParams rotationPointY" << endl;
+        m_rotationPointY = temp_rotationPointY;
         validity = min(validity, Valid::load);
     }
 
@@ -3110,6 +3410,11 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     paramChangeWrapper(QString("cloneParams"));
 }
 
+void ParameterManager::cancelComputation()
+{
+    changeMadeSinceCheck = true;
+}
+
 //This prevents the back-and-forth between this object and QML from aborting
 // computation, and also prevents the sliders' moving from marking the photo
 // as edited.
@@ -3211,6 +3516,7 @@ void ParameterManager::updateAvailability()
                 bool isMonochrome = false;
                 if (!isCR3) //no CR3 cameras are monochrome
                 {
+                    cout << "updateAvailability exiv filename: " << m_fullFilename << endl;
                     auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
                     exifImage->readMetadata();
                     Exiv2::ExifData exifData = exifImage->exifData();

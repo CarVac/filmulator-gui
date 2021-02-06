@@ -64,6 +64,8 @@ void QueueModel::resetIndex()
     } else {
         maxIndex = 0;
     }
+    m_queueSize = maxIndex;
+    emit queueSizeChanged();
 }
 
 void QueueModel::deQueue(const QString searchID)
@@ -509,4 +511,106 @@ void QueueModel::markSaved(const QString searchID)
     query.bindValue(0, searchID);
     query.exec();
     updateAll();
+}
+
+QString QueueModel::getPrev(const QString searchID)
+{
+    if (searchID == "")
+    {
+        return "";
+    }
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
+    query.exec("BEGIN TRANSACTION;");
+
+    query.prepare("SELECT QTsortedIndex FROM QueueTable WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    if (!query.isValid())
+    {
+        return "";//no result
+    }
+    const int currentIndex = query.value(0).toInt();
+    if (currentIndex - 1 >= 0)
+    {
+        query.prepare("SELECT QTsearchID FROM QueueTable WHERE QTSortedIndex = ?;");
+        query.bindValue(0, currentIndex - 1);
+        query.exec();
+        query.next();
+        const QString newID = query.value(0).toString();
+        query.exec("END TRANSACTION;");
+        return newID;
+    } else {//past the end
+        query.exec("END TRANSACTION;");
+        return "";//searchID;
+    }
+}
+QString QueueModel::getNext(const QString searchID)
+{
+    if (searchID == "")
+    {
+        return "";
+    }
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
+    query.exec("BEGIN TRANSACTION;");
+
+    query.prepare("SELECT QTsortedIndex FROM QueueTable WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    if (!query.isValid())
+    {
+        return "";
+    }
+    const int currentIndex = query.value(0).toInt();
+    if (currentIndex + 1 < maxIndex)
+    {
+        query.prepare("SELECT QTsearchID FROM QueueTable WHERE QTSortedIndex = ?;");
+        query.bindValue(0, currentIndex + 1);
+        query.exec();
+        query.next();
+        const QString newID = query.value(0).toString();
+        query.exec("END TRANSACTION;");
+        return newID;
+    } else {//past the end
+        query.exec("END TRANSACTION;");
+        return "";
+    }
+}
+
+//this can be used to make a mark on the scrollbar
+//it can also be used to keep the active image visible (centered?) on the scrollbar
+float QueueModel::getActivePosition(const QString searchID)
+{
+    if (searchID == "")
+    {
+        return -1;
+    }
+
+    //index 0 out of 0 should be -1 (offscreen)
+    if (maxIndex == 0)
+    {
+        return -1;
+    }
+    //index 0 out of 1 should be 0.5 (centered)
+    if (maxIndex == 1)
+    {
+        return 0;
+    }
+
+    QSqlDatabase db = getDB();
+    QSqlQuery query(db);
+    query.exec("BEGIN TRANSACTION;");
+
+    query.prepare("SELECT QTsortedIndex FROM QueueTable WHERE QTsearchID = ?;");
+    query.bindValue(0, searchID);
+    query.exec();
+    query.next();
+    const int currentIndex = query.value(0).toInt();
+
+    //index 0 out of 2 should be 0 (left)
+    //index 1 out of 2 should be 1 (right)
+    return float(currentIndex)/float(maxIndex - 1);
 }
