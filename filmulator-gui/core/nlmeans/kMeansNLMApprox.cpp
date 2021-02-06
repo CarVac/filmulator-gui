@@ -8,7 +8,7 @@ void kMeansNLMApprox(float* __restrict const I, const int maxClusters, const flo
 	constexpr int patchSize = (2 * radius + 1) * (2 * radius + 1);
 	constexpr int numChannels = 3;
 
-	constexpr ptrdiff_t blockSize = 128;
+    constexpr ptrdiff_t blockSize = 64;
 	constexpr ptrdiff_t S = 8;
 	constexpr ptrdiff_t expandedBlockSize = blockSize + 2*S;
 
@@ -64,12 +64,12 @@ void kMeansNLMApprox(float* __restrict const I, const int maxClusters, const flo
 
 		//Todo: set W to 0 outside the image
 		std::vector<float> W(expandedBlockSize * expandedBlockSize * numClusters, 0.0f);
-		calcW(expandedDimensions.data(), clusterCenters.data(), patchSize * 3, numClusters, h, W.data());
+        calcW(expandedDimensions.data(), clusterCenters.data(), patchSize * 3, numClusters, expandedBlockSize, h, W.data());
 
 		std::vector<float> C1ChanT = calcC1ChanT(clusterCenters, numClusters, h);
 
 		std::vector<float> tileOutput(blockSize*blockSize*numChannels);
-		highDimBoxFilter(IBlockCopy.data(), W.data(), C1ChanT.data(), numClusters, tileOutput.data());
+        highDimBoxFilter(IBlockCopy.data(), W.data(), C1ChanT.data(), numClusters, blockSize, S, expandedBlockSize, tileOutput.data());
 
 		for (ptrdiff_t c = 0; c < numChannels; c++) {
 			for (ptrdiff_t xReadIdx = 0; xReadIdx < blockSize; xReadIdx++) {

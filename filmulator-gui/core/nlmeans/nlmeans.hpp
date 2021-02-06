@@ -20,12 +20,14 @@ pseudoinverse(const MatT& mat, typename MatT::Scalar tolerance = typename MatT::
 std::vector<float> calcC1ChanT(std::vector<float> centers, int numClusters, const float h);
 
 void calcW(float* const Aguide_ptr, float* const centers_ptr,
-           ptrdiff_t rangeDims, ptrdiff_t numClusters, float const h,
-           float* W_ptr);
+           ptrdiff_t rangeDims, ptrdiff_t numClusters, ptrdiff_t expandedBlockSize,
+           float const h, float* W_ptr);
 
 void expandDims(float* const I, int radius, int sizeX, int sizeY, float* output);
 
-void highDimBoxFilter(float* const A, float* const W, float* const C1chanT, ptrdiff_t const numClusters, float* output);
+void highDimBoxFilter(float* const A, float* const W, float* const C1chanT, ptrdiff_t const numClusters,
+                      ptrdiff_t blockSize, ptrdiff_t S, ptrdiff_t expandedBlockSize,
+                      float* output);
 
 void kMeansNLMApprox(float* const I, const int maxClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* output);
 

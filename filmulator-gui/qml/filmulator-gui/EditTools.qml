@@ -329,7 +329,7 @@ SlimSplitView {
                     title: qsTr("nlmeans strength")
                     tooltipText: qsTr("Some control of strength. Not sure what. When set to zero, this disables nlmeans.")
                     minimumValue: 0
-                    maximumValue: 0.5
+                    maximumValue: 0.1
                     value: paramManager.nlStrength
                     defaultValue: paramManager.defNlStrength
                     property bool bindingLoopCutoff: true

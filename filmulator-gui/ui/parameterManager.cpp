@@ -1817,7 +1817,7 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     }
 
     //nlmeans stuff (temporary)
-    d_nlClusters = 50;
+    d_nlClusters = 30;
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_nlClusters = d_nlClusters;

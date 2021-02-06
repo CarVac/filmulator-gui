@@ -7,11 +7,10 @@
 //S is the radius of the neighborhood over which we are averaging (neighborhood size (2S+1)^2)
 //We're going to column major order right now to match MATLAB, TODO: switch to row major
 //TODO: fixup int vs ptrdiff_t indexing.
-void highDimBoxFilter(float* __restrict const A, float* __restrict const W, float* __restrict const C1chanT, ptrdiff_t const numClusters, float* __restrict output){
+void highDimBoxFilter(float* __restrict const A, float* __restrict const W, float* __restrict const C1chanT, ptrdiff_t const numClusters,
+                      ptrdiff_t blockSize, ptrdiff_t S, ptrdiff_t expandedBlockSize,
+                      float* __restrict output){
 
-    constexpr ptrdiff_t blockSize = 128;
-    constexpr ptrdiff_t S = 8;
-    constexpr ptrdiff_t expandedBlockSize = blockSize + 2*S;
 
     //Calculate the weighting (Wt) in this block across all clusters to preserve locallity. TODO: test moving this into the per-cluster for loop
     std::vector<float> Wt(blockSize*blockSize*numClusters, 0.0f);

@@ -6,10 +6,8 @@
 //Aguide is called p in the paper, W is called c_k, centers is called mu_k
 //requires W be set to 0
 void calcW(float* __restrict const Aguide_ptr, float* __restrict const centers_ptr,
-           ptrdiff_t rangeDims, ptrdiff_t numClusters, float const h,
-           float* __restrict W_ptr){
-
-    constexpr ptrdiff_t expandedBlockSize = 144;
+           ptrdiff_t rangeDims, ptrdiff_t numClusters, ptrdiff_t expandedBlockSize,
+           float const h, float* __restrict W_ptr){
 
     for (ptrdiff_t x = 0; x < expandedBlockSize; x++){
         for (ptrdiff_t c = 0; c < numClusters; c++) {
