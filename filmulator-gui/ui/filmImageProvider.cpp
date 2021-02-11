@@ -421,3 +421,11 @@ void FilmImageProvider::refreshParams(const QString IDin)
         nextParam->selectImage(IDin);
     }
 }
+
+//Coordinates relative to cropped image
+//Directly communicates with the ParamManagers, I think.
+void FilmImageProvider::customWB(const float xCoord, const float yCoord)
+{
+    cout << "customWB x coord: " << xCoord << endl;
+    cout << "customWB y coord: " << yCoord << endl;
+}

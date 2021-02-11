@@ -214,8 +214,11 @@ void rotate_image(matrix<float> &input, matrix<float> &output,
                   int rotation);
 
 //Uses Nelder-Mead method to find the WB parameters that yield (1,1,1) RGB multipliers.
+//If all the optional arguments are positive, use those instead of the raw file's
+// camera WB multipliers.
 void optimizeWBMults( std::string inputFilename,
-                      float &temperature, float &tint );
+                      float &temperature, float &tint,
+                      const float rMul = -1, const float gMul = -1, const float bMul = -1);
 
 //Applies the desired temperature and tint adjustments to the image.
 void whiteBalance(matrix<float> &input, matrix<float> &output,

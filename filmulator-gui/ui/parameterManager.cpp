@@ -1852,6 +1852,7 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     else
     {
         //If there is a file, calculate the camera WB.
+        //This should only be used for raw images, in the case that tiff support is added back in.
         float temp_temperature, temp_tint;
         optimizeWBMults(absFilePath, temp_temperature, temp_tint);
         d_temperature = temp_temperature;
