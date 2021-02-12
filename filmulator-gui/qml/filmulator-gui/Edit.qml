@@ -2736,23 +2736,20 @@ SlimSplitView {
             anchors.right: crop.left
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.cropping && !root.leveling
-            property bool wbSaved: paramManager.customWbAvail
+            tooltipText: root.wbPicking ? qsTr("Cancel setting custom white balance. Shortcut: W") : qsTr("Set a custom white balance based on where you click in the image.\n\nThe white balance will be remembered and can be applied to later images taken by the same camera model.\n\nShortcut: W")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
                 anchors.centerIn: parent
-                source: root.wbPicking ? (wbButton.wbSaved ? "qrc:///icons/whitebalanceplusactive.png" : "qrc:///icons/whitebalanceactive.png") : (wbButton.wbSaved ? "qrc:///icons/whitebalanceplus.png" : "qrc:///icons/whitebalance.png")
+                source: root.wbPicking ? "qrc:///icons/whitebalanceactive.png" : "qrc:///icons/whitebalance.png"
                 antialiasing: true
                 opacity: wbButton.notDisabled ? 1 : 0.5
             }
             onTriggered: {
                 if (!root.wbPicking) {
-                    /*
                     imageRect.wbPointX = -1
                     imageRect.wbPointY = -1
                     root.wbPicking = true
-                    */
-                    //Show/hide menu
                 } else {
                     root.wbPicking = false
                 }
@@ -2762,12 +2759,9 @@ SlimSplitView {
                 enabled: wbButton.notDisabled && root.onEditTab
                 onActivated: {
                     if (!root.wbPicking) {
-                        /*
                         imageRect.wbPointX = -1
                         imageRect.wbPointY = -1
                         root.wbPicking = true
-                        */
-                        //Show/hide menu
                     } else {
                         root.wbPicking = false
                     }
@@ -2949,6 +2943,7 @@ SlimSplitView {
         id: editTools
         uiScale: root.uiScale
         imageReady: root.imageReady
+        previewReady: root.previewReady
         cropping: root.requestingCropping || root.cropping
         leveling: root.requestingLeveling || root.leveling
         onEditTab: root.onEditTab

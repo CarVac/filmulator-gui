@@ -15,6 +15,7 @@ SlimSplitView {
     orientation: Qt.Vertical
 
     property bool imageReady
+    property bool previewReady
     property bool cropping
     property bool leveling
     property bool imageError
@@ -292,6 +293,49 @@ SlimSplitView {
                         bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale
+                }
+
+                Rectangle {
+                    id: wbButtonRect
+                    Layout.preferredHeight: 36 * uiScale
+                    Layout.fillWidth: true
+                    color: Colors.darkGray
+
+                    ToolButton {
+                        id: saveWbButton
+                        width: parent.width/2
+                        height: parent.height
+                        x: 0
+                        y: 0
+                        notDisabled: root.imageReady || root.previewReady //an image needs to be loaded
+                        text: qsTr("Store WB","white balance")
+                        tooltipText: qsTr("Save the current white balance settings for later use with images from the same camera. They remains stored until Filmulator is closed, or until overwritten with this button or the custom WB picker.")
+                        onTriggered: {
+                            paramManager.saveCustomWb()
+                        }
+                        Component.onCompleted: {
+                            saveWbButton.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
+
+                    ToolButton {
+                        id: recallWbButton
+                        width: parent.width/2
+                        height: parent.height
+                        x: width
+                        y: 0
+                        notDisabled: (root.imageReady || root.previewReady) && paramManager.customWbAvail
+                        text: qsTr("Recall WB","white balance")
+                        tooltipText: paramManager.customWbAvail ? qsTr("Apply the stored white balance settings.") : qsTr("No white balance has been stored for this camera.")
+                        onTriggered: {
+                            paramManager.recallCustomWb()
+                        }
+                        Component.onCompleted: {
+                            recallWbButton.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
                 }
 
                 ToolSlider {
@@ -1098,7 +1142,6 @@ SlimSplitView {
             id: saveTIFFButton
             width: parent.width/2
             height: 40 * uiScale
-            uiScale: root.uiScale
             x: 0
             y: 0
             notDisabled: root.imageReady && (!root.cropping) && (!root.leveling) && (!root.imageError)
@@ -1112,12 +1155,12 @@ SlimSplitView {
             Component.onCompleted: {
                 saveTIFFButton.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
         ToolButton {
             id: saveJPEGButton
             width: parent.width/2
             height: 40 * uiScale
-            uiScale: root.uiScale
             x: width
             y: 0
             notDisabled: root.imageReady && (!root.cropping) && (!root.leveling) && (!root.imageError)
@@ -1128,7 +1171,6 @@ SlimSplitView {
                 queueModel.markSaved(paramManager.imageIndex)
                 root.saveStatus = "saved"
             }
-
             Shortcut {
                 sequence: StandardKey.Save
                 onActivated: {
@@ -1139,10 +1181,10 @@ SlimSplitView {
                     }
                 }
             }
-
             Component.onCompleted: {
                 saveJPEGButton.tooltipWanted.connect(root.tooltipWanted)
             }
+            uiScale: root.uiScale
         }
     }
     Connections {
