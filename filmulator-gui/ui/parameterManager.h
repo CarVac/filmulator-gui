@@ -274,6 +274,9 @@ public:
     Q_INVOKABLE void setLensPreferences();
     Q_INVOKABLE void eraseLensPreferences();
 
+    //combined wb; this is for custom WB sampling initiated from c++
+    void setWB(const float temp, const float tint);
+
     //The paramMutex exists to prevent race conditions between
     // changes in the parameters and changes in validity.
     //We make them public so that we can avoid race conditions when grabbing image pipeline data

@@ -458,4 +458,18 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord)
     optimizeWBMults(filename, temp, tint, rMult, gMult, bMult);
     cout << "customWB temp: " << temp << endl;
     cout << "customWB tint: " << tint << endl;
+
+    paramLocker.unlock();//done gathering info from the
+
+    //limit temperature to prevent crashes when calculating planckian locus
+    if (temp < 2000)
+    {
+        temp = 2000;
+    } else if (temp > 20000)
+    {
+        temp = 20000;
+    }
+    //tint is just a multiplier for green so it won't cause crashes
+
+    paramManager->setWB(temp, tint);
 }

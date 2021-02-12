@@ -448,6 +448,25 @@ void ParameterManager::setTint(float tint)
     }
 }
 
+void ParameterManager::setWB(const float temp, const float tint)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_temperature = temp;
+        m_tint = tint;
+        validity = min(validity, Valid::demosaic);
+        paramLocker.unlock();
+
+        //This is called from C++ only, so we have it emit the parameter change signals
+        emit temperatureChanged();
+        emit tintChanged();
+
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setFloat"));
+    }
+}
+
 std::tuple<Valid,AbortStatus,FilmParams> ParameterManager::claimFilmParams()
 {
     QMutexLocker paramLocker(&paramMutex);
