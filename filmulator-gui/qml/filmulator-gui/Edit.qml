@@ -1964,7 +1964,7 @@ SlimSplitView {
                     height: 2 * Math.max(bottomImage.height*bottomImage.scale, imageRect.height)
                     x: bottomImage.x + imageRect.displayWbPointX*bottomImage.scale - width/2
                     y: bottomImage.y + imageRect.displayWbPointY*bottomImage.scale - height/2
-                    color: (false) ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     visible: root.wbPicking && root.imageReady && imageRect.wbPointX >= 0 && imageRect.wbPointY >= 0
                 }
                 Rectangle {
@@ -1973,7 +1973,17 @@ SlimSplitView {
                     height: 1
                     x: bottomImage.x + imageRect.displayWbPointX*bottomImage.scale - width/2
                     y: bottomImage.y + imageRect.displayWbPointY*bottomImage.scale - height/2
-                    color: (false) ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    visible: root.wbPicking && root.imageReady && imageRect.wbPointX >= 0 && imageRect.wbPointY >= 0
+                }
+                Rectangle {
+                    id: wbBox
+                    width: 21 * bottomImage.scale
+                    height: 21 * bottomImage.scale
+                    x: bottomImage.x + imageRect.displayWbPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayWbPointY*bottomImage.scale - height/2
+                    color: "#00000000"
+                    border.color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
                     visible: root.wbPicking && root.imageReady && imageRect.wbPointX >= 0 && imageRect.wbPointY >= 0
                 }
 
@@ -2000,7 +2010,7 @@ SlimSplitView {
                         imageRect.wbPointX = mouse.x / bottomImage.width
                         imageRect.wbPointY = mouse.y / bottomImage.height
                     }
-                    onClicked: {
+                    onPressed: {
                         imageRect.wbPointX = mouse.x / bottomImage.width
                         imageRect.wbPointY = mouse.y / bottomImage.height
                         root.wbPicking = false

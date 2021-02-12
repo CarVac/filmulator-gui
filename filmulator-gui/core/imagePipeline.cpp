@@ -1399,3 +1399,108 @@ void ImagePipeline::rerunHistograms()
         }
     }
 }
+
+//Return the average level of each channel of the image sampled at a 21x21
+// square.
+//The square is positioned relative to the image dimensions of the cropped image.
+void ImagePipeline::sampleWB(const float xPos, const float yPos,
+                             const int rotation,
+                             const float cropHeight, const float cropAspect,
+                             const float cropVoffset, const float cropHoffset,
+                             float &red, float &green, float &blue)
+{
+    if (xPos < 0 || xPos > 1 || yPos < 0 || yPos > 1)
+    {
+        red = -1;
+        green = -1;
+        blue = -1;
+        return;
+    }
+
+    //recovered_image is what we're looking to sample.
+    //It already has the camera multipliers applied, so we have to divide by them later.
+
+    //First we rotate it.
+    matrix<float> rotated_image;
+    rotate_image(recovered_image, rotated_image, rotation);
+
+    //Then we crop the recovered image
+    //This is copied from the actual image pipeline.
+    const int imWidth  = rotated_image.nc()/3;
+    const int imHeight = rotated_image.nr();
+
+    const float tempHeight = imHeight*max(min(1.0f,cropHeight),0.0f);//restrict domain to 0:1
+    const float tempAspect = max(min(10000.0f,cropAspect),0.0001f);//restrict aspect ratio
+    int width  = int(round(min(tempHeight*tempAspect,float(imWidth))));
+    int height = int(round(min(tempHeight, imWidth/tempAspect)));
+    const float maxHoffset = (1.0f-(float(width)  / float(imWidth) ))/2.0f;
+    const float maxVoffset = (1.0f-(float(height) / float(imHeight)))/2.0f;
+    const float oddH = (!(int(round((imWidth  - width )/2.0))*2 == (imWidth  - width )))*0.5f;//it's 0.5 if it's odd, 0 otherwise
+    const float oddV = (!(int(round((imHeight - height)/2.0))*2 == (imHeight - height)))*0.5f;//it's 0.5 if it's odd, 0 otherwise
+    const float hoffset = (round(max(min(cropHoffset, maxHoffset), -maxHoffset) * imWidth  + oddH) - oddH)/imWidth;
+    const float voffset = (round(max(min(cropVoffset, maxVoffset), -maxVoffset) * imHeight + oddV) - oddV)/imHeight;
+    int startX = int(round(0.5f*(imWidth  - width ) + hoffset*imWidth));
+    int startY = int(round(0.5f*(imHeight - height) + voffset*imHeight));
+    int endX = startX + width  - 1;
+    int endY = startY + height - 1;
+
+    if (cropHeight <= 0)//it shall be turned off
+    {
+        startX = 0;
+        startY = 0;
+        endX = imWidth  - 1;
+        endY = imHeight - 1;
+        width  = imWidth;
+        height = imHeight;
+    }
+
+
+    matrix<float> cropped_image;
+
+    downscale_and_crop(rotated_image,
+                       cropped_image,
+                       startX,
+                       startY,
+                       endX,
+                       endY,
+                       width,
+                       height);
+
+
+    rotated_image.set_size(0, 0);
+
+    //Now we compute the x position
+    const int sampleX = round(xPos * (width-1));
+    const int sampleY = round(yPos * (height-1));
+    const int sampleStartX = max(0, sampleX - 10);
+    const int sampleStartY = max(0, sampleY - 10);
+    const int sampleEndX = min(width-1, sampleX + 10);
+    const int sampleEndY = min(height-1, sampleY + 10);
+
+    double rSum = 0;
+    double gSum = 0;
+    double bSum = 0;
+    int count = 0;
+    for (int row = sampleStartY; row <= sampleEndY; row++)
+    {
+        for (int col = sampleStartX; col <= sampleEndX; col++)
+        {
+            rSum += cropped_image(row, col*3    );
+            gSum += cropped_image(row, col*3 + 1);
+            bSum += cropped_image(row, col*3 + 2);
+            count++;
+        }
+    }
+    if (count < 1)//some sort of error occurs
+    {
+        red = -1;
+        green = -1;
+        blue = -1;
+        return;
+    }
+
+    //Compute the average and also divide by the camera WB multipliers
+    red   = rSum / (rCamMul*count);
+    green = gSum / (gCamMul*count);
+    blue  = bSum / (bCamMul*count);
+}

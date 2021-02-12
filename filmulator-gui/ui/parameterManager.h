@@ -274,6 +274,12 @@ public:
     Q_INVOKABLE void setLensPreferences();
     Q_INVOKABLE void eraseLensPreferences();
 
+    //The paramMutex exists to prevent race conditions between
+    // changes in the parameters and changes in validity.
+    //We make them public so that we can avoid race conditions when grabbing image pipeline data
+    QMutex paramMutex;
+    QMutex signalMutex;
+
     //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
     //and then returns the struct and the validity.
     //There's a second validity-check-only method for more frequent cancellation.
@@ -481,11 +487,6 @@ protected:
     //and we should always abort whenever there's a change made
     bool isClone = false;
     bool changeMadeSinceCheck = false;
-
-    //The paramMutex exists to prevent race conditions between
-    //changes in the parameters and changes in validity.
-    QMutex paramMutex;
-    QMutex signalMutex;
 
     //We need a lensfun database for looking up various things
     lfDatabase *ldb;

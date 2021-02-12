@@ -426,6 +426,36 @@ void FilmImageProvider::refreshParams(const QString IDin)
 //Directly communicates with the ParamManagers, I think.
 void FilmImageProvider::customWB(const float xCoord, const float yCoord)
 {
-    cout << "customWB x coord: " << xCoord << endl;
-    cout << "customWB y coord: " << yCoord << endl;
+    QMutexLocker paramLocker(&(paramManager->paramMutex));
+    const int rotation = paramManager->getRotation();
+    const float cropHeight = paramManager->getCropHeight();
+    const float cropAspect = paramManager->getCropAspect();
+    const float cropVoffset = paramManager->getCropVoffset();
+    const float cropHoffset = paramManager->getCropHoffset();
+
+    float red;
+    float green;
+    float blue;
+    pipeline.sampleWB(xCoord, yCoord,
+                      rotation,
+                      cropHeight, cropAspect,
+                      cropVoffset, cropHoffset,
+                      red, green, blue);
+
+    float rMult = 1/red;
+    float gMult = 1/green;
+    float bMult = 1/blue;
+
+    const float minMult = min(min(rMult, gMult), bMult);
+
+    rMult /= minMult;
+    gMult /= minMult;
+    bMult /= minMult;
+
+    const std::string filename = paramManager->getFullFilename();
+    float temp;
+    float tint;
+    optimizeWBMults(filename, temp, tint, rMult, gMult, bMult);
+    cout << "customWB temp: " << temp << endl;
+    cout << "customWB tint: " << tint << endl;
 }

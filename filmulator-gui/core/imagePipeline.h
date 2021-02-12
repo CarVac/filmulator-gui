@@ -50,6 +50,13 @@ public:
     // preloaded, we need to refresh the histograms
     void rerunHistograms();
 
+    //Sample the image and return the average level of each channel
+    void sampleWB(const float xPos, const float yPos, //relative to the rotated and cropped image
+                  const int rotation,
+                  const float cropHeight, const float cropAspect,
+                  const float cropVoffset, const float cropHoffset,
+                  float &red, float &green, float &blue);
+
     //The resolution of a quick preview
     int resolution;
 
