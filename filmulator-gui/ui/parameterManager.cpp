@@ -43,6 +43,8 @@ ParameterManager::ParameterManager() : QObject(0)
     lensfunDistAvail = true;
     m_lensfunName = "";
 
+    customWbAvail = false;
+
     //initialize lensfun db
     QDir dir = QDir::home();
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
@@ -268,7 +270,7 @@ void ParameterManager::setLensfunName(QString lensName)
         validity = min(validity, Valid::load);
         paramLocker.unlock();
         //We need to check what lens corrections are available based on the camera and lens
-        updateAvailability();
+        updateLensfunAvailability();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setLensfunName"));
     }
@@ -463,7 +465,8 @@ void ParameterManager::setWB(const float temp, const float tint)
         emit tintChanged();
 
         QMutexLocker signalLocker(&signalMutex);
-        paramChangeWrapper(QString("setFloat"));
+        paramChangeWrapper(QString("setWB"));
+        writeback();//Normally the slider has to call this when released, but this isn't a slider.
     }
 }
 
@@ -1638,7 +1641,10 @@ void ParameterManager::selectImage(const QString imageID)
     emit autoCaAvailChanged();
 
     //Then is lensfun, which depends on the camera and lens.
-    updateAvailability();
+    updateLensfunAvailability();
+
+    //Then is the white balance, which depends on the camera model
+    updateCustomWbAvailability();
 
     paramLocker.unlock();
 
@@ -3400,7 +3406,7 @@ void ParameterManager::paste(QString toImageID)
     }
 }
 
-void ParameterManager::updateAvailability()
+void ParameterManager::updateLensfunAvailability()
 {
     cout << "Updating availability" << endl;
     std::string camModel = model.toStdString();
@@ -3542,4 +3548,65 @@ void ParameterManager::eraseLensPreferences()
     query.exec();
 
     query.exec("END TRANSACTION;");
+}
+
+void ParameterManager::updateCustomWbAvailability()
+{
+    QString makemodel = make;
+    makemodel.append(model);
+    customWbAvail = false;
+    for (uint64 i = 0; i < wbList.size(); i++)
+    {
+        const QString currModel = std::get<0>(wbList.at(i));
+        if (currModel == makemodel)
+        {
+            customWbAvail = true;
+        }
+    }
+    emit customWbAvailChanged();
+}
+
+void ParameterManager::saveCustomWb()
+{
+    QString makemodel = make;
+    makemodel.append(model);
+    bool wbListed = false;
+    int index = -1;
+    for (uint64 i = 0; i < wbList.size(); i++)
+    {
+        const QString currModel = std::get<0>(wbList.at(i));
+        if (currModel == makemodel)
+        {
+            wbListed = true;
+            index = i;
+        }
+    }
+
+    std::tuple<QString, float, float> wbEntry = std::tie(makemodel, m_temperature, m_tint);
+
+    if (index >= 0) //it was already in the list
+    {
+        wbList.at(index) = wbEntry;
+    } else {
+        wbList.push_back(wbEntry);
+    }
+
+    customWbAvail = true;
+    emit customWbAvailChanged();
+}
+
+void ParameterManager::recallCustomWb()
+{
+    QString makemodel = make;
+    makemodel.append(model);
+    for (uint64 i = 0; i < wbList.size(); i++)
+    {
+        const QString currModel = std::get<0>(wbList.at(i));
+        if (currModel == makemodel)
+        {
+            const float temp = std::get<1>(wbList.at(i));
+            const float tint = std::get<2>(wbList.at(i));
+            setWB(temp, tint);
+        }
+    }
 }

@@ -251,6 +251,7 @@ SlimSplitView {
                                 requestingCropping = false
                                 cancelLeveling = true
                                 requestingLeveling = false
+                                wbPicking = false
                             }
 
                             //Irrespective of that
@@ -2735,7 +2736,7 @@ SlimSplitView {
             anchors.right: crop.left
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.cropping && !root.leveling
-            property bool wbSaved: false
+            property bool wbSaved: paramManager.customWbAvail
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2746,26 +2747,29 @@ SlimSplitView {
             }
             onTriggered: {
                 if (!root.wbPicking) {
+                    /*
                     imageRect.wbPointX = -1
                     imageRect.wbPointY = -1
                     root.wbPicking = true
-                    wbButton.wbSaved = !wbButton.wbSaved
+                    */
+                    //Show/hide menu
                 } else {
                     root.wbPicking = false
                 }
             }
             Shortcut {
                 sequence: "w"
+                enabled: wbButton.notDisabled && root.onEditTab
                 onActivated: {
-                    if (wbButton.notDisabled && root.onEditTab) {
-                        if (!root.wbPicking) {
-                            imageRect.wbPointX = -1
-                            imageRect.wbPointY = -1
-                            root.wbPicking = true
-                            wbButton.wbSaved = !wbButton.wbSaved
-                        } else {
-                            root.wbPicking = false
-                        }
+                    if (!root.wbPicking) {
+                        /*
+                        imageRect.wbPointX = -1
+                        imageRect.wbPointY = -1
+                        root.wbPicking = true
+                        */
+                        //Show/hide menu
+                    } else {
+                        root.wbPicking = false
                     }
                 }
             }
@@ -2803,16 +2807,15 @@ SlimSplitView {
 
             Shortcut {
                 sequence: "c"
+                enabled: crop.notDisabled && root.onEditTab
                 onActivated: {
-                    if (crop.notDisabled && root.onEditTab) {
-                        if (!root.cropping) {
-                            filmProvider.disableThumbnailWrite()
-                            root.requestingCropping = true
-                        } else {
-                            filmProvider.enableThumbnailWrite()
-                            root.cancelCropping = false //we're saving the crop, not canceling it
-                            root.requestingCropping = false
-                        }
+                    if (!root.cropping) {
+                        filmProvider.disableThumbnailWrite()
+                        root.requestingCropping = true
+                    } else {
+                        filmProvider.enableThumbnailWrite()
+                        root.cancelCropping = false //we're saving the crop, not canceling it
+                        root.requestingCropping = false
                     }
                 }
             }
@@ -2873,26 +2876,23 @@ SlimSplitView {
 
             Shortcut {
                 sequence: "l"
+                enabled: level.notDisabled && root.onEditTab
                 onActivated: {
-                    if (level.notDisabled && root.onEditTab) {
-                        if (!root.leveling) {
-                            filmProvider.disableThumbnailWrite()
-                            root.requestingLeveling = true
-                        } else {
-                            filmProvider.enableThumbnailWrite()
-                            root.cancelLeveling = false //we're saving the leveling, not canceling it
-                            root.requestingLeveling = false
-                        }
+                    if (!root.leveling) {
+                        filmProvider.disableThumbnailWrite()
+                        root.requestingLeveling = true
+                    } else {
+                        filmProvider.enableThumbnailWrite()
+                        root.cancelLeveling = false //we're saving the leveling, not canceling it
+                        root.requestingLeveling = false
                     }
                 }
             }
-
             Shortcut {
                 sequence: "Shift+l"
+                enabled: root.leveling && root.previewReady && root.onEditTab
                 onActivated: {
-                    if (root.leveling && root.previewReady) {
-                        imageRect.rotationAngle = 0
-                    }
+                    imageRect.rotationAngle = 0
                 }
             }
 
@@ -2950,6 +2950,7 @@ SlimSplitView {
         uiScale: root.uiScale
         imageReady: root.imageReady
         cropping: root.requestingCropping || root.cropping
+        leveling: root.requestingLeveling || root.leveling
         onEditTab: root.onEditTab
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)

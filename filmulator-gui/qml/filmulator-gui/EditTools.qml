@@ -16,6 +16,7 @@ SlimSplitView {
 
     property bool imageReady
     property bool cropping
+    property bool leveling
     property bool imageError
     property bool onEditTab
     property string saveStatus: ""
@@ -1100,9 +1101,9 @@ SlimSplitView {
             uiScale: root.uiScale
             x: 0
             y: 0
-            notDisabled: root.imageReady && (!root.cropping) && (!root.imageError)
+            notDisabled: root.imageReady && (!root.cropping) && (!root.leveling) && (!root.imageError)
             text: qsTr("Save TIFF")
-            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : qsTr("Save a TIFF to the directory containing the raw file.")
+            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : (root.leveling ? qsTr("Finish leveling to save the result.") : qsTr("Save a TIFF to the directory containing the raw file."))
             onTriggered: {
                 filmProvider.writeTiff()
                 queueModel.markSaved(paramManager.imageIndex)
@@ -1119,9 +1120,9 @@ SlimSplitView {
             uiScale: root.uiScale
             x: width
             y: 0
-            notDisabled: root.imageReady && (!root.cropping) && (!root.imageError)
+            notDisabled: root.imageReady && (!root.cropping) && (!root.leveling) && (!root.imageError)
             text: qsTr("Save JPEG")
-            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : qsTr("Save a JPEG to the directory containing the raw file.")
+            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : (root.leveling ? qsTr("Finish leveling to save the result.") : qsTr("Save a JPEG to the directory containing the raw file."))
             onTriggered: {
                 filmProvider.writeJpeg()
                 queueModel.markSaved(paramManager.imageIndex)

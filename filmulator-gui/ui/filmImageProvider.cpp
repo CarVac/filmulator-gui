@@ -472,4 +472,7 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord)
     //tint is just a multiplier for green so it won't cause crashes
 
     paramManager->setWB(temp, tint);
+
+    //Now we need to tell the parametermanager to store the white balance value
+    paramManager->saveCustomWb();
 }
