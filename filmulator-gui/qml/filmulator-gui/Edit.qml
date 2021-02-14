@@ -2736,7 +2736,7 @@ SlimSplitView {
             anchors.right: crop.left
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.cropping && !root.leveling
-            tooltipText: root.wbPicking ? qsTr("Cancel setting custom white balance. Shortcut: W") : qsTr("Set a custom white balance based on where you click in the image.\n\nThe white balance will be remembered and can be applied to later images taken by the same camera model.\n\nShortcut: W")
+            tooltipText: root.wbPicking ? qsTr("Cancel setting custom white balance. Shortcut: W") : qsTr("Set a custom white balance based on where you click in the image.\n\nThe white balance will be remembered and can be applied to other images taken by the same camera model.\n\nShortcut: W")
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
