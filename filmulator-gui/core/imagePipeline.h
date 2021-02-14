@@ -105,6 +105,13 @@ protected:
     matrix<unsigned short> color_curve_image;
     matrix<unsigned short> vibrance_saturation_image;
 
+    //Crop parameters for generating histograms properly according to the crop
+    float cropHeight;
+    float cropAspect;
+    float cropHoffset;
+    float cropVoffset;
+    int rotation;
+
     //Internal functions for progress and time tracking.
     vector<double> completionTimes;
     void updateProgress(Valid valid, float CurrFractionCompleted);

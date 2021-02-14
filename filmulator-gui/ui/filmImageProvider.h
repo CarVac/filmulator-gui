@@ -39,9 +39,15 @@ public:
     Q_INVOKABLE float getHistPostFilmPoint(int index, int i){return getHistogramPoint(postFilmHist,index,i,LogY::yes);}
     Q_INVOKABLE float getHistPreFilmPoint(int index, int i){return getHistogramPoint(preFilmHist,index,i,LogY::yes);}
 
-    void updateHistRaw(const matrix<float>& image, float maximum, unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans, bool isRGB, bool isMonochrome);
-    void updateHistPreFilm(const matrix<float>& image, float maximum);
-    void updateHistPostFilm(const matrix<float>& image, float maximum);
+    void updateHistRaw(const matrix<float>& image, const float maximum, unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans, bool isRGB, bool isMonochrome);
+    void updateHistPreFilm(const matrix<float>& image, const float maximum,
+                           const int rotation,
+                           const float cropHeight, const float cropAspect,
+                           const float cropHoffset, const float cropVoffset);
+    void updateHistPostFilm(const matrix<float>& image, const float maximum,
+                            const int rotation,
+                            const float cropHeight, const float cropAspect,
+                            const float cropHoffset, const float cropVoffset);
     void updateHistFinal(const matrix<unsigned short>& image);
 
     Q_INVOKABLE void writeTiff();
@@ -119,8 +125,11 @@ protected:
     float getHistogramPoint(Histogram &hist, int index, int i, LogY isLog);
     QImage emptyImage();
 
-    void updateShortHistogram(Histogram &hist, const matrix<unsigned short>& image );
-    void updateFloatHistogram(Histogram &hist, const matrix<float>& image, float maximum );
+    void updateShortHistogram(Histogram &hist, const matrix<unsigned short>& image);
+    void updateFloatHistogram(Histogram &hist, const matrix<float>& image, const float maximum,
+                              const int rotation,
+                              const float cropHeight, const float cropAspect,
+                              const float cropHoffset, const float cropVoffset);
     int histIndex(float value, float max);
     void zeroHistogram(Histogram &hist);
 
