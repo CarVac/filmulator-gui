@@ -808,6 +808,21 @@ std::tuple<Valid,AbortStatus,BlackWhiteParams> ParameterManager::claimBlackWhite
     return tup;
 }
 
+//No aborting here; the pipeline will look back and recompute the histograms
+// later on if the parameters change.
+CropParams ParameterManager::claimCropParams()
+{
+    QMutexLocker paramLocker(&paramMutex);
+
+    CropParams params;
+    params.cropHeight  = m_cropHeight;
+    params.cropAspect  = m_cropAspect;
+    params.cropVoffset = m_cropVoffset;
+    params.cropHoffset = m_cropHoffset;
+    params.rotation = m_rotation;
+    return params;
+}
+
 AbortStatus ParameterManager::claimBlackWhiteAbort()
 {
     QMutexLocker paramLocker(&paramMutex);

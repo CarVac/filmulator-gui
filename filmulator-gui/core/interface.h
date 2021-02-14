@@ -22,9 +22,15 @@ class Interface
 {
 public:
     virtual void setProgress(float){}
-    virtual void updateHistRaw(const matrix<float>& /*image*/, float /*maximum*/, unsigned /*cfa*/[2][2], unsigned /*xtrans*/[6][6], int /*maxXtrans*/, bool /*isRGB*/, bool /*isMonochrome*/){}
-    virtual void updateHistPreFilm(const matrix<float>& /*image*/, float /*maximum*/){}
-    virtual void updateHistPostFilm(const matrix<float>& /*image*/, float /*maximum*/){}
+    virtual void updateHistRaw(const matrix<float>& /*image*/, const float /*maximum*/, unsigned /*cfa*/[2][2], unsigned /*xtrans*/[6][6], int /*maxXtrans*/, bool /*isRGB*/, bool /*isMonochrome*/){}
+    virtual void updateHistPreFilm(const matrix<float>& /*image*/, const float /*maximum*/,
+                                   const int /*rotation*/,
+                                   const float /*cropHeight*/, const float /*cropAspect*/,
+                                   const float /*cropHoffset*/, const float /*cropVoffset*/){}
+    virtual void updateHistPostFilm(const matrix<float>& /*image*/, const float /*maximum*/,
+                                    const int /*rotation*/,
+                                    const float /*cropHeight*/, const float /*cropAspect*/,
+                                    const float /*cropHoffset*/, const float /*cropVoffset*/){}
     virtual void updateHistFinal(const matrix<unsigned short>& /*image*/){}
 
 

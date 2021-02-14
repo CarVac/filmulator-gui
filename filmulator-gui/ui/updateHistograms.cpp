@@ -70,7 +70,10 @@ void FilmImageProvider::updateShortHistogram(Histogram &hist, const matrix<unsig
     hist.empty = false;
 }
 
-void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float>& image, float maximum)
+void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float>& image, const float maximum,
+                                             const int rotation,
+                                             const float cropHeight, const float cropAspect,
+                                             const float cropHoffset, const float cropVoffset)
 {
     long long lHist[128];
     long long rHist[128];
@@ -91,12 +94,80 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
     long long gHistMax = 1;
     long long bHistMax = 1;
 
-    //for(int i = 0; i < image.nr(); i = i + 5)
-    //    for(int j = 0; j < image.nc(); j = j + 15)
-    #pragma omp parallel for reduction(+: lHist[:128]) reduction(+: rHist[:128]) reduction(+: gHist[:128]) reduction(+: bHist[:128])
-    for(int i = 0; i < image.nr(); i = i + 1)
+    //calculate crop
+    int imWidth  = image.nc()/3;
+    int imHeight = image.nr();
+
+    if (rotation == 1 || rotation == 3)//sideways
     {
-        for(int j = 0; j < image.nc(); j = j + 3)
+        imHeight = image.nc()/3;
+        imWidth  = image.nr();
+    }
+
+    const float tempHeight = imHeight*max(min(1.0f, cropHeight),0.0f);//restrict domain to 0:1
+    const float tempAspect = max(min(10000.0f, cropAspect),0.0001f);//restrict aspect ratio
+    int width  = int(round(min(tempHeight*tempAspect,float(imWidth))));
+    int height = int(round(min(tempHeight, imWidth/tempAspect)));
+    const float maxHoffset = (1.0f-(float(width)  / float(imWidth) ))/2.0f;
+    const float maxVoffset = (1.0f-(float(height) / float(imHeight)))/2.0f;
+    const float oddH = (!(int(round((imWidth  - width )/2.0))*2 == (imWidth  - width )))*0.5f;//it's 0.5 if it's odd, 0 otherwise
+    const float oddV = (!(int(round((imHeight - height)/2.0))*2 == (imHeight - height)))*0.5f;//it's 0.5 if it's odd, 0 otherwise
+    const float hoffset = (round(max(min(cropHoffset, maxHoffset), -maxHoffset) * imWidth  + oddH) - oddH)/imWidth;
+    const float voffset = (round(max(min(cropVoffset, maxVoffset), -maxVoffset) * imHeight + oddV) - oddV)/imHeight;
+    int tempStartX = int(round(0.5f*(imWidth  - width ) + hoffset*imWidth));
+    int tempStartY = int(round(0.5f*(imHeight - height) + voffset*imHeight));
+    int tempEndX = tempStartX + width  - 1;
+    int tempEndY = tempStartY + height - 1;
+
+    if (cropHeight <= 0)//it shall be turned off
+    {
+        tempStartX = 0;
+        tempStartY = 0;
+        tempEndX = imWidth  - 1;
+        tempEndY = imHeight - 1;
+        width  = imWidth;
+        height = imHeight;
+    }
+
+    int startX;
+    int startY;
+    int endX;
+    int endY;
+    int lastXindex = imWidth-1;
+    int lastYindex = imHeight-1;
+
+    //Rotate the coordinates to match what later happens to the image
+    if (rotation == 0) //normal
+    {
+        startX = tempStartX;
+        startY = tempStartY;
+        endX = tempEndX;
+        endY = tempEndY;
+    } else if (rotation == 1) //left side down
+    {
+        startX = lastYindex - tempEndY;
+        endX = lastYindex - tempStartY;
+        startY = tempStartX;
+        endY = tempEndX;
+    } else if (rotation == 2) //upside down
+    {
+        startX = lastXindex - tempEndX;
+        endX = lastXindex - tempStartX;
+        startY = lastYindex - tempEndY;
+        endY = lastYindex - tempStartY;
+    } else// if (rotation == 3) //right side down
+    {
+        startX = tempStartY;
+        endX = tempEndY;
+        startY = lastXindex - tempEndX;
+        endY = lastXindex - tempStartX;
+    }
+
+    #pragma omp parallel for reduction(+: lHist[:128]) reduction(+: rHist[:128]) reduction(+: gHist[:128]) reduction(+: bHist[:128])
+    for(int i = startY; i < endY; i = i + 1)
+    {
+        cout << "row: " << i << endl;
+        for(int j = startX*3; j < endX*3; j = j + 3)
         {
             float luma = 0.2126f*image(i,j)
                         +0.7151f*image(i,j+1)
@@ -108,6 +179,7 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
             bHist[histIndex(image(i,j+2),maximum)]++;
         }
     }
+
     for(int i = 1; i < 127; i++)
     {
         hist.lHist[i] = lHist[i];
@@ -139,7 +211,7 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
     hist.empty = false;
 }
 
-void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
+void FilmImageProvider::updateHistRaw(const matrix<float>& image, const float maximum,
                                       unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans, bool isRGB, bool isMonochrome)
 {
     //long long lHist[128];
@@ -252,7 +324,7 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, float maximum,
     rawHist.empty = false;
 }
 
-inline int FilmImageProvider::histIndex(float value, float maximum)
+inline int FilmImageProvider::histIndex(float value, const float maximum)
 {
     return max(0,min(127, int(127*value/maximum)));
 }
@@ -273,16 +345,26 @@ void FilmImageProvider::zeroHistogram(Histogram &hist)
     return;
 }
 
-void FilmImageProvider::updateHistPreFilm(const matrix<float>& image, float maximum)
+void FilmImageProvider::updateHistPreFilm(const matrix<float>& image, const float maximum,
+                                          const int rotation,
+                                          const float cropHeight, const float cropAspect,
+                                          const float cropHoffset, const float cropVoffset)
 {
-    updateFloatHistogram(preFilmHist, image, maximum);
+    updateFloatHistogram(preFilmHist, image, maximum,
+                         rotation,
+                         cropHeight, cropAspect, cropHoffset, cropVoffset);
     emit histPreFilmChanged();
     return;
 }
 
-void FilmImageProvider::updateHistPostFilm(const matrix<float>& image, float maximum)
+void FilmImageProvider::updateHistPostFilm(const matrix<float>& image, const float maximum,
+                                           const int rotation,
+                                           const float cropHeight, const float cropAspect,
+                                           const float cropHoffset, const float cropVoffset)
 {
-    updateFloatHistogram(postFilmHist, image, maximum);
+    updateFloatHistogram(postFilmHist, image, maximum,
+                         rotation,
+                         cropHeight, cropAspect, cropHoffset, cropVoffset);
     emit histPostFilmChanged();
     return;
 }

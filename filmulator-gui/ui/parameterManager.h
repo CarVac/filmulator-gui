@@ -101,6 +101,14 @@ struct BlackWhiteParams {
     int rotation;
 };
 
+struct CropParams {//just for cropping the histogram search area
+    float cropHeight;
+    float cropAspect;
+    float cropVoffset;
+    float cropHoffset;
+    int rotation;
+};
+
 struct FilmlikeCurvesParams {
     float shadowsX;
     float shadowsY;
@@ -311,10 +319,13 @@ public:
     AbortStatus claimFilmAbort();
     Valid markFilmComplete();
 
-    //Whitepoint & Blackpoint (and cropping and rotation and distortion)
+    //Whitepoint & Blackpoint (and cropping and rotation)
     std::tuple<Valid,AbortStatus,BlackWhiteParams> claimBlackWhiteParams();
     AbortStatus claimBlackWhiteAbort();
     Valid markBlackWhiteComplete();
+
+    //Cropping and rotation just for use with generating histograms
+    CropParams claimCropParams();
 
     //Individual color curves: not implemented, so we just have to mark complete
     Valid markColorCurvesComplete();

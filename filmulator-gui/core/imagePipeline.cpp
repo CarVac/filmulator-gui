@@ -1034,8 +1034,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
         if (WithHisto == histo)
         {
-            //Histogram work
-            histoInterface->updateHistPreFilm(pre_film_image, 65535);
+            //grab crop and rotation parameters
+            CropParams cropParam = paramManager->claimCropParams();
+            cropHeight = cropParam.cropHeight;
+            cropAspect = cropParam.cropAspect;
+            cropHoffset = cropParam.cropHoffset;
+            cropVoffset = cropParam.cropVoffset;
+            rotation = cropParam.rotation;
+            histoInterface->updateHistPreFilm(pre_film_image, 65535,
+                                              rotation,
+                                              cropHeight, cropAspect,
+                                              cropHoffset, cropVoffset);
         }
 
         cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
@@ -1072,8 +1081,33 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
         if (WithHisto == histo)
         {
-            //Histogram work
-            histoInterface->updateHistPostFilm(filmulated_image, .0025f);//TODO connect this magic number to the qml
+            //grab crop and rotation parameters
+            CropParams cropParam = paramManager->claimCropParams();
+            bool updatePreFilm = false;
+            if (cropHeight != cropParam.cropHeight ||
+                    cropAspect != cropParam.cropAspect ||
+                    cropHoffset != cropParam.cropHoffset ||
+                    cropVoffset != cropParam.cropVoffset ||
+                    rotation != cropParam.rotation)
+            {
+                updatePreFilm = true;
+            }
+            cropHeight = cropParam.cropHeight;
+            cropAspect = cropParam.cropAspect;
+            cropHoffset = cropParam.cropHoffset;
+            cropVoffset = cropParam.cropVoffset;
+            rotation = cropParam.rotation;
+            if (updatePreFilm)
+            {
+                histoInterface->updateHistPreFilm(pre_film_image, 65535,
+                                                  rotation,
+                                                  cropHeight, cropAspect,
+                                                  cropHoffset, cropVoffset);
+            }
+            histoInterface->updateHistPostFilm(filmulated_image, .0025f,//TODO connect this magic number to the qml
+                                               rotation,
+                                               cropHeight, cropAspect,
+                                               cropHoffset, cropVoffset);
         }
 
         cout << "ImagePipeline::processImage: Filmulation complete." << endl;
@@ -1090,6 +1124,37 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         if (abort == AbortStatus::restart)
         {
             return emptyMatrix();
+        }
+
+        //Update histograms if necessary to correspond to crop
+        if (WithHisto == histo)
+        {
+            //grab crop and rotation parameters
+            bool updatePrePostFilm = false;
+            if (cropHeight != blackWhiteParam.cropHeight ||
+                    cropAspect != blackWhiteParam.cropAspect ||
+                    cropHoffset != blackWhiteParam.cropHoffset ||
+                    cropVoffset != blackWhiteParam.cropVoffset ||
+                    rotation != blackWhiteParam.rotation)
+            {
+                updatePrePostFilm = true;
+            }
+            cropHeight = blackWhiteParam.cropHeight;
+            cropAspect = blackWhiteParam.cropAspect;
+            cropHoffset = blackWhiteParam.cropHoffset;
+            cropVoffset = blackWhiteParam.cropVoffset;
+            rotation = blackWhiteParam.rotation;
+            if (updatePrePostFilm)
+            {
+                histoInterface->updateHistPreFilm(pre_film_image, 65535,
+                                                  rotation,
+                                                  cropHeight, cropAspect,
+                                                  cropHoffset, cropVoffset);
+                histoInterface->updateHistPostFilm(filmulated_image, .0025f,//TODO connect this magic number to the qml
+                                                   rotation,
+                                                   cropHeight, cropAspect,
+                                                   cropHoffset, cropVoffset);
+            }
         }
         matrix<float> rotated_image;
 
@@ -1348,6 +1413,12 @@ void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
     std::swap(isMonochrome, swapTarget->isMonochrome);
     std::swap(isCR3, swapTarget->isCR3);
 
+    std::swap(cropHeight, swapTarget->cropHeight);
+    std::swap(cropAspect, swapTarget->cropAspect);
+    std::swap(cropHoffset, swapTarget->cropHoffset);
+    std::swap(cropVoffset, swapTarget->cropVoffset);
+    std::swap(rotation, swapTarget->rotation);
+
     std::swap(exifData, swapTarget->exifData);
     std::swap(basicExifData, swapTarget->basicExifData);
 
@@ -1387,11 +1458,15 @@ void ImagePipeline::rerunHistograms()
         }
         if (valid >= Valid::prefilmulation)
         {
-            histoInterface->updateHistPreFilm(pre_film_image, 65535);
+            histoInterface->updateHistPreFilm(pre_film_image, 65535,
+                                              rotation,
+                                              cropHeight, cropAspect, cropHoffset, cropVoffset);
         }
         if (valid >= Valid::filmulation)
         {
-            histoInterface->updateHistPostFilm(filmulated_image, .0025f);
+            histoInterface->updateHistPostFilm(filmulated_image, .0025f,
+                                               rotation,
+                                               cropHeight, cropAspect, cropHoffset, cropVoffset);
         }
         if (valid >= Valid::filmlikecurve)
         {
