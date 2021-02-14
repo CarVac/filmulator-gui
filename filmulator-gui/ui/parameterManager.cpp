@@ -3570,14 +3570,12 @@ void ParameterManager::saveCustomWb()
 {
     QString makemodel = make;
     makemodel.append(model);
-    bool wbListed = false;
     int index = -1;
     for (uint64 i = 0; i < wbList.size(); i++)
     {
         const QString currModel = std::get<0>(wbList.at(i));
         if (currModel == makemodel)
         {
-            wbListed = true;
             index = i;
         }
     }
