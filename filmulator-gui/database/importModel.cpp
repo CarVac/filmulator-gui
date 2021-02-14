@@ -17,7 +17,7 @@ ImportModel::ImportModel(QObject *parent) : SqlModel(parent)
     rawNameFilters << "*.CR2" << "*.cr2" << "*.CR3" << "*.cr3" << "*.NEF" << "*.nef" << "*.DNG" << "*.dng" << "*.RW2" << "*.rw2" << "*.IIQ" << "*.iiq" << "*.ARW" << "*.arw" << "*.PEF" << "*.pef" << "*.RAF" << "*.raf" << "*.ORF" << "*.orf" << "*.SRW" << "*.srw";
 
     //Set up the files that it'll show in the file picker
-    dirNameFilters << "Raw image files (*.cr2 *.cr3 *.nef *.dng *.rw2 *.iiq *.arw *.pef *.raf *.orf *.srw)";// << "All files (*)";
+    dirNameFilters << "Raw image files (*.CR2 *.cr2 *.CR3 *.cr3 *.NEF *.nef *.DNG *.dng *.RW2 *.rw2 *.IIQ *.iiq *.ARW *.arw *.PEF *.pef *.RAF *.raf *.ORF *.orf *.SRW *.srw)";// << "All files (*)";
 
     //Set up the import worker thread
     ImportWorker *worker = new ImportWorker;

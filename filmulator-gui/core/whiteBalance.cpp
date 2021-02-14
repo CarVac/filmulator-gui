@@ -229,7 +229,8 @@ float wbDistance(array<float,2> tempTint, float camToRgb[3][3],
 
 //Run a Nelder-Mead simplex optimization on wbDistance.
 void optimizeWBMults(std::string file,
-                     float &temperature, float &tint)
+                     float &temperature, float &tint,
+                     const float rMul, const float gMul, const float bMul)
 {
     //Load wb params from the raw file
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
@@ -266,9 +267,19 @@ void optimizeWBMults(std::string file,
         }
         //cout << endl;
     }
-    float rCamMul = libraw->imgdata.color.cam_mul[0];
-    float gCamMul = libraw->imgdata.color.cam_mul[1];
-    float bCamMul = libraw->imgdata.color.cam_mul[2];
+    float rCamMul;
+    float gCamMul;
+    float bCamMul;
+    if (rMul > 0 && gMul > 0 && bMul > 0)
+    {
+        rCamMul = rMul;
+        gCamMul = gMul;
+        bCamMul = bMul;
+    } else {
+        rCamMul = libraw->imgdata.color.cam_mul[0];
+        gCamMul = libraw->imgdata.color.cam_mul[1];
+        bCamMul = libraw->imgdata.color.cam_mul[2];
+    }
     float minMult = min(min(rCamMul, gCamMul), bCamMul);
     rCamMul /= minMult;
     gCamMul /= minMult;

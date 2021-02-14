@@ -63,6 +63,9 @@ public:
     Q_INVOKABLE void shufflePipelines();
     Q_INVOKABLE void refreshParams(const QString IDin);
 
+    //coordinates relative to the cropped image
+    Q_INVOKABLE void customWB(const float xCoord, const float yCoord);
+
 protected:
     ImagePipeline pipeline;
     ImagePipeline quickPipe;
