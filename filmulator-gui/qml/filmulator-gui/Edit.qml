@@ -2324,6 +2324,12 @@ SlimSplitView {
                 onTriggered: {
                     lensfunBox.active = !lensfunBox.active
                 }
+                Shortcut {
+                    sequence: StandardKey.Cancel
+                    enabled: lensfunBox.active
+                    onActivated: lensfunBox.active = false
+                }
+
                 Component.onCompleted: {
                     lensFunMenuButton.tooltipWanted.connect(root.tooltipWanted)
                 }
