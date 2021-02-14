@@ -166,7 +166,6 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
     #pragma omp parallel for reduction(+: lHist[:128]) reduction(+: rHist[:128]) reduction(+: gHist[:128]) reduction(+: bHist[:128])
     for(int i = startY; i < endY; i = i + 1)
     {
-        cout << "row: " << i << endl;
         for(int j = startX*3; j < endX*3; j = j + 3)
         {
             float luma = 0.2126f*image(i,j)

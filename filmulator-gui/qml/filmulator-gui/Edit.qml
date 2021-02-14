@@ -788,6 +788,8 @@ SlimSplitView {
                 property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
                 //aspect ratio text
                 property string aspectText: ""
+                //Constant; minimum crop size
+                property int minCrop: 20
 
                 function validateCrop() {
                     imageRect.cropHeight = imageRect.readHeight
@@ -1002,7 +1004,7 @@ SlimSplitView {
                                 // Add the offset (in pixels) to get to the middle of the image.
                                 // Add half of the width of the crop itself.
                                 //And then we round.
-                                var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
+                                var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
                                 imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
                                 //Now we want to remember where the right edge of the image was, and preserve that.
                                 imageRect.cropHoffset = oldOffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
@@ -1076,7 +1078,7 @@ SlimSplitView {
                             oldX = mouse.x
                             if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
                                 unclippedWidth = unclippedWidth + deltaX
-                                var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
+                                var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
                                 imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
                                 //Now we want to remember where the left edge of the image was, and preserve that.
                                 imageRect.cropHoffset = oldOffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
@@ -1150,7 +1152,7 @@ SlimSplitView {
                             oldY = mouse.y
                             if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
                                 unclippedHeight = unclippedHeight - deltaY
-                                var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
+                                var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
                                 imageRect.cropAspect = cropDrag.width/clippedHeight
                                 imageRect.cropHeight = clippedHeight/bottomImage.height
                                 //Remember where the bottom edge is.
@@ -1225,7 +1227,7 @@ SlimSplitView {
                             oldY = mouse.y
                             if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
                                 unclippedHeight = unclippedHeight + deltaY
-                                var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
+                                var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
                                 imageRect.cropAspect = cropDrag.width/clippedHeight
                                 imageRect.cropHeight = clippedHeight/bottomImage.height
                                 //Remember where the bottom edge is.
@@ -1314,8 +1316,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth - deltaX
                             unclippedHeight = unclippedHeight - deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1344,11 +1346,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
@@ -1435,8 +1437,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth + deltaX
                             unclippedHeight = unclippedHeight - deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1465,11 +1467,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
@@ -1556,8 +1558,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth - deltaX
                             unclippedHeight = unclippedHeight + deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1586,11 +1588,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
@@ -1677,8 +1679,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth + deltaX
                             unclippedHeight = unclippedHeight + deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1707,11 +1709,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
