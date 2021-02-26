@@ -50,6 +50,13 @@ public:
     // preloaded, we need to refresh the histograms
     void rerunHistograms();
 
+    //Sample the image and return the average level of each channel
+    void sampleWB(const float xPos, const float yPos, //relative to the rotated and cropped image
+                  const int rotation,
+                  const float cropHeight, const float cropAspect,
+                  const float cropVoffset, const float cropHoffset,
+                  float &red, float &green, float &blue);
+
     //The resolution of a quick preview
     int resolution;
 
@@ -97,6 +104,13 @@ protected:
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
     matrix<unsigned short> vibrance_saturation_image;
+
+    //Crop parameters for generating histograms properly according to the crop
+    float cropHeight;
+    float cropAspect;
+    float cropHoffset;
+    float cropVoffset;
+    int rotation;
 
     //Internal functions for progress and time tracking.
     vector<double> completionTimes;

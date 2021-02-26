@@ -104,6 +104,14 @@ struct BlackWhiteParams {
     int rotation;
 };
 
+struct CropParams {//just for cropping the histogram search area
+    float cropHeight;
+    float cropAspect;
+    float cropVoffset;
+    float cropHoffset;
+    int rotation;
+};
+
 struct FilmlikeCurvesParams {
     float shadowsX;
     float shadowsY;
@@ -138,6 +146,8 @@ class ParameterManager : public QObject
     Q_PROPERTY(bool lensfunCaAvail   READ getLensfunCaAvail   NOTIFY lensfunCaAvailChanged)
     Q_PROPERTY(bool lensfunVignAvail READ getLensfunVignAvail NOTIFY lensfunVignAvailChanged)
     Q_PROPERTY(bool lensfunDistAvail READ getLensfunDistAvail NOTIFY lensfunDistAvailChanged)
+    //Read-only thing for custom wb
+    Q_PROPERTY(bool customWbAvail    READ getCustomWbAvail    NOTIFY customWbAvailChanged)
 
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
@@ -283,6 +293,17 @@ public:
     Q_INVOKABLE void setLensPreferences();
     Q_INVOKABLE void eraseLensPreferences();
 
+    //combined wb; this is for custom WB sampling initiated from c++
+    void setWB(const float temp, const float tint);
+    Q_INVOKABLE void saveCustomWb();
+    Q_INVOKABLE void recallCustomWb();
+
+    //The paramMutex exists to prevent race conditions between
+    // changes in the parameters and changes in validity.
+    //We make them public so that we can avoid race conditions when grabbing image pipeline data
+    QMutex paramMutex;
+    QMutex signalMutex;
+
     //Each stage creates its struct, checks validity, marks the validity to indicate it's begun,
     //and then returns the struct and the validity.
     //There's a second validity-check-only method for more frequent cancellation.
@@ -307,10 +328,13 @@ public:
     AbortStatus claimFilmAbort();
     Valid markFilmComplete();
 
-    //Whitepoint & Blackpoint (and cropping and rotation and distortion)
+    //Whitepoint & Blackpoint (and cropping and rotation)
     std::tuple<Valid,AbortStatus,BlackWhiteParams> claimBlackWhiteParams();
     AbortStatus claimBlackWhiteAbort();
     Valid markBlackWhiteComplete();
+
+    //Cropping and rotation just for use with generating histograms
+    CropParams claimCropParams();
 
     //Individual color curves: not implemented, so we just have to mark complete
     Valid markColorCurvesComplete();
@@ -346,6 +370,8 @@ public:
     bool getLensfunCaAvail(){return lensfunCaAvail;}
     bool getLensfunVignAvail(){return lensfunVignAvail;}
     bool getLensfunDistAvail(){return lensfunDistAvail;}
+
+    bool getCustomWbAvail(){return customWbAvail;}
 
     bool getPasteable(){return pasteable;}
 
@@ -497,15 +523,15 @@ protected:
     bool isClone = false;
     bool changeMadeSinceCheck = false;
 
-    //The paramMutex exists to prevent race conditions between
-    //changes in the parameters and changes in validity.
-    QMutex paramMutex;
-    QMutex signalMutex;
-
     //We need a lensfun database for looking up various things
     lfDatabase *ldb;
     //Refresh lens correction availability
-    void updateAvailability();
+    void updateLensfunAvailability();
+
+    //We need a data structure for keeping camera-temp-tint triplets
+    std::vector<std::tuple<QString,float, float>> wbList;
+    //Refresh custom WB availability
+    void updateCustomWbAvailability();
 
     //This is to attempt to prevent binding loops at the start of the program
     bool justInitialized;
@@ -538,6 +564,7 @@ protected:
     bool lensfunCaAvail; //These vary depending on camera and lens (and the lensfun db)
     bool lensfunVignAvail;
     bool lensfunDistAvail;
+    bool customWbAvail;
 
     Valid validity;
     Valid validityWhenCanceled;
@@ -754,6 +781,7 @@ signals:
     void lensfunCaAvailChanged();
     void lensfunVignAvailChanged();
     void lensfunDistAvailChanged();
+    void customWbAvailChanged();
 
     //Copy/pasteing
     void pasteableChanged();

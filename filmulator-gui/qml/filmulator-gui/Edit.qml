@@ -26,6 +26,8 @@ SlimSplitView {
     property bool cancelLeveling: false
     property real tempCropHeight: 0
 
+    property bool wbPicking: false
+
     property bool onEditTab
 
     onRequestingCroppingChanged: {
@@ -249,6 +251,7 @@ SlimSplitView {
                                 requestingCropping = false
                                 cancelLeveling = true
                                 requestingLeveling = false
+                                wbPicking = false
                             }
 
                             //Irrespective of that
@@ -785,6 +788,8 @@ SlimSplitView {
                 property real displayVoffset: 0.5 * Math.round(2 * cropmarker.voffset * bottomImage.height)
                 //aspect ratio text
                 property string aspectText: ""
+                //Constant; minimum crop size
+                property int minCrop: 20
 
                 function validateCrop() {
                     imageRect.cropHeight = imageRect.readHeight
@@ -999,7 +1004,7 @@ SlimSplitView {
                                 // Add the offset (in pixels) to get to the middle of the image.
                                 // Add half of the width of the crop itself.
                                 //And then we round.
-                                var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
+                                var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop,unclippedWidth),bottomImage.width*(0.5+oldOffset)+0.5*oldWidth))
                                 imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
                                 //Now we want to remember where the right edge of the image was, and preserve that.
                                 imageRect.cropHoffset = oldOffset + 0.5*(oldWidth-clippedWidth)/bottomImage.width
@@ -1073,7 +1078,7 @@ SlimSplitView {
                             oldX = mouse.x
                             if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
                                 unclippedWidth = unclippedWidth + deltaX
-                                var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
+                                var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop,unclippedWidth),bottomImage.width*(0.5-oldOffset)+0.5*oldWidth))
                                 imageRect.cropAspect = clippedWidth/(bottomImage.height*imageRect.cropHeight)
                                 //Now we want to remember where the left edge of the image was, and preserve that.
                                 imageRect.cropHoffset = oldOffset - 0.5*(oldWidth-clippedWidth)/bottomImage.width
@@ -1147,7 +1152,7 @@ SlimSplitView {
                             oldY = mouse.y
                             if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
                                 unclippedHeight = unclippedHeight - deltaY
-                                var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
+                                var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5+oldOffset)+0.5*oldHeight))
                                 imageRect.cropAspect = cropDrag.width/clippedHeight
                                 imageRect.cropHeight = clippedHeight/bottomImage.height
                                 //Remember where the bottom edge is.
@@ -1222,7 +1227,7 @@ SlimSplitView {
                             oldY = mouse.y
                             if (!(mouse.modifiers & Qt.ControlModifier)) {//no modifiers; resize as usual
                                 unclippedHeight = unclippedHeight + deltaY
-                                var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
+                                var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5-oldOffset)+0.5*oldHeight))
                                 imageRect.cropAspect = cropDrag.width/clippedHeight
                                 imageRect.cropHeight = clippedHeight/bottomImage.height
                                 //Remember where the bottom edge is.
@@ -1311,8 +1316,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth - deltaX
                             unclippedHeight = unclippedHeight - deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1341,11 +1346,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
@@ -1432,8 +1437,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth + deltaX
                             unclippedHeight = unclippedHeight - deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1462,11 +1467,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5+oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
@@ -1553,8 +1558,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth - deltaX
                             unclippedHeight = unclippedHeight + deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1583,11 +1588,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5+oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
@@ -1674,8 +1679,8 @@ SlimSplitView {
                             oldY = mouse.y
                             unclippedWidth = unclippedWidth + deltaX
                             unclippedHeight = unclippedHeight + deltaY
-                            var clippedWidth = Math.round(Math.min(Math.max(1,unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
-                            var clippedHeight = Math.round(Math.min(Math.max(1, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                            var clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedWidth),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                            var clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, unclippedHeight), bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                             var newAspect = clippedWidth/clippedHeight
                             if (mouse.modifiers & Qt.ShiftModifier && !(mouse.modifiers & Qt.ControlModifier)) {
                                 //set aspect to a snapped one
@@ -1704,11 +1709,11 @@ SlimSplitView {
                                 //choose whether to use height or width based on aspect, then clip them
                                 if (lockedAspect < newAspect) {//narrower, we adjust the height
                                     //Set both width and height explicitly so that the offsets can be corrected later.
-                                    clippedHeight = Math.round(Math.min(Math.max(1, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
+                                    clippedHeight = Math.round(Math.min(Math.max(imageRect.minCrop, clippedWidth/lockedAspect),bottomImage.height*(0.5-oldVoffset)+0.5*oldHeight))
                                     clippedWidth = clippedHeight*lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 } else {
-                                    clippedWidth = Math.round(Math.min(Math.max(1,clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
+                                    clippedWidth = Math.round(Math.min(Math.max(imageRect.minCrop, clippedHeight*lockedAspect),bottomImage.width*(0.5-oldHoffset)+0.5*oldWidth))
                                     clippedHeight = clippedWidth/lockedAspect
                                     imageRect.cropHeight = clippedHeight/bottomImage.height
                                 }
@@ -1754,7 +1759,7 @@ SlimSplitView {
                 Rectangle {
                     id: verticalAngleMark
                     width: 1
-                    height: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.width)
+                    height: 2 * Math.max(Math.max(bottomImage.width, bottomImage.height)*bottomImage.scale,imageRect.height)
                     x: bottomImage.x + imageRect.displayRotationPointX*bottomImage.scale - width/2
                     y: bottomImage.y + imageRect.displayRotationPointY*bottomImage.scale - height/2
                     color: (rotationDrag.overCross && !rotationDrag.centering) ? Colors.medOrange : photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
@@ -1942,6 +1947,77 @@ SlimSplitView {
                             }
                             rotationDrag.oldImageHeight = bottomImage.height
                         }
+                    }
+                }
+
+                // White balance picker stuff
+
+                // We'll select a point relative to the image boundaries.
+                // There won't be any stored data.
+                // Note that these are relative to the already cropped image, so later on we need
+                // to transform them according to the crop parameters.
+                property real wbPointX
+                property real wbPointY
+                property real displayWbPointX: wbPointX*bottomImage.width
+                property real displayWbPointY: wbPointY*bottomImage.height
+
+                Rectangle {
+                    id: verticalWbMark
+                    width: 1
+                    height: 2 * Math.max(bottomImage.height*bottomImage.scale, imageRect.height)
+                    x: bottomImage.x + imageRect.displayWbPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayWbPointY*bottomImage.scale - height/2
+                    color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    visible: root.wbPicking && root.imageReady && imageRect.wbPointX >= 0 && imageRect.wbPointY >= 0
+                }
+                Rectangle {
+                    id: horizontalWbMark
+                    width: 2 * Math.max(bottomImage.height*bottomImage.scale, imageRect.width)
+                    height: 1
+                    x: bottomImage.x + imageRect.displayWbPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayWbPointY*bottomImage.scale - height/2
+                    color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    visible: root.wbPicking && root.imageReady && imageRect.wbPointX >= 0 && imageRect.wbPointY >= 0
+                }
+                Rectangle {
+                    id: wbBox
+                    width: 21 * bottomImage.scale
+                    height: 21 * bottomImage.scale
+                    x: bottomImage.x + imageRect.displayWbPointX*bottomImage.scale - width/2
+                    y: bottomImage.y + imageRect.displayWbPointY*bottomImage.scale - height/2
+                    color: "#00000000"
+                    border.color: photoBox.backgroundColor == 2 ? "black" : photoBox.backgroundColor == 1 ? "gray" : "white"
+                    visible: root.wbPicking && root.imageReady && imageRect.wbPointX >= 0 && imageRect.wbPointY >= 0
+                }
+
+                MouseArea {
+                    id: wbDrag
+                    acceptedButtons: Qt.LeftButton
+                    width: bottomImage.width
+                    height: bottomImage.height
+                    x: bottomImage.x
+                    y: bottomImage.y
+                    transform: Scale {
+                        origin.x: 0
+                        origin.y: 0
+                        xScale: bottomImage.scale
+                        yScale: bottomImage.scale
+                    }
+
+                    enabled: root.wbPicking && root.imageReady
+                    visible: root.wbPicking && root.imageReady
+                    hoverEnabled: true
+                    preventStealing: false
+
+                    onPositionChanged: {
+                        imageRect.wbPointX = mouse.x / bottomImage.width
+                        imageRect.wbPointY = mouse.y / bottomImage.height
+                    }
+                    onPressed: {
+                        imageRect.wbPointX = mouse.x / bottomImage.width
+                        imageRect.wbPointY = mouse.y / bottomImage.height
+                        root.wbPicking = false
+                        filmProvider.customWB(imageRect.wbPointX, imageRect.wbPointY)
                     }
                 }
             }
@@ -2219,12 +2295,12 @@ SlimSplitView {
 
         Rectangle {
             id: lensfunBox
-            x: leftButtonSpacer.x - 320 * uiScale //not width because we don't want it to move when it resizes
+            x: leftButtonSpacer.x - (470 - 180) * uiScale //not width because we don't want it to move when it resizes
             y: 0 * uiScale
             z: active ? 1 : 0
             //resize when active to make room for german translation of buttons at bottom
-            //120 is the width of the buttons, 2 is the padding to make the rightmost button stationary
-            width: active ? (150 + 2 + 320) * uiScale : 320 * uiScale
+            //180 is the width of the buttons, 2 is the padding to make the rightmost button stationary
+            width: active ? (470 + 2) * uiScale : (470 - 180) * uiScale
             height: active ? 400 * uiScale : 30 * uiScale
             radius: 5 * uiScale
             visible: !photoBox.loadingError
@@ -2248,6 +2324,12 @@ SlimSplitView {
                 onTriggered: {
                     lensfunBox.active = !lensfunBox.active
                 }
+                Shortcut {
+                    sequence: StandardKey.Cancel
+                    enabled: lensfunBox.active
+                    onActivated: lensfunBox.active = false
+                }
+
                 Component.onCompleted: {
                     lensFunMenuButton.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -2616,7 +2698,7 @@ SlimSplitView {
         }
         ToolButton {
             id: backgroundBrightness
-            anchors.right: crop.left
+            anchors.right: wbButton.left
             y: 0 * uiScale
             tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.\n\nShortcut: B")
             Image {
@@ -2658,10 +2740,53 @@ SlimSplitView {
         }
 
         ToolButton {
+            id: wbButton
+            anchors.right: crop.left
+            y: 0 * uiScale
+            notDisabled: root.imageReady && !root.cropping && !root.leveling
+            tooltipText: root.wbPicking ? qsTr("Cancel setting custom white balance. Shortcut: W") : qsTr("Set a custom white balance based on where you click in the image.\n\nThe white balance will be remembered and can be applied to other images taken by the same camera model.\n\nShortcut: W")
+            Image {
+                width: 14 * uiScale
+                height: 14 * uiScale
+                anchors.centerIn: parent
+                source: root.wbPicking ? "qrc:///icons/whitebalanceactive.png" : "qrc:///icons/whitebalance.png"
+                antialiasing: true
+                opacity: wbButton.notDisabled ? 1 : 0.5
+            }
+            onTriggered: {
+                if (!root.wbPicking) {
+                    imageRect.wbPointX = -1
+                    imageRect.wbPointY = -1
+                    root.wbPicking = true
+                } else {
+                    root.wbPicking = false
+                }
+            }
+            Shortcut {
+                sequence: "w"
+                enabled: wbButton.notDisabled && root.onEditTab
+                onActivated: {
+                    if (!root.wbPicking) {
+                        imageRect.wbPointX = -1
+                        imageRect.wbPointY = -1
+                        root.wbPicking = true
+                    } else {
+                        root.wbPicking = false
+                    }
+                }
+            }
+
+            Component.onCompleted: {
+                wbButton.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+        }
+
+        ToolButton {
             id: crop
             anchors.right: rotateLeft.left
             y: 0 * uiScale
-            notDisabled: root.imageReady && !root.leveling
+            notDisabled: root.imageReady && !root.wbPicking && !root.leveling
             tooltipText: (root.cropping ? qsTr("Click this to save your crop."): qsTr("Click this to begin cropping.")) + "\n\n" + qsTr("Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C")
             Image {
                 width: 14 * uiScale
@@ -2684,16 +2809,15 @@ SlimSplitView {
 
             Shortcut {
                 sequence: "c"
+                enabled: crop.notDisabled && root.onEditTab
                 onActivated: {
-                    if (crop.notDisabled && root.onEditTab) {
-                        if (!root.cropping) {
-                            filmProvider.disableThumbnailWrite()
-                            root.requestingCropping = true
-                        } else {
-                            filmProvider.enableThumbnailWrite()
-                            root.cancelCropping = false //we're saving the crop, not canceling it
-                            root.requestingCropping = false
-                        }
+                    if (!root.cropping) {
+                        filmProvider.disableThumbnailWrite()
+                        root.requestingCropping = true
+                    } else {
+                        filmProvider.enableThumbnailWrite()
+                        root.cancelCropping = false //we're saving the crop, not canceling it
+                        root.requestingCropping = false
                     }
                 }
             }
@@ -2708,7 +2832,7 @@ SlimSplitView {
             id: rotateLeft
             anchors.right: level.left
             y: 0 * uiScale
-            notDisabled: root.imageReady && !root.cropping && !root.leveling
+            notDisabled: root.imageReady && !root.wbPicking && !root.cropping && !root.leveling
             tooltipText: qsTr("Rotate image 90 degrees left.")
             Image {
                 width: 14 * uiScale
@@ -2731,7 +2855,7 @@ SlimSplitView {
             id: level
             anchors.right: rotateRight.left
             y: 0 * uiScale
-            notDisabled: root.previewReady && !root.cropping
+            notDisabled: root.previewReady && !root.wbPicking && !root.cropping
             tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\" or double right clicking.\n\nShortcut: L")
             Image {
                 width: 14 * uiScale
@@ -2754,26 +2878,23 @@ SlimSplitView {
 
             Shortcut {
                 sequence: "l"
+                enabled: level.notDisabled && root.onEditTab
                 onActivated: {
-                    if (level.notDisabled && root.onEditTab) {
-                        if (!root.leveling) {
-                            filmProvider.disableThumbnailWrite()
-                            root.requestingLeveling = true
-                        } else {
-                            filmProvider.enableThumbnailWrite()
-                            root.cancelLeveling = false //we're saving the leveling, not canceling it
-                            root.requestingLeveling = false
-                        }
+                    if (!root.leveling) {
+                        filmProvider.disableThumbnailWrite()
+                        root.requestingLeveling = true
+                    } else {
+                        filmProvider.enableThumbnailWrite()
+                        root.cancelLeveling = false //we're saving the leveling, not canceling it
+                        root.requestingLeveling = false
                     }
                 }
             }
-
             Shortcut {
                 sequence: "Shift+l"
+                enabled: root.leveling && root.previewReady && root.onEditTab
                 onActivated: {
-                    if (root.leveling && root.previewReady) {
-                        imageRect.rotationAngle = 0
-                    }
+                    imageRect.rotationAngle = 0
                 }
             }
 
@@ -2787,7 +2908,7 @@ SlimSplitView {
             id: rotateRight
             anchors.right: rightSpacer.left
             y: 0 * uiScale
-            notDisabled: root.imageReady && !root.cropping && !root.leveling
+            notDisabled: root.imageReady && !root.wbPicking && !root.cropping && !root.leveling
             tooltipText: qsTr("Rotate image 90 degrees right.")
             Image {
                 width: 14 * uiScale
@@ -2830,7 +2951,9 @@ SlimSplitView {
         id: editTools
         uiScale: root.uiScale
         imageReady: root.imageReady
+        previewReady: root.previewReady
         cropping: root.requestingCropping || root.cropping
+        leveling: root.requestingLeveling || root.leveling
         onEditTab: root.onEditTab
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)

@@ -3,12 +3,16 @@
         <file>brightness.png</file>
         <file>crop.png</file>
         <file>cropactive.png</file>
+        <file>errortriangle.png</file>
         <file>filmulator64icon.png</file>
         <file>level.png</file>
         <file>levelactive.png</file>
         <file>refresh.png</file>
         <file>rotateleft.png</file>
         <file>uparrow.png</file>
-        <file>errortriangle.png</file>
+        <file>whitebalance.png</file>
+        <file>whitebalanceactive.png</file>
+        <file>whitebalanceplus.png</file>
+        <file>whitebalanceplusactive.png</file>
     </qresource>
 </RCC>
