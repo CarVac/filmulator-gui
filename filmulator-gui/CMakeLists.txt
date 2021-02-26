@@ -71,6 +71,13 @@ set(filmulator_SRCS
     core/vibranceSaturation.cpp
     core/whiteBalance.cpp
     core/whitepointBlackpoint.cpp
+    core/nlmeans/bisecting_kmeans.cpp
+    core/nlmeans/calcC1chanT.cpp
+    core/nlmeans/calcW_generic.cpp
+    core/nlmeans/expandDims.cpp
+    core/nlmeans/highDimBoxFilter.cpp
+    core/nlmeans/kMeansNLMApprox.cpp
+    core/nlmeans/splitCluster.cpp
     database/basicSqlModel.cpp
     database/camconst.cpp
     database/cJSON.c
