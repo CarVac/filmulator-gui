@@ -57,6 +57,19 @@ std::tuple<std::vector<float>,std::vector<bool>,std::array<double,2>,std::array<
     //While there are changes in cluster identities
     for (int iterNum = 0; !equal(isInSecondCluster.begin(),isInSecondCluster.end(),wasInSecondCluster.begin()) & (iterNum < 100); iterNum++){
 
+        // If the clusters are really close together, just throw everything except the first point in the first cluster
+        float clusterDistance = 0;
+        for (int dIdx = 0; dIdx < numDimensions; dIdx++){
+            float difference = clusterCenters[dIdx] - clusterCenters[dIdx + numDimensions];
+            clusterDistance += difference*difference;
+        }
+        if (clusterDistance < 1e-5){
+            std::fill(isInSecondCluster.begin(),isInSecondCluster.end(),false);
+            isInSecondCluster[0] = true;
+            numPointsInClusters = {numPoints-1,1};
+            break;
+        }
+
         //Calculate distances from each point to its cluster center
         std::fill(distanceToClusterCenters.begin(),distanceToClusterCenters.end(),0);
         for(int cIdx = 0; cIdx < 2; cIdx++){
