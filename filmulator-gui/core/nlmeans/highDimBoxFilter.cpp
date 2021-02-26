@@ -152,10 +152,9 @@ void highDimBoxFilter(float* __restrict const A, float* __restrict const W, floa
                 ptrdiff_t B_idx = Wb_idx + chanIdx*blockSize*blockSize;
                 ptrdiff_t A_idx = yIdx + S + (xIdx+S)*expandedBlockSize + chanIdx*expandedBlockSize*expandedBlockSize;
 
-                //const bool smallW = Wb[Wb_idx] < 1e-9;
-                //output[output_idx] = (smallW ? A[A_idx] : B[B_idx]) / (smallW ? 1.0f : Wb[Wb_idx]);
-                const float eps = 1e-9;
-                output[output_idx] = (eps * A[A_idx] + B[B_idx]) / (eps + Wb[Wb_idx]);
+                const float confidence = std::clamp(std::log(std::abs(Wb[Wb_idx]))+3 , 0.0f, 1.0f);
+                const float eps = std::numeric_limits<float>::epsilon();
+                output[output_idx] =  confidence*(B[B_idx] / (Wb[Wb_idx] + eps)) + (1-confidence)*A[A_idx];
             }
         }
     }
