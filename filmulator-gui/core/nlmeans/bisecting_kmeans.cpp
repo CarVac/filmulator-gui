@@ -48,7 +48,7 @@ std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoin
 
         auto [twoCenters, isInSecondCluster, SSDs, numMembers] = splitCluster(clusterToSplitX.data(), numPointsToSplit, numDimensions);
         
-        //If either cluster only has one member, distard that cluster
+        //If either cluster only has one member, discard that cluster
         int discardCluster = std::distance(numMembers.begin(), std::find(numMembers.begin(), numMembers.end(), 1)); //takes on values 0,1 or 2 for none
 
         for (int clustIdx = 0, numInsertedClusters = 0; clustIdx < 2; clustIdx++){
