@@ -698,6 +698,7 @@ SlimSplitView {
         enabled: onOrganizeTab
         onActivated: {
             organizeModel.incrementCaptureTime(-1)
+            gridView.returnToBounds()
         }
     }
     Shortcut {
@@ -706,6 +707,7 @@ SlimSplitView {
         enabled: onOrganizeTab
         onActivated: {
             organizeModel.incrementCaptureTime(1)
+            gridView.returnToBounds()
         }
     }
     Shortcut {
@@ -714,6 +716,7 @@ SlimSplitView {
         enabled: onOrganizeTab
         onActivated: {
             organizeModel.extendCaptureTimeRange(-1)
+            gridView.returnToBounds()
         }
     }
     Shortcut {
@@ -722,6 +725,7 @@ SlimSplitView {
         enabled: onOrganizeTab
         onActivated: {
             organizeModel.extendCaptureTimeRange(1)
+            gridView.returnToBounds()
         }
     }
 }
