@@ -53,18 +53,6 @@ Avalie a imagem atual pressionando de 0 a 5 e X ou pressionando as teclas de set
         <translation> não é acessível.</translation>
     </message>
     <message>
-        <source>Select the lens that was used in order to use lens corrections.
-
-Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;&quot;) then it will search lenses from all mounts.
-
-Double-click a lens to select it.</source>
-        <translation type="vanished">Selecione a lente que foi usada para usar as correções de lente.
-
-Digite o nome da lente na caixa à direita. Normalmente, ele pesquisará apenas as lentes do suporte da câmera, mas se o primeiro caractere for uma barra invertida (&quot;\&quot;), ele pesquisará as lentes de todos os suportes.
-
-Clique duas vezes em uma lente para selecioná-la.</translation>
-    </message>
-    <message>
         <location filename="../Edit.qml" line="2368"/>
         <source>No lens selected</source>
         <translation>Nenhuma lente selecionada</translation>
@@ -115,7 +103,7 @@ Atalho: B</translation>
     <message>
         <location filename="../Edit.qml" line="2747"/>
         <source>Cancel setting custom white balance. Shortcut: W</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancela o ajuste de balanço de branco personalizado. Atalho:W</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2747"/>
@@ -124,7 +112,9 @@ Atalho: B</translation>
 The white balance will be remembered and can be applied to other images taken by the same camera model.
 
 Shortcut: W</source>
-        <translation type="unfinished"></translation>
+        <translation>Clique na imagem para ajustar o balanço de branco neste ponto.
+O ajuste será memorizado e pode ser aplicado em outra imagens da mesma camera.
+Atalho:W</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2790"/>
@@ -245,7 +235,7 @@ Não disponível para fotos não Bayer.</translation>
     <message>
         <location filename="../EditTools.qml" line="236"/>
         <source>Profiled Distortion</source>
-        <translation>Distorção perfilada</translation>
+        <translation>Distorção do perfil</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="237"/>
@@ -268,7 +258,7 @@ Não disponível para fotos não Bayer.</translation>
         <translation>Recupere destaques cortados.
 
 0 corta após o balanço de branco preliminar.
-1 é útil se 0 restringiu os canais vermelhos ou azuis no local onde nenhum canal de cor raw é cortado.
+1 é útil se 0 restringiu os canais vermelhos ou azuis quando nenhum canal de cor raw é cortado.
 2 permite a reconstrução de realce, que funciona melhor quando apenas um canal é cortado e quando a franja roxa não é um problema.</translation>
     </message>
     <message>
@@ -295,28 +285,28 @@ O valor padrão é o WB escolhido pela câmera.</translation>
         <location filename="../EditTools.qml" line="311"/>
         <source>Store WB</source>
         <comment>white balance</comment>
-        <translation type="unfinished"></translation>
+        <translation>Memorizar WB</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="312"/>
         <source>Save the current white balance settings for later use with images from the same camera. They remains stored until Filmulator is closed, or until overwritten with this button or the custom WB picker.</source>
-        <translation type="unfinished"></translation>
+        <translation>Salva o ajuste de WB atual para ser aplicado em imagens da mesma camera. Fica na memória até que Filmlator seja fechado, ou ser sobrescrito por este botão ou pelo contagotas de ajuste de WB.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="329"/>
         <source>Recall WB</source>
         <comment>white balance</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Recupera o WB</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="330"/>
         <source>Apply the stored white balance settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aplica o ajuste de WB da memória.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="330"/>
         <source>No white balance has been stored for this camera.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sem ajuste de WB para esta camera.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="372"/>
@@ -335,12 +325,12 @@ O valor padrão é o WB escolhido pela câmera.</translation>
     <message>
         <location filename="../EditTools.qml" line="400"/>
         <source>The amount the program should to over- or under-expose the &quot;film&quot; relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.</source>
-        <translation>Para super ou subexpor o &quot;filme&quot; em relação à exposição na captura. Análogo à exposição do filme na câmera. Normalmente, ajuste isso até que o histograma ocupe a largura total.</translation>
+        <translation>Para super ou subexpor o &quot;filme&quot; em relação à exposição na captura. Análogo à exposição do filme na câmera. Normalmente, ajuste para que o histograma ocupe a largura total.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="468"/>
         <source>This is a histogram of the input to the film simulation.</source>
-        <translation>Este é um histograma pré-filme, a entrada para a simulação do filme.</translation>
+        <translation>Este é um histograma pré-filme, a entrada para a simulação de processamento do filme.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="478"/>
@@ -350,12 +340,12 @@ O valor padrão é o WB escolhido pela câmera.</translation>
     <message>
         <location filename="../EditTools.qml" line="479"/>
         <source>This adjusts the contrast in the shadows of the image prior to the film simulation. Raising this darkens the image and makes it more contrasty.</source>
-        <translation>Isso ajusta o contraste nas sombras da imagem antes da simulação do filme. Aumentar isso escurece a imagem e a torna mais contrastante.</translation>
+        <translation>Ajusta o contraste na sombra antes da simulação de filme. Valores maiores escurecem a imagem e aumentam o contraste.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="508"/>
         <source>Highlight Rolloff Point</source>
-        <translation>Ponto de Atenuação de Destaque</translation>
+        <translation>Ponto de Atenuação de Realces</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="509"/>
@@ -375,8 +365,9 @@ Se você tiver recorte de realce e houver mudanças de cores desagradáveis, dim
         <location filename="../EditTools.qml" line="539"/>
         <source>Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.
 Typically, when adjusting this, change it until the point where small adjustments make noticeable changes in the appearance of the image. That&apos;s usually in the vicinity of the best setting.</source>
-        <translation>Tamanhos maiores enfatizam detalhes menores e achatam o contraste; tamanhos menores enfatizam contrastes regionais maiores. Isso tem o mesmo efeito que o tamanho do filme na fotografia analógica. Em formato Médio ou Grande, mantenha o controle deslizante Drama abaixo de 40 para evitar artefatos.
-Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparência da imagem. Isso geralmente fica próximo ao melhor ajuste.</translation>
+        <translation>Simula o efeito do formato do filme na fotografia analógica.Os tamanhos maiores enfatizam detalhes finos e achatam o contraste; e tamanhos menores enfatizam o contraste local. .
+Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparência da imagem. Em geral, nesta região está o melhor ajuste.
+Em formato Médio ou Grande, mantenha o controle deslizante Drama abaixo de 40 para evitar artefatos.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="568"/>
@@ -441,7 +432,7 @@ Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparê
     <message>
         <location filename="../EditTools.qml" line="765"/>
         <source>This controls the brightness of the generally lighter regions of the image.</source>
-        <translation>Isso controla o brilho das regiões geralmente mais claras da imagem.</translation>
+        <translation>Controla o brilho das regiões geralmente mais claras da imagem.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="792"/>
@@ -523,7 +514,7 @@ Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparê
         <location filename="../EditTools.qml" line="1149"/>
         <location filename="../EditTools.qml" line="1168"/>
         <source>Finish leveling to save the result.</source>
-        <translation type="unfinished"></translation>
+        <translation>Finalize o ajuste de nivel para salvar o resultado.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="1167"/>
@@ -587,10 +578,6 @@ Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparê
         <location filename="../Import.qml" line="112"/>
         <source>Choose a directory to import from.</source>
         <translation>Escolha um diretório de onde importar.</translation>
-    </message>
-    <message>
-        <source>You may be importing in place from a memory card. The photos will be lost if you format the card.</source>
-        <translation type="vanished">Importar no local de um cartão de memória. As fotos serão perdidas se você formatar o cartão.</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="131"/>
@@ -712,7 +699,8 @@ Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparê
         <source>You may be importing in place from a memory card. The photos will be lost if you format the card.
 
 Double-click the error icon to proceed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Você pode importar &quot;no local&quot; de um cartão de memória, porém as imagens serão perdidas se você formatar o cartão.
+Clique duplo no icone de erro para prosseguir.</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="304"/>
@@ -889,8 +877,7 @@ Isso é útil quando você remove fotos do diretório principal e deseja trabalh
         <location filename="../gui_components/OrganizeDelegate.qml" line="66"/>
         <source>Image file is
 unreadable</source>
-        <translation>Arquivo de
-imagem ilegível</translation>
+        <translation>Arquivo de imagem ilegível</translation>
     </message>
 </context>
 <context>
@@ -930,17 +917,17 @@ imagem ilegível</translation>
     <message>
         <location filename="../Queue.qml" line="398"/>
         <source>Copy all settings</source>
-        <translation>Copiar todas as configurações</translation>
+        <translation>Copiar todas os ajustes</translation>
     </message>
     <message>
         <location filename="../Queue.qml" line="399"/>
         <source>Copy the processing parameters from this image, until you switch images or change processing parameters.</source>
-        <translation>Copie os parâmetros de processamento desta imagem, até trocar as imagens ou alterar os parâmetros de processamento.</translation>
+        <translation>Copie os parâmetros de processamento desta imagem, até mudar a imagem ou alterar os parâmetros de processamento.</translation>
     </message>
     <message>
         <location filename="../Queue.qml" line="415"/>
         <source>Paste settings</source>
-        <translation>Colar configurações</translation>
+        <translation>Colar ajustes</translation>
     </message>
     <message>
         <location filename="../Queue.qml" line="416"/>
@@ -1065,7 +1052,7 @@ Esta configuração entra em vigor após aplicar as configurações e reiniciar 
     <message>
         <location filename="../Settings.qml" line="66"/>
         <source>Smooth editor image</source>
-        <translation>Imagem do editor suave</translation>
+        <translation>Suavizar imagem no editor</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="67"/>
@@ -1083,7 +1070,7 @@ Isso é aplicado assim que você salva as configurações.</translation>
     <message>
         <location filename="../Settings.qml" line="80"/>
         <source>Reduce memory usage</source>
-        <translation>Reduza o uso de memória</translation>
+        <translation>Reduzir o uso de memória</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="81"/>
@@ -1101,14 +1088,14 @@ Esta configuração entra em vigor após aplicar as configurações e reiniciar 
     <message>
         <location filename="../Settings.qml" line="94"/>
         <source>Render small preview first</source>
-        <translation>Renderizar uma pequena prévia primeiro</translation>
+        <translation>Renderizar antes uma prévia pequena</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="95"/>
         <source>Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.
 
 This takes effect after applying settings and restarting Filmulator.</source>
-        <translation>Habilitar isso faz com que o editor processe uma imagem de tamanho pequeno antes de processar em resolução total, para melhor capacidade de resposta. No entanto, demorará mais para você exportar uma imagem.
+        <translation>Habilitado faz com que o editor processe uma imagem em tamanho pequeno antes de processar em resolução total, para melhor velocidade de resposta. No entanto, demorará mais para você exportar uma imagem.
 
 Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
@@ -1122,7 +1109,7 @@ Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</
         <source>When the small preview is active, the preview image will be processed at an image size with this value as the long dimension. The larger this is, the sharper the preview, but the longer it takes to generate.
 
 This takes effect after applying settings and restarting Filmulator.</source>
-        <translation>Quando a visualização pequena está ativa, a imagem de visualização será processada em um tamanho de imagem com este valor como a dimensão longa. Quanto maior for, o sharper a visualização, mas mais tempo leva para gerar.
+        <translation>Quando a visualização pequena está ativa, a imagem de visualização será processada em um tamanho de imagem com este valor como a dimensão longa. Quanto maior for, mais nítida será a visualização, porém leva mais tempo para ser renderizada.
 
 Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>

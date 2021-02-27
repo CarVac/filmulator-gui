@@ -15,7 +15,7 @@ Bewerten des aktuellen Bildes durch Drücken der Tasten 0 bis 5 und X oder durch
     <message>
         <location filename="../Edit.qml" line="2067"/>
         <source>Image Saved</source>
-        <translation type="unfinished"></translation>
+        <translation>Bild gespeichert</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2215"/>
@@ -121,7 +121,7 @@ Tastenkürzel: B</translation>
     <message>
         <location filename="../Edit.qml" line="2747"/>
         <source>Cancel setting custom white balance. Shortcut: W</source>
-        <translation type="unfinished"></translation>
+        <translation>Eigene WB-Einstellung abbrechen. Kürzel: W</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2747"/>
@@ -130,7 +130,11 @@ Tastenkürzel: B</translation>
 The white balance will be remembered and can be applied to other images taken by the same camera model.
 
 Shortcut: W</source>
-        <translation type="unfinished"></translation>
+        <translation>Legt einen benutzerdefinierten Weißabgleich fest, basierend darauf, wo Sie im Bild klicken.
+
+Der Weißabgleich wird gespeichert und kann auf andere Bilder angewendet werden, die mit demselben Kameramodell aufgenommen wurden.
+
+Tastenkürzel: W</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2790"/>
@@ -263,28 +267,28 @@ Nicht verfügbar für Nicht-Bayer-Sensoren.</translation>
         <location filename="../EditTools.qml" line="311"/>
         <source>Store WB</source>
         <comment>white balance</comment>
-        <translation type="unfinished"></translation>
+        <translation>WB speichern</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="312"/>
         <source>Save the current white balance settings for later use with images from the same camera. They remains stored until Filmulator is closed, or until overwritten with this button or the custom WB picker.</source>
-        <translation type="unfinished"></translation>
+        <translation>Speichert die aktuellen Weißabgleichseinstellungen für die spätere Verwendung mit Bildern von derselben Kamera. Sie bleiben gespeichert, bis Filmulator geschlossen wird, oder bis sie mit dieser Schaltfläche oder dem benutzerdefinierten WB-Picker überschrieben werden.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="329"/>
         <source>Recall WB</source>
         <comment>white balance</comment>
-        <translation type="unfinished"></translation>
+        <translation>WB übernehmen</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="330"/>
         <source>Apply the stored white balance settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gespeicherte WB-Einstellungen anwenden.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="330"/>
         <source>No white balance has been stored for this camera.</source>
-        <translation type="unfinished"></translation>
+        <translation>Es wurde kein Weißabgleich für diese Kamera gespeichert.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="343"/>
@@ -512,7 +516,7 @@ Typically, when adjusting this, change it until the point where small adjustment
         <location filename="../EditTools.qml" line="1149"/>
         <location filename="../EditTools.qml" line="1168"/>
         <source>Finish leveling to save the result.</source>
-        <translation type="unfinished"></translation>
+        <translation>Zum Speichern des Ergebnisses Abgleich beenden.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="1167"/>
@@ -587,7 +591,9 @@ Typically, when adjusting this, change it until the point where small adjustment
         <source>You may be importing in place from a memory card. The photos will be lost if you format the card.
 
 Double-click the error icon to proceed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Möglicherweise importieren Sie auf einer Speicherkarte. Die Fotos gehen beim Formatieren der Karte  verloren.
+
+Doppelklicken Sie auf das Fehlersymbol, um fortzufahren.</translation>
     </message>
     <message>
         <location filename="../Import.qml" line="131"/>
@@ -1136,31 +1142,31 @@ Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator i
         <location filename="../Settings.qml" line="198"/>
         <source>Checking database version.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Überprüfe Datenbankversion.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="201"/>
         <source>Database unavailable from server.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Datenbank auf Server nicht erreichbar.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="204"/>
         <source>No local database yet.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Keine lokale Datenbank.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="207"/>
         <source>Update available.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Update verfügbar.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="210"/>
         <source>Up to date.</source>
         <comment>lensfun database check</comment>
-        <translation type="unfinished"></translation>
+        <translation>Aktuell.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="233"/>
@@ -1177,43 +1183,43 @@ Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator i
         <location filename="../Settings.qml" line="273"/>
         <source>Updating database.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Aktualisiere Datenbank.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="276"/>
         <source>Success. Please restart.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Update erfolgreich. Bitte neu starten.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="279"/>
         <source>Already up to date.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Bereits aktuell.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="282"/>
         <source>Unavailable from server.</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Auf Server nicht verfügbar.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="285"/>
         <source>Failure (initialization)</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Fehler (Initialisierung)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="288"/>
         <source>Failure (file)</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Fehler (Datei)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="291"/>
         <source>Failure (retrieve)</source>
         <comment>lensfun database update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Fehler (Abruf)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="314"/>
@@ -1230,25 +1236,25 @@ Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator i
         <location filename="../Settings.qml" line="360"/>
         <source>Download successful.</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Download erfolgreich.</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="363"/>
         <source>Failure (initialization)</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Fehler (Initialisierung)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="366"/>
         <source>Failure (file)</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Fehler (Datei)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="369"/>
         <source>Failure (retrieve)</source>
         <comment>camconst.json update</comment>
-        <translation type="unfinished"></translation>
+        <translation>Fehler (Abruf)</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="391"/>

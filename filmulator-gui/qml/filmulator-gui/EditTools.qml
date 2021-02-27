@@ -308,7 +308,7 @@ SlimSplitView {
                         x: 0
                         y: 0
                         notDisabled: root.imageReady || root.previewReady //an image needs to be loaded
-                        text: qsTr("Store WB","white balance")
+                        text: qsTr("Store WB","white balance; keep short")
                         tooltipText: qsTr("Save the current white balance settings for later use with images from the same camera. They remains stored until Filmulator is closed, or until overwritten with this button or the custom WB picker.")
                         onTriggered: {
                             paramManager.saveCustomWb()
@@ -326,7 +326,7 @@ SlimSplitView {
                         x: width
                         y: 0
                         notDisabled: (root.imageReady || root.previewReady) && paramManager.customWbAvail
-                        text: qsTr("Recall WB","white balance")
+                        text: qsTr("Recall WB","white balance; keep short")
                         tooltipText: paramManager.customWbAvail ? qsTr("Apply the stored white balance settings.") : qsTr("No white balance has been stored for this camera.")
                         onTriggered: {
                             paramManager.recallCustomWb()
