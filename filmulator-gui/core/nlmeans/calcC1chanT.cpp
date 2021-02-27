@@ -5,7 +5,7 @@
 
 template <class MatT>
 Eigen::Matrix<typename MatT::Scalar, MatT::ColsAtCompileTime, MatT::RowsAtCompileTime>
-pseudoinverse(const MatT& mat, typename MatT::Scalar tolerance) // choose appropriately
+pseudoinverse(const MatT& mat, typename MatT::Scalar tolerance = typename MatT::Scalar{1e-4}) // choose appropriately
 {
     typedef typename MatT::Scalar Scalar;
     auto svd = mat.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);

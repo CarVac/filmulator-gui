@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <array>
+#include <optional>
 
 std::vector<float> bisecting_kmeans(float* const X, const int numPoints, const int numDimensions, const int k, const std::optional<float> threshold = std::nullopt);
 
