@@ -19,7 +19,8 @@ public:
     //Loads and processes an image according to the 'params' structure, monitoring 'aborted' for cancellation.
     matrix<unsigned short>& processImage(ParameterManager * paramManager,
                                          Interface * histoInterface,
-                                         Exiv2::ExifData &exifOutput);
+                                         Exiv2::ExifData &exifOutput,
+                                         const QString fileHash = "");
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
     float getProgress(){return progress;}

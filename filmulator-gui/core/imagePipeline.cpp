@@ -45,7 +45,8 @@ int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
 
 matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramManager,
                                                     Interface * interface_in,
-                                                    Exiv2::ExifData &exifOutput)
+                                                    Exiv2::ExifData &exifOutput,
+                                                    const QString fileHash)//defaults to empty string
 {
     //Say that we've started processing to prevent cache status from changing..
     hasStartedProcessing = true;
@@ -53,6 +54,20 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
     // until a given short time has elapsed.
     gettimeofday(&timeRequested, nullptr);
     histoInterface = interface_in;
+
+    //check that file requested matches the file associated with the parameter manager
+    if (fileHash != "")
+    {
+        QString paramIndex = paramManager->getImageIndex();
+        paramIndex.truncate(32);
+        if (fileHash != paramIndex)
+        {
+            cout << "processImage shuffle mismatch:  Requested: " << fileHash.toStdString() << endl;
+            cout << "processImage shuffle mismatch:  Parameter: " << paramIndex.toStdString() << endl;
+            cout << "processImage shuffle mismatch:  fullSize: " << (quality == HighQuality) << endl;
+            valid = none;
+        }
+    }
 
     valid = paramManager->getValid();
     if (NoCache == cache || true == cacheEmpty)
