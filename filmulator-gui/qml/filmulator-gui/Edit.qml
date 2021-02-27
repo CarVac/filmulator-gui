@@ -324,7 +324,7 @@ SlimSplitView {
                                 s = num+"";
                                 size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
-                                topImage.indexString = s
+                                topImage.indexString = paramManager.imageIndex + s
 
                                 //now actually ask for the image
                                 if (topImage.state == "lt") {//it was loading the thumbnail
