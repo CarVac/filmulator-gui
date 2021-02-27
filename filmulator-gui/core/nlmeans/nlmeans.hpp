@@ -3,19 +3,8 @@
 
 #include <vector>
 #include <array>
-#include <Eigen/Dense>
-
-struct clusterInfo{
-    std::vector<float> center;
-    std::vector<int> members;
-    double summedSquareDistances;
-};
 
 std::vector<float> bisecting_kmeans(float* const X, const int numPoints, const int numDimensions, const int k, const std::optional<float> threshold = std::nullopt);
-
-template <class MatT>
-Eigen::Matrix<typename MatT::Scalar, MatT::ColsAtCompileTime, MatT::RowsAtCompileTime>
-pseudoinverse(const MatT& mat, typename MatT::Scalar tolerance = typename MatT::Scalar{ 1e-4 });
 
 std::vector<float> calcC1ChanT(std::vector<float> centers, int numClusters, const float h);
 

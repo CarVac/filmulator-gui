@@ -5,6 +5,11 @@
 #include <optional>
 #include "nlmeans.hpp"
 
+struct clusterInfo{
+    std::vector<float> center;
+    std::vector<int> members;
+    double summedSquareDistances;
+};
 
 //X is in points major, dimensions minor order
 //Returns center locations (clusters major). Will always return at least two clusters

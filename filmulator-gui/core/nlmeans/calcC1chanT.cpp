@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <Eigen/Dense>
 #include "nlmeans.hpp"
 
 template <class MatT>
