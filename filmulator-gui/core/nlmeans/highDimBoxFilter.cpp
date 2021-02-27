@@ -98,8 +98,8 @@ void highDimBoxFilter(float* __restrict const A, float* __restrict const W, floa
 
         //Cumulative sum in the vertical direction. TODO: change this comment when flipping order
         for (ptrdiff_t c = 0; c < 3; c++){
-            for (ptrdiff_t xIdx = 0; xIdx < blockSize; xIdx++){            
-                for (ptrdiff_t yWriteIdx = 1; yWriteIdx < expandedBlockSize; yWriteIdx++){ // the cumsum of the first row is equal to the first row, so skip it. TODO: change this comment when filpping order 
+            for (ptrdiff_t yWriteIdx = 1; yWriteIdx < expandedBlockSize; yWriteIdx++){ // the cumsum of the first row is equal to the first row, so skip it. TODO: change this comment when filpping order 
+                for (ptrdiff_t xIdx = 0; xIdx < blockSize; xIdx++){            
                         
                     ptrdiff_t W_sat_idx = yWriteIdx + xIdx*expandedBlockSize;
                     if (c == 0){ //W is a single channel, so we only have to compute it once
@@ -116,7 +116,23 @@ void highDimBoxFilter(float* __restrict const A, float* __restrict const W, floa
         //Weight by Wt and write out to Wb and B
         for (ptrdiff_t c = 0; c < 3; c++){
             for (ptrdiff_t xIdx = 0; xIdx < blockSize; xIdx++){
-                for (ptrdiff_t yIdx = 0; yIdx < blockSize; yIdx++){
+                //We're pulling the first yIdx iteration out of the loop to help the compiler (needed in GCC 10.2)
+                //The first iteration is different because we don't have anything to subtract
+                ptrdiff_t yIdx = 0;
+                ptrdiff_t Wt_idx = yIdx + xIdx*blockSize + clusterIdx*blockSize*blockSize;
+                ptrdiff_t Wb_idx = yIdx + xIdx*blockSize;
+                ptrdiff_t B_idx = yIdx + xIdx*blockSize + c*blockSize*blockSize;
+
+                ptrdiff_t W_sat_idx = yIdx+S + xIdx*expandedBlockSize;
+                ptrdiff_t WA_sat_idx = yIdx+S + xIdx*expandedBlockSize + c*blockSize*expandedBlockSize;
+                if (yIdx == 0){
+                    if (c == 0){
+                        Wb[Wb_idx] += Wt[Wt_idx]*W_summedAreaTable[W_sat_idx+S];
+                    }
+                    B[B_idx] += Wt[Wt_idx]*WA_summedAreaTable[WA_sat_idx+S];
+                }
+
+                for (ptrdiff_t yIdx = 1; yIdx < blockSize; yIdx++){
                     ptrdiff_t Wt_idx = yIdx + xIdx*blockSize + clusterIdx*blockSize*blockSize;
                     ptrdiff_t Wb_idx = yIdx + xIdx*blockSize;
                     ptrdiff_t B_idx = yIdx + xIdx*blockSize + c*blockSize*blockSize;
@@ -124,18 +140,10 @@ void highDimBoxFilter(float* __restrict const A, float* __restrict const W, floa
                     ptrdiff_t W_sat_idx = yIdx+S + xIdx*expandedBlockSize;
                     ptrdiff_t WA_sat_idx = yIdx+S + xIdx*expandedBlockSize + c*blockSize*expandedBlockSize;
 
-                    if (yIdx == 0){
-                        if (c == 0){
-                            Wb[Wb_idx] += Wt[Wt_idx]*W_summedAreaTable[W_sat_idx+S];
-                        }
-                        B[B_idx] += Wt[Wt_idx]*WA_summedAreaTable[WA_sat_idx+S];
+                    if (c == 0){
+                        Wb[Wb_idx] += Wt[Wt_idx]*(W_summedAreaTable[W_sat_idx+S] - W_summedAreaTable[W_sat_idx-S-1]); //We read out a blurred value using the summed area table. blur = cumsum(x+r) - cumsum(x-r)
                     }
-                    else{
-                        if (c == 0){
-                            Wb[Wb_idx] += Wt[Wt_idx]*(W_summedAreaTable[W_sat_idx+S] - W_summedAreaTable[W_sat_idx-S-1]); //We read out a blurred value using the summed area table. blur = cumsum(x+r) - cumsum(x-r)
-                        }
-                        B[B_idx] += Wt[Wt_idx]*(WA_summedAreaTable[WA_sat_idx+S] - WA_summedAreaTable[WA_sat_idx-S-1]);                            
-                    }
+                    B[B_idx] += Wt[Wt_idx]*(WA_summedAreaTable[WA_sat_idx+S] - WA_summedAreaTable[WA_sat_idx-S-1]);                            
                 }
             }
         }
