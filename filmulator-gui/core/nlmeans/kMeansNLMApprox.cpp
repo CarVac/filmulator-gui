@@ -2,15 +2,7 @@
 #include "nlmeans.hpp"
 
 
-void kMeansNLMApprox(float* __restrict const I, const int maxClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* __restrict output) {
-
-	constexpr int radius = 1;
-	constexpr int patchSize = (2 * radius + 1) * (2 * radius + 1);
-	constexpr int numChannels = 3;
-
-    constexpr ptrdiff_t blockSize = 64;
-	constexpr ptrdiff_t S = 8;
-	constexpr ptrdiff_t expandedBlockSize = blockSize + 2*S;
+void kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* __restrict output) {
 
 	ptrdiff_t numBlocksX = std::ceil(float(sizeX) / float(blockSize));
 	ptrdiff_t numBlocksY = std::ceil((float(sizeY) / float(blockSize)));
@@ -40,7 +32,7 @@ void kMeansNLMApprox(float* __restrict const I, const int maxClusters, const flo
 
 
 		std::vector<float> expandedDimensions(expandedBlockSize * expandedBlockSize * numChannels * patchSize);
-		expandDims(IBlockCopy.data(), radius, expandedBlockSize, expandedBlockSize, expandedDimensions.data());
+		expandDims(IBlockCopy.data(), expandedBlockSize, expandedBlockSize, expandedDimensions.data());
 
 
 		//Todo: only sample within the image
@@ -59,7 +51,7 @@ void kMeansNLMApprox(float* __restrict const I, const int maxClusters, const flo
 			}
 		}
 
-		std::vector<float> clusterCenters = bisecting_kmeans(sampledPatches.data(), numPatchesToSample, patchSize * numChannels, maxClusters, clusterThreshold);
+		std::vector<float> clusterCenters = bisecting_kmeans(sampledPatches.data(), numPatchesToSample, maxNumClusters, clusterThreshold);
 		int numClusters = clusterCenters.size() / (patchSize * numChannels);
 
 		//Todo: set W to 0 outside the image
@@ -69,7 +61,7 @@ void kMeansNLMApprox(float* __restrict const I, const int maxClusters, const flo
 		std::vector<float> C1ChanT = calcC1ChanT(clusterCenters, numClusters, h);
 
 		std::vector<float> tileOutput(blockSize*blockSize*numChannels);
-        highDimBoxFilter(IBlockCopy.data(), W.data(), C1ChanT.data(), numClusters, blockSize, S, expandedBlockSize, tileOutput.data());
+        highDimBoxFilter(IBlockCopy.data(), W.data(), C1ChanT.data(), numClusters, tileOutput.data());
 
 		for (ptrdiff_t c = 0; c < numChannels; c++) {
 			for (ptrdiff_t xReadIdx = 0; xReadIdx < blockSize; xReadIdx++) {

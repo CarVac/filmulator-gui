@@ -13,8 +13,9 @@ struct clusterInfo{
 
 //X is in points major, dimensions minor order
 //Returns center locations (clusters major). Will always return at least two clusters
-std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoints, const int numDimensions, const int k, const std::optional<float> threshold){
+std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoints, const int maxNumClusters, const std::optional<float> threshold){
 
+    const int numDimensions = patchSize*numChannels;
     std::vector<clusterInfo> currentClusters;
     
     //Initialize first cluster to include all points. Don't worry about its center and SSD
@@ -24,7 +25,7 @@ std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoin
 
     double totalSSD = std::numeric_limits<double>::max();
 
-    while ((currentClusters.size() < k) & (threshold.has_value() && totalSSD > ((*threshold)*numPoints))){
+    while ((currentClusters.size() < maxNumClusters) & (threshold.has_value() && totalSSD > ((*threshold)*numPoints))){
 
         // Split the cluster with the highest summed squared distance
         int nextClusterToSplitIdx = -1;

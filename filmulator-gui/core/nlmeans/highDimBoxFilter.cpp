@@ -8,7 +8,6 @@
 //We're going to column major order right now to match MATLAB, TODO: switch to row major
 //TODO: fixup int vs ptrdiff_t indexing.
 void highDimBoxFilter(float* __restrict const A, float* __restrict const W, float* __restrict const C1chanT, ptrdiff_t const numClusters,
-                      ptrdiff_t blockSize, ptrdiff_t S, ptrdiff_t expandedBlockSize,
                       float* __restrict output){
 
 

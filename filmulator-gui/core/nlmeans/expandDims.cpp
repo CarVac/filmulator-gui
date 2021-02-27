@@ -4,7 +4,7 @@
 #include "nlmeans.hpp"
 
 //Aguide is called p in the paper, W is called c_k, centers is called mu_k 
-void expandDims(float* __restrict const I, int radius, int sizeX, int sizeY, float* __restrict output) {
+void expandDims(float* __restrict const I, const int sizeX, const int sizeY, float* __restrict output) {
     constexpr int numChannels = 3;
     int patchWidth = (2 * radius + 1);
 
