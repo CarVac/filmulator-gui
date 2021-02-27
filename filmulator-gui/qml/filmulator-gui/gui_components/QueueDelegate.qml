@@ -54,6 +54,16 @@ Item {
         color: held ? Colors.brightOrange : (rightClicked ? Colors.whiteOrange : (__current ? Colors.medOrange : "#00000000"))
     }
 
+    /*
+    Text {
+        color: "white"
+        text: root.searchID
+        width: root.width
+        clip: true
+        z: 1
+    }
+    */
+
     Loader {
         id: loadThumb
         asynchronous: true

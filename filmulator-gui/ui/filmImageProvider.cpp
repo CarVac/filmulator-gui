@@ -81,6 +81,11 @@ QImage FilmImageProvider::requestImage(const QString& id,
     //Copy out the filename.
     std::string filename;
 
+    //Get just the file hash for file coherency purposes
+    QString fileHash = id;
+    fileHash.remove(0,1);
+    fileHash.truncate(32);
+
     //Record whether to write this thumbnail
     writeThisThumbnail = thumbnailWriteEnabled;
 
@@ -91,7 +96,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
     {
         shufflePipelines();//this'll just deal with the ID names
         filename = paramManager->getFullFilename();
-        image = pipeline.processImage(paramManager, this, data);
+        image = pipeline.processImage(paramManager, this, data, fileHash);
     }
     else
     {
@@ -111,7 +116,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
             }
             struct timeval quickTime;
             gettimeofday(&quickTime, nullptr);
-            image = quickPipe.processImage(paramManager, this, data);
+            image = quickPipe.processImage(paramManager, this, data, fileHash);
             cout << "requestImage quickPipe time: " << timeDiff(quickTime) << endl;
         }
         else
@@ -136,7 +141,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
             filename = cloneParam->getFullFilename();
             struct timeval fullTime;
             gettimeofday(&fullTime, nullptr);
-            image = pipeline.processImage(cloneParam, this, data);
+            image = pipeline.processImage(cloneParam, this, data, fileHash);
             cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
 
             //Copy the high-res pipeline images back to low-res to deal with
