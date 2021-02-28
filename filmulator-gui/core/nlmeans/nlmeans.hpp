@@ -11,8 +11,9 @@ constexpr ptrdiff_t expandedBlockSize = blockSize + 2*S;
 constexpr int radius = 1;
 constexpr int patchSize = (2 * radius + 1) * (2 * radius + 1);
 constexpr int numChannels = 3;
+constexpr int numPoints = 500;
 
-std::vector<float> bisecting_kmeans(float* const X, const int numPoints, const int maxNumClusters, const std::optional<float> threshold = std::nullopt);
+std::vector<float> bisecting_kmeans(float* const X, const int maxNumClusters, const float threshold);
 
 std::vector<float> calcC1ChanT(std::vector<float> centers, int numClusters, const float h);
 
@@ -27,6 +28,6 @@ void highDimBoxFilter(float* const A, float* const W, float* const C1chanT, ptrd
 
 void kMeansNLMApprox(float* const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* output);
 
-std::tuple<std::vector<float>,std::vector<bool>,std::array<double,2>,std::array<int,2>> splitCluster(float* const X, const int numPoints, const int numDimensions);
+std::tuple<std::vector<float>,std::vector<bool>,std::array<double,2>,std::array<int,2>> splitCluster(float* const X, const int numPoints);
 
 #endif // NLMEANS_H

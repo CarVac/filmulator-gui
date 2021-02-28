@@ -6,8 +6,9 @@
 
 //X is in points major, dimensions minor order
 //Returns cluster centers (dimensions major), isInSecondCluster, summed square distances, number of points in each cluster.
-std::tuple<std::vector<float>,std::vector<bool>,std::array<double,2>,std::array<int,2>> splitCluster(float* __restrict const X, const int numPoints, const int numDimensions){
+std::tuple<std::vector<float>,std::vector<bool>,std::array<double,2>,std::array<int,2>> splitCluster(float* __restrict const X, const int numPoints){
 
+    const int numDimensions = patchSize*numChannels;
     //Set initial cluster centers to the points with the min and max norm
     std::vector<float> norms(numPoints,0);
     for (int dIdx = 0; dIdx < numDimensions; dIdx++){

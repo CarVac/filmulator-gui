@@ -13,7 +13,7 @@ struct clusterInfo{
 
 //X is in points major, dimensions minor order
 //Returns center locations (clusters major). Will always return at least two clusters
-std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoints, const int maxNumClusters, const std::optional<float> threshold){
+std::vector<float> bisecting_kmeans(float* __restrict const X, const int maxNumClusters, const float threshold){
 
     const int numDimensions = patchSize*numChannels;
     std::vector<clusterInfo> currentClusters;
@@ -25,7 +25,7 @@ std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoin
 
     double totalSSD = std::numeric_limits<double>::max();
 
-    while ((currentClusters.size() < maxNumClusters) & (threshold.has_value() && totalSSD > ((*threshold)*numPoints))){
+    while ((currentClusters.size() < maxNumClusters) & (totalSSD > threshold*numPoints)){
 
         // Split the cluster with the highest summed squared distance
         int nextClusterToSplitIdx = -1;
@@ -52,7 +52,7 @@ std::vector<float> bisecting_kmeans(float* __restrict const X, const int numPoin
             }
         }
 
-        auto [twoCenters, isInSecondCluster, SSDs, numMembers] = splitCluster(clusterToSplitX.data(), numPointsToSplit, numDimensions);
+        auto [twoCenters, isInSecondCluster, SSDs, numMembers] = splitCluster(clusterToSplitX.data(), numPointsToSplit);
         
         //If either cluster only has one member, discard that cluster
         int discardCluster = std::distance(numMembers.begin(), std::find(numMembers.begin(), numMembers.end(), 1)); //takes on values 0,1 or 2 for none
