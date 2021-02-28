@@ -719,9 +719,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << "hlrecovery duration: " << timeDiff(hlrecovery_time) << endl;
 
             //Noise reduction
+            cout << "NR strength: " << demosaicParam.nlStrength << endl;
             if (demosaicParam.nlStrength > 0)
             {
-                cout << "Noise reduction preprocessing start: " << timeDiff(timeRequested) << endl;
+                cout << "NR preprocessing start: " << timeDiff(timeRequested) << endl;
                 matrix<float> denoised(input_image.nr(), input_image.nc());
 
                 #pragma omp parallel for
@@ -771,15 +772,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 const float strength = demosaicParam.nlStrength;
                 //======================================================================
 
-                cout << "Noise reduction preprocessing start: " << timeDiff(timeRequested) << endl;
+                cout << "NR preprocessing start: " << timeDiff(timeRequested) << endl;
                 struct timeval nrTime;
                 gettimeofday(&nrTime, nullptr);
-                
-                kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised);
+
+                //kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised);
                 if (kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised, paramManager)){
                     return emptyMatrix();
                 }
-                cout << "Noise reduction duration: " << timeDiff(nrTime) << endl;
+                cout << "NR duration: " << timeDiff(nrTime) << endl;
 
                 input_image = std::move(denoised);
                 cout << "after NR conditioned min: " << input_image.min() << endl;
