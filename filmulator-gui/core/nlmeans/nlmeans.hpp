@@ -5,6 +5,8 @@
 #include <array>
 #include <optional>
 
+#include "imagePipeline.h"
+
 constexpr ptrdiff_t blockSize = 64;
 constexpr ptrdiff_t S = 8;
 constexpr ptrdiff_t expandedBlockSize = blockSize + 2*S;
@@ -26,7 +28,7 @@ void expandDims(float* const I, const int sizeX, const int sizeY, float* output)
 void highDimBoxFilter(float* const A, float* const W, float* const C1chanT, ptrdiff_t const numClusters,
                       float* output);
 
-void kMeansNLMApprox(float* const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* output);
+bool kMeansNLMApprox(float* const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* output, ParameterManager* paramManager);
 
 std::tuple<std::vector<float>,std::vector<bool>,std::array<double,2>,std::array<int,2>> splitCluster(float* const X, const int numPoints);
 

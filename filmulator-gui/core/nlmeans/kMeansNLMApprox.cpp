@@ -2,13 +2,26 @@
 #include "nlmeans.hpp"
 
 
-void kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* __restrict output) {
+bool kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* __restrict output, ParameterManager* paramManager) {
 
 	ptrdiff_t numBlocksX = std::ceil(float(sizeX) / float(blockSize));
 	ptrdiff_t numBlocksY = std::ceil((float(sizeY) / float(blockSize)));
 	ptrdiff_t numBlocks = numBlocksX * numBlocksY;
+	bool canceled = false;
 	#pragma omp parallel for 
 	for (ptrdiff_t blockIdx = 0; blockIdx < numBlocks; blockIdx++) {
+
+		LoadParams loadParam;
+		DemosaicParams demosaicParam;
+		AbortStatus abort;
+		Valid valid;
+		std::tie(valid, abort, loadParam, demosaicParam) = paramManager->claimDemosaicParams();
+		if(abort == AbortStatus::restart)
+		{
+			canceled = true;
+			#pragma omp cancel for
+		}
+
 		//We're using column major order across the blocks
 		ptrdiff_t xBlockStart = blockSize * (blockIdx / numBlocksY);
 		ptrdiff_t yBlockStart = blockSize * (blockIdx % numBlocksY);
@@ -76,4 +89,5 @@ void kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const 
 			}
 		}
 	}
+	return canceled;
 }
