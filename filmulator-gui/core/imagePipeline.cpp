@@ -775,7 +775,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 struct timeval nrTime;
                 gettimeofday(&nrTime, nullptr);
                 
-                kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised);
                 if (kMeansNLMApprox(input_image, numClusters, clusterThreshold, strength, input_image.nr(), input_image.nc()/3, denoised, paramManager)){
                     return emptyMatrix();
                 }
