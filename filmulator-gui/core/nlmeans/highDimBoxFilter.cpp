@@ -29,10 +29,10 @@ void highDimBoxFilter(float* __restrict const A, float* __restrict const W, floa
     }
 
     //Calculate sum (across clusters) of Wt*boxFilter(W) and Wt*boxFilter(W*A), yield Wb and B
-    std::vector<float> W_summedAreaTable(blockSize*expandedBlockSize, 0.0f);
-    std::vector<float> WA_summedAreaTable(blockSize*expandedBlockSize*3, 0.0f);
-    std::vector<float> Wb(blockSize*blockSize, 0.0f);
-    std::vector<float> B(blockSize*blockSize*3, 0.0f);
+    std::array<float, blockSize*expandedBlockSize>   W_summedAreaTable;  //W and WA get initialized to 0 first thing in the loop
+    std::array<float, blockSize*expandedBlockSize*3> WA_summedAreaTable;
+    std::array<float, blockSize*blockSize>   Wb{0.0f};
+    std::array<float, blockSize*blockSize*3> B{0.0};
     for (ptrdiff_t clusterIdx = 0; clusterIdx < numClusters; clusterIdx++){
 
         //We need to blur in both the x and y directions, but only the x direction is vectorizeable

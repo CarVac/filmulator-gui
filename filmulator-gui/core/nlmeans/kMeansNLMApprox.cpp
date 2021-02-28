@@ -2,18 +2,28 @@
 #include "nlmeans.hpp"
 
 
-void kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* __restrict output) {
+bool kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* __restrict output, ParameterManager* paramManager) {
 
 	ptrdiff_t numBlocksX = std::ceil(float(sizeX) / float(blockSize));
 	ptrdiff_t numBlocksY = std::ceil((float(sizeY) / float(blockSize)));
 	ptrdiff_t numBlocks = numBlocksX * numBlocksY;
+	bool canceled = false;
 	#pragma omp parallel for 
 	for (ptrdiff_t blockIdx = 0; blockIdx < numBlocks; blockIdx++) {
+
+		AbortStatus abort;
+        abort = paramManager->claimDemosaicAbort();
+		if(abort == AbortStatus::restart)
+		{
+			canceled = true;
+			#pragma omp cancel for
+		}
+
 		//We're using column major order across the blocks
 		ptrdiff_t xBlockStart = blockSize * (blockIdx / numBlocksY);
 		ptrdiff_t yBlockStart = blockSize * (blockIdx % numBlocksY);
 
-		std::vector<float> IBlockCopy(expandedBlockSize * expandedBlockSize * numChannels);
+		std::array<float, expandedBlockSize * expandedBlockSize * numChannels> IBlockCopy;
 		for (ptrdiff_t c = 0; c < numChannels; c++) {
 			for (ptrdiff_t xWriteIdx = 0; xWriteIdx < expandedBlockSize; xWriteIdx++) {
 				for (ptrdiff_t yWriteIdx = 0; yWriteIdx < expandedBlockSize; yWriteIdx++) {
@@ -31,27 +41,27 @@ void kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const 
 		}
 
 
-		std::vector<float> expandedDimensions(expandedBlockSize * expandedBlockSize * numChannels * patchSize);
+		std::array<float, expandedBlockSize * expandedBlockSize * numChannels * patchSize> expandedDimensions;
 		expandDims(IBlockCopy.data(), expandedBlockSize, expandedBlockSize, expandedDimensions.data());
 
 
 		//Todo: only sample within the image
-		constexpr ptrdiff_t numPatchesToSample = 500;
+		constexpr ptrdiff_t numPatchesToSample = numPoints;
 		std::minstd_rand0 generator(0);
 		std::uniform_int_distribution<> distribution(0, expandedBlockSize * expandedBlockSize - 1);
-		std::vector<ptrdiff_t> sampledLocs(numPatchesToSample);
+		std::array<ptrdiff_t, numPatchesToSample> sampledLocs;
 		for (auto& sample : sampledLocs) {
 			sample = distribution(generator);
 		}
 
-		std::vector<float> sampledPatches(numPatchesToSample * patchSize * numChannels);
+		std::array<float, numPatchesToSample * patchSize * numChannels> sampledPatches;
 		for (ptrdiff_t dIdx = 0; dIdx < (patchSize * numChannels); dIdx++) {
 			for (ptrdiff_t pIdx = 0; pIdx < numPatchesToSample; pIdx++) {
 				sampledPatches[pIdx + dIdx*numPatchesToSample] = expandedDimensions[sampledLocs[pIdx] + dIdx*expandedBlockSize*expandedBlockSize];
 			}
 		}
 
-		std::vector<float> clusterCenters = bisecting_kmeans(sampledPatches.data(), numPatchesToSample, maxNumClusters, clusterThreshold);
+		std::vector<float> clusterCenters = bisecting_kmeans(sampledPatches.data(), maxNumClusters, clusterThreshold);
 		int numClusters = clusterCenters.size() / (patchSize * numChannels);
 
 		//Todo: set W to 0 outside the image
@@ -60,7 +70,7 @@ void kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const 
 
 		std::vector<float> C1ChanT = calcC1ChanT(clusterCenters, numClusters, h);
 
-		std::vector<float> tileOutput(blockSize*blockSize*numChannels);
+		std::array<float, blockSize*blockSize*numChannels> tileOutput;
         highDimBoxFilter(IBlockCopy.data(), W.data(), C1ChanT.data(), numClusters, tileOutput.data());
 
 		for (ptrdiff_t c = 0; c < numChannels; c++) {
@@ -76,4 +86,5 @@ void kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const 
 			}
 		}
 	}
+	return canceled;
 }
