@@ -119,7 +119,8 @@ steps:
       find "C:/Program Files (x86)/" -name mt.exe
       find "/d/Program Files (x86)/" -name mt.exe
       find "D:/Program Files (x86)/" -name mt.exe
-      "C:/Program Files (x86)/Windows Kits/10/bin/15.6.27406.0/x64/mt.exe" -manifest "codepage.xaml" -outputresource:"build/installed/bin/filmulator.exe";#1
+      %MSYS_BASH% -c "/bin/cp --verbose codepage.xaml -t build/installed/bin"
+      "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x64/mt.exe" -manifest "codepage.xaml" -outputresource:"build/installed/bin/filmulator.exe";#1
       %MSYS_BASH% -c "/bin/cp --verbose LICENSE.txt -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator-gui/filmulator-gui80.ico -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"
