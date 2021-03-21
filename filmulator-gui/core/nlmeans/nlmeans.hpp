@@ -5,7 +5,7 @@
 #include <array>
 #include <optional>
 
-#include "imagePipeline.h"
+#include "../imagePipeline.h"
 
 constexpr ptrdiff_t blockSize = 64;
 constexpr ptrdiff_t S = 8;

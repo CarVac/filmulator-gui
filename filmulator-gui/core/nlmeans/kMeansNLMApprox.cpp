@@ -11,11 +11,8 @@ bool kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const 
 	#pragma omp parallel for 
 	for (ptrdiff_t blockIdx = 0; blockIdx < numBlocks; blockIdx++) {
 
-		LoadParams loadParam;
-		DemosaicParams demosaicParam;
 		AbortStatus abort;
-		Valid valid;
-		std::tie(valid, abort, loadParam, demosaicParam) = paramManager->claimDemosaicParams();
+        abort = paramManager->claimDemosaicAbort();
 		if(abort == AbortStatus::restart)
 		{
 			canceled = true;
