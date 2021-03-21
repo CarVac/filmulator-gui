@@ -23,9 +23,9 @@ void calcW(float* const Aguide_ptr, float* const centers_ptr,
            ptrdiff_t rangeDims, ptrdiff_t numClusters, ptrdiff_t expandedBlockSize,
            float const h, float* W_ptr);
 
-void expandDims(float* const I, const int sizeX, const int sizeY, float* output);
+void expandDims(float* const I, float* output, float* patchMeans);
 
-void highDimBoxFilter(float* const A, float* const W, float* const C1chanT, ptrdiff_t const numClusters,
+void highDimBoxFilter(float* const A, float* const W, float* const patchMeans, float* const C1chanT, ptrdiff_t const numClusters,
                       float* output);
 
 bool kMeansNLMApprox(float* const I, const int maxNumClusters, const float clusterThreshold, const float h, const int sizeX, const int sizeY, float* output, ParameterManager* paramManager);

@@ -7,7 +7,7 @@
 //S is the radius of the neighborhood over which we are averaging (neighborhood size (2S+1)^2)
 //We're going to column major order right now to match MATLAB, TODO: switch to row major
 //TODO: fixup int vs ptrdiff_t indexing.
-void highDimBoxFilter(float* __restrict const A, float* __restrict const W, float* __restrict const C1chanT, ptrdiff_t const numClusters,
+void highDimBoxFilter(float* __restrict const A, float* __restrict const W, float* __restrict const patchMeans, float* __restrict const C1chanT, ptrdiff_t const numClusters,
                       float* __restrict output){
 
 
@@ -162,7 +162,7 @@ void highDimBoxFilter(float* __restrict const A, float* __restrict const W, floa
                 // Small values of Wb are unreliable. If ln(abs(Wb)) < -3, then disregard just fall back to the original value.
                 const float confidence = std::clamp(std::log(std::abs(Wb[Wb_idx]))+3 , 0.0f, 1.0f);
                 const float eps = std::numeric_limits<float>::epsilon();
-                output[output_idx] =  confidence*(B[B_idx] / (Wb[Wb_idx] + eps)) + (1-confidence)*A[A_idx];
+                output[output_idx] =  confidence*(B[B_idx] / (Wb[Wb_idx] + eps)) + (1-confidence)*patchMeans[A_idx];
             }
         }
     }
