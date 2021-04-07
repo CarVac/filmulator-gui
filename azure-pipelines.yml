@@ -21,9 +21,7 @@ steps:
       choco install msys2 --params="/InstallDir:%MSYS2_ROOT% /NoUpdate /NoPath"
     displayName: Install MSYS2
   - script: |
-      %MSYS_BASH% -c "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/x86_64/' > /etc/pacman.d/mirrorlist.mingw64"
-      %MSYS_BASH% -c "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/i686/' > /etc/pacman.d/mirrorlist.mingw32"
-      %MSYS_BASH% -c "echo 'Server = https://mirror.yandex.ru/mirrors/msys2/msys/$arch/' > /etc/pacman.d/mirrorlist.msys"
+      %MSYS_PAC% --noconfirm -Sy
       %MSYS_PAC% --noconfirm -Syu
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
       tar gzip nano make diffutils intltool git cmake libcurl-devel glib2-devel msys2-runtime-devel ^
