@@ -11,6 +11,8 @@ Rectangle {
     Layout.fillWidth: true
     Layout.fillHeight: true
 
+    property bool helpMode: false
+
     signal tooltipWanted(string text, int x, int y)
 
     ColumnLayout {
@@ -41,6 +43,7 @@ Rectangle {
                     uiScaleSlider.changed = true
                 }
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 uiScaleSlider.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -54,6 +57,7 @@ Rectangle {
             isOn: settings.getUseSystemLanguage()
             defaultOn: settings.getUseSystemLanguage()
             onIsOnChanged: useSystemLanguageSwitch.changed = true
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 useSystemLanguageSwitch.tooltipWanted.connect(root.tooltipWanted)
                 useSystemLanguageSwitch.changed = false
@@ -68,6 +72,7 @@ Rectangle {
             isOn: settings.getMipmapView()
             defaultOn: settings.getMipmapView()
             onIsOnChanged: mipmapSwitch.changed = true
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 mipmapSwitch.tooltipWanted.connect(root.tooltipWanted)
                 mipmapSwitch.changed = false
@@ -82,6 +87,7 @@ Rectangle {
             isOn: settings.getLowMemMode()
             defaultOn: settings.getLowMemMode()
             onIsOnChanged: lowMemModeSwitch.changed = true
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 lowMemModeSwitch.tooltipWanted.connect(root.tooltipWanted)
                 lowMemModeSwitch.changed = false
@@ -96,6 +102,7 @@ Rectangle {
             isOn: settings.getQuickPreview()
             defaultOn: settings.getQuickPreview()
             onIsOnChanged: quickPreviewSwitch.changed = true
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 quickPreviewSwitch.tooltipWanted.connect(root.tooltipWanted)
                 quickPreviewSwitch.changed = false
@@ -120,6 +127,7 @@ Rectangle {
                     previewResSlider.changed = true
                 }
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 previewResSlider.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -152,6 +160,10 @@ Rectangle {
                 settings.previewResolution = previewResSlider.value
                 previewResSlider.defaultValue = previewResSlider.value
                 previewResSlider.changed = false
+            }
+            tooltipInstant: root.helpMode
+            Component.onCompleted: {
+                saveSettings.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
         }

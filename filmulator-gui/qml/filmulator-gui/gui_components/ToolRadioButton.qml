@@ -10,6 +10,7 @@ Rectangle {
     property alias text: button.text
     property alias checked: button.checked
     property alias tooltipText: tooltip.tooltipText
+    property alias tooltipInstant: tooltip.instant
     property alias hovered: tooltip.hovered
     property bool standalone: false
     property bool highlight: false

@@ -13,6 +13,7 @@ SlimSplitView {
     property int itemCount: organizeModel.imageCount
 
     property bool onOrganizeTab
+    property bool helpMode: false
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -61,6 +62,7 @@ SlimSplitView {
                         organizeModel.timeZone = value
                         gridView.returnToBounds()
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         timezoneOffset.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.timeZone = value
@@ -95,6 +97,7 @@ SlimSplitView {
                     }
 
                     uiScale: root.uiScale
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         minRatingSlider.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.minRating = value
@@ -126,6 +129,7 @@ SlimSplitView {
                         }
                     }
                     uiScale: root.uiScale
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         maxRatingSlider.tooltipWanted.connect(root.tooltipWanted)
                         organizeModel.maxRating = value
@@ -138,6 +142,7 @@ SlimSplitView {
                     tooltipText: qsTr("Puts every visible image in the work queue. If any is already there, it is left where it was.")
                     Layout.fillWidth: true
                     onTriggered: queueModel.batchEnqueue(organizeModel.adaptableModelQuery(true))
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         enqueueAll.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -219,7 +224,7 @@ SlimSplitView {
                         id: dateHistoTooltip
                         anchors.fill: parent
                         tooltipText: qsTr('Date: ') + parent.theDate + '\n' + qsTr('Photos: ') + parent.count
-                        milliSecondDelay: 0
+                        instant: true
                         Component.onCompleted: {
                             dateHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
                         }

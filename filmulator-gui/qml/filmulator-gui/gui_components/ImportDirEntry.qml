@@ -13,6 +13,7 @@ Rectangle {
     property alias title: label.text
     property alias tooltipText: labelTooltip.tooltipText
     property alias warningTooltipText: textEntryTooltip.tooltipText
+    property bool tooltipInstant: false
     property alias dirDialogTitle: dirDialog.title
     property alias enteredText: textEntryBox.text
     property bool erroneous: false
@@ -134,12 +135,14 @@ Rectangle {
     ToolTip {
         id: labelTooltip
         anchors.fill: labelBox
+        instant: root.tooltipInstant
         Component.onCompleted: labelTooltip.tooltipWanted.connect( root.tooltipWanted )
     }
 
     ToolTip {
         id: textEntryTooltip
         anchors.fill: textEntryRect
+        instant: root.tooltipInstant
         Component.onCompleted: textEntryTooltip.tooltipWanted.connect(root.tooltipWanted)
         visible: root.erroneous
     }
