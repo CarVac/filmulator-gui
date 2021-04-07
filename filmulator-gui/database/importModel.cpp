@@ -142,7 +142,7 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
     }
 
     //Next, we filter for files.
-    directory.setFilter(QDir::Files | QDir::NoSymLinks);
+    directory.setFilter(QDir::Files);
     directory.setNameFilters(rawNameFilters);
     QFileInfoList fileList = directory.entryInfoList();
 
