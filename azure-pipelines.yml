@@ -21,8 +21,8 @@ steps:
       choco install msys2 --params="/InstallDir:%MSYS2_ROOT% /NoUpdate /NoPath"
     displayName: Install MSYS2
   - script: |
-      %MSYS_PAC% --noconfirm -Sy
-      %MSYS_PAC% --noconfirm -Syu
+      %MSYS_PAC% --noconfirm -Syuu
+      %MSYS_PAC% --noconfirm -Syuu
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
       tar gzip nano make diffutils intltool git cmake libcurl-devel glib2-devel msys2-runtime-devel ^
       mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
