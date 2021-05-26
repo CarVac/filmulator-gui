@@ -130,22 +130,25 @@ void ImportModel::importDirectory_r(const QString dir, const bool importInPlace,
 
     //First, we call itself recursively on the folders within.
     QDir directory = QDir(dir);
-    directory.setFilter(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    directory.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
     directory.setSorting(QDir::Name);
     QFileInfoList dirList = directory.entryInfoList();
     for (int i=0; i < dirList.size(); i++)
     {
-        importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace, replaceLocation, depth + 1);
+        if (depth <= 20) //to prevent infinite recursion
+        {
+            importDirectory_r(dirList.at(i).absoluteFilePath(), importInPlace, replaceLocation, depth + 1);
+        }
     }
 
     //Next, we filter for files.
-    directory.setFilter(QDir::Files | QDir::NoSymLinks);
+    directory.setFilter(QDir::Files);
     directory.setNameFilters(rawNameFilters);
     QFileInfoList fileList = directory.entryInfoList();
 
     if (fileList.size() == 0)
     {
-        if (depth == 0 && queue.size() > 0)
+        if (depth == 0 && queue.size() > 0) //only the outermost call should start the worker
         {
             cout << "importDirectory_r starting worker" << endl;
             paused = false;

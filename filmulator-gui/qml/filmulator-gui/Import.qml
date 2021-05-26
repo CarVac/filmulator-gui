@@ -16,6 +16,7 @@ Rectangle {
     property bool importInPlace: true
     property bool replaceLocation: false
     property bool replace: importInPlace && replaceLocation
+    property bool helpMode: false
 
     signal tooltipWanted(string text, int x, int y)
 
@@ -43,6 +44,7 @@ Rectangle {
                 importModel.cameraTZ = value
                 settings.cameraTZ = value
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importModel.cameraTZ = value
                 cameraOffset.tooltipWanted.connect(root.tooltipWanted)
@@ -77,6 +79,7 @@ Rectangle {
                         root.sourceIsFolder = true
                     }
                 }
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     sourceDirButton.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -97,6 +100,7 @@ Rectangle {
                         root.sourceIsFolder = false
                     }
                 }
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     sourceFileButton.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -118,6 +122,7 @@ Rectangle {
                 containsDCIM = importModel.pathContainsDCIM(enteredText, false)
                 clearError = false;
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 sourceDirEntry.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -149,6 +154,7 @@ Rectangle {
                 }
             }
 
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 sourceFileEntry.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -184,6 +190,7 @@ Rectangle {
                         root.importInPlace = false
                     }
                 }
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     importAndMoveButton.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -204,6 +211,7 @@ Rectangle {
                         root.importInPlace = true
                     }
                 }
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     importInPlaceButton.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -229,6 +237,7 @@ Rectangle {
                 importModel.importTZ = value
                 settings.importTZ = value
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importModel.importTZ = value
                 localOffset.tooltipWanted.connect(root.tooltipWanted)
@@ -253,6 +262,7 @@ Rectangle {
                 settings.photoStorageDir = enteredText
                 notWritable = !importModel.pathWritable(enteredText)
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importModel.photoDir = enteredText
                 photoDirEntry.tooltipWanted.connect(root.tooltipWanted)
@@ -271,6 +281,7 @@ Rectangle {
                 importModel.backupDir = enteredText
                 settings.photoBackupDir = enteredText
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importModel.backupDir = enteredText
                 backupDirEntry.tooltipWanted.connect(root.tooltipWanted)
@@ -289,6 +300,7 @@ Rectangle {
                 importModel.dirConfig = enteredText
                 settings.dirConfig = enteredText
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importModel.dirConfig = enteredText
                 dirStructureEntry.tooltipWanted.connect(root.tooltipWanted)
@@ -312,6 +324,7 @@ Rectangle {
                 importModel.appendHash = isOn
                 settings.appendHash = isOn
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importModel.appendHash = isOn
                 appendSwitch.tooltipWanted.connect(root.tooltipWanted)
@@ -333,6 +346,7 @@ Rectangle {
                 replaceLocationSwitch.isOn = false
                 root.replaceLocation = false
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 replaceLocationSwitch.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -355,6 +369,7 @@ Rectangle {
                 importModel.enqueue = isOn
                 settings.enqueue = isOn
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importModel.enqueue = isOn
                 enqueueSwitch.tooltipWanted.connect(root.tooltipWanted)
@@ -381,6 +396,7 @@ Rectangle {
                     sourceFileEntry.clearError = false
                 }
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 importButton.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -449,6 +465,7 @@ Rectangle {
                 console.log("append " + importModel.appendHash)
                 console.log("enqueue " + importModel.enqueue)
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 memoryCardScenario.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -470,6 +487,7 @@ Rectangle {
                 console.log("replace location " + root.replace)
                 console.log("enqueue " + importModel.enqueue)
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 existingPhotosScenario.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -493,6 +511,7 @@ Rectangle {
                 console.log("replace location " + root.replace)
                 console.log("enqueue " + importModel.enqueue)
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 findBackupScenario.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -514,8 +533,9 @@ Rectangle {
                 console.log("replace location " + root.replace)
                 console.log("enqueue " + importModel.enqueue)
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
-                findBackupScenario.tooltipWanted.connect(root.tooltipWanted)
+                enqueueFileScenario.tooltipWanted.connect(root.tooltipWanted)
             }
             uiScale: root.uiScale
         }

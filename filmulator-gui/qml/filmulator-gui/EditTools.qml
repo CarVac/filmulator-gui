@@ -20,6 +20,7 @@ SlimSplitView {
     property bool leveling
     property bool imageError
     property bool onEditTab
+    property bool helpMode: false
     property string saveStatus: ""
 
     signal tooltipWanted(string text, int x, int y)
@@ -114,6 +115,7 @@ SlimSplitView {
                         ToolTip {
                             id: rawHistoTooltip
                             tooltipText: qsTr("This is a histogram of the data in the raw file.")
+                            instant: root.helpMode
                             Component.onCompleted: {
                                 rawHistoTooltip.tooltipWanted.connect(root.tooltipWanted)
                             }
@@ -153,6 +155,7 @@ SlimSplitView {
                             autoCASlider.defaultValue = paramManager.defCaEnabled
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         autoCASlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
@@ -194,6 +197,7 @@ SlimSplitView {
                             lensfunCASwitch.defaultOn = (paramManager.defLensfunCa == 1)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         lensfunCASwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -225,6 +229,7 @@ SlimSplitView {
                             lensfunVignSwitch.defaultOn = (paramManager.defLensfunVign == 1)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         lensfunVignSwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -256,6 +261,7 @@ SlimSplitView {
                             lensfunDistSwitch.defaultOn = (paramManager.defLensfunDist == 1)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         lensfunDistSwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -383,6 +389,7 @@ SlimSplitView {
                             highlightRecoverySlider.defaultValue = paramManager.defHighlights
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
@@ -408,6 +415,7 @@ SlimSplitView {
                         onTriggered: {
                             paramManager.saveCustomWb()
                         }
+                        tooltipInstant: root.helpMode
                         Component.onCompleted: {
                             saveWbButton.tooltipWanted.connect(root.tooltipWanted)
                         }
@@ -426,6 +434,7 @@ SlimSplitView {
                         onTriggered: {
                             paramManager.recallCustomWb()
                         }
+                        tooltipInstant: root.helpMode
                         Component.onCompleted: {
                             recallWbButton.tooltipWanted.connect(root.tooltipWanted)
                         }
@@ -455,6 +464,7 @@ SlimSplitView {
                             temperatureSlider.defaultValue = Math.log(paramManager.defTemperature)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         temperatureSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -483,6 +493,7 @@ SlimSplitView {
                             tintSlider.defaultValue = Math.log(paramManager.defTint);
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         tintSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -514,6 +525,7 @@ SlimSplitView {
                             exposureCompSlider.defaultValue = paramManager.defExposureComp
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -561,6 +573,7 @@ SlimSplitView {
                         ToolTip {
                             id: preFilmTooltip
                             tooltipText: qsTr("This is a histogram of the input to the film simulation.")
+                            instant: root.helpMode
                             Component.onCompleted: {
                                 preFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
                             }
@@ -592,6 +605,7 @@ SlimSplitView {
                             toeSlider.defaultValue = Math.sqrt(paramManager.defToeBoundary)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         toeSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -622,6 +636,7 @@ SlimSplitView {
                             rolloffSlider.defaultValue = paramManager.defRolloffBoundary
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         rolloffSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -652,6 +667,7 @@ SlimSplitView {
                             filmSizeSlider.defaultValue = Math.log(Math.sqrt(paramManager.defFilmArea))
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         filmSizeSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -680,6 +696,7 @@ SlimSplitView {
                             filmDramaSlider.defaultValue = 100*paramManager.defLayerMixConst
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         filmDramaSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -709,6 +726,7 @@ SlimSplitView {
                             overdriveSwitch.defaultOn = (paramManager.defAgitateCount == 0)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         overdriveSwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -758,6 +776,7 @@ SlimSplitView {
                         ToolTip {
                             id: postFilmTooltip
                             tooltipText: qsTr("This is a histogram of the output from the film simulation.")
+                            instant: root.helpMode
                             Component.onCompleted: {
                                 postFilmTooltip.tooltipWanted.connect(root.tooltipWanted)
                             }
@@ -790,6 +809,7 @@ SlimSplitView {
                             blackpointSlider.defaultValue = Math.sqrt(paramManager.defBlackpoint*1000)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         blackpointSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -820,6 +840,7 @@ SlimSplitView {
                             whitepointSlider.defaultValue = paramManager.defWhitepoint
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         whitepointSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -848,6 +869,7 @@ SlimSplitView {
                             shadowBrightnessSlider.defaultValue = paramManager.defShadowsY
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         shadowBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -876,6 +898,7 @@ SlimSplitView {
                             highlightBrightnessSlider.defaultValue = paramManager.defHighlightsY
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         highlightBrightnessSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -905,6 +928,7 @@ SlimSplitView {
                             monochromeSwitch.defaultOn = paramManager.defMonochrome
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         monochromeSwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -935,6 +959,7 @@ SlimSplitView {
                             vibranceSlider.defaultValue = paramManager.defVibrance
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         vibranceSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -965,6 +990,7 @@ SlimSplitView {
                             saturationSlider.defaultValue = paramManager.defSaturation
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         saturationSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -994,6 +1020,7 @@ SlimSplitView {
                             bwRmultSlider.defaultValue = paramManager.defBwRmult
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         bwRmultSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -1023,6 +1050,7 @@ SlimSplitView {
                             bwGmultSlider.defaultValue = paramManager.defBwGmult
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         bwGmultSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -1052,6 +1080,7 @@ SlimSplitView {
                             bwBmultSlider.defaultValue = paramManager.defBwBmult
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         bwBmultSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
@@ -1247,6 +1276,7 @@ SlimSplitView {
                 queueModel.markSaved(paramManager.imageIndex)
                 root.saveStatus = "saved"
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 saveTIFFButton.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -1276,6 +1306,7 @@ SlimSplitView {
                     }
                 }
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 saveJPEGButton.tooltipWanted.connect(root.tooltipWanted)
             }

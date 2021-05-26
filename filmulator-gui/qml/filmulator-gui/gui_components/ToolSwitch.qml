@@ -10,6 +10,7 @@ Rectangle {
     implicitWidth: parent.width
     property alias text: label.text
     property alias tooltipText: tooltip.tooltipText
+    property bool tooltipInstant: false
     property alias isOn: toggleSwitch.checked
     property bool defaultOn: false
     property bool changed: true
@@ -97,6 +98,7 @@ Rectangle {
     ToolTip {
         id: tooltip
         anchors.fill: label
+        instant: root.tooltipInstant
         Component.onCompleted: {
             tooltip.tooltipWanted.connect(root.tooltipWanted)
         }
@@ -105,6 +107,7 @@ Rectangle {
         id: buttonTooltip
         anchors.fill: reset
         tooltipText: qsTr("Reset to default")
+        instant: root.tooltipInstant
         Component.onCompleted: {
             buttonTooltip.tooltipWanted.connect(root.tooltipWanted)
         }

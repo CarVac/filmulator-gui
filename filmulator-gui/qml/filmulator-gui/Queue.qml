@@ -24,6 +24,8 @@ Item {
 
     property bool onEditTab
 
+    property bool helpMode: false
+
     property bool rightClicked: false
 
     signal doubleClicked()
@@ -316,6 +318,7 @@ Item {
                                             forgetCover.visible = false
                                             forgetDelay.start()
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             forgetCover.tooltipWanted.connect(root.tooltipWanted)
                                         }
@@ -405,6 +408,7 @@ Item {
                                         root.rightClicked = false
                                         loadMenu.sourceComponent = undefined
                                     }
+                                    tooltipInstant: root.helpMode
                                     Component.onCompleted: {
                                         copyAll.tooltipWanted.connect(root.tooltipWanted)
                                     }
@@ -426,6 +430,7 @@ Item {
                                         root.rightClicked = false
                                         loadMenu.sourceComponent = undefined
                                     }
+                                    tooltipInstant: root.helpMode
                                     Component.onCompleted: {
                                         paste.tooltipWanted.connect(root.tooltipWanted)
                                     }
@@ -456,6 +461,7 @@ Item {
                                             root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             rateNegative.tooltipWanted.connect(root.tooltipWanted)
                                         }
@@ -474,6 +480,7 @@ Item {
                                             root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             rate0.tooltipWanted.connect(root.tooltipWanted)
                                         }
@@ -492,6 +499,7 @@ Item {
                                             root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             rate1.tooltipWanted.connect(root.tooltipWanted)
                                         }
@@ -510,6 +518,7 @@ Item {
                                             root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             rate2.tooltipWanted.connect(root.tooltipWanted)
                                         }
@@ -528,6 +537,7 @@ Item {
                                             root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             rate3.tooltipWanted.connect(root.tooltipWanted)
                                         }
@@ -546,6 +556,7 @@ Item {
                                             root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             rate4.tooltipWanted.connect(root.tooltipWanted)
                                         }
@@ -564,6 +575,7 @@ Item {
                                             root.rightClicked = false
                                             loadMenu.sourceComponent = undefined
                                         }
+                                        tooltipInstant: root.helpMode
                                         Component.onCompleted: {
                                             rate5.tooltipWanted.connect(root.tooltipWanted)
                                         }

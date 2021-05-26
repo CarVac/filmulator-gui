@@ -9,6 +9,7 @@ Item {
     property alias text: button.text
     property bool notDisabled: true
     property alias tooltipText: tooltip.tooltipText
+    property alias tooltipInstant: tooltip.instant
     property real __padding: 2 * uiScale
     property bool pressed: notDisabled ? button.pressed : false
     property bool highlight: false

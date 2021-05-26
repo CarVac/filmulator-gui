@@ -21,7 +21,8 @@ steps:
       choco install msys2 --params="/InstallDir:%MSYS2_ROOT% /NoUpdate /NoPath"
     displayName: Install MSYS2
   - script: |
-      %MSYS_PAC% --noconfirm -Syu
+      %MSYS_PAC% --noconfirm -Syuu
+      %MSYS_PAC% --noconfirm -Syuu
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
       tar gzip nano make diffutils intltool git cmake libcurl-devel glib2-devel msys2-runtime-devel ^
       mingw-w64-x86_64-{gcc,gdb,make,pkg-config,cmake} ^
@@ -119,7 +120,8 @@ steps:
       find "C:/Program Files (x86)/" -name mt.exe
       find "/d/Program Files (x86)/" -name mt.exe
       find "D:/Program Files (x86)/" -name mt.exe
-      "C:/Program Files (x86)/Windows Kits/10/bin/x64/mt.exe" -manifest "codepage.xaml" -outputresource:"build/installed/bin/filmulator.exe";#1
+      %MSYS_BASH% -c "/bin/cp --verbose codepage.xaml -t build/installed/bin"
+      "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x64/mt.exe" -manifest "codepage.xaml" -outputresource:"build/installed/bin/filmulator.exe";#1
       %MSYS_BASH% -c "/bin/cp --verbose LICENSE.txt -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator-gui/filmulator-gui80.ico -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"

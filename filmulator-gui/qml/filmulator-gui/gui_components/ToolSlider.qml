@@ -22,6 +22,7 @@ Rectangle {
     property alias pressed: slider.pressed
     property alias precisePressed: spinnerCircle.dragging
     property alias tooltipText: toolTooltip.tooltipText
+    property bool tooltipInstant: false
 
     property bool changed: true
     property bool editMade: false
@@ -157,6 +158,7 @@ Rectangle {
     ToolTip {
         id: toolTooltip
         anchors.fill: label
+        instant: root.tooltipInstant
         Component.onCompleted: {
             //Forward the tooltipWanted signal to root.
             toolTooltip.tooltipWanted.connect(root.tooltipWanted)
@@ -166,6 +168,7 @@ Rectangle {
         id: buttonTooltip
         anchors.fill: reset
         tooltipText: qsTr("Reset to default")
+        instant: root.tooltipInstant
         Component.onCompleted: {
             buttonTooltip.tooltipWanted.connect(root.tooltipWanted)
         }
@@ -272,6 +275,7 @@ Rectangle {
             id: spinnerTooltip
             anchors.fill: innerCircle
             tooltipText: qsTr("Spin clockwise to raise the value.\nSpin counterclockwise to reduce the value.")
+            instant: root.tooltipInstant
             Component.onCompleted: {
                 spinnerTooltip.tooltipWanted.connect(root.tooltipWanted)
             }

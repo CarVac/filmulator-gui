@@ -6,13 +6,14 @@ Rectangle {
     color: "#00000000"
     property string tooltipText
     property real milliSecondDelay: 1000
+    property bool instant: false
     property alias hovered: tooltipArea.containsMouse
 
     signal tooltipWanted(string text, int x, int y)
 
     Timer {
         id: tooltipTimer
-        interval: parent.milliSecondDelay
+        interval: parent.instant ? 0 : parent.milliSecondDelay
         onTriggered: {
             //Maps the mouse location to the root QML view coordinates
             var point = tooltipArea.mapToItem(root.getDocRoot(), tooltipArea.mouseX, tooltipArea.mouseY)

@@ -9,6 +9,7 @@ Rectangle {
     implicitWidth: parent.width
     property alias title: label.text
     property alias tooltipText: labelTooltip.tooltipText
+    property alias tooltipInstant: labelTooltip.instant
     property alias enteredText: textEntryBox.text
     property bool highlight: false
 

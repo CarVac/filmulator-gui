@@ -33,6 +33,9 @@ SOURCES += main.cpp \
     core/nlmeans/kMeansNLMApprox.cpp \
     core/nlmeans/splitCluster.cpp \
     core/outputFile.cpp \
+    core/rawtherapee/FTblockDN.cc \
+    core/rawtherapee/boxblur.cc \
+    core/rawtherapee/cplx_wavelet_dec.cc \
     core/rotateImage.cpp \
     core/scale.cpp \
     core/timeDiff.cpp \
@@ -105,6 +108,15 @@ HEADERS += \
     core/lut.hpp \
     core/matrix.hpp \
     core/nlmeans/nlmeans.hpp \
+    core/rawtherapee/boxblur.h \
+    core/rawtherapee/cplx_wavelet_dec.h \
+    core/rawtherapee/cplx_wavelet_filter_coeffs.h \
+    core/rawtherapee/cplx_wavelet_level.h \
+    core/rawtherapee/helpersse2.h \
+    core/rawtherapee/opthelper.h \
+    core/rawtherapee/rt_math.h \
+    core/rawtherapee/sleef.h \
+    core/rawtherapee/sleefsseavx.h \
     database/backgroundQueue.h \
     database/basicSqlModel.h \
     database/cJSON.h \
@@ -128,12 +140,11 @@ HEADERS += \
     database/database.hpp
 
 
-QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math -DLF_GIT
+QMAKE_CXXFLAGS += -std=c++17 -DTOUT -O3 -fopenmp -fprefetch-loop-arrays -fno-strict-aliasing -ffast-math -DLF_GIT
 macx: {
-QMAKE_CXXFLAGS += -Xpreprocessor -fopenmp -lomp -I/opt/local/include
+QMAKE_CXXFLAGS += -Xpreprocessor -lomp -I/opt/local/include
 }
 unix:!macx {
-QMAKE_CXXFLAGS += -fopenmp
 }
 
 #QMAKE_CFLAGS_DEBUG += -DTOUT -O3 -fprefetch-loop-arrays -fopenmp

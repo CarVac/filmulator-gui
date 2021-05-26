@@ -30,6 +30,8 @@ SlimSplitView {
 
     property bool onEditTab
 
+    property bool helpMode: false
+
     onRequestingCroppingChanged: {
         if (requestingCropping == true) {
             if (paramManager.cropHeight <= 0) {//No crop in the database
@@ -2191,6 +2193,7 @@ SlimSplitView {
                 id: fileInfoTooltip
                 anchors.fill: parent
                 tooltipText: paramManager.fullFilenameQstr
+                instant: root.helpMode
                 Component.onCompleted: {
                     fileInfoTooltip.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -2330,6 +2333,7 @@ SlimSplitView {
                     onActivated: lensfunBox.active = false
                 }
 
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     lensFunMenuButton.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -2421,6 +2425,7 @@ SlimSplitView {
                     paramManager.resetLensfunName()
                     paramManager.writeback()
                 }
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     lensFunResetButton.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -2665,6 +2670,7 @@ SlimSplitView {
                     //store exif camera, exif lens name, and lensfun lens name in database, plus preferred corrections
                     paramManager.setLensPreferences()
                 }
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     savePreferredLens.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -2682,6 +2688,7 @@ SlimSplitView {
                     //clear exif camera, exif lens name, and lensfun lens name in database
                     paramManager.eraseLensPreferences()
                 }
+                tooltipInstant: root.helpMode
                 Component.onCompleted: {
                     forgetPreferredLens.tooltipWanted.connect(root.tooltipWanted)
                 }
@@ -2733,6 +2740,7 @@ SlimSplitView {
                 }
             }
 
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 backgroundBrightness.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2776,6 +2784,7 @@ SlimSplitView {
                 }
             }
 
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 wbButton.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2822,6 +2831,7 @@ SlimSplitView {
                 }
             }
 
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 crop.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2845,6 +2855,7 @@ SlimSplitView {
             onTriggered: {
                 paramManager.rotateLeft()
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 rotateLeft.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2898,6 +2909,7 @@ SlimSplitView {
                 }
             }
 
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 level.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2922,6 +2934,7 @@ SlimSplitView {
             onTriggered: {
                 paramManager.rotateRight()
             }
+            tooltipInstant: root.helpMode
             Component.onCompleted: {
                 rotateRight.tooltipWanted.connect(root.tooltipWanted)
             }
@@ -2955,6 +2968,7 @@ SlimSplitView {
         cropping: root.requestingCropping || root.cropping
         leveling: root.requestingLeveling || root.leveling
         onEditTab: root.onEditTab
+        helpMode: root.helpMode
         Component.onCompleted: {
             editTools.tooltipWanted.connect(root.tooltipWanted)
         }
