@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QString>
 #include <QStandardPaths>
+#include <QSqlError>
 
 using std::cout;
 using std::endl;
@@ -183,7 +184,15 @@ void OrganizeModel::setRating(const QString searchID, const int rating)
     query.prepare("UPDATE SearchTable SET STrating = ? WHERE STsearchID = ?;");
     query.bindValue(0, QVariant(max(min(rating,5),-6)));
     query.bindValue(1, searchID);
-    query.exec();
+    if (query.exec())
+    {
+        //cout << "success" << endl;
+    } else {
+        cout << "OrganizeMOdel::setRating failure" << endl;
+        cout << query.lastError().text().toStdString() << endl;
+    }
+    query.finish();
+
     emit updateTableOut("SearchTable", 0);//An edit made to the search table.
     emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
 }
@@ -235,6 +244,7 @@ void OrganizeModel::markDeletion(QString searchID)
     query.prepare("UPDATE SearchTable SET STrating = -1 - STrating WHERE STsearchID = ?;");
     query.bindValue(0, searchID);
     query.exec();
+    query.finish();
     emit updateTableOut("SearchTable", 0);//An edit made to the search table.
     emit updateTableOut("QueueTable", 0);//The queue now reads rating from searchtable.
 }

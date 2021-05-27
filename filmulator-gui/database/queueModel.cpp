@@ -609,6 +609,7 @@ float QueueModel::getActivePosition(const QString searchID)
     query.exec();
     query.next();
     const int currentIndex = query.value(0).toInt();
+    query.finish();
 
     //index 0 out of 2 should be 0 (left)
     //index 1 out of 2 should be 1 (right)
