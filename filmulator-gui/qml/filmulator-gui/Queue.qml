@@ -1050,15 +1050,15 @@ Item {
             if (!root.dragging) {
                 //Swap any precomputed pipelines
                 var newID = queueModel.getPrev(paramManager.imageIndex)
+                var selectedPosition = queueModel.getActivePosition(newID) //had to move this earlier to prevent a long db lock
                 var nextID = queueModel.getPrev(newID)
                 if (newID !== "") {
                     filmProvider.prepareShuffle(newID, nextID);
 
                     if (newID !== paramManager.imageIndex) {
-                        paramManager.selectImage(newID)
-                        var selectedPosition = queueModel.getActivePosition(newID)
                         var scrollMargin = listView.trueContentWidth - listView.width
                         listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                        paramManager.selectImage(newID)
                     }
                 }
             }
@@ -1072,15 +1072,15 @@ Item {
             if (!root.dragging) {
                 //Swap any precomputed pipelines
                 var newID = queueModel.getNext(paramManager.imageIndex)
+                var selectedPosition = queueModel.getActivePosition(newID) //had to move this earlier to prevent a long db lock
                 var nextID = queueModel.getNext(newID)
                 if (newID !== "") {
                     filmProvider.prepareShuffle(newID, nextID);
 
                     if (newID !== paramManager.imageIndex) {
-                        paramManager.selectImage(newID)
-                        var selectedPosition = queueModel.getActivePosition(newID)
                         var scrollMargin = listView.trueContentWidth - listView.width
                         listView.contentX = Math.max(0, Math.min(scrollMargin, selectedPosition * scrollMargin))
+                        paramManager.selectImage(newID)
                     }
                 }
             }
