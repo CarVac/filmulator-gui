@@ -187,9 +187,6 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     DemosaicParams demParams;
     demParams.caEnabled = s_caEnabled;
     demParams.highlights = m_highlights;
-    demParams.nlClusters = m_nlClusters;
-    demParams.nlThresh = m_nlThresh;
-    demParams.nlStrength = m_nlStrength;
     demParams.cameraName = model;
     demParams.lensName = s_lensfunName;//we use the staging ones because they're always populated
     demParams.lensfunCA = s_lensfunCa >= 1;
@@ -230,6 +227,11 @@ Valid ParameterManager::markDemosaicComplete()
     {
         validity = Valid::demosaic;
     }
+    //invalidate both noise reduction sub-validities
+    //because their source material has been recalculated
+    nlMeansValidity = NlMeansValid::nlnone;
+    chromaValidity = ChromaValid::chromanone;
+
     return validity;
 }
 
@@ -257,44 +259,6 @@ void ParameterManager::setHighlights(int highlights)
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setHighlights"));
-    }
-}
-
-//nlmeans stuff (temp)
-void ParameterManager::setNlClusters(int numClusters)
-{
-    if (!justInitialized)
-    {
-        QMutexLocker paramLocker(&paramMutex);
-        m_nlClusters = numClusters;
-        validity = min(validity, Valid::load);
-        paramLocker.unlock();
-        QMutexLocker signalLocker(&signalMutex);
-        paramChangeWrapper(QString("setNlClusters"));
-    }
-}
-void ParameterManager::setNlThresh(float clusterThreshold)
-{
-    if (!justInitialized)
-    {
-        QMutexLocker paramLocker(&paramMutex);
-        m_nlThresh = clusterThreshold;
-        validity = min(validity, Valid::load);
-        paramLocker.unlock();
-        QMutexLocker signalLocker(&signalMutex);
-        paramChangeWrapper(QString("setNlThresh"));
-    }
-}
-void ParameterManager::setNlStrength(float strength)
-{
-    if (!justInitialized)
-    {
-        QMutexLocker paramLocker(&paramMutex);
-        m_nlStrength = strength;
-        validity = min(validity, Valid::load);
-        paramLocker.unlock();
-        QMutexLocker signalLocker(&signalMutex);
-        paramChangeWrapper(QString("setNlStrength"));
     }
 }
 
@@ -394,7 +358,7 @@ void ParameterManager::setRotationPointY(float colIn)
     }
 }
 
-std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
+std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> ParameterManager::claimNoiseReductionParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -409,10 +373,161 @@ std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams
     else
     {
         abort = AbortStatus::proceed;
+        validity = Valid::partnoisereduction;
+    }
+    changeMadeSinceCheck = false;
+    NoiseReductionParams params;
+    params.nrEnabled = m_nrEnabled;
+    params.nlClusters = m_nlClusters;
+    params.nlThresh = m_nlThresh;
+    params.nlStrength = m_nlStrength;
+    params.chromaStrength = m_chromaStrength;
+    std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> tup(validity, nlMeansValidity, chromaValidity, abort, params);
+    return tup;
+}
+
+AbortStatus ParameterManager::claimNoiseReductionAbort()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    if (validity < Valid::partnoisereduction)
+    {
+        changeMadeSinceCheck = false;
+        return AbortStatus::restart;
+    }
+    else if (changeMadeSinceCheck)
+    {
+        changeMadeSinceCheck = false;
+        return AbortStatus::restart;
+    }
+    else
+    {
+        changeMadeSinceCheck = false;
+        return AbortStatus::proceed;
+    }
+}
+
+Valid ParameterManager::markNlmeansComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
+    if (Valid::partnoisereduction == validity)
+    {
+        nlMeansValidity = NlMeansValid::nlcomplete;
+    }
+    return validity;
+}
+
+Valid ParameterManager::markChromaComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
+    if (Valid::partnoisereduction == validity)
+    {
+        chromaValidity = ChromaValid::chromacomplete;
+    }
+    return validity;
+}
+
+Valid ParameterManager::markNoiseReductionComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
+    if (Valid::partnoisereduction == validity)
+    {
+        validity = Valid::noisereduction;
+    }
+    return validity;
+}
+
+void ParameterManager::setNrEnabled(bool enabledIn)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_nrEnabled = enabledIn;
+        validity = min(validity, Valid::demosaic);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setNrEnabled"));
+    }
+}
+
+void ParameterManager::setNlClusters(int numClusters)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_nlClusters = numClusters;
+        validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setNlClusters"));
+    }
+}
+
+void ParameterManager::setNlThresh(float clusterThreshold)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_nlThresh = clusterThreshold;
+        validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setNlThresh"));
+    }
+}
+
+void ParameterManager::setNlStrength(float strength)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_nlStrength = strength;
+        validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setNlStrength"));
+    }
+}
+
+void ParameterManager::setChromaStrength(float strength)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_chromaStrength = strength;
+        validity = min(validity, Valid::demosaic);
+        chromaValidity = ChromaValid::chromanone;
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setChromaStrength"));
+    }
+}
+
+std::tuple<Valid,AbortStatus,PrefilmParams> ParameterManager::claimPrefilmParams()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    AbortStatus abort;
+    if (validity < Valid::noisereduction)
+    {
+        abort = AbortStatus::restart;
+    }
+    else if (changeMadeSinceCheck)
+    {
+        abort = AbortStatus::restart;
+    }
+    else
+    {
+        abort = AbortStatus::proceed;
         validity = Valid::partprefilmulation;
     }
     changeMadeSinceCheck = false;
     PrefilmParams params;
+    params.nrEnabled = m_nrEnabled;//it's okay to include previous things in later params if necessary
     params.exposureComp = m_exposureComp;
     params.temperature = m_temperature;
     params.tint = m_tint;
@@ -458,7 +573,7 @@ void ParameterManager::setExposureComp(float exposureComp)
     {
         QMutexLocker paramLocker(&paramMutex);
         m_exposureComp = exposureComp;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setExposureComp"));
@@ -471,7 +586,7 @@ void ParameterManager::setTemperature(float temperature)
     {
         QMutexLocker paramLocker(&paramMutex);
         m_temperature = temperature;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setTemperature"));
@@ -484,7 +599,7 @@ void ParameterManager::setTint(float tint)
     {
         QMutexLocker paramLocker(&paramMutex);
         m_tint = tint;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setTint"));
@@ -498,7 +613,7 @@ void ParameterManager::setWB(const float temp, const float tint)
         QMutexLocker paramLocker(&paramMutex);
         m_temperature = temp;
         m_tint = tint;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
         paramLocker.unlock();
 
         //This is called from C++ only, so we have it emit the parameter change signals
@@ -1707,9 +1822,6 @@ void ParameterManager::selectImage(const QString imageID)
     //Emit that the things have changed.
     emit caEnabledChanged();
     emit highlightsChanged();
-    emit nlClustersChanged();//=============================
-    emit nlThreshChanged();//========================
-    emit nlStrengthChanged();//====================
     emit lensfunNameChanged();
     emit lensfunCaChanged();
     emit lensfunVignChanged();
@@ -1717,6 +1829,11 @@ void ParameterManager::selectImage(const QString imageID)
     emit rotationAngleChanged();
     emit rotationPointXChanged();
     emit rotationPointYChanged();
+    emit nrEnabledChanged();//======================
+    emit nlClustersChanged();//=============================
+    emit nlThreshChanged();//========================
+    emit nlStrengthChanged();//====================
+    emit chromaStrengthChanged();//===============
     emit exposureCompChanged();
     emit temperatureChanged();
     emit tintChanged();
@@ -1758,9 +1875,6 @@ void ParameterManager::selectImage(const QString imageID)
 
     emit defCaEnabledChanged();
     emit defHighlightsChanged();
-    emit defNlClustersChanged();//========================
-    emit defNlThreshChanged();//========================
-    emit defNlStrengthChanged();//========================
     emit defLensfunNameChanged();
     emit defLensfunCaChanged();
     emit defLensfunVignChanged();
@@ -1768,6 +1882,11 @@ void ParameterManager::selectImage(const QString imageID)
     emit defRotationAngleChanged();
     emit defRotationPointXChanged();
     emit defRotationPointYChanged();
+    emit defNrEnabledChanged();//====================
+    emit defNlClustersChanged();//========================
+    emit defNlThreshChanged();//========================
+    emit defNlStrengthChanged();//========================
+    emit defChromaStrengthChanged();//==================
     emit defExposureCompChanged();
     emit defTemperatureChanged();
     emit defTintChanged();
@@ -1856,23 +1975,6 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
         m_highlights = temp_highlights;
     }
 
-    //nlmeans stuff (temporary)
-    d_nlClusters = 30;
-    if (copyDefaults == CopyDefaults::loadToParams)
-    {
-        m_nlClusters = d_nlClusters;
-    }
-    d_nlThresh = 1e-5;
-    if (copyDefaults == CopyDefaults::loadToParams)
-    {
-        m_nlThresh = d_nlThresh;
-    }
-    d_nlStrength = 0;
-    if (copyDefaults == CopyDefaults::loadToParams)
-    {
-        m_nlStrength = d_nlStrength;
-    }
-
     //The lens correction parameters don't actually have the defaults loaded into the d_ params.
     //If it's "loadtoparams" then we copy them only into the m_ params,
     // so that they can be written back to the database.
@@ -1926,6 +2028,33 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_rotationPointY = temp_rotationPointY;
+    }
+
+    //noise reduction stuff (temporary)
+    d_nrEnabled = false;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_nrEnabled = d_nrEnabled;
+    }
+    d_nlClusters = 30;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_nlClusters = d_nlClusters;
+    }
+    d_nlThresh = 1e-5;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_nlThresh = d_nlThresh;
+    }
+    d_nlStrength = 0;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_nlStrength = d_nlStrength;
+    }
+    d_chromaStrength = 0;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_chromaStrength = d_chromaStrength;
     }
 
     //Exposure compensation
@@ -2351,23 +2480,6 @@ void ParameterManager::loadParams(QString imageID)
         validity = min(validity, Valid::load);
     }
 
-    //nlmeans stuff (temp)
-    if (m_nlClusters != d_nlClusters)
-    {
-        m_nlClusters = d_nlClusters;
-        validity = min(validity, Valid::load);
-    }
-    if (m_nlThresh != d_nlThresh)
-    {
-        m_nlThresh = d_nlThresh;
-        validity = min(validity, Valid::load);
-    }
-    if (m_nlStrength != d_nlStrength)
-    {
-        m_nlStrength = d_nlStrength;
-        validity = min(validity, Valid::load);
-    }
-
     //Lensfun lens name
     nameCol = rec.indexOf("ProcTlensfunName");
     if (-1 == nameCol) { std::cout << "paramManager ProcTlensfunName" << endl; }
@@ -2443,6 +2555,33 @@ void ParameterManager::loadParams(QString imageID)
         //the reference coordinates don't affect validity at all
     }
 
+    //Noise reduction stuff (temp)
+    if (m_nrEnabled != d_nrEnabled)
+    {
+        m_nrEnabled = d_nrEnabled;
+        validity = min(validity, Valid::demosaic);
+    }
+    if (m_nlClusters != d_nlClusters)
+    {
+        m_nlClusters = d_nlClusters;
+        validity = min(validity, Valid::demosaic);
+    }
+    if (m_nlThresh != d_nlThresh)
+    {
+        m_nlThresh = d_nlThresh;
+        validity = min(validity, Valid::demosaic);
+    }
+    if (m_nlStrength != d_nlStrength)
+    {
+        m_nlStrength = d_nlStrength;
+        validity = min(validity, Valid::demosaic);
+    }
+    if (m_chromaStrength != d_chromaStrength)
+    {
+        m_chromaStrength = d_chromaStrength;
+        validity = min(validity, Valid::demosaic);
+    }
+
     //Exposure compensation
     nameCol = rec.indexOf("ProcTexposureComp");
     if (-1 == nameCol) { std::cout << "paramManager ProcTexposureComp" << endl; }
@@ -2451,7 +2590,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams exposureComp" << endl;
         m_exposureComp = temp_exposureComp;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
     }
 
     //Temperature
@@ -2462,7 +2601,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams temperature" << endl;
         m_temperature = temp_temperature;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
     }
 
     //Tint
@@ -2473,7 +2612,7 @@ void ParameterManager::loadParams(QString imageID)
     {
         //cout << "ParameterManager::loadParams tint" << endl;
         m_tint = temp_tint;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
     }
 
     //Initial developer concentration
@@ -3020,30 +3159,6 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
         validity = min(validity, Valid::load);
     }
 
-    //nlmeans number of clusters
-    const int temp_nlClusters = sourceParams->getNlClusters();
-    if (temp_nlClusters != m_nlClusters)
-    {
-        m_nlClusters = temp_nlClusters;
-        validity = min(validity, Valid::load);
-    }
-
-    //nlmeans cluster threshold
-    const float temp_nlThresh = sourceParams->getNlThresh();
-    if (temp_nlThresh != m_nlThresh)
-    {
-        m_nlThresh = temp_nlThresh;
-        validity = min(validity, Valid::load);
-    }
-
-    //nlmeans strength
-    const float temp_nlStrength = sourceParams->getNlStrength();
-    if (temp_nlStrength != m_nlStrength)
-    {
-        m_nlStrength = temp_nlStrength;
-        validity = min(validity, Valid::load);
-    }
-
     //Lensfun lens name
     const QString temp_lensfunName = sourceParams->getLensfunName();
     if (temp_lensfunName != s_lensfunName)
@@ -3105,13 +3220,52 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
         validity = min(validity, Valid::load);
     }
 
+    //noise reduction enabled
+    const bool temp_nrEnabled = sourceParams->getNrEnabled();
+    if (temp_nrEnabled != m_nrEnabled)
+    {
+        m_nrEnabled = temp_nrEnabled;
+        validity = min(validity, Valid::demosaic);
+    }
+    //nlmeans number of clusters
+    const int temp_nlClusters = sourceParams->getNlClusters();
+    if (temp_nlClusters != m_nlClusters)
+    {
+        m_nlClusters = temp_nlClusters;
+        validity = min(validity, Valid::demosaic);
+    }
+
+    //nlmeans cluster threshold
+    const float temp_nlThresh = sourceParams->getNlThresh();
+    if (temp_nlThresh != m_nlThresh)
+    {
+        m_nlThresh = temp_nlThresh;
+        validity = min(validity, Valid::demosaic);
+    }
+
+    //nlmeans strength
+    const float temp_nlStrength = sourceParams->getNlStrength();
+    if (temp_nlStrength != m_nlStrength)
+    {
+        m_nlStrength = temp_nlStrength;
+        validity = min(validity, Valid::demosaic);
+    }
+
+    //chroma NR strength
+    const float temp_chromaStrength = sourceParams->getChromaStrength();
+    if (temp_chromaStrength != m_chromaStrength)
+    {
+        m_chromaStrength = temp_chromaStrength;
+        validity = min(validity, Valid::demosaic);
+    }
+
     //Exposure compensation
     const float temp_exposureComp = sourceParams->getExposureComp();
     if (temp_exposureComp != m_exposureComp)
     {
         //cout << "ParameterManager::cloneParams exposureComp" << endl;
         m_exposureComp = temp_exposureComp;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
     }
 
     //Temperature
@@ -3120,7 +3274,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams temperature" << endl;
         m_temperature = temp_temperature;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
     }
 
     //Tint
@@ -3129,7 +3283,7 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         //cout << "ParameterManager::cloneParams tint" << endl;
         m_tint = temp_tint;
-        validity = min(validity, Valid::demosaic);
+        validity = min(validity, Valid::noisereduction);
     }
 
     //Initial developer concentration

@@ -22,6 +22,8 @@ enum Valid {none,
             load,
             partdemosaic,
             demosaic,
+            partnoisereduction,
+            noisereduction,
             partprefilmulation,
             prefilmulation,
             partfilmulation,
@@ -33,6 +35,12 @@ enum Valid {none,
             partfilmlikecurve,
             filmlikecurve,
             count};
+
+enum NlMeansValid {nlnone,
+                   nlcomplete};
+
+enum ChromaValid {chromanone,
+                  chromacomplete};
 
 enum FilmFetch {initial,
                 subsequent};
@@ -53,9 +61,6 @@ struct LoadParams {
 struct DemosaicParams {
     int caEnabled;
     int highlights;
-    int nlClusters;
-    float nlThresh;
-    float nlStrength;
     QString cameraName;
     QString lensName;
     bool lensfunCA;
@@ -66,7 +71,16 @@ struct DemosaicParams {
     float rotationAngle;
 };
 
+struct NoiseReductionParams {
+    bool nrEnabled;
+    int nlClusters;
+    float nlThresh;
+    float nlStrength;
+    float chromaStrength;
+};
+
 struct PrefilmParams {
+    bool nrEnabled;
     float exposureComp;
     float temperature;
     float tint;
@@ -155,9 +169,6 @@ class ParameterManager : public QObject
     //Demosaic
     Q_PROPERTY(int caEnabled        MEMBER s_caEnabled      WRITE setCaEnabled      NOTIFY caEnabledChanged)
     Q_PROPERTY(int highlights       MEMBER m_highlights     WRITE setHighlights     NOTIFY highlightsChanged)
-    Q_PROPERTY(int nlClusters       MEMBER m_nlClusters     WRITE setNlClusters     NOTIFY nlClustersChanged)
-    Q_PROPERTY(float nlThresh       MEMBER m_nlThresh       WRITE setNlThresh       NOTIFY nlThreshChanged)
-    Q_PROPERTY(float nlStrength     MEMBER m_nlStrength     WRITE setNlStrength     NOTIFY nlStrengthChanged)
     Q_PROPERTY(QString lensfunName  MEMBER s_lensfunName    WRITE setLensfunName    NOTIFY lensfunNameChanged)
     Q_PROPERTY(int lensfunCa        MEMBER s_lensfunCa      WRITE setLensfunCa      NOTIFY lensfunCaChanged)
     Q_PROPERTY(int lensfunVign      MEMBER s_lensfunVign    WRITE setLensfunVign    NOTIFY lensfunVignChanged)
@@ -168,9 +179,6 @@ class ParameterManager : public QObject
 
     Q_PROPERTY(int defCaEnabled        READ getDefCaEnabled      NOTIFY defCaEnabledChanged)
     Q_PROPERTY(int defHighlights       READ getDefHighlights     NOTIFY defHighlightsChanged)
-    Q_PROPERTY(int defNlClusters       READ getDefNlClusters     NOTIFY defNlClustersChanged)
-    Q_PROPERTY(float defNlThresh       READ getDefNlThresh       NOTIFY defNlThreshChanged)
-    Q_PROPERTY(float defNlStrength     READ getDefNlStrength     NOTIFY defNlStrengthChanged)
     Q_PROPERTY(QString defLensfunName  READ getDefLensfunName    NOTIFY defLensfunNameChanged)
     Q_PROPERTY(int defLensfunCa        READ getDefLensfunCa      NOTIFY defLensfunCaChanged)
     Q_PROPERTY(int defLensfunVign      READ getDefLensfunVign    NOTIFY defLensfunVignChanged)
@@ -178,6 +186,19 @@ class ParameterManager : public QObject
     Q_PROPERTY(float defRotationAngle  READ getDefRotationAngle  NOTIFY defRotationAngleChanged)
     Q_PROPERTY(float defRotationPointX READ getDefRotationPointX NOTIFY defRotationPointXChanged)
     Q_PROPERTY(float defRotationPointY READ getDefRotationPointY NOTIFY defRotationPointYChanged)
+
+    //Noise reduction
+    Q_PROPERTY(bool nrEnabled       MEMBER m_nrEnabled      WRITE setNrEnabled      NOTIFY nrEnabledChanged)
+    Q_PROPERTY(int nlClusters       MEMBER m_nlClusters     WRITE setNlClusters     NOTIFY nlClustersChanged)
+    Q_PROPERTY(float nlThresh       MEMBER m_nlThresh       WRITE setNlThresh       NOTIFY nlThreshChanged)
+    Q_PROPERTY(float nlStrength     MEMBER m_nlStrength     WRITE setNlStrength     NOTIFY nlStrengthChanged)
+    Q_PROPERTY(float chromaStrength MEMBER m_chromaStrength WRITE setChromaStrength NOTIFY chromaStrengthChanged)
+
+    Q_PROPERTY(bool defNrEnabled       READ getDefNrEnabled      NOTIFY defNrEnabledChanged)
+    Q_PROPERTY(int defNlClusters       READ getDefNlClusters     NOTIFY defNlClustersChanged)
+    Q_PROPERTY(float defNlThresh       READ getDefNlThresh       NOTIFY defNlThreshChanged)
+    Q_PROPERTY(float defNlStrength     READ getDefNlStrength     NOTIFY defNlStrengthChanged)
+    Q_PROPERTY(float defChromaStrength READ getDefChromaStrength NOTIFY defChromaStrengthChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -318,6 +339,13 @@ public:
     AbortStatus claimDemosaicAbort();
     Valid markDemosaicComplete();
 
+    //Noise Reduction
+    std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> claimNoiseReductionParams();
+    AbortStatus claimNoiseReductionAbort();
+    Valid markNlmeansComplete();
+    Valid markChromaComplete();
+    Valid markNoiseReductionComplete();
+
     //Prefilmulation
     std::tuple<Valid,AbortStatus,PrefilmParams> claimPrefilmParams();
     AbortStatus claimPrefilmAbort();
@@ -379,9 +407,6 @@ public:
     //Demosaic
     int getDefCaEnabled(){return d_caEnabled;}
     int getDefHighlights(){return d_highlights;}
-    int getDefNlClusters(){return d_nlClusters;}
-    float getDefNlThresh(){return d_nlThresh;}
-    float getDefNlStrength(){return d_nlStrength;}
     QString getDefLensfunName(){return d_lensfunName;}
     int getDefLensfunCa(){return d_lensfunCa;}
     int getDefLensfunVign(){return d_lensfunVign;}
@@ -389,6 +414,13 @@ public:
     float getDefRotationAngle(){return d_rotationAngle;}
     float getDefRotationPointX(){return d_rotationPointX;}
     float getDefRotationPointY(){return d_rotationPointY;}
+
+    //Noise Reduction
+    bool getDefNrEnabled(){return d_nrEnabled;}
+    int getDefNlClusters(){return d_nlClusters;}
+    float getDefNlThresh(){return d_nlThresh;}
+    float getDefNlStrength(){return d_nlStrength;}
+    bool getDefChromaStrength(){return d_chromaStrength;}
 
     //Prefilmulation
     float getDefExposureComp(){return d_exposureComp;}
@@ -443,9 +475,6 @@ public:
     //Demosaic
     int getCaEnabled(){return s_caEnabled;}
     int getHighlights(){return m_highlights;}
-    int getNlClusters(){return m_nlClusters;}
-    float getNlThresh(){return m_nlThresh;}
-    float getNlStrength(){return m_nlStrength;}
     QString getLensfunName(){return s_lensfunName;}
     int getLensfunCa(){return s_lensfunCa;}
     int getLensfunVign(){return s_lensfunVign;}
@@ -453,6 +482,13 @@ public:
     float getRotationAngle(){return m_rotationAngle;}
     float getRotationPointX(){return m_rotationPointX;}
     float getRotationPointY(){return m_rotationPointY;}
+
+    //Noise Reduction
+    bool getNrEnabled(){return m_nrEnabled;}
+    int getNlClusters(){return m_nlClusters;}
+    float getNlThresh(){return m_nlThresh;}
+    float getNlStrength(){return m_nlStrength;}
+    float getChromaStrength(){return m_chromaStrength;}
 
     //Prefilmulation
     float getExposureComp(){return m_exposureComp;}
@@ -568,6 +604,8 @@ protected:
 
     Valid validity;
     Valid validityWhenCanceled;
+    NlMeansValid nlMeansValidity;
+    ChromaValid chromaValidity;
 
     //this is for dealing with the validity when canceled
     bool processedYet = false;
@@ -581,9 +619,6 @@ protected:
     int s_caEnabled;//similar to the lensfun stuff
     int m_caEnabled;
     int m_highlights;
-    int m_nlClusters;
-    float m_nlThresh;
-    float m_nlStrength;
     QString s_lensfunName;//staging params filled at load and also when manually changed
     int s_lensfunCa;      //These don't get written back
     int s_lensfunVign;
@@ -598,9 +633,6 @@ protected:
 
     int d_caEnabled; //d_'s are for default values
     int d_highlights;
-    int d_nlClusters;
-    float d_nlThresh;
-    float d_nlStrength;
     QString d_lensfunName;//*not* a blank string, but actually the lens that is either exif-automatched or in prefs
     int d_lensfunCa;      //*not* -1, but actually from prefs
     int d_lensfunVign;    //They get filled a) at loading time, or b) when lens prefs are set or erased
@@ -608,6 +640,19 @@ protected:
     float d_rotationAngle;
     float d_rotationPointX;
     float d_rotationPointY;
+
+    //Noise Reduction
+    bool m_nrEnabled;
+    int m_nlClusters;
+    float m_nlThresh;
+    float m_nlStrength;
+    float m_chromaStrength;
+
+    bool d_nrEnabled;
+    int d_nlClusters;
+    float d_nlThresh;
+    float d_nlStrength;
+    float d_chromaStrength;
 
     //Prefilmulation
     float m_exposureComp;
@@ -704,9 +749,6 @@ protected:
     //Demosaic
     void setCaEnabled(int);
     void setHighlights(int);
-    void setNlClusters(int);
-    void setNlThresh(float);
-    void setNlStrength(float);
     void setLensfunName(QString);
     void setLensfunCa(int);
     void setLensfunVign(int);
@@ -714,6 +756,13 @@ protected:
     void setRotationAngle(float);
     void setRotationPointX(float);
     void setRotationPointY(float);
+
+    //Noise Reduction
+    void setNrEnabled(bool);
+    void setNlClusters(int);
+    void setNlThresh(float);
+    void setNlStrength(float);
+    void setChromaStrength(float);
 
     //Prefilmulation
     void setExposureComp(float);
@@ -793,9 +842,6 @@ signals:
     //Demosaic
     void caEnabledChanged();
     void highlightsChanged();
-    void nlClustersChanged();
-    void nlThreshChanged();
-    void nlStrengthChanged();
     void lensfunNameChanged();
     void lensfunCaChanged();
     void lensfunVignChanged();
@@ -806,9 +852,6 @@ signals:
 
     void defCaEnabledChanged();
     void defHighlightsChanged();
-    void defNlClustersChanged();
-    void defNlThreshChanged();
-    void defNlStrengthChanged();
     void defLensfunNameChanged();
     void defLensfunCaChanged();
     void defLensfunVignChanged();
@@ -816,6 +859,19 @@ signals:
     void defRotationAngleChanged();
     void defRotationPointXChanged();
     void defRotationPointYChanged();
+
+    //Noise Reduction
+    void nrEnabledChanged();
+    void nlClustersChanged();
+    void nlThreshChanged();
+    void nlStrengthChanged();
+    void chromaStrengthChanged();
+
+    void defNrEnabledChanged();
+    void defNlClustersChanged();
+    void defNlThreshChanged();
+    void defNlStrengthChanged();
+    void defChromaStrengthChanged();
 
     //Prefilmulation
     void exposureCompChanged();

@@ -1,6 +1,5 @@
 #ifndef IMAGEPIPELINE_H
 #define IMAGEPIPELINE_H
-#include "filmSim.hpp"
 #include "interface.h"
 #include "../ui/parameterManager.h"
 #include <QMutex>
@@ -39,13 +38,6 @@ public:
     //Method to straight up copy the data between imagepipelines
     //This is used when copying preloaded pipeline data
     void swapPipeline(ImagePipeline * copySource);
-
-    //This should be used after the full res pipeline is done
-    // so that the quick pipe gets refreshed from high res sampling
-    //This is important to keep the quick pipe sharp after level/distortion
-    // correction
-    //Only used for pipelines that already are based on the same image.
-    void copyAndDownsampleImages(ImagePipeline * copySource);
 
     //This is related to the above; if the image changes but the pipeline is
     // preloaded, we need to refresh the histograms
@@ -86,7 +78,7 @@ protected:
     unsigned xtrans[6][6];
     int maxXtrans;
     int raw_width, raw_height;
-    float camToRGB[3][3];
+    float camToRGB[3][3];//rgb_cam from libraw
     float camToRGB4[3][4];
     float rCamMul, gCamMul, bCamMul;//wb used on the image
     float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
@@ -96,8 +88,8 @@ protected:
     bool isMonochrome;
     bool isCR3;
 
-    matrix<float> input_image;
-    matrix<float> recovered_image;
+    matrix<float> demosaiced_image;
+    matrix<float> nr_image;//lab
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
     Exiv2::ExifData basicExifData;//for tiff writing

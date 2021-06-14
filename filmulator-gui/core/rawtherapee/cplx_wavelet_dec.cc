@@ -20,9 +20,6 @@
 
 #include "cplx_wavelet_dec.h"
 
-namespace rtengine
-{
-
 wavelet_decomposition::~wavelet_decomposition()
 {
     for(int i = 0; i <= lvltot; i++) {
@@ -38,6 +35,3 @@ wavelet_decomposition::~wavelet_decomposition()
         delete [] coeff0;
     }
 }
-
-}
-

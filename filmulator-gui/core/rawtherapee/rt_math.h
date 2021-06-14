@@ -9,9 +9,9 @@
 namespace rtengine
 {
 
-constexpr int MAXVAL = 0xffff;
-constexpr float MAXVALF = static_cast<float>(MAXVAL);  // float version of MAXVAL
-constexpr double MAXVALD = static_cast<double>(MAXVAL); // double version of MAXVAL
+constexpr int MAXVALI = 0xffff;
+constexpr float MAXVALF = static_cast<float>(MAXVALI);  // float version of MAXVALI
+constexpr double MAXVALD = static_cast<double>(MAXVALI); // double version of MAXVALI
 
 constexpr double RT_PI = 3.14159265358979323846; // pi
 constexpr double RT_PI_2 = 1.57079632679489661923; // pi/2
@@ -101,7 +101,7 @@ constexpr T LIM01(const T& a)
 template<typename T>
 constexpr T CLIP(const T& a)
 {
-    return LIM(a, static_cast<T>(0), static_cast<T>(MAXVAL));
+    return LIM(a, static_cast<T>(0), static_cast<T>(MAXVALI));
 }
 
 template <typename T>
@@ -151,7 +151,7 @@ constexpr std::uint8_t uint16ToUint8Rounded(std::uint16_t i)
 }
 
 template <typename T>
-constexpr bool OOG(const T &val, const T &high=T(MAXVAL))
+constexpr bool OOG(const T &val, const T &high=T(MAXVALI))
 {
     return (val < T(0)) || (val > high);
 }

@@ -417,12 +417,13 @@ void optimizeWBMults(std::string file,
 //Actually apply a white balance to image data.
 //It takes in the input and output matrices, the desired temperature and tint,
 // and the filename where it looks up the camera matrix and daylight multipliers.
-//It also takes in the camera matrix and the raw color space WB multipliers.
+//It simultaneously applies the camera matrix and exposure compensation while doing white balance.
+//It also clips zeros at this point.
 void whiteBalance(matrix<float> &input, matrix<float> &output,
                   float temperature, float tint, float cam2rgb[3][3],
-                  float rCamMul, float gCamMul, float bCamMul,
-                  float rPreMul, float gPreMul, float bPreMul,
-                  float maxValue, float factor)
+                  float rCamMul, float gCamMul, float bCamMul,//what the camera asked for and is already applied
+                  float rPreMul, float gPreMul, float bPreMul,//reference for camera's daylight wb
+                  float expCompMult)
 {
     float rMult, gMult, bMult;
     whiteBalancePostMults(temperature, tint, cam2rgb,
@@ -439,28 +440,15 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
     float transform[3][3];
     for (int i = 0; i < 3; i++)
     {
-        transform[0][i] = factor * rMult * cam2rgb[0][i];
-        transform[1][i] = factor * gMult * cam2rgb[1][i];
-        transform[2][i] = factor * bMult * cam2rgb[2][i];
+        transform[0][i] = expCompMult * rMult * cam2rgb[0][i];
+        transform[1][i] = expCompMult * gMult * cam2rgb[1][i];
+        transform[2][i] = expCompMult * bMult * cam2rgb[2][i];
     }
-    //transform[0][0] = 1.0f;
-    //transform[1][1] = 1.0f;
-    //transform[2][2] = 1.0f;
 
     int nRows = input.nr();
     int nCols = input.nc();
 
     output.set_size(nRows, nCols);
-
-    /*
-    int case1 = 0;
-    int case2 = 0;
-    int case3 = 0;
-    int case4 = 0;
-    int case5 = 0;
-    int case6 = 0;
-    int case7 = 0;
-    */
 
 #pragma omp parallel shared(output, input) firstprivate(nRows, nCols)
     {
@@ -469,91 +457,60 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
         {
             for (int j = 0; j < nCols; j += 3)
             {
-                //highlight handling
-                //If the channel with the lowest camera multipliers is clipped, then clip the other channels in that pixel so as to not drag down the brightness
-                /*
-                bool rClipped = (input(i,j  ) > maxValue);
-                bool gClipped = (input(i,j+1) > maxValue);
-                bool bClipped = (input(i,j+2) > maxValue);
-
-                if (rClipped && !gClipped && !bClipped) //only red is clipped
-                {
-                    case1++;
-                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*rCamMul/gCamMul); //reduce green if necessary
-                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*rCamMul/bCamMul); //reduce blue if necessary
-                }
-                if (!rClipped && gClipped && !bClipped)
-                {
-                    case2++;
-                    input(i,j  ) = min(input(i,j  ),input(i,j  )*gCamMul/rCamMul);
-                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*gCamMul/bCamMul);
-                }
-                if (!rClipped && !gClipped && bClipped)
-                {
-                    case3++;
-                    input(i,j  ) = min(input(i,j  ),input(i,j  )*bCamMul/rCamMul);
-                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*bCamMul/gCamMul);
-                }
-
-                if (rClipped && gClipped && !bClipped) //red and green are both clipped;
-                {
-                    case4++;
-                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(rCamMul,gCamMul)/rCamMul);//reduce relative to the clipped channel with the lowest multpilier
-                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(rCamMul,gCamMul)/gCamMul);
-                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(rCamMul,gCamMul)/bCamMul);
-                }
-                if (rClipped && !gClipped && bClipped)
-                {
-                    case5++;
-                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(rCamMul,bCamMul)/rCamMul);
-                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(rCamMul,bCamMul)/gCamMul);
-                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(rCamMul,bCamMul)/bCamMul);
-                }
-                if (!rClipped && gClipped && bClipped)
-                {
-                    case6++;
-                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(gCamMul,bCamMul)/rCamMul);
-                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(gCamMul,bCamMul)/gCamMul);
-                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(gCamMul,bCamMul)/bCamMul);
-                }
-                if (rClipped && gClipped && bClipped) //all channels are clipped
-                {
-                    case7++;
-                    input(i,j  ) = min(input(i,j  ),input(i,j  )*min(min(rCamMul,gCamMul),bCamMul)/rCamMul);
-                    input(i,j+1) = min(input(i,j+1),input(i,j+1)*min(min(rCamMul,gCamMul),bCamMul)/gCamMul);
-                    input(i,j+2) = min(input(i,j+2),input(i,j+2)*min(min(rCamMul,gCamMul),bCamMul)/bCamMul);
-                }
-                */
-
-                //Actually set output according to camera matrix and pre and post multipliers
-                //output(i, j  ) = max(0.0f, transform[0][0]*rCamMul*input(i, j) + transform[0][1]*gCamMul*input(i, j+1) + transform[0][2]*bCamMul*input(i, j+2));
-                //output(i, j+1) = max(0.0f, transform[1][0]*rCamMul*input(i, j) + transform[1][1]*gCamMul*input(i, j+1) + transform[1][2]*bCamMul*input(i, j+2));
-                //output(i, j+2) = max(0.0f, transform[2][0]*rCamMul*input(i, j) + transform[2][1]*gCamMul*input(i, j+1) + transform[2][2]*bCamMul*input(i, j+2));
                 output(i, j  ) = max(0.0f, transform[0][0]*input(i, j) + transform[0][1]*input(i, j+1) + transform[0][2]*input(i, j+2));
                 output(i, j+1) = max(0.0f, transform[1][0]*input(i, j) + transform[1][1]*input(i, j+1) + transform[1][2]*input(i, j+2));
                 output(i, j+2) = max(0.0f, transform[2][0]*input(i, j) + transform[2][1]*input(i, j+1) + transform[2][2]*input(i, j+2));
 
-                /*
-                if (rClipped || gClipped || bClipped)
-                {
-                    if (i%2 == 0)
-                    {
-                        output(i,j+0) = 0.0f;
-                        output(i,j+1) = 0.0f;
-                        output(i,j+2) = 0.0f;
-                    }
-                }*/
             }
         }
     }
+}
 
-    /*
-    cout << "case1: " << case1 << endl;
-    cout << "case2: " << case2 << endl;
-    cout << "case3: " << case3 << endl;
-    cout << "case4: " << case4 << endl;
-    cout << "case5: " << case5 << endl;
-    cout << "case6: " << case6 << endl;
-    cout << "case7: " << case7 << endl;
-    */
+//Actually apply a white balance to image data.
+//It takes in the input and output matrices, the desired temperature and tint,
+// and the filename where it looks up the camera matrix and daylight multipliers.
+//This one expects sRGB inputs to start.
+//It does, however apply exposure compensation.
+//It also clips zeros at this point.
+void sRGBwhiteBalance(matrix<float> &input, matrix<float> &output,
+                      float temperature, float tint, float cam2rgb[3][3],
+                      float rCamMul, float gCamMul, float bCamMul,//what the camera asked for and is already applied
+                      float rPreMul, float gPreMul, float bPreMul,//reference for camera's daylight wb
+                      float expCompMult)
+{
+    float rMult, gMult, bMult;
+    whiteBalancePostMults(temperature, tint, cam2rgb,
+                          rCamMul, gCamMul, bCamMul,
+                          rPreMul, gPreMul, bPreMul,
+                          rMult, gMult, bMult);
+    cout << "rmult: " << rMult << endl;
+    cout << "gmult: " << gMult << endl;
+    cout << "bmult: " << bMult << endl;
+    cout << "rCamMul: " << rCamMul << endl;
+    cout << "gCamMul: " << gCamMul << endl;
+    cout << "bCamMul: " << bCamMul << endl;
+
+    rMult = rMult * expCompMult;
+    gMult = gMult * expCompMult;
+    bMult = bMult * expCompMult;
+
+    int nRows = input.nr();
+    int nCols = input.nc();
+
+    output.set_size(nRows, nCols);
+
+#pragma omp parallel shared(output, input) firstprivate(nRows, nCols)
+    {
+#pragma omp for schedule(dynamic) nowait
+        for (int i = 0; i < nRows; i++)
+        {
+            for (int j = 0; j < nCols; j += 3)
+            {
+                output(i, j  ) = max(0.0f, rMult*input(i, j  ));
+                output(i, j+1) = max(0.0f, gMult*input(i, j+1));
+                output(i, j+2) = max(0.0f, bMult*input(i, j+2));
+
+            }
+        }
+    }
 }

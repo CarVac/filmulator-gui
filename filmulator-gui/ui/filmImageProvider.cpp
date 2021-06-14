@@ -143,13 +143,6 @@ QImage FilmImageProvider::requestImage(const QString& id,
             gettimeofday(&fullTime, nullptr);
             image = pipeline.processImage(cloneParam, this, data, fileHash);
             cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
-
-            //Copy the high-res pipeline images back to low-res to deal with
-            // softness from lens corrections or rotation
-            if (image.nr() > 0 && useCache)//don't copy invalid data
-            {
-                quickPipe.copyAndDownsampleImages(&pipeline);
-            }
         }
     }
 

@@ -221,11 +221,19 @@ void optimizeWBMults( std::string inputFilename,
                       const float rMul = -1, const float gMul = -1, const float bMul = -1);
 
 //Applies the desired temperature and tint adjustments to the image.
+//It also converts raw color into sRGB, and applies exposure comp.
 void whiteBalance(matrix<float> &input, matrix<float> &output,
                   float temperature, float tint, float cam2rgb[3][3],
                   float rCamMul, float gCamMul, float bCamMul,
                   float rPreMul, float gPreMul, float bPreMul,
-                  float maxValue, float factor = 1.f);
+                  float expCompMult = 1.f);
+//This one only applies temperature and tint and exposure comp
+// to images that are already sRGB.
+void sRGBwhiteBalance(matrix<float> &input, matrix<float> &output,
+                      float temperature, float tint, float cam2rgb[3][3],
+                      float rCamMul, float gCamMul, float bCamMul,
+                      float rPreMul, float gPreMul, float bPreMul,
+                      float expCompMult = 1.f);
 
 void vibrance_saturation(const matrix<unsigned short> &input,
                          matrix<unsigned short> &output,
@@ -289,5 +297,23 @@ void sRGB_linearize(matrix<unsigned short> &RGB,
 //Converts linear SRGB to gamma-curved, float to short int.
 void sRGB_gammacurve(matrix<float> &RGB,
                      matrix<unsigned short> &out);
+
+//Converts linear sRGB to Oklab
+void sRGB_to_oklab(matrix<float> &in,
+                   matrix<float> &out);
+
+//Converts Oklab to linear sRGB
+void oklab_to_sRGB(matrix<float> &in,
+                   matrix<float> &out);
+
+//Converts raw to linear sRGB
+void raw_to_sRGB(matrix<float> &in,
+                 matrix<float> &out,
+                 const float cam2rgb[3][3]);
+
+//Converts raw to Oklab
+void raw_to_oklab(matrix<float> &in,
+                  matrix<float> &out,
+                  const float cam2rgb[3][3]);
 
 #endif // FILMSIM_H

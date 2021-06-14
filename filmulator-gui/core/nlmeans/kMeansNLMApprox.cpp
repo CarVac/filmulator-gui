@@ -12,7 +12,7 @@ bool kMeansNLMApprox(float* __restrict const I, const int maxNumClusters, const 
 	for (ptrdiff_t blockIdx = 0; blockIdx < numBlocks; blockIdx++) {
 
 		AbortStatus abort;
-        abort = paramManager->claimDemosaicAbort();
+        abort = paramManager->claimNoiseReductionAbort();
 		if(abort == AbortStatus::restart)
 		{
 			canceled = true;

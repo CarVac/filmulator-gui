@@ -25,9 +25,6 @@
 #include "cplx_wavelet_level.h"
 #include "cplx_wavelet_filter_coeffs.h"
 
-namespace rtengine
-{
-
 class wavelet_decomposition
 {
 public:
@@ -302,6 +299,4 @@ void wavelet_decomposition::reconstruct(E * dst, const float blend)
     wavelet_decomp[0] = nullptr;
     delete[] coeff0;
     coeff0 = nullptr;
-}
-
 }

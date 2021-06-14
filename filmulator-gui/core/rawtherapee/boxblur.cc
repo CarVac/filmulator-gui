@@ -26,9 +26,6 @@
 #include "rt_math.h"
 #include "opthelper.h"
 
-namespace rtengine
-{
-
 void boxblur(float** src, float** dst, int radius, int W, int H, bool multiThread)
 {
     //box blur using rowbuffers and linebuffers instead of a full size buffer
@@ -416,6 +413,4 @@ void boxabsblur(float* src, float* dst, int radius, int W, int H, bool multiThre
         dstp[i] = dst + i * W;
     }
     boxabsblur(srcp, dstp, radius, W, H, multiThread);
-}
-
 }

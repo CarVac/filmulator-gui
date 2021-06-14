@@ -124,6 +124,40 @@ SlimSplitView {
                 }
 
                 ToolSlider {
+                    id: highlightRecoverySlider
+                    title: qsTr("Highlight Recovery")
+                    tooltipText: qsTr("Recover clipped highlights.\n\n0 clips after the preliminary white balance.\n1 is useful if 0 has restricted the red or blue channels in situations where no raw color channels are clipped.\n2 enables highlight reconstruction, which works best when only one channel is clipped, and when purple fringing isn't a problem.")
+                    minimumValue: 0
+                    maximumValue: 2
+                    stepSize: 1
+                    tickmarksEnabled: true
+                    value: paramManager.highlights
+                    defaultValue: paramManager.defHighlights
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.highlights = value
+                        }
+                    }
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        function onHighlightsChanged() {
+                            highlightRecoverySlider.value = paramManager.highlights
+                        }
+                        function onDefHighlightsChanged() {
+                            highlightRecoverySlider.defaultValue = paramManager.defHighlights
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
                     id: autoCASlider
                     title: qsTr("Auto CA Correction")
                     tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.\n\nNot available for non-Bayer photos.")
@@ -268,10 +302,42 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
+                ToolSwitch {
+                    id: nrEnabledSwitch
+                    text: qsTr("Noise Reduction")
+                    tooltipText: qsTr("Perform noise reduction to remove grain and color splotches from the image.")
+                    isOn: paramManager.nrEnabled
+                    defaultOn: paramManager.defNrEnabled
+                    onIsOnChanged: {
+                        paramManager.nrEnabled = isOn
+                        //paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.nrEnabled = defaultOn
+                        //paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        function onNrEnabledChanged() {
+                            nrEnabledSwitch.isOn = paramManager.nrEnabled
+                        }
+                        function onDefNrEnabledChanged() {
+                            nrEnabledSwitch.defaultOn = paramManager.defNrEnabled
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        nrEnabledSwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
                 ToolSlider {
                     id: nlClustersSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
                     title: qsTr("nlmeans clusters")
-                    tooltipText: qsTr("Max number of clusters per tile, I think")
+                    tooltipText: qsTr("Max number of clusters per tile, assuming each tile has enough varying detail")
                     minimumValue: 5
                     maximumValue: 200
                     stepSize: 1
@@ -283,7 +349,7 @@ SlimSplitView {
                             paramManager.nlClusters = value
                         }
                     }
-                    //onEditComplete: //it's not stored in the database
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
                     Connections {
                         target: paramManager
                         function onNlClustersChanged() {
@@ -293,6 +359,7 @@ SlimSplitView {
                             nlClustersSlider.defaultValue = paramManager.defNlClusters
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         nlClustersSlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
@@ -300,10 +367,12 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
-                ToolSlider {
+                /*ToolSlider {
                     id: nlThreshSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
                     title: qsTr("nlmeans cluster threshold")
-                    tooltipText: qsTr("I think this is the smallest a cluster can be in terms of difference")
+                    tooltipText: qsTr("The larger this value, the fewer clusters the localities are divided into")
                     minimumValue: -9*Math.log(10)
                     maximumValue: 1*Math.log(10)
                     value: Math.log(paramManager.nlThresh)
@@ -315,7 +384,7 @@ SlimSplitView {
                             paramManager.nlThresh = Math.exp(value)
                         }
                     }
-                    //onEditComplete: //it's not stored in the database
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
                     Connections {
                         target: paramManager
                         function onNlThreshChanged() {
@@ -325,19 +394,22 @@ SlimSplitView {
                             nlThreshSlider.defaultValue = Math.log(paramManager.defNlThresh)
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         nlThreshSlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale
-                }
+                }*/
 
                 ToolSlider {
                     id: nlStrengthSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
                     title: qsTr("nlmeans strength")
                     tooltipText: qsTr("Some control of strength. Not sure what. When set to zero, this disables nlmeans.")
                     minimumValue: 0
-                    maximumValue: 0.1
+                    maximumValue: 0.03
                     value: paramManager.nlStrength
                     defaultValue: paramManager.defNlStrength
                     property bool bindingLoopCutoff: true
@@ -346,7 +418,7 @@ SlimSplitView {
                             paramManager.nlStrength = value
                         }
                     }
-                    //onEditComplete: //it's not stored in the database
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
                     Connections {
                         target: paramManager
                         function onNlStrengthChanged() {
@@ -356,6 +428,7 @@ SlimSplitView {
                             nlStrengthSlider.defaultValue = paramManager.defNlStrength
                         }
                     }
+                    tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         nlStrengthSlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
@@ -364,34 +437,34 @@ SlimSplitView {
                 }
 
                 ToolSlider {
-                    id: highlightRecoverySlider
-                    title: qsTr("Highlight Recovery")
-                    tooltipText: qsTr("Recover clipped highlights.\n\n0 clips after the preliminary white balance.\n1 is useful if 0 has restricted the red or blue channels in situations where no raw color channels are clipped.\n2 enables highlight reconstruction, which works best when only one channel is clipped, and when purple fringing isn't a problem.")
+                    id: chromaStrengthSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
+                    title: qsTr("Chroma NR Strength")
+                    tooltipText: qsTr("Reduce color noise. Higher values increase the effect. When set to zero, chroma noise reduction is disabled.")
                     minimumValue: 0
-                    maximumValue: 2
-                    stepSize: 1
-                    tickmarksEnabled: true
-                    value: paramManager.highlights
-                    defaultValue: paramManager.defHighlights
+                    maximumValue: 1
+                    value: paramManager.chromaStrength
+                    defaultValue: paramManager.defChromaStrength
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
-                            paramManager.highlights = value
+                            paramManager.chromaStrength = value
                         }
                     }
-                    onEditComplete: paramManager.writeback()
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
                     Connections {
                         target: paramManager
-                        function onHighlightsChanged() {
-                            highlightRecoverySlider.value = paramManager.highlights
+                        function onChromaStrengthChanged() {
+                            chromaStrengthSlider.value = paramManager.chromaStrength
                         }
-                        function onDefHighlightsChanged() {
-                            highlightRecoverySlider.defaultValue = paramManager.defHighlights
+                        function onDefChromaStrengthChanged() {
+                            chromaStrengthSlider.defaultValue = paramManager.defChromaStrength
                         }
                     }
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
-                        highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
+                        chromaStrengthSlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale

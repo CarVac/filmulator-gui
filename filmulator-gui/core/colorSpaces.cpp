@@ -1,4 +1,4 @@
-#include "filmSim.hpp"
+//#include "filmSim.hpp"
 #include "lut.hpp"
 
 //Constants for conversion to and from L*a*b*
@@ -268,6 +268,145 @@ void sRGB_gammacurve(matrix<float> &in,
                 out(i, j  ) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j  )));
                 out(i, j+1) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j+1)));
                 out(i, j+2) = (unsigned short)(65535*sRGB_forward_gamma(in(i, j+2)));
+            }
+        }
+    }
+}
+
+//Convert linear float sRGB with a range of roughly 65535 to Oklab
+//Reference: https://bottosson.github.io/posts/oklab/
+void sRGB_to_oklab(matrix<float> &in,
+                   matrix<float> &out)
+{
+    int nRows = in.nr();
+    int nCols = in.nc();
+
+    out.set_size(nRows,nCols);
+
+#pragma omp parallel shared(in, out) firstprivate(nRows, nCols)
+    {
+#pragma omp for schedule(dynamic) nowait
+        for (int i = 0; i < nRows; i++)
+        {
+            for (int j = 0; j < nCols; j += 3)
+            {
+                const float r = in(i, j+0) / 65535.0f;
+                const float g = in(i, j+1) / 65535.0f;
+                const float b = in(i, j+2) / 65535.0f;
+
+                const float l = 0.4122214708f * r + 0.5363325363f * g + 0.0514459929f * b;
+                const float m = 0.2119034982f * r + 0.6806995451f * g + 0.1073969566f * b;
+                const float s = 0.0883024619f * r + 0.2817188376f * g + 0.6299787005f * b;
+
+                const float l_ = cbrtf(l);
+                const float m_ = cbrtf(m);
+                const float s_ = cbrtf(s);
+
+                out(i, j+0) = 0.2104542553f*l_ + 0.7936177850f*m_ - 0.0040720468f*s_;
+                out(i, j+1) = 1.9779984951f*l_ - 2.4285922050f*m_ + 0.4505937099f*s_;
+                out(i, j+2) = 0.0259040371f*l_ + 0.7827717662f*m_ - 0.8086757660f*s_;
+            }
+        }
+    }
+}
+
+//Convert float Oklab to linear float sRGB up to roughly 65535
+
+//Reference: https://bottosson.github.io/posts/oklab/
+void oklab_to_sRGB(matrix<float> &in,
+                   matrix<float> &out)
+{
+    int nRows = in.nr();
+    int nCols = in.nc();
+
+    out.set_size(nRows,nCols);
+
+#pragma omp parallel shared(in, out) firstprivate(nRows, nCols)
+    {
+#pragma omp for schedule(dynamic) nowait
+        for (int i = 0; i < nRows; i++)
+        {
+            for (int j = 0; j < nCols; j += 3)
+            {
+                const float L = in(i, j+0);
+                const float a = in(i, j+1);
+                const float b = in(i, j+2);
+
+                const float l_ = L + 0.3963377774f * a + 0.2158037573f * b;
+                const float m_ = L - 0.1055613458f * a - 0.0638541728f * b;
+                const float s_ = L - 0.0894841775f * a - 1.2914855480f * b;
+
+                const float l = l_*l_*l_;
+                const float m = m_*m_*m_;
+                const float s = s_*s_*s_;
+
+                out(i, j+0) = (+4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s) * 65535.0f;
+                out(i, j+1) = (-1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s) * 65535.0f;
+                out(i, j+2) = (-0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s) * 65535.0f;
+            }
+        }
+    }
+}
+
+//Convert raw color to sRGB, don't clip negatives.
+void raw_to_sRGB(matrix<float> &input,
+                 matrix<float> &output,
+                 const float cam2rgb[3][3])
+{
+    int nRows = input.nr();
+    int nCols = input.nc();
+
+    output.set_size(nRows, nCols);
+
+#pragma omp parallel shared(output, input) firstprivate(nRows, nCols)
+    {
+#pragma omp for schedule(dynamic) nowait
+        for (int i = 0; i < nRows; i++)
+        {
+            for (int j = 0; j < nCols; j += 3)
+            {
+                output(i, j  ) = cam2rgb[0][0]*input(i, j) + cam2rgb[0][1]*input(i, j+1) + cam2rgb[0][2]*input(i, j+2);
+                output(i, j+1) = cam2rgb[1][0]*input(i, j) + cam2rgb[1][1]*input(i, j+1) + cam2rgb[1][2]*input(i, j+2);
+                output(i, j+2) = cam2rgb[2][0]*input(i, j) + cam2rgb[2][1]*input(i, j+1) + cam2rgb[2][2]*input(i, j+2);
+
+            }
+        }
+    }
+}
+
+//Convert raw color (range of roughly 65535) to oklab, don't clip negatives.
+//Reference: https://bottosson.github.io/posts/oklab/
+void raw_to_oklab(matrix<float> &input,
+                  matrix<float> &output,
+                  const float cam2rgb[3][3])
+{
+    int nRows = input.nr();
+    int nCols = input.nc();
+
+    output.set_size(nRows, nCols);
+
+#pragma omp parallel shared(output, input) firstprivate(nRows, nCols)
+    {
+#pragma omp for schedule(dynamic) nowait
+        for (int i = 0; i < nRows; i++)
+        {
+            for (int j = 0; j < nCols; j += 3)
+            {
+                const float r = (cam2rgb[0][0]*input(i, j) + cam2rgb[0][1]*input(i, j+1) + cam2rgb[0][2]*input(i, j+2))/65535.0f;
+                const float g = (cam2rgb[1][0]*input(i, j) + cam2rgb[1][1]*input(i, j+1) + cam2rgb[1][2]*input(i, j+2))/65535.0f;
+                const float b = (cam2rgb[2][0]*input(i, j) + cam2rgb[2][1]*input(i, j+1) + cam2rgb[2][2]*input(i, j+2))/65535.0f;
+
+                const float l = 0.4122214708f * r + 0.5363325363f * g + 0.0514459929f * b;
+                const float m = 0.2119034982f * r + 0.6806995451f * g + 0.1073969566f * b;
+                const float s = 0.0883024619f * r + 0.2817188376f * g + 0.6299787005f * b;
+
+                const float l_ = cbrtf(l);
+                const float m_ = cbrtf(m);
+                const float s_ = cbrtf(s);
+
+                output(i, j+0) = 0.2104542553f*l_ + 0.7936177850f*m_ - 0.0040720468f*s_;
+                output(i, j+1) = 1.9779984951f*l_ - 2.4285922050f*m_ + 0.4505937099f*s_;
+                output(i, j+2) = 0.0259040371f*l_ + 0.7827717662f*m_ - 0.8086757660f*s_;
             }
         }
     }
