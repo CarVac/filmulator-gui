@@ -997,82 +997,80 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 raw_to_oklab(demosaiced_image, nr_image, camToRGB);
 
                 cout << "Luma NR strength: " << nrParam.nlStrength << endl;
-                if (nrParam.nlStrength > 0 && nlValid == nlnone)
+                if (nrParam.nlStrength > 0)
                 {
-                    cout << "Luma NR preprocessing start: " << timeDiff(timeRequested) << endl;
-                    matrix<float> denoised(demosaiced_image.nr(), demosaiced_image.nc());
-                    matrix<float> preconditioned = demosaiced_image;
+                    if (nlValid == nlnone)
+                    {
+                        cout << "Luma NR preprocessing start: " << timeDiff(timeRequested) << endl;
+                        matrix<float> denoised(demosaiced_image.nr(), demosaiced_image.nc());
+                        matrix<float> preconditioned = demosaiced_image;
 
 #pragma omp parallel for
-                    for (int row = 0; row < preconditioned.nr(); row++)
-                    {
-                        for (int col = 0; col < preconditioned.nc(); col++)
+                        for (int row = 0; row < preconditioned.nr(); row++)
                         {
-                            preconditioned(row, col) = sRGB_forward_gamma_unclipped(preconditioned(row, col)/65535.0f);
-                        }
-                    }
-
-                    float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
-                    float scale = std::max(preconditioned.max() + offset, 1.0f);// /5;
-#pragma omp parallel for
-                    for (int row = 0; row < preconditioned.nr(); row++)
-                    {
-                        for (int col = 0; col < preconditioned.nc(); col++)
-                        {
-                            preconditioned(row, col) = (preconditioned(row, col) + offset)/scale;
-                            if (isnan(preconditioned(row,col)))
+                            for (int col = 0; col < preconditioned.nc(); col++)
                             {
-                                preconditioned(row,col) = 0.0f;
+                                preconditioned(row, col) = sRGB_forward_gamma_unclipped(preconditioned(row, col)/65535.0f);
                             }
                         }
-                    }
 
-                    const int numClusters = nrParam.nlClusters;
-                    const float clusterThreshold = nrParam.nlThresh;
-                    const float strength = nrParam.nlStrength;
+                        float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
+                        float scale = std::max(preconditioned.max() + offset, 1.0f);// /5;
+#pragma omp parallel for
+                        for (int row = 0; row < preconditioned.nr(); row++)
+                        {
+                            for (int col = 0; col < preconditioned.nc(); col++)
+                            {
+                                preconditioned(row, col) = (preconditioned(row, col) + offset)/scale;
+                                if (isnan(preconditioned(row,col)))
+                                {
+                                    preconditioned(row,col) = 0.0f;
+                                }
+                            }
+                        }
 
-                    cout << "Luma NR processing start: " << timeDiff(timeRequested) << endl;
-                    struct timeval nrTime;
-                    gettimeofday(&nrTime, nullptr);
+                        const int numClusters = nrParam.nlClusters;
+                        const float clusterThreshold = nrParam.nlThresh;
+                        const float strength = nrParam.nlStrength;
 
-                    if (kMeansNLMApprox(preconditioned,
-                                        numClusters,
-                                        clusterThreshold,
-                                        strength,
-                                        preconditioned.nr(),
-                                        preconditioned.nc()/3,
-                                        denoised,
-                                        paramManager)){
-                        cout << "imagePipeline aborted at nlmeans noise reduction" << endl;
-                        return emptyMatrix();
-                    }
-                    cout << "Nlmeans NR duration: " << timeDiff(nrTime) << endl;
-                    cout << "before NR conditioned min: " << preconditioned.min() << endl;
-                    cout << "before NR conditioned max: " << preconditioned.max() << endl;
-                    cout << "before NR conditioned mean: " << preconditioned.mean() << endl;
-                    cout << "after NR conditioned min: " << denoised.min() << endl;
-                    cout << "after NR conditioned max: " << denoised.max() << endl;
-                    cout << "after NR conditioned mean: " << denoised.mean() << endl;
+                        cout << "Luma NR processing start: " << timeDiff(timeRequested) << endl;
+                        struct timeval nrTime;
+                        gettimeofday(&nrTime, nullptr);
+
+                        if (kMeansNLMApprox(preconditioned,
+                                            numClusters,
+                                            clusterThreshold,
+                                            strength,
+                                            preconditioned.nr(),
+                                            preconditioned.nc()/3,
+                                            denoised,
+                                            paramManager)){
+                            cout << "imagePipeline aborted at nlmeans noise reduction" << endl;
+                            return emptyMatrix();
+                        }
+                        cout << "Nlmeans NR duration: " << timeDiff(nrTime) << endl;
 
 #pragma omp parallel for
-                    for (int row = 0; row < denoised.nr(); row++)
-                    {
-                        for (int col = 0; col < denoised.nc(); col++)
+                        for (int row = 0; row < denoised.nr(); row++)
                         {
-                            denoised(row, col) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col) - offset)*65535.0f;
+                            for (int col = 0; col < denoised.nc(); col++)
+                            {
+                                denoised(row, col) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col) - offset)*65535.0f;
+                            }
                         }
+
+                        //convert raw color to oklab
+                        //matrix<float> nlmeansLab;
+
+                        //raw_to_oklab(denoised, nlmeansLab);
+
+                        //impulse noise reduction here
+                        raw_to_oklab(denoised, luma_nr_image, camToRGB);
+
+                        paramManager->markNlmeansComplete();
                     }
 
-                    //convert raw color to oklab
-                    //matrix<float> nlmeansLab;
-
-                    //raw_to_oklab(denoised, nlmeansLab);
-
-                    //impulse noise reduction here
-                    matrix<float> luma_nr_image;
-                    raw_to_oklab(denoised, luma_nr_image, camToRGB);
-
-                    //write to nr_image
+                    //As long as it's been calculated before, write out to nr_image
 #pragma omp parallel for
                     for (int i = 0; i < luma_nr_image.nr(); i++)
                     {
@@ -1081,33 +1079,35 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             nr_image(i, j) = luma_nr_image(i, j);
                         }
                     }
-
-                    paramManager->markNlmeansComplete();
                 }
 
-                if (nrParam.chromaStrength > 0 && chromaValid == chromanone)
+                if (nrParam.chromaStrength > 0)
                 {
-                    cout << "Chroma NR preprocessing start: " << timeDiff(timeRequested) << endl;
-                    struct timeval nrTime;
+                    if (chromaValid == chromanone)
+                    {
+                        cout << "Chroma NR preprocessing start: " << timeDiff(timeRequested) << endl;
+                        struct timeval nrTime;
 
-                    //convert raw color to Oklab
-                    matrix<float> demosaicedLab;
-                    matrix<float> chroma_nr_image;
-                    raw_to_oklab(demosaiced_image, demosaicedLab, camToRGB);
+                        //convert raw color to Oklab
+                        matrix<float> demosaicedLab;
+                        raw_to_oklab(demosaiced_image, demosaicedLab, camToRGB);
 
-                    //chroma noise reduction routine
-                    RGB_denoise(0,//0 for no tiling
-                                demosaicedLab,
-                                chroma_nr_image,
-                                nrParam.chromaStrength,
-                                0.0f, 0.0f,
-                                paramManager);
+                        //chroma noise reduction routine
+                        RGB_denoise(0,//0 for no tiling
+                                    demosaicedLab,
+                                    chroma_nr_image,
+                                    nrParam.chromaStrength,
+                                    0.0f, 0.0f,
+                                    paramManager);
 
-                    cout << "Chroma NR duration: " << timeDiff(nrTime) << endl;
-                    cout << "chroma dims:   " << chroma_nr_image.nr() << " " << chroma_nr_image.nc()/3 << endl;
-                    cout << "nr_image dims: " << nr_image.nr() << " " << nr_image.nc()/3 << endl;
+                        cout << "Chroma NR duration: " << timeDiff(nrTime) << endl;
+                        cout << "chroma dims:   " << chroma_nr_image.nr() << " " << chroma_nr_image.nc()/3 << endl;
+                        cout << "nr_image dims: " << nr_image.nr() << " " << nr_image.nc()/3 << endl;
 
-                    //write to nr_image
+                        paramManager->markChromaComplete();
+                    }
+
+                    //As long as it's been calculated before, write to nr_image
 #pragma omp parallel for
                     for (int i = 0; i < chroma_nr_image.nr(); i++)
                     {
@@ -1119,7 +1119,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                     nr_image.swap(chroma_nr_image);
 
-                    paramManager->markChromaComplete();
                 }
 
                 if (NoCache == cache)
@@ -1710,6 +1709,8 @@ void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
     std::swap(basicExifData, swapTarget->basicExifData);
 
     demosaiced_image.swap(swapTarget->demosaiced_image);
+    luma_nr_image.swap(swapTarget->luma_nr_image);
+    chroma_nr_image.swap(swapTarget->chroma_nr_image);
     nr_image.swap(swapTarget->nr_image);
     pre_film_image.swap(swapTarget->pre_film_image);
     filmulated_image.swap(swapTarget->filmulated_image);

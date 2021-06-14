@@ -89,6 +89,8 @@ protected:
     bool isCR3;
 
     matrix<float> demosaiced_image;
+    matrix<float> luma_nr_image;//lab
+    matrix<float> chroma_nr_image;//lab
     matrix<float> nr_image;//lab
     matrix<float> pre_film_image;
     Exiv2::ExifData exifData;
