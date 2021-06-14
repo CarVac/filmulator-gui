@@ -1012,8 +1012,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         }
                     }
 
-                    float offset = std::max(-demosaiced_image.min() + 0.001f, 0.001f);
-                    float scale = std::max(demosaiced_image.max() + offset, 1.0f);// /5;
+                    float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
+                    float scale = std::max(preconditioned.max() + offset, 1.0f);// /5;
 #pragma omp parallel for
                     for (int row = 0; row < preconditioned.nr(); row++)
                     {
@@ -1047,8 +1047,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         return emptyMatrix();
                     }
                     cout << "Nlmeans NR duration: " << timeDiff(nrTime) << endl;
-                    cout << "Nlmeans before NR mean: " << preconditioned.mean() << endl;
-                    cout << "Nlmeans after NR mean: " << denoised.mean() << endl;
+                    cout << "before NR conditioned min: " << preconditioned.min() << endl;
+                    cout << "before NR conditioned max: " << preconditioned.max() << endl;
+                    cout << "before NR conditioned mean: " << preconditioned.mean() << endl;
+                    cout << "after NR conditioned min: " << denoised.min() << endl;
+                    cout << "after NR conditioned max: " << denoised.max() << endl;
+                    cout << "after NR conditioned mean: " << denoised.mean() << endl;
 
 #pragma omp parallel for
                     for (int row = 0; row < denoised.nr(); row++)
