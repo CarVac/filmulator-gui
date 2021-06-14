@@ -1071,6 +1071,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
 
                     //As long as it's been calculated before, write out to nr_image
+                    /*
 #pragma omp parallel for
                     for (int i = 0; i < luma_nr_image.nr(); i++)
                     {
@@ -1079,6 +1080,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             nr_image(i, j) = luma_nr_image(i, j);
                         }
                     }
+                    */
+                    //Sometimes it's better to only have nlmeans, so whenever nlmeans is active, there'll always be chroma nr
+                    nr_image = luma_nr_image;
                 }
 
                 if (nrParam.chromaStrength > 0)
