@@ -36,6 +36,8 @@ SOURCES += main.cpp \
     core/rawtherapee/FTblockDN.cc \
     core/rawtherapee/boxblur.cc \
     core/rawtherapee/cplx_wavelet_dec.cc \
+    core/rawtherapee/gauss.cc \
+    core/rawtherapee/impulse_denoise.cc \
     core/rawtherapee/labimage.cc \
     core/rotateImage.cpp \
     core/scale.cpp \
@@ -113,6 +115,7 @@ HEADERS += \
     core/rawtherapee/cplx_wavelet_dec.h \
     core/rawtherapee/cplx_wavelet_filter_coeffs.h \
     core/rawtherapee/cplx_wavelet_level.h \
+    core/rawtherapee/gauss.h \
     core/rawtherapee/helpersse2.h \
     core/rawtherapee/labimage.h \
     core/rawtherapee/opthelper.h \

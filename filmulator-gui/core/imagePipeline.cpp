@@ -994,6 +994,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
                 //prepare an oklab image without noise reduction.
                 //We'll overwrite the L or ab channels as they get denoised, as applicable.
+                cout << "NR copying original image" << endl;
                 raw_to_oklab(demosaiced_image, nr_image, camToRGB);
 
                 cout << "Luma NR strength: " << nrParam.nlStrength << endl;
@@ -1082,6 +1083,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                     */
                     //Sometimes it's better to only have nlmeans, so whenever nlmeans is active, there'll always be chroma nr
+                    cout << "NR copying full luma" << endl;
                     nr_image = luma_nr_image;
                 }
 
@@ -1096,6 +1098,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         matrix<float> demosaicedLab;
                         raw_to_oklab(demosaiced_image, demosaicedLab, camToRGB);
 
+                        cout << "chroma NR input min " << demosaicedLab.min() << endl;
+                        cout << "chroma NR input max " << demosaicedLab.max() << endl;
+                        cout << "chroma NR input mean " << demosaicedLab.mean() << endl;
                         //chroma noise reduction routine
                         RGB_denoise(0,//0 for no tiling
                                     demosaicedLab,
@@ -1103,15 +1108,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                     nrParam.chromaStrength,
                                     0.0f, 0.0f,
                                     paramManager);
+                        cout << "chroma NR output min " << chroma_nr_image.min() << endl;
+                        cout << "chroma NR output max " << chroma_nr_image.max() << endl;
+                        cout << "chroma NR output mean " << chroma_nr_image.mean() << endl;
 
                         cout << "Chroma NR duration: " << timeDiff(nrTime) << endl;
-                        cout << "chroma dims:   " << chroma_nr_image.nr() << " " << chroma_nr_image.nc()/3 << endl;
-                        cout << "nr_image dims: " << nr_image.nr() << " " << nr_image.nc()/3 << endl;
 
                         paramManager->markChromaComplete();
                     }
 
                     //As long as it's been calculated before, write to nr_image
+                    cout << "NR copying chroma only" << endl;
 #pragma omp parallel for
                     for (int i = 0; i < chroma_nr_image.nr(); i++)
                     {
@@ -1121,7 +1128,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             nr_image(i, j+2) = chroma_nr_image(i, j+2);
                         }
                     }
-                    nr_image.swap(chroma_nr_image);
 
                 }
 
