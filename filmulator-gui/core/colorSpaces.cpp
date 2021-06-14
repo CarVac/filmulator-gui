@@ -273,7 +273,7 @@ void sRGB_gammacurve(matrix<float> &in,
     }
 }
 
-//Convert linear float sRGB with a range of roughly 65535 to Oklab
+//Convert linear float sRGB with a range of roughly 65535 to 100*Oklab
 //Reference: https://bottosson.github.io/posts/oklab/
 void sRGB_to_oklab(matrix<float> &in,
                    matrix<float> &out)
@@ -302,15 +302,15 @@ void sRGB_to_oklab(matrix<float> &in,
                 const float m_ = cbrtf(m);
                 const float s_ = cbrtf(s);
 
-                out(i, j+0) = 0.2104542553f*l_ + 0.7936177850f*m_ - 0.0040720468f*s_;
-                out(i, j+1) = 1.9779984951f*l_ - 2.4285922050f*m_ + 0.4505937099f*s_;
-                out(i, j+2) = 0.0259040371f*l_ + 0.7827717662f*m_ - 0.8086757660f*s_;
+                out(i, j+0) = (0.2104542553f*l_ + 0.7936177850f*m_ - 0.0040720468f*s_) * 100;
+                out(i, j+1) = (1.9779984951f*l_ - 2.4285922050f*m_ + 0.4505937099f*s_) * 100;
+                out(i, j+2) = (0.0259040371f*l_ + 0.7827717662f*m_ - 0.8086757660f*s_) * 100;
             }
         }
     }
 }
 
-//Convert float Oklab to linear float sRGB up to roughly 65535
+//Convert float 100*Oklab to linear float sRGB up to roughly 65535
 
 //Reference: https://bottosson.github.io/posts/oklab/
 void oklab_to_sRGB(matrix<float> &in,
@@ -328,9 +328,9 @@ void oklab_to_sRGB(matrix<float> &in,
         {
             for (int j = 0; j < nCols; j += 3)
             {
-                const float L = in(i, j+0);
-                const float a = in(i, j+1);
-                const float b = in(i, j+2);
+                const float L = in(i, j+0)/100;
+                const float a = in(i, j+1)/100;
+                const float b = in(i, j+2)/100;
 
                 const float l_ = L + 0.3963377774f * a + 0.2158037573f * b;
                 const float m_ = L - 0.1055613458f * a - 0.0638541728f * b;
@@ -374,7 +374,7 @@ void raw_to_sRGB(matrix<float> &input,
     }
 }
 
-//Convert raw color (range of roughly 65535) to oklab, don't clip negatives.
+//Convert raw color (range of roughly 65535) to 100*oklab, don't clip negatives.
 //Reference: https://bottosson.github.io/posts/oklab/
 void raw_to_oklab(matrix<float> &input,
                   matrix<float> &output,
@@ -404,9 +404,9 @@ void raw_to_oklab(matrix<float> &input,
                 const float m_ = cbrtf(m);
                 const float s_ = cbrtf(s);
 
-                output(i, j+0) = 0.2104542553f*l_ + 0.7936177850f*m_ - 0.0040720468f*s_;
-                output(i, j+1) = 1.9779984951f*l_ - 2.4285922050f*m_ + 0.4505937099f*s_;
-                output(i, j+2) = 0.0259040371f*l_ + 0.7827717662f*m_ - 0.8086757660f*s_;
+                output(i, j+0) = (0.2104542553f*l_ + 0.7936177850f*m_ - 0.0040720468f*s_) * 100;
+                output(i, j+1) = (1.9779984951f*l_ - 2.4285922050f*m_ + 0.4505937099f*s_) * 100;
+                output(i, j+2) = (0.0259040371f*l_ + 0.7827717662f*m_ - 0.8086757660f*s_) * 100;
             }
         }
     }

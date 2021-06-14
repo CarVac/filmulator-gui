@@ -443,7 +443,7 @@ SlimSplitView {
                     title: qsTr("Chroma NR Strength")
                     tooltipText: qsTr("Reduce color noise. Higher values increase the effect. When set to zero, chroma noise reduction is disabled.")
                     minimumValue: 0
-                    maximumValue: 1
+                    maximumValue: 100
                     value: paramManager.chromaStrength
                     defaultValue: paramManager.defChromaStrength
                     property bool bindingLoopCutoff: true
