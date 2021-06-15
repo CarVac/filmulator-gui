@@ -333,81 +333,11 @@ SlimSplitView {
                 }
 
                 ToolSlider {
-                    id: nlClustersSlider
-                    visible: nrEnabledSwitch.isOn
-                    highlight: nrEnabledSwitch.hovered
-                    title: qsTr("nlmeans clusters")
-                    tooltipText: qsTr("Max number of clusters per tile, assuming each tile has enough varying detail")
-                    minimumValue: 5
-                    maximumValue: 200
-                    stepSize: 1
-                    value: paramManager.nlClusters
-                    defaultValue: paramManager.defNlClusters
-                    property bool bindingLoopCutoff: true
-                    onValueChanged: {
-                        if (!bindingLoopCutoff) {
-                            paramManager.nlClusters = value
-                        }
-                    }
-                    //onEditComplete: paramManager.writeback()//it's not stored in the database
-                    Connections {
-                        target: paramManager
-                        function onNlClustersChanged() {
-                            nlClustersSlider.value = paramManager.nlClusters
-                        }
-                        function onDefNlClustersChanged() {
-                            nlClustersSlider.defaultValue = paramManager.defNlClusters
-                        }
-                    }
-                    tooltipInstant: root.helpMode
-                    Component.onCompleted: {
-                        nlClustersSlider.tooltipWanted.connect(root.tooltipWanted)
-                        bindingLoopCutoff = false
-                    }
-                    uiScale: root.uiScale
-                }
-
-                /*ToolSlider {
-                    id: nlThreshSlider
-                    visible: nrEnabledSwitch.isOn
-                    highlight: nrEnabledSwitch.hovered
-                    title: qsTr("nlmeans cluster threshold")
-                    tooltipText: qsTr("The larger this value, the fewer clusters the localities are divided into")
-                    minimumValue: -9*Math.log(10)
-                    maximumValue: 1*Math.log(10)
-                    value: Math.log(paramManager.nlThresh)
-                    defaultValue: Math.log(paramManager.defNlThresh)
-                    valueText: Math.exp(value).toExponential(3)
-                    property bool bindingLoopCutoff: true
-                    onValueChanged: {
-                        if (!bindingLoopCutoff) {
-                            paramManager.nlThresh = Math.exp(value)
-                        }
-                    }
-                    //onEditComplete: paramManager.writeback()//it's not stored in the database
-                    Connections {
-                        target: paramManager
-                        function onNlThreshChanged() {
-                            nlThreshSlider.value = Math.log(paramManager.nlThresh)
-                        }
-                        function onDefNlThreshChanged() {
-                            nlThreshSlider.defaultValue = Math.log(paramManager.defNlThresh)
-                        }
-                    }
-                    tooltipInstant: root.helpMode
-                    Component.onCompleted: {
-                        nlThreshSlider.tooltipWanted.connect(root.tooltipWanted)
-                        bindingLoopCutoff = false
-                    }
-                    uiScale: root.uiScale
-                }*/
-
-                ToolSlider {
                     id: nlStrengthSlider
                     visible: nrEnabledSwitch.isOn
                     highlight: nrEnabledSwitch.hovered
-                    title: qsTr("nlmeans strength")
-                    tooltipText: qsTr("Some control of strength. Not sure what. When set to zero, this disables nlmeans.")
+                    title: qsTr("NR Strength")
+                    tooltipText: qsTr("General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled.")
                     minimumValue: 0
                     maximumValue: 0.03
                     value: paramManager.nlStrength
@@ -437,11 +367,46 @@ SlimSplitView {
                 }
 
                 ToolSlider {
+                    id: nlClustersSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
+                    title: qsTr("NR Gradients")
+                    tooltipText: qsTr("Increase this control if the standard noise reduction is causing posterization or banding on gradients. If no banding is visible, increasing this will have no effect besides making noise reduction slower.")//qsTr("Max number of clusters per tile, assuming each tile has enough varying detail")
+                    minimumValue: 5
+                    maximumValue: 100
+                    stepSize: 1
+                    value: paramManager.nlClusters
+                    defaultValue: paramManager.defNlClusters
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.nlClusters = value
+                        }
+                    }
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
+                    Connections {
+                        target: paramManager
+                        function onNlClustersChanged() {
+                            nlClustersSlider.value = paramManager.nlClusters
+                        }
+                        function onDefNlClustersChanged() {
+                            nlClustersSlider.defaultValue = paramManager.defNlClusters
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        nlClustersSlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
                     id: chromaStrengthSlider
                     visible: nrEnabledSwitch.isOn
                     highlight: nrEnabledSwitch.hovered
                     title: qsTr("Chroma NR Strength")
-                    tooltipText: qsTr("Reduce color noise. Higher values increase the effect. When set to zero, chroma noise reduction is disabled.")
+                    tooltipText: qsTr("Reduce color noise. Works in combination with the above standard NR. Higher values increase the effect, but add color smearing. When set to zero, chroma noise reduction is disabled.")
                     minimumValue: 0
                     maximumValue: 100
                     value: paramManager.chromaStrength
@@ -465,6 +430,40 @@ SlimSplitView {
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         chromaStrengthSlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: impulseThreshSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
+                    title: qsTr("Speckle NR Strength")
+                    tooltipText: qsTr("Remove isolated image speckles. Higher values increase the effect, but can affect detail. When set to zero, speckle noise reduction is disabled.")
+                    minimumValue: 0
+                    maximumValue: 10
+                    value: paramManager.impulseThresh
+                    defaultValue: paramManager.defImpulseThresh
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.impulseThresh = value
+                        }
+                    }
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
+                    Connections {
+                        target: paramManager
+                        function onChromaStrengthChanged() {
+                            impulseThreshSlider.value = paramManager.impulseThresh
+                        }
+                        function onDefChromaStrengthChanged() {
+                            impulseThreshSlider.defaultValue = paramManager.defImpulseThresh
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        impulseThreshSlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale

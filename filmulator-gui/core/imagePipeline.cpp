@@ -1094,16 +1094,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         cout << "Chroma NR preprocessing start: " << timeDiff(timeRequested) << endl;
                         struct timeval nrTime;
 
-                        //convert raw color to Oklab
-                        matrix<float> demosaicedLab;
-                        raw_to_oklab(demosaiced_image, demosaicedLab, camToRGB);
-
-                        cout << "chroma NR input min " << demosaicedLab.min() << endl;
-                        cout << "chroma NR input max " << demosaicedLab.max() << endl;
-                        cout << "chroma NR input mean " << demosaicedLab.mean() << endl;
+                        cout << "chroma NR input min " << nr_image.min() << endl;
+                        cout << "chroma NR input max " << nr_image.max() << endl;
+                        cout << "chroma NR input mean " << nr_image.mean() << endl;
                         //chroma noise reduction routine
                         RGB_denoise(0,//0 for no tiling
-                                    demosaicedLab,
+                                    nr_image,
                                     chroma_nr_image,
                                     nrParam.chromaStrength,
                                     0.0f, 0.0f,
@@ -1128,7 +1124,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             nr_image(i, j+2) = chroma_nr_image(i, j+2);
                         }
                     }
+                }
 
+                if (nrParam.impulseThresh > 0) //we want to apply impulse noise reduction
+                {
+                    impulse_nr(nr_image, nrParam.impulseThresh, 2.0);
                 }
 
                 if (NoCache == cache)

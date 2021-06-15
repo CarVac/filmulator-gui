@@ -382,6 +382,7 @@ std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> Para
     params.nlThresh = m_nlThresh;
     params.nlStrength = m_nlStrength;
     params.chromaStrength = m_chromaStrength;
+    params.impulseThresh = m_impulseThresh;
     std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> tup(validity, nlMeansValidity, chromaValidity, abort, params);
     return tup;
 }
@@ -460,6 +461,7 @@ void ParameterManager::setNlClusters(int numClusters)
         m_nlClusters = numClusters;
         validity = min(validity, Valid::demosaic);
         nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setNlClusters"));
@@ -474,6 +476,7 @@ void ParameterManager::setNlThresh(float clusterThreshold)
         m_nlThresh = clusterThreshold;
         validity = min(validity, Valid::demosaic);
         nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setNlThresh"));
@@ -488,6 +491,7 @@ void ParameterManager::setNlStrength(float strength)
         m_nlStrength = strength;
         validity = min(validity, Valid::demosaic);
         nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setNlStrength"));
@@ -505,6 +509,19 @@ void ParameterManager::setChromaStrength(float strength)
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setChromaStrength"));
+    }
+}
+
+void ParameterManager::setImpulseThresh(float thresh)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_impulseThresh = thresh;
+        validity = min(validity, Valid::demosaic);
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setImpulseThresh"));
     }
 }
 
@@ -2040,21 +2057,33 @@ void ParameterManager::loadDefaults(const CopyDefaults copyDefaults, const std::
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_nlClusters = d_nlClusters;
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
     d_nlThresh = 1e-5;
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_nlThresh = d_nlThresh;
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
     d_nlStrength = 0;
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_nlStrength = d_nlStrength;
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
     d_chromaStrength = 0;
     if (copyDefaults == CopyDefaults::loadToParams)
     {
         m_chromaStrength = d_chromaStrength;
+        chromaValidity = ChromaValid::chromanone;
+    }
+    d_impulseThresh = 0;
+    if (copyDefaults == CopyDefaults::loadToParams)
+    {
+        m_impulseThresh = d_impulseThresh;
     }
 
     //Exposure compensation
@@ -2565,20 +2594,32 @@ void ParameterManager::loadParams(QString imageID)
     {
         m_nlClusters = d_nlClusters;
         validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
     if (m_nlThresh != d_nlThresh)
     {
         m_nlThresh = d_nlThresh;
         validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
     if (m_nlStrength != d_nlStrength)
     {
         m_nlStrength = d_nlStrength;
         validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
     if (m_chromaStrength != d_chromaStrength)
     {
         m_chromaStrength = d_chromaStrength;
+        validity = min(validity, Valid::demosaic);
+        chromaValidity = ChromaValid::chromanone;
+    }
+    if (m_impulseThresh != d_impulseThresh)
+    {
+        m_impulseThresh = d_impulseThresh;
         validity = min(validity, Valid::demosaic);
     }
 
@@ -3233,6 +3274,8 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         m_nlClusters = temp_nlClusters;
         validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
 
     //nlmeans cluster threshold
@@ -3241,6 +3284,8 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         m_nlThresh = temp_nlThresh;
         validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
 
     //nlmeans strength
@@ -3249,6 +3294,8 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     {
         m_nlStrength = temp_nlStrength;
         validity = min(validity, Valid::demosaic);
+        nlMeansValidity = NlMeansValid::nlnone;
+        chromaValidity = ChromaValid::chromanone;
     }
 
     //chroma NR strength
@@ -3256,6 +3303,15 @@ void ParameterManager::cloneParams(ParameterManager * sourceParams)
     if (temp_chromaStrength != m_chromaStrength)
     {
         m_chromaStrength = temp_chromaStrength;
+        validity = min(validity, Valid::demosaic);
+        chromaValidity = ChromaValid::chromanone;
+    }
+
+    //impulse NR threshold
+    const float temp_impulseThresh = sourceParams->getImpulseThresh();
+    if (temp_impulseThresh != m_impulseThresh)
+    {
+        m_impulseThresh = temp_impulseThresh;
         validity = min(validity, Valid::demosaic);
     }
 

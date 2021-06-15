@@ -25,17 +25,33 @@
 #include "sleef.h"
 #include "opthelper.h"
 #include "gauss.h"
+#include "../matrix.hpp"
 
 using namespace std;
 
-void impulse_nr (LabImage* lab, double thresh)
+void impulse_nr (matrix<float> &image, double thresh, const double chromaFactor)
 {
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // impulse noise removal
     // local variables
 
-    int width = lab->W;
-    int height = lab->H;
+    const int width = image.nc()/3;
+    const int height = image.nr();
+
+    LabImage * lab = new LabImage(width, height);
+
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            lab->L[i][j] = image(i, j*3 + 0);
+            lab->a[i][j] = image(i, j*3 + 1) * chromaFactor;//increase chroma sensitivity
+            lab->b[i][j] = image(i, j*3 + 2) * chromaFactor;//increase chroma sensitivity
+        }
+    }
 
     // buffer for the lowpass image
     float * lpf[height] ALIGNED16;
@@ -254,5 +270,18 @@ void impulse_nr (LabImage* lab, double thresh)
     delete [] lpf[0];
     delete [] impish[0];
 
+    //copy out
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            image(i, j*3 + 0) = lab->L[i][j];
+            image(i, j*3 + 1) = lab->a[i][j] / chromaFactor;
+            image(i, j*3 + 2) = lab->b[i][j] / chromaFactor;
+        }
+    }
 }
 

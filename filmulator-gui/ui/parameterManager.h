@@ -77,6 +77,7 @@ struct NoiseReductionParams {
     float nlThresh;
     float nlStrength;
     float chromaStrength;
+    float impulseThresh;
 };
 
 struct PrefilmParams {
@@ -193,12 +194,14 @@ class ParameterManager : public QObject
     Q_PROPERTY(float nlThresh       MEMBER m_nlThresh       WRITE setNlThresh       NOTIFY nlThreshChanged)
     Q_PROPERTY(float nlStrength     MEMBER m_nlStrength     WRITE setNlStrength     NOTIFY nlStrengthChanged)
     Q_PROPERTY(float chromaStrength MEMBER m_chromaStrength WRITE setChromaStrength NOTIFY chromaStrengthChanged)
+    Q_PROPERTY(float impulseThresh  MEMBER m_impulseThresh  WRITE setImpulseThresh  NOTIFY impulseThreshChanged)
 
     Q_PROPERTY(bool defNrEnabled       READ getDefNrEnabled      NOTIFY defNrEnabledChanged)
     Q_PROPERTY(int defNlClusters       READ getDefNlClusters     NOTIFY defNlClustersChanged)
     Q_PROPERTY(float defNlThresh       READ getDefNlThresh       NOTIFY defNlThreshChanged)
     Q_PROPERTY(float defNlStrength     READ getDefNlStrength     NOTIFY defNlStrengthChanged)
     Q_PROPERTY(float defChromaStrength READ getDefChromaStrength NOTIFY defChromaStrengthChanged)
+    Q_PROPERTY(float defImpulseThresh  READ getDefImpulseThresh  NOTIFY defImpulseThreshChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -420,7 +423,8 @@ public:
     int getDefNlClusters(){return d_nlClusters;}
     float getDefNlThresh(){return d_nlThresh;}
     float getDefNlStrength(){return d_nlStrength;}
-    bool getDefChromaStrength(){return d_chromaStrength;}
+    float getDefChromaStrength(){return d_chromaStrength;}
+    float getDefImpulseThresh(){return d_impulseThresh;}
 
     //Prefilmulation
     float getDefExposureComp(){return d_exposureComp;}
@@ -489,6 +493,7 @@ public:
     float getNlThresh(){return m_nlThresh;}
     float getNlStrength(){return m_nlStrength;}
     float getChromaStrength(){return m_chromaStrength;}
+    float getImpulseThresh(){return m_impulseThresh;}
 
     //Prefilmulation
     float getExposureComp(){return m_exposureComp;}
@@ -647,12 +652,14 @@ protected:
     float m_nlThresh;
     float m_nlStrength;
     float m_chromaStrength;
+    float m_impulseThresh;
 
     bool d_nrEnabled;
     int d_nlClusters;
     float d_nlThresh;
     float d_nlStrength;
     float d_chromaStrength;
+    float d_impulseThresh;
 
     //Prefilmulation
     float m_exposureComp;
@@ -763,6 +770,7 @@ protected:
     void setNlThresh(float);
     void setNlStrength(float);
     void setChromaStrength(float);
+    void setImpulseThresh(float);
 
     //Prefilmulation
     void setExposureComp(float);
@@ -866,12 +874,14 @@ signals:
     void nlThreshChanged();
     void nlStrengthChanged();
     void chromaStrengthChanged();
+    void impulseThreshChanged();
 
     void defNrEnabledChanged();
     void defNlClustersChanged();
     void defNlThreshChanged();
     void defNlStrengthChanged();
     void defChromaStrengthChanged();
+    void defImpulseThreshChanged();
 
     //Prefilmulation
     void exposureCompChanged();
