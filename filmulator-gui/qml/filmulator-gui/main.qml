@@ -373,6 +373,7 @@ ApplicationWindow {
     //Tooltip handling
     onTooltipWanted: {
         tooltipText.text = text
+        tooltipCatcher.primed = true
         tooltipCatcher.xInput = x
         tooltipCatcher.yInput = y
         tooltipCatcher.enabled = true
@@ -390,6 +391,7 @@ ApplicationWindow {
         property int xInput
         property int yInput
         property Item sourceItem
+        property bool primed: false
 
         onEnabledChanged: {
             if (enabled) {
@@ -400,14 +402,17 @@ ApplicationWindow {
         onPositionChanged: {
             tooltipCatcher.visible = false
             tooltipCatcher.enabled = false
+            tooltipCatcher.primed = false
         }
         onExited: {
             tooltipCatcher.visible = false
             tooltipCatcher.enabled = false
+            tooltipCatcher.primed = false
         }
         onWheel: {
             tooltipCatcher.visible = false
             tooltipCatcher.enabled = false
+            tooltipCatcher.primed = false
             wheel.accepted = false
         }
 
@@ -423,7 +428,7 @@ ApplicationWindow {
             property int posPad: 10 * uiScale
             width: Math.min(maxWidth, tooltipText.contentWidth + 2*padding)
             //For some reason, this switch needs to exist in height so that 1-line tooltips are displayed correctly the first time.
-            height: parent.visible ? (tooltipText.contentHeight + 2*padding) : 12
+            height: parent.primed ? (tooltipText.contentHeight + 2*padding) : 12
             z: 10
             Text {
                 id: tooltipText
