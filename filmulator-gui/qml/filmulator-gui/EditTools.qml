@@ -402,40 +402,6 @@ SlimSplitView {
                 }
 
                 ToolSlider {
-                    id: chromaStrengthSlider
-                    visible: nrEnabledSwitch.isOn
-                    highlight: nrEnabledSwitch.hovered
-                    title: qsTr("Chroma NR Strength")
-                    tooltipText: qsTr("Reduce color noise. Works in combination with the above standard NR. Higher values increase the effect, but add color smearing. When set to zero, chroma noise reduction is disabled.")
-                    minimumValue: 0
-                    maximumValue: 100
-                    value: paramManager.chromaStrength
-                    defaultValue: paramManager.defChromaStrength
-                    property bool bindingLoopCutoff: true
-                    onValueChanged: {
-                        if (!bindingLoopCutoff) {
-                            paramManager.chromaStrength = value
-                        }
-                    }
-                    //onEditComplete: paramManager.writeback()//it's not stored in the database
-                    Connections {
-                        target: paramManager
-                        function onChromaStrengthChanged() {
-                            chromaStrengthSlider.value = paramManager.chromaStrength
-                        }
-                        function onDefChromaStrengthChanged() {
-                            chromaStrengthSlider.defaultValue = paramManager.defChromaStrength
-                        }
-                    }
-                    tooltipInstant: root.helpMode
-                    Component.onCompleted: {
-                        chromaStrengthSlider.tooltipWanted.connect(root.tooltipWanted)
-                        bindingLoopCutoff = false
-                    }
-                    uiScale: root.uiScale
-                }
-
-                ToolSlider {
                     id: impulseThreshSlider
                     visible: nrEnabledSwitch.isOn
                     highlight: nrEnabledSwitch.hovered
@@ -464,6 +430,40 @@ SlimSplitView {
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         impulseThreshSlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: chromaStrengthSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
+                    title: qsTr("Chroma NR Strength")
+                    tooltipText: qsTr("Reduce color noise. Works in combination with the above standard NR. Higher values increase the effect, but add color smearing. When set to zero, chroma noise reduction is disabled.")
+                    minimumValue: 0
+                    maximumValue: 100
+                    value: paramManager.chromaStrength
+                    defaultValue: paramManager.defChromaStrength
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.chromaStrength = value
+                        }
+                    }
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
+                    Connections {
+                        target: paramManager
+                        function onChromaStrengthChanged() {
+                            chromaStrengthSlider.value = paramManager.chromaStrength
+                        }
+                        function onDefChromaStrengthChanged() {
+                            chromaStrengthSlider.defaultValue = paramManager.defChromaStrength
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        chromaStrengthSlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale

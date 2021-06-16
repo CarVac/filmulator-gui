@@ -1087,6 +1087,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     nr_image = luma_nr_image;
                 }
 
+                if (nrParam.impulseThresh > 0) //we want to apply impulse noise reduction
+                {
+                    impulse_nr(nr_image, nrParam.impulseThresh, 0.25);
+                }
+
                 if (nrParam.chromaStrength > 0)
                 {
                     if (chromaValid == chromanone)
@@ -1124,11 +1129,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             nr_image(i, j+2) = chroma_nr_image(i, j+2);
                         }
                     }
-                }
-
-                if (nrParam.impulseThresh > 0) //we want to apply impulse noise reduction
-                {
-                    impulse_nr(nr_image, nrParam.impulseThresh, 2.0);
                 }
 
                 if (NoCache == cache)
