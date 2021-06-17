@@ -997,38 +997,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 cout << "NR copying original image" << endl;
                 raw_to_oklab(demosaiced_image, nr_image, camToRGB);
 
+                const bool usePyramidChroma = true;
+
                 cout << "Luma NR strength: " << nrParam.nlStrength << endl;
                 if (nrParam.nlStrength > 0)
                 {
-                    if (nlValid == nlnone)
+                    if ((nlValid == nlnone) | (usePyramidChroma & (chromaValid == chromanone)))
                     {
                         cout << "Luma NR preprocessing start: " << timeDiff(timeRequested) << endl;
                         matrix<float> denoised(demosaiced_image.nr(), demosaiced_image.nc());
-                        matrix<float> preconditioned = demosaiced_image;
-
-#pragma omp parallel for
-                        for (int row = 0; row < preconditioned.nr(); row++)
-                        {
-                            for (int col = 0; col < preconditioned.nc(); col++)
-                            {
-                                preconditioned(row, col) = sRGB_forward_gamma_unclipped(preconditioned(row, col)/65535.0f);
-                            }
-                        }
-
-                        float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
-                        float scale = std::max(preconditioned.max() + offset, 1.0f);// /5;
-#pragma omp parallel for
-                        for (int row = 0; row < preconditioned.nr(); row++)
-                        {
-                            for (int col = 0; col < preconditioned.nc(); col++)
-                            {
-                                preconditioned(row, col) = (preconditioned(row, col) + offset)/scale;
-                                if (isnan(preconditioned(row,col)))
-                                {
-                                    preconditioned(row,col) = 0.0f;
-                                }
-                            }
-                        }
 
                         const int numClusters = nrParam.nlClusters;
                         const float clusterThreshold = nrParam.nlThresh;
@@ -1038,56 +1015,54 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         struct timeval nrTime;
                         gettimeofday(&nrTime, nullptr);
 
-                        if (kMeansNLMApprox(preconditioned,
+                        matrix<float> lab_input(nr_image.nr(),nr_image.nc());
+
+                        float chromaLumaRatio = usePyramidChroma? 1.0 : exp(-nrParam.chromaStrength/25.0f + 1.0f);
+                        #pragma omp parallel for
+                        for (int i = 0; i < nr_image.nr(); i++)
+                        {
+                            for (int j = 0; j < nr_image.nc(); j += 3)
+                            {
+                                lab_input(i, j+0) = nr_image(i, j+0);
+                                lab_input(i, j+1) = nr_image(i, j+1)*chromaLumaRatio;
+                                lab_input(i, j+2) = nr_image(i, j+2)*chromaLumaRatio;
+                            }
+                        }
+
+                        luma_nr_image.set_size(lab_input.nr(),lab_input.nc());
+                        if (kMeansNLMApprox(lab_input,
                                             numClusters,
                                             clusterThreshold,
                                             strength,
-                                            preconditioned.nr(),
-                                            preconditioned.nc()/3,
-                                            denoised,
+                                            lab_input.nr(),
+                                            lab_input.nc()/3,
+                                            luma_nr_image,
                                             paramManager)){
                             cout << "imagePipeline aborted at nlmeans noise reduction" << endl;
                             return emptyMatrix();
                         }
                         cout << "Nlmeans NR duration: " << timeDiff(nrTime) << endl;
 
-#pragma omp parallel for
-                        for (int row = 0; row < denoised.nr(); row++)
+                        #pragma omp parallel for
+                        for (int i = 0; i < luma_nr_image.nr(); i++)
                         {
-                            for (int col = 0; col < denoised.nc(); col++)
+                            for (int j = 0; j < luma_nr_image.nc(); j += 3)
                             {
-                                denoised(row, col) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col) - offset)*65535.0f;
+                                luma_nr_image(i, j+1) = luma_nr_image(i, j+1)/chromaLumaRatio;
+                                luma_nr_image(i, j+2) = luma_nr_image(i, j+2)/chromaLumaRatio;
                             }
                         }
-
-                        //convert raw color to oklab
-                        //matrix<float> nlmeansLab;
-
-                        //raw_to_oklab(denoised, nlmeansLab);
-
-                        //impulse noise reduction here
-                        raw_to_oklab(denoised, luma_nr_image, camToRGB);
 
                         paramManager->markNlmeansComplete();
                     }
 
-                    //As long as it's been calculated before, write out to nr_image
-                    /*
-#pragma omp parallel for
-                    for (int i = 0; i < luma_nr_image.nr(); i++)
-                    {
-                        for (int j = 0; j < luma_nr_image.nc(); j += 3)
-                        {
-                            nr_image(i, j) = luma_nr_image(i, j);
-                        }
-                    }
-                    */
+
                     //Sometimes it's better to only have nlmeans, so whenever nlmeans is active, there'll always be chroma nr
                     cout << "NR copying full luma" << endl;
                     nr_image = luma_nr_image;
                 }
 
-                if (nrParam.chromaStrength > 0)
+                if (usePyramidChroma & (nrParam.chromaStrength > 0))
                 {
                     if (chromaValid == chromanone)
                     {

@@ -339,7 +339,7 @@ SlimSplitView {
                     title: qsTr("NR Strength")
                     tooltipText: qsTr("General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled.")
                     minimumValue: 0
-                    maximumValue: 0.03
+                    maximumValue: 10
                     value: paramManager.nlStrength
                     defaultValue: paramManager.defNlStrength
                     property bool bindingLoopCutoff: true
