@@ -1067,6 +1067,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
                         //impulse noise reduction here
                         raw_to_oklab(denoised, luma_nr_image, camToRGB);
+                        denoised.set_size(0, 0);
 
                         paramManager->markNlmeansComplete();
                     }
@@ -1089,7 +1090,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
                 if (nrParam.impulseThresh > 0) //we want to apply impulse noise reduction
                 {
-                    impulse_nr(nr_image, nrParam.impulseThresh, 0.25);
+                    impulse_nr(nr_image, nrParam.impulseThresh, 1.0);//0.25);
                 }
 
                 if (nrParam.chromaStrength > 0)

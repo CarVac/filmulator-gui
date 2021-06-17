@@ -4,7 +4,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 include(DefineCMakeDefaults)
 
-project(Filmulator VERSION 0.11.1)
+project(Filmulator VERSION 0.11.2)
 
 include(GNUInstallDirs)
 include(CompilerChecks.cmake)
@@ -35,79 +35,85 @@ find_package(LENSFUN REQUIRED)
 find_package(CURL REQUIRED)
 find_package(LibArchive REQUIRED)
 
-SET( EIGEN3_INCLUDE_DIR "$ENV{EIGEN3_INCLUDE_DIR}" )
-IF( NOT EIGEN3_INCLUDE_DIR )
-    MESSAGE( FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
-ENDIF()
-INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
+# SET( EIGEN3_INCLUDE_DIR "$ENV{EIGEN3_INCLUDE_DIR}" )
+# IF( NOT EIGEN3_INCLUDE_DIR )
+#     MESSAGE( FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+# ENDIF()
+# INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 # Checks for config.h
 include(ConfigureChecks.cmake)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 set(filmulator_SRCS
-    main.cpp
-    core/agitate.cpp
-    core/colorCurves.cpp
-    core/colorSpaces.cpp
-    core/curves.cpp
-    core/develop.cpp
-    core/diffuse.cpp
-    core/exposure.cpp
-    core/filmulate.cpp
-    core/imagePipeline.cpp
-    core/imload.cpp
-    core/imread.cpp
-    core/imreadJpeg.cpp
-    core/imreadTiff.cpp
-    core/imwriteJpeg.cpp
-    core/imwriteTiff.cpp
-    core/layerMix.cpp
-    core/mergeExps.cpp
-    core/outputFile.cpp
-    core/rotateImage.cpp
-    core/scale.cpp
-    core/timeDiff.cpp
-    core/vibranceSaturation.cpp
-    core/whiteBalance.cpp
-    core/whitepointBlackpoint.cpp
-    core/nlmeans/bisecting_kmeans.cpp
-    core/nlmeans/calcC1chanT.cpp
-    core/nlmeans/calcW_generic.cpp
-    core/nlmeans/expandDims.cpp
-    core/nlmeans/highDimBoxFilter.cpp
-    core/nlmeans/kMeansNLMApprox.cpp
-    core/nlmeans/splitCluster.cpp
-    database/basicSqlModel.cpp
-    database/camconst.cpp
-    database/cJSON.c
-    database/dateHistogramModel.cpp
-    database/dbSetup.cpp
-    database/exifFunctions.cpp
-    database/importModel.cpp
-    database/importProperties.cpp
-    database/importWorker.cpp
-    database/organizeModel.cpp
-    database/organizeProperties.cpp
-    database/queueModel.cpp
-    database/sqlModel.cpp
-    database/sqlInsertion.cpp
-    database/signalSwitchboard.cpp
-    database/database.cpp
-    database/rawproc_lensfun/lensfun_dbupdate.cpp
-    ui/filmImageProvider.cpp
-    ui/lensSelectModel.cpp
-    ui/parameterManager.cpp
-    ui/settings.cpp
-    ui/thumbWriteWorker.cpp
-    ui/updateHistograms.cpp
-    qtquick2applicationviewer/qtquick2applicationviewer.cpp
+    filmulator-gui/main.cpp
+    filmulator-gui/core/agitate.cpp
+    filmulator-gui/core/colorCurves.cpp
+    filmulator-gui/core/colorSpaces.cpp
+    filmulator-gui/core/curves.cpp
+    filmulator-gui/core/develop.cpp
+    filmulator-gui/core/diffuse.cpp
+    filmulator-gui/core/exposure.cpp
+    filmulator-gui/core/filmulate.cpp
+    filmulator-gui/core/imagePipeline.cpp
+    filmulator-gui/core/imload.cpp
+    filmulator-gui/core/imread.cpp
+    filmulator-gui/core/imreadJpeg.cpp
+    filmulator-gui/core/imreadTiff.cpp
+    filmulator-gui/core/imwriteJpeg.cpp
+    filmulator-gui/core/imwriteTiff.cpp
+    filmulator-gui/core/layerMix.cpp
+    filmulator-gui/core/mergeExps.cpp
+    filmulator-gui/core/outputFile.cpp
+    filmulator-gui/core/rotateImage.cpp
+    filmulator-gui/core/scale.cpp
+    filmulator-gui/core/timeDiff.cpp
+    filmulator-gui/core/vibranceSaturation.cpp
+    filmulator-gui/core/whiteBalance.cpp
+    filmulator-gui/core/whitepointBlackpoint.cpp
+    filmulator-gui/core/nlmeans/bisecting_kmeans.cpp
+    filmulator-gui/core/nlmeans/calcC1chanT.cpp
+    filmulator-gui/core/nlmeans/calcW_generic.cpp
+    filmulator-gui/core/nlmeans/expandDims.cpp
+    filmulator-gui/core/nlmeans/highDimBoxFilter.cpp
+    filmulator-gui/core/nlmeans/kMeansNLMApprox.cpp
+    filmulator-gui/core/nlmeans/splitCluster.cpp
+    filmulator-gui/core/rawtherapee/boxblur.cc
+    filmulator-gui/core/rawtherapee/cplx_wavelet_dec.cc
+    filmulator-gui/core/rawtherapee/FTblockDN.cc
+    filmulator-gui/core/rawtherapee/gauss.cc
+    filmulator-gui/core/rawtherapee/impulse_denoise.cc
+    filmulator-gui/core/rawtherapee/labimage.cc
+    filmulator-gui/database/basicSqlModel.cpp
+    filmulator-gui/database/camconst.cpp
+    filmulator-gui/database/cJSON.c
+    filmulator-gui/database/dateHistogramModel.cpp
+    filmulator-gui/database/dbSetup.cpp
+    filmulator-gui/database/exifFunctions.cpp
+    filmulator-gui/database/importModel.cpp
+    filmulator-gui/database/importProperties.cpp
+    filmulator-gui/database/importWorker.cpp
+    filmulator-gui/database/organizeModel.cpp
+    filmulator-gui/database/organizeProperties.cpp
+    filmulator-gui/database/queueModel.cpp
+    filmulator-gui/database/sqlModel.cpp
+    filmulator-gui/database/sqlInsertion.cpp
+    filmulator-gui/database/signalSwitchboard.cpp
+    filmulator-gui/database/database.cpp
+    filmulator-gui/database/rawproc_lensfun/lensfun_dbupdate.cpp
+    filmulator-gui/ui/filmImageProvider.cpp
+    filmulator-gui/ui/lensSelectModel.cpp
+    filmulator-gui/ui/parameterManager.cpp
+    filmulator-gui/ui/settings.cpp
+    filmulator-gui/ui/thumbWriteWorker.cpp
+    filmulator-gui/ui/updateHistograms.cpp
+    filmulator-gui/qtquick2applicationviewer/qtquick2applicationviewer.cpp
 )
 
 #qt5_add_resources(filmulator_RSCS
 qtquick_compiler_add_resources(filmulator_RSCS
-    qml.qrc
-    resources/pixmaps.qrc
+    filmulator-gui/qml.qrc
+    filmulator-gui/resources/pixmaps.qrc
 )
 
 if(APPLE)
@@ -140,10 +146,10 @@ target_compile_options(filmulator
 
 target_include_directories(filmulator
     PRIVATE
-        core
-        database
-        ui
-        qtquick2applicationviewer
+        filmulator-gui/core
+        filmulator-gui/database
+        filmulator-gui/ui
+        filmulator-gui/qtquick2applicationviewer
         ${EXIV2_INCLUDE_DIR}
         ${LIBRAW_INCLUDE_DIR}
         ${JPEG_INCLUDE_DIRS}
@@ -307,4 +313,4 @@ else()
 
 endif()
 
-add_subdirectory(qml)
+add_subdirectory(filmulator-gui/qml)

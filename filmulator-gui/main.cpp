@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <QtGui/QGuiApplication>
 #include <QtQml>
-#include "qtquick2applicationviewer.h"
+#include "qtquick2applicationviewer/qtquick2applicationviewer.h"
 #include <QtSql/QSqlDatabase>
 #include <QTranslator>
 #include "ui/filmImageProvider.h"

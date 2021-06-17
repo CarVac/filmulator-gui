@@ -27,21 +27,16 @@ librtprocess 0.10
 liblensfun 0.3.95 exactly for Windows, and the latest git version for Linux and MacOS
 libcurl
 libarchive
-eigen3
 ```
 We highly encourage you to compile libraw yourself to ensure you have support for recent cameras.
 
 It also requires Qt 5.15 or newer: open the `.pro` file from Qt Creator and select `Build` in order to run it. You may have to initialize the build configurations upon first loading the project; I suggest you add the `-j#` flag to the `Make build` parameters to speed compilation.
 
-Download Eigen3 and unpack it in the git root directory in a folder named simply `eigen`.
-
 A note: Use a standalone git client to clone the repository initially, and then you can use Qt Creator's built-in git tools.
 
 ## Building with CMake:
 
-Inside the `filmulator-gui` directory, create a build directory.
-
-Download Eigen3 and place it wherever you choose, then run `export EIGEN3_INCLUDE_DIR="path/to/eigen3"`.
+Create a build directory and navigate to inside that directory.
 
 Run `cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr ..` If you are using a binary release of Qt from them, use -DCMAKE\_PREFIX\_PATH=\[path to the qt dir and version and arch\] as an argument.
 

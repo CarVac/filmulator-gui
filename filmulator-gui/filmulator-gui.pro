@@ -90,7 +90,7 @@ win32:LIBS += -L/usr/lib
 unix {
 script.extra = move_script; install -m 755 -p filmulator
 extra.path = /usr/bin
-INCLUDEPATH += ../eigen
+# INCLUDEPATH += ../eigen
 LIBS += -L/usr/local/lib
 }
 

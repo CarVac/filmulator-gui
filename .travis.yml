@@ -47,7 +47,7 @@ script:
   - sudo make install
   - cd ../..
     #build filmulator
-  - cd filmulator-gui
+    #- cd filmulator-gui
     #- qmake PREFIX=/usr
   - mkdir build
   - cd build
