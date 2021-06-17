@@ -60,7 +60,7 @@ script:
   - mkdir -p appdir/usr/qml ; mv appdir/share/Filmulator/qml/filmulator-gui/* appdir/usr/qml/
   - rm -rf appdir/bin/
   - rm -rf appdir/share/
-  - mkdir -p appdir/usr/share/applications/ ; cp ../filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
+  - mkdir -p appdir/usr/share/applications/ ; cp ../filmulator-gui/filmulator-gui.desktop.in appdir/usr/share/applications/filmulator-gui.desktop
   - sed -i -e 's|^Exec=.*|Exec=filmulator-gui|g' appdir/usr/share/applications/filmulator-gui.desktop
   - mkdir -p appdir/usr/share/icons/hicolor/64x64/apps/
   - cp ../filmulator-gui/filmulator-gui64.png appdir/usr/share/icons/hicolor/64x64/apps/filmulator-gui.png
