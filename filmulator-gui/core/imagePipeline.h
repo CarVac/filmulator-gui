@@ -19,7 +19,8 @@ public:
     matrix<unsigned short>& processImage(ParameterManager * paramManager,
                                          Interface * histoInterface,
                                          Exiv2::ExifData &exifOutput,
-                                         const QString fileHash = "");
+                                         const QString fileHash = "",
+                                         const bool forgetNR = false);
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
     float getProgress(){return progress;}
@@ -62,6 +63,8 @@ protected:
     Histo histo;
     QuickQuality quality;
     Interface * histoInterface;
+
+    QString filename;
 
     Valid valid;
     float progress;

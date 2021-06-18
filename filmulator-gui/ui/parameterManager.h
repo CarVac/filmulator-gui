@@ -39,6 +39,9 @@ enum Valid {none,
 enum NlMeansValid {nlnone,
                    nlcomplete};
 
+enum ImpulseValid {impulsenone,
+                   impulsecomplete};
+
 enum ChromaValid {chromanone,
                   chromacomplete};
 
@@ -193,15 +196,15 @@ class ParameterManager : public QObject
     Q_PROPERTY(int nlClusters       MEMBER m_nlClusters     WRITE setNlClusters     NOTIFY nlClustersChanged)
     Q_PROPERTY(float nlThresh       MEMBER m_nlThresh       WRITE setNlThresh       NOTIFY nlThreshChanged)
     Q_PROPERTY(float nlStrength     MEMBER m_nlStrength     WRITE setNlStrength     NOTIFY nlStrengthChanged)
-    Q_PROPERTY(float chromaStrength MEMBER m_chromaStrength WRITE setChromaStrength NOTIFY chromaStrengthChanged)
     Q_PROPERTY(float impulseThresh  MEMBER m_impulseThresh  WRITE setImpulseThresh  NOTIFY impulseThreshChanged)
+    Q_PROPERTY(float chromaStrength MEMBER m_chromaStrength WRITE setChromaStrength NOTIFY chromaStrengthChanged)
 
     Q_PROPERTY(bool defNrEnabled       READ getDefNrEnabled      NOTIFY defNrEnabledChanged)
     Q_PROPERTY(int defNlClusters       READ getDefNlClusters     NOTIFY defNlClustersChanged)
     Q_PROPERTY(float defNlThresh       READ getDefNlThresh       NOTIFY defNlThreshChanged)
     Q_PROPERTY(float defNlStrength     READ getDefNlStrength     NOTIFY defNlStrengthChanged)
-    Q_PROPERTY(float defChromaStrength READ getDefChromaStrength NOTIFY defChromaStrengthChanged)
     Q_PROPERTY(float defImpulseThresh  READ getDefImpulseThresh  NOTIFY defImpulseThreshChanged)
+    Q_PROPERTY(float defChromaStrength READ getDefChromaStrength NOTIFY defChromaStrengthChanged)
 
     //Prefilmulation
     Q_PROPERTY(float exposureComp MEMBER m_exposureComp WRITE setExposureComp NOTIFY exposureCompChanged)
@@ -343,9 +346,10 @@ public:
     Valid markDemosaicComplete();
 
     //Noise Reduction
-    std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> claimNoiseReductionParams();
+    std::tuple<Valid,NlMeansValid,ImpulseValid,ChromaValid,AbortStatus,NoiseReductionParams> claimNoiseReductionParams();
     AbortStatus claimNoiseReductionAbort();
     Valid markNlmeansComplete();
+    Valid markImpulseComplete();
     Valid markChromaComplete();
     Valid markNoiseReductionComplete();
 
@@ -423,8 +427,8 @@ public:
     int getDefNlClusters(){return d_nlClusters;}
     float getDefNlThresh(){return d_nlThresh;}
     float getDefNlStrength(){return d_nlStrength;}
-    float getDefChromaStrength(){return d_chromaStrength;}
     float getDefImpulseThresh(){return d_impulseThresh;}
+    float getDefChromaStrength(){return d_chromaStrength;}
 
     //Prefilmulation
     float getDefExposureComp(){return d_exposureComp;}
@@ -492,8 +496,8 @@ public:
     int getNlClusters(){return m_nlClusters;}
     float getNlThresh(){return m_nlThresh;}
     float getNlStrength(){return m_nlStrength;}
-    float getChromaStrength(){return m_chromaStrength;}
     float getImpulseThresh(){return m_impulseThresh;}
+    float getChromaStrength(){return m_chromaStrength;}
 
     //Prefilmulation
     float getExposureComp(){return m_exposureComp;}
@@ -609,7 +613,9 @@ protected:
 
     Valid validity;
     Valid validityWhenCanceled;
+    //for dealing with validity of intermediate NR results
     NlMeansValid nlMeansValidity;
+    ImpulseValid impulseValidity;
     ChromaValid chromaValidity;
 
     //this is for dealing with the validity when canceled
@@ -651,15 +657,15 @@ protected:
     int m_nlClusters;
     float m_nlThresh;
     float m_nlStrength;
-    float m_chromaStrength;
     float m_impulseThresh;
+    float m_chromaStrength;
 
     bool d_nrEnabled;
     int d_nlClusters;
     float d_nlThresh;
     float d_nlStrength;
-    float d_chromaStrength;
     float d_impulseThresh;
+    float d_chromaStrength;
 
     //Prefilmulation
     float m_exposureComp;
@@ -769,8 +775,8 @@ protected:
     void setNlClusters(int);
     void setNlThresh(float);
     void setNlStrength(float);
-    void setChromaStrength(float);
     void setImpulseThresh(float);
+    void setChromaStrength(float);
 
     //Prefilmulation
     void setExposureComp(float);
@@ -873,15 +879,15 @@ signals:
     void nlClustersChanged();
     void nlThreshChanged();
     void nlStrengthChanged();
-    void chromaStrengthChanged();
     void impulseThreshChanged();
+    void chromaStrengthChanged();
 
     void defNrEnabledChanged();
     void defNlClustersChanged();
     void defNlThreshChanged();
     void defNlStrengthChanged();
-    void defChromaStrengthChanged();
     void defImpulseThreshChanged();
+    void defChromaStrengthChanged();
 
     //Prefilmulation
     void exposureCompChanged();

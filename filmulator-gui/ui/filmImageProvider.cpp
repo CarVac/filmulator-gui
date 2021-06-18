@@ -133,7 +133,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
                 struct timeval preTime;
                 gettimeofday(&preTime, nullptr);
                 cout << "requestImage nextParam valid " << nextParam->getValid() << endl;
-                nextQuickPipe.processImage(nextParam, this, exif);
+                nextQuickPipe.processImage(nextParam, this, exif, "", true);
                 cout << "requestImage preload time: " << timeDiff(preTime) << endl;
             }
 

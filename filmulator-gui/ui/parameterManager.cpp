@@ -358,7 +358,7 @@ void ParameterManager::setRotationPointY(float colIn)
     }
 }
 
-std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> ParameterManager::claimNoiseReductionParams()
+std::tuple<Valid,NlMeansValid,ImpulseValid,ChromaValid,AbortStatus,NoiseReductionParams> ParameterManager::claimNoiseReductionParams()
 {
     QMutexLocker paramLocker(&paramMutex);
     AbortStatus abort;
@@ -383,7 +383,7 @@ std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> Para
     params.nlStrength = m_nlStrength;
     params.chromaStrength = m_chromaStrength;
     params.impulseThresh = m_impulseThresh;
-    std::tuple<Valid,NlMeansValid,ChromaValid,AbortStatus,NoiseReductionParams> tup(validity, nlMeansValidity, chromaValidity, abort, params);
+    std::tuple<Valid,NlMeansValid,ImpulseValid,ChromaValid,AbortStatus,NoiseReductionParams> tup(validity, nlMeansValidity, impulseValidity, chromaValidity, abort, params);
     return tup;
 }
 
@@ -414,6 +414,17 @@ Valid ParameterManager::markNlmeansComplete()
     if (Valid::partnoisereduction == validity)
     {
         nlMeansValidity = NlMeansValid::nlcomplete;
+    }
+    return validity;
+}
+
+Valid ParameterManager::markImpulseComplete()
+{
+    QMutexLocker paramLocker(&paramMutex);
+    processedYet = true;
+    if (Valid::partnoisereduction == validity)
+    {
+        impulseValidity = ImpulseValid::impulsecomplete;
     }
     return validity;
 }
@@ -461,6 +472,7 @@ void ParameterManager::setNlClusters(int numClusters)
         m_nlClusters = numClusters;
         validity = min(validity, Valid::demosaic);
         nlMeansValidity = NlMeansValid::nlnone;
+        impulseValidity = ImpulseValid::impulsenone;
         chromaValidity = ChromaValid::chromanone;
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
@@ -476,6 +488,7 @@ void ParameterManager::setNlThresh(float clusterThreshold)
         m_nlThresh = clusterThreshold;
         validity = min(validity, Valid::demosaic);
         nlMeansValidity = NlMeansValid::nlnone;
+        impulseValidity = ImpulseValid::impulsenone;
         chromaValidity = ChromaValid::chromanone;
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
@@ -491,10 +504,26 @@ void ParameterManager::setNlStrength(float strength)
         m_nlStrength = strength;
         validity = min(validity, Valid::demosaic);
         nlMeansValidity = NlMeansValid::nlnone;
+        impulseValidity = ImpulseValid::impulsenone;
         chromaValidity = ChromaValid::chromanone;
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setNlStrength"));
+    }
+}
+
+void ParameterManager::setImpulseThresh(float thresh)
+{
+    if (!justInitialized)
+    {
+        QMutexLocker paramLocker(&paramMutex);
+        m_impulseThresh = thresh;
+        validity = min(validity, Valid::demosaic);
+        impulseValidity = ImpulseValid::impulsenone;
+        chromaValidity = ChromaValid::chromanone;
+        paramLocker.unlock();
+        QMutexLocker signalLocker(&signalMutex);
+        paramChangeWrapper(QString("setImpulseThresh"));
     }
 }
 
@@ -509,19 +538,6 @@ void ParameterManager::setChromaStrength(float strength)
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setChromaStrength"));
-    }
-}
-
-void ParameterManager::setImpulseThresh(float thresh)
-{
-    if (!justInitialized)
-    {
-        QMutexLocker paramLocker(&paramMutex);
-        m_impulseThresh = thresh;
-        validity = min(validity, Valid::demosaic);
-        paramLocker.unlock();
-        QMutexLocker signalLocker(&signalMutex);
-        paramChangeWrapper(QString("setImpulseThresh"));
     }
 }
 
@@ -1561,6 +1577,10 @@ void ParameterManager::selectImage(const QString imageID)
             validityWhenCanceled = Valid::none;
         }
         validity = Valid::none;
+        nlMeansValidity = NlMeansValid::nlnone;
+        impulseValidity = ImpulseValid::impulsenone;
+        chromaValidity = ChromaValid::chromanone;
+
         emit imageIndexChanged();
     }
 

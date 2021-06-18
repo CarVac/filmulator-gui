@@ -13,6 +13,7 @@ ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityI
     histo = histoIn;
     quality = qualityIn;
     valid = Valid::none;
+    filename = "";
 
     completionTimes.resize(Valid::count);
     completionTimes[Valid::none] = 0;
@@ -50,7 +51,8 @@ int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
 matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramManager,
                                                     Interface * interface_in,
                                                     Exiv2::ExifData &exifOutput,
-                                                    const QString fileHash)//defaults to empty string
+                                                    const QString fileHash,//defaults to empty string
+                                                    const bool forgetNR)//defaults to false
 {
     //Say that we've started processing to prevent cache status from changing..
     hasStartedProcessing = true;
@@ -80,6 +82,22 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         valid = none;//we need to start fresh if nothing is going to be cached.
     }
 
+    //If we think we have valid image data,
+    //check that the file last processed corresponds to the one requested.
+    if (valid > none)
+    {
+        //if something has been processed before, and we think it's valid
+        //it had better be the same filename.
+        if (paramManager->getFullFilenameQstr() != filename)
+        {
+            cout << "processImage paramManager filename doesn't match pipeline filename" << endl;
+            cout << "processImage paramManager filename: " << paramManager->getFullFilename() << endl;
+            cout << "processImage pipeline filename:     " << filename.toStdString() << endl;
+            cout << "setting validity to none" << endl;
+            valid = none;
+        }
+    }
+
     LoadParams loadParam;
     DemosaicParams demosaicParam;
     NoiseReductionParams nrParam;
@@ -106,6 +124,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << "ImagePipeline::processImage: aborted at the start" << endl;
             return emptyMatrix();
         }
+
+        filename = QString::fromStdString(loadParam.fullFilename);
 
         isCR3 = QString::fromStdString(loadParam.fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
         const bool isDNG = QString::fromStdString(loadParam.fullFilename).endsWith(".dng", Qt::CaseInsensitive);
@@ -979,8 +999,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         cout << "imagePipeline image height: " << demosaiced_image.nr() << endl;
         AbortStatus abort;
         NlMeansValid nlValid;
+        ImpulseValid impulseValid;
         ChromaValid chromaValid;
-        std::tie(valid, nlValid, chromaValid, abort, nrParam) = paramManager->claimNoiseReductionParams();
+        std::tie(valid, nlValid, impulseValid, chromaValid, abort, nrParam) = paramManager->claimNoiseReductionParams();
         if (abort == AbortStatus::restart)
         {
             cout << "imagePipeline aborted at noise reduction" << endl;
@@ -998,13 +1019,21 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
                 //prepare an oklab image without noise reduction.
                 //We'll overwrite the L or ab channels as they get denoised, as applicable.
-                cout << "NR copying original image" << endl;
-                raw_to_oklab(demosaiced_image, nr_image, camToRGB);
+
+                //But we don't want to overwrite valid impulse NR data (first two conditions)
+                //or do a needless copy if nlmeans is gonna write out (second condition)
+                if ((impulseValid == impulsenone || cache == NoCache) && nrParam.nlStrength == 0)
+                {
+                    cout << "NR copying original image" << endl;
+                    raw_to_oklab(demosaiced_image, nr_image, camToRGB);
+                } else {
+                    cout << "NR not copying original image; using cached or calculated data" << endl;
+                }
 
                 cout << "Luma NR strength: " << nrParam.nlStrength << endl;
                 if (nrParam.nlStrength > 0)
                 {
-                    if (nlValid == nlnone)
+                    if (nlValid == nlnone || cache == NoCache)
                     {
                         cout << "Luma NR preprocessing start: " << timeDiff(timeRequested) << endl;
                         matrix<float> denoised(demosaiced_image.nr(), demosaiced_image.nc());
@@ -1064,45 +1093,53 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             }
                         }
 
-                        //convert raw color to oklab
-                        //matrix<float> nlmeansLab;
-
-                        //raw_to_oklab(denoised, nlmeansLab);
-
-                        //impulse noise reduction here
                         raw_to_oklab(denoised, luma_nr_image, camToRGB);
                         denoised.set_size(0, 0);
 
+                        cout << "Nlmeans NR copying full luma " << endl;
+                        nr_image = luma_nr_image;
+
                         paramManager->markNlmeansComplete();
+
+                    } else if (nrParam.impulseThresh == 0 || impulseValid == impulsenone || cache == NoCache)
+                    {
+                        //if we're using cached nlmeans data,
+                        // we want to make sure the impulse NR
+                        // a) either doesn't need to be run (first condition)
+                        // b) or is going to be run (second two conditions)
+                        // before nuking nr_image.
+                        cout << "Nlmeans NR copying full luma either for impulse or skipping impulse" << endl;
+                        nr_image = luma_nr_image;
                     }
 
-                    //As long as it's been calculated before, write out to nr_image
-                    /*
-#pragma omp parallel for
-                    for (int i = 0; i < luma_nr_image.nr(); i++)
+                    //When preloading the next image, we don't want to cache intermediates
+                    // in order to reduce memory usage.
+                    if (forgetNR)
                     {
-                        for (int j = 0; j < luma_nr_image.nc(); j += 3)
-                        {
-                            nr_image(i, j) = luma_nr_image(i, j);
-                        }
+                        luma_nr_image.set_size(0,0);
                     }
-                    */
-                    //Sometimes it's better to only have nlmeans, so whenever nlmeans is active, there'll always be chroma nr
-                    cout << "NR copying full luma" << endl;
-                    nr_image = luma_nr_image;
                 }
 
-                if (nrParam.impulseThresh > 0) //we want to apply impulse noise reduction
+                if (nrParam.impulseThresh > 0 && (impulseValid == impulsenone || cache == NoCache)) //we want to apply impulse noise reduction
                 {
-                    impulse_nr(nr_image, nrParam.impulseThresh, 1.0);//0.25);
+                    cout << "Impulse NR processing start: " << timeDiff(timeRequested) << endl;
+                    struct timeval nrTime;
+                    gettimeofday(&nrTime, nullptr);
+
+                    impulse_nr(nr_image, nrParam.impulseThresh, 1.0);
+
+                    cout << "Impulse NR duration: " << timeDiff(nrTime) << endl;
+
+                    paramManager->markImpulseComplete();
                 }
 
                 if (nrParam.chromaStrength > 0)
                 {
-                    if (chromaValid == chromanone)
+                    if (chromaValid == chromanone || cache == NoCache)
                     {
-                        cout << "Chroma NR preprocessing start: " << timeDiff(timeRequested) << endl;
+                        cout << "Chroma NR processing start: " << timeDiff(timeRequested) << endl;
                         struct timeval nrTime;
+                        gettimeofday(&nrTime, nullptr);
 
                         cout << "chroma NR input min " << nr_image.min() << endl;
                         cout << "chroma NR input max " << nr_image.max() << endl;
@@ -1124,7 +1161,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
 
                     //As long as it's been calculated before, write to nr_image
-                    cout << "NR copying chroma only" << endl;
+                    cout << "Chroma NR copying chroma only" << endl;
 #pragma omp parallel for
                     for (int i = 0; i < chroma_nr_image.nr(); i++)
                     {
@@ -1134,11 +1171,22 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             nr_image(i, j+2) = chroma_nr_image(i, j+2);
                         }
                     }
+
+                    cout << "Chroma NR written out" << endl;
+                    //When preloading the next image, we don't want to cache intermediates
+                    // in order to reduce memory usage.
+
+                    if (forgetNR)
+                    {
+                        chroma_nr_image.set_size(0,0);
+                    }
                 }
 
-                if (NoCache == cache)
+                if (cache == NoCache)
                 {
                     demosaiced_image.set_size(0, 0);
+                    luma_nr_image.set_size(0, 0);
+                    chroma_nr_image.set_size(0, 0);
                     cacheEmpty = true;
                 }
                 else
@@ -1198,7 +1246,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             }
             if (prefilmParam.nrEnabled)
             {
-                cout << "imagePipeline prefilm; nr was enabled" << endl;
+                cout << "imagePipeline prefilm; nr was enabled, stealing" << endl;
                 //convert from Oklab to sRGB
                 matrix<float> sRGB_nr_image;
                 oklab_to_sRGB(stealVictim->nr_image, sRGB_nr_image);
@@ -1213,7 +1261,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                  rPreMul, gPreMul, bPreMul,
                                  pow(2, prefilmParam.exposureComp));
             } else {
-                cout << "imagePipeline prefilm; nr was not enabled" << endl;
+                cout << "imagePipeline prefilm; nr was not enabled, stealing" << endl;
                 //Here we apply the exposure compensation and white balance and color conversion matrix.
                 //We consume demosaiced_image the usual way.
                 whiteBalance(stealVictim->demosaiced_image,
@@ -1229,7 +1277,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << "imagePipeline not stealing data" << endl;
             if (prefilmParam.nrEnabled)
             {
-                cout << "imagePipeline prefilm; nr was enabled" << endl;
+                cout << "imagePipeline prefilm; nr was enabled, not stealing" << endl;
                 //convert from Oklab to sRGB
                 matrix<float> sRGB_nr_image;
                 oklab_to_sRGB(nr_image, sRGB_nr_image);
@@ -1267,7 +1315,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                                  rPreMul, gPreMul, bPreMul,
                                  pow(2, prefilmParam.exposureComp));
             } else {
-                cout << "imagePipeline prefilm; nr was not enabled" << endl;
+                cout << "imagePipeline prefilm; nr was not enabled, not stealing" << endl;
                 //Shrink image if necessary
                 matrix<float> resized_image;
                 if (LowQuality == quality)
@@ -1724,14 +1772,20 @@ void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
     std::swap(basicExifData, swapTarget->basicExifData);
 
     demosaiced_image.swap(swapTarget->demosaiced_image);
-    luma_nr_image.swap(swapTarget->luma_nr_image);
-    chroma_nr_image.swap(swapTarget->chroma_nr_image);
     nr_image.swap(swapTarget->nr_image);
     pre_film_image.swap(swapTarget->pre_film_image);
     filmulated_image.swap(swapTarget->filmulated_image);
     contrast_image.swap(swapTarget->contrast_image);
     color_curve_image.swap(swapTarget->color_curve_image);
     vibrance_saturation_image.swap(swapTarget->vibrance_saturation_image);
+
+    //We want to not cache noise reduction in
+    //luma_nr_image.swap(swapTarget->luma_nr_image);
+    luma_nr_image.set_size(0, 0);
+    swapTarget->luma_nr_image.set_size(0, 0);
+    //chroma_nr_image.swap(swapTarget->chroma_nr_image);
+    chroma_nr_image.set_size(0, 0);
+    swapTarget->chroma_nr_image.set_size(0, 0);
 }
 
 //This is used to update the histograms once data is copied on an image change

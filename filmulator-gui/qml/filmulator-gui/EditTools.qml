@@ -337,7 +337,7 @@ SlimSplitView {
                     visible: nrEnabledSwitch.isOn
                     highlight: nrEnabledSwitch.hovered
                     title: qsTr("NR Strength")
-                    tooltipText: qsTr("General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled.")
+                    tooltipText: qsTr("General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled. This may cause speckles, so use Speckle NR to remove them.")
                     minimumValue: 0
                     maximumValue: 0.03
                     value: paramManager.nlStrength
@@ -406,7 +406,7 @@ SlimSplitView {
                     visible: nrEnabledSwitch.isOn
                     highlight: nrEnabledSwitch.hovered
                     title: qsTr("Speckle NR Strength")
-                    tooltipText: qsTr("Remove isolated image speckles. Higher values increase the effect, but can affect detail. When set to zero, speckle noise reduction is disabled.")
+                    tooltipText: qsTr("Remove isolated image speckles. Higher values increase the effect, but can smear real image detail. When set to zero, speckle noise reduction is disabled.")
                     minimumValue: 0
                     maximumValue: 10
                     value: paramManager.impulseThresh
