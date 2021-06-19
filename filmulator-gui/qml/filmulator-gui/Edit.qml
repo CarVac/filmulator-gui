@@ -181,7 +181,7 @@ SlimSplitView {
                     color: "white"
                     font.pixelSize: 14.0 * uiScale
                     wrapMode: Text.Wrap
-                    text: qsTr("Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.\n\nRate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.")
+                    text: qsTr("Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.\n\nRate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.\n\nWhen an image is loaded, you can zoom in or out by scrolling up or down, and you can pan around by clicking and dragging with the mouse.")
                 }
             }
         }
