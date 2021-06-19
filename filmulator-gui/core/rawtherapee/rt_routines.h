@@ -12,10 +12,12 @@ void RGB_denoise(int kall,//0 for no tiling
                  const float chroma,
                  const float redchro,
                  const float bluechro,
-                 ParameterManager* paramManager);//for canceling
+                 ParameterManager* paramManager,//for canceling
+                 const bool eraseInput);
 
 //This takes lab images.
 //chromaFactor is how much more sensitive it is to chroma
-void impulse_nr(matrix<float> &image, double thresh, const double chromaFactor);
+void impulse_nr(matrix<float> &imageIn, matrix<float> &imageOut,
+                const double thresh, const double chromaFactor, const bool eraseInput);
 
 #endif // RT_ROUTINES_H

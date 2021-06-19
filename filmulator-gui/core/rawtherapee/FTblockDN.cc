@@ -591,7 +591,8 @@ void RGB_denoise(int kall,
                  const float chroma,
                  const float redchro,
                  const float bluechro,
-                 ParameterManager* paramManager)
+                 ParameterManager* paramManager,
+                 const bool eraseInput)
 {
 //BENCHFUN
 //    MyTime t1e, t2e;
@@ -599,10 +600,19 @@ void RGB_denoise(int kall,
 
     if (chroma == 0) {
         //nothing to do; copy src to dst or do nothing in case src == dst
-        dst = src;
+        if (eraseInput)
+        {
+            dst.swap(src);
+            src.set_size(0, 0);
+        } else {
+            dst = src;
+        }
 
         return;
     }
+
+    //let's just clear dst to reduce peak memory usage
+    dst.set_size(0, 0);
 
     const bool autoch = false;
 
@@ -645,7 +655,6 @@ void RGB_denoise(int kall,
             const int numtiles = numtiles_W * numtiles_H;
 
             //output buffer
-            //Imagefloat * dsttmp;
             matrix<float> dsttmp(imheight, imwidth*3);
 
 #ifdef _OPENMP
@@ -767,6 +776,11 @@ void RGB_denoise(int kall,
 
                                 //end chroma
                             }
+                        }
+
+                        if (eraseInput)
+                        {
+                            src.set_size(0, 0); //if tiling runs, this will screw things up
                         }
 
                         //now perform basic wavelet denoise

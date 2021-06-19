@@ -29,14 +29,15 @@
 
 using namespace std;
 
-void impulse_nr (matrix<float> &image, double thresh, const double chromaFactor)
+void impulse_nr (matrix<float> &imageIn, matrix<float> &imageOut,
+                 const double thresh, const double chromaFactor, const bool eraseInput)
 {
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // impulse noise removal
     // local variables
 
-    const int width = image.nc()/3;
-    const int height = image.nr();
+    const int width = imageIn.nc()/3;
+    const int height = imageIn.nr();
 
     LabImage * lab = new LabImage(width, height);
 
@@ -47,10 +48,15 @@ void impulse_nr (matrix<float> &image, double thresh, const double chromaFactor)
     {
         for (int j = 0; j < width; j++)
         {
-            lab->L[i][j] = image(i, j*3 + 0);
-            lab->a[i][j] = image(i, j*3 + 1) * chromaFactor;//increase chroma sensitivity
-            lab->b[i][j] = image(i, j*3 + 2) * chromaFactor;//increase chroma sensitivity
+            lab->L[i][j] = imageIn(i, j*3 + 0);
+            lab->a[i][j] = imageIn(i, j*3 + 1) * chromaFactor;//increase chroma sensitivity
+            lab->b[i][j] = imageIn(i, j*3 + 2) * chromaFactor;//increase chroma sensitivity
         }
+    }
+
+    if (eraseInput)
+    {
+        imageIn.set_size(0, 0);
     }
 
     // buffer for the lowpass image
@@ -271,6 +277,8 @@ void impulse_nr (matrix<float> &image, double thresh, const double chromaFactor)
     delete [] impish[0];
 
     //copy out
+
+    imageOut.set_size(height, width * 3);
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
@@ -278,9 +286,9 @@ void impulse_nr (matrix<float> &image, double thresh, const double chromaFactor)
     {
         for (int j = 0; j < width; j++)
         {
-            image(i, j*3 + 0) = lab->L[i][j];
-            image(i, j*3 + 1) = lab->a[i][j] / chromaFactor;
-            image(i, j*3 + 2) = lab->b[i][j] / chromaFactor;
+            imageOut(i, j*3 + 0) = lab->L[i][j];
+            imageOut(i, j*3 + 1) = lab->a[i][j] / chromaFactor;
+            imageOut(i, j*3 + 2) = lab->b[i][j] / chromaFactor;
         }
     }
 }
