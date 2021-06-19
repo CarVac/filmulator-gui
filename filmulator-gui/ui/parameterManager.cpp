@@ -195,6 +195,7 @@ std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> ParameterManager::claimD
     demParams.focalLength = focalLength;
     demParams.fnumber = fnumber;
     demParams.rotationAngle = m_rotationAngle;
+    demParams.nrEnabled = m_nrEnabled;
     std::tuple<Valid,AbortStatus,LoadParams,DemosaicParams> tup(validity, abort, loadParams, demParams);
     return tup;
 }
@@ -230,6 +231,7 @@ Valid ParameterManager::markDemosaicComplete()
     //invalidate both noise reduction sub-validities
     //because their source material has been recalculated
     nlMeansValidity = NlMeansValid::nlnone;
+    impulseValidity = ImpulseValid::impulsenone;
     chromaValidity = ChromaValid::chromanone;
 
     return validity;
@@ -457,7 +459,9 @@ void ParameterManager::setNrEnabled(bool enabledIn)
     {
         QMutexLocker paramLocker(&paramMutex);
         m_nrEnabled = enabledIn;
-        validity = min(validity, Valid::demosaic);
+
+        //This also goes back and selects LMMSE instead of Amaze demosaicing.
+        validity = min(validity, Valid::load);
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
         paramChangeWrapper(QString("setNrEnabled"));

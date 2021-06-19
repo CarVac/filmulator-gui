@@ -17,7 +17,7 @@ QString camconst_dir();
 
 camconst_status camconst_download();
 
-camconst_status camconst_read(const QString inputMakeModel, const float iso, const float fnumber, double &whiteLevel);
+camconst_status camconst_read(const QString inputMakeModel, const float iso, const float fnumber, double &whiteLevel, double &black);
 
 
 #endif // CAMCONST_H

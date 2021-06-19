@@ -254,8 +254,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             int blackRow = int(libraw->imgdata.color.cblack[4]);
             int blackCol = int(libraw->imgdata.color.cblack[5]);
 
-            //cout << "BLACKPOINT" << endl;
-            //cout << blackpoint << endl;
+            cout << "BLACKPOINT" << endl;
+            cout << blackpoint << endl;
             //cout << "color channel blackpoints" << endl;
             //cout << rBlack << endl;
             //cout << gBlack << endl;
@@ -265,20 +265,27 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //cout << libraw->imgdata.color.cblack[4] << endl;
             //cout << libraw->imgdata.color.cblack[5] << endl;
             //cout << "block-based blackpoint: " << endl;
-            uint maxBlockBlackpoint = 0;
+            double sumBlockBlackpoint = 0;
+            int count = 0;
             if (blackRow > 0 && blackCol > 0)
             {
                 for (int i = 0; i < blackRow; i++)
                 {
                     for (int j = 0; j < blackCol; j++)
                     {
-                        maxBlockBlackpoint = max(maxBlockBlackpoint, libraw->imgdata.color.cblack[6 + i*blackCol + j]);
+                        sumBlockBlackpoint += libraw->imgdata.color.cblack[6 + i*blackCol + j];
+                        count++;
                         //cout << libraw->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
                     }
                     //cout << endl;
                 }
             }
-            //cout << "Max of block-based blackpoint: " << maxBlockBlackpoint << endl;
+            double meanBlockBlackpoint = 0;
+            if (count > 0)
+            {
+                meanBlockBlackpoint = sumBlockBlackpoint / count;
+            }
+            cout << "Mean of block-based blackpoint: " << meanBlockBlackpoint << endl;
 
             //get white saturation values
             cout << "WHITE SATURATION ===================================" << endl;
@@ -287,27 +294,61 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
             //Calculate the white point based on the camera settings.
             //This needs the black point subtracted, and a fudge factor to ensure clipping is hard and fast.
-            double whiteClippingPoint;
+            double camconstWhite;
+
+            //Some cameras have a black offset, as well, even if the black level is already specified.
+            double camconstBlack;
+
             QString makeModel = IDATA.make;
             makeModel.append(" ");
             makeModel.append(IDATA.model);
-            camconst_status camconstStatus = camconst_read(makeModel, OTHER.iso_speed, OTHER.aperture, whiteClippingPoint);
+            camconst_read(makeModel, OTHER.iso_speed, OTHER.aperture, camconstWhite, camconstBlack);
+
+            cout << "is the file dng?: " << isDNG << endl;
+
+            //If the black levels are significantly different, we'll add them.
+            if (camconstBlack != blackpoint && !isDNG) //dngs provide their own correct black level and we should trust it
+            {
+                cout << "Black level discrepancy" << endl;
+                cout << "CamConst black: " << camconstBlack << endl;
+                cout << "LibRaw black:   " << blackpoint << endl;
+                cout << "block black:    " << meanBlockBlackpoint << endl;
+                if (blackpoint != 0)
+                {
+                    if (abs((camconstBlack/blackpoint) - 1) < 0.5)
+                    {
+                        //if they're within 50%, we want to replace the libraw one
+                        blackpoint = camconstBlack;
+                    } else {
+                        //if they're very different, we add them because we think it's an offset
+                        //this is mostly applicable to Panasonics, and I think the full value
+                        // overcorrects the issue so I only apply it 95%.
+                        blackpoint += 0.95*camconstBlack;
+                    }
+                } else {
+                    //if the libraw blackpoint is 0 then we replace it, unless there was a block-based blackpoint
+                    if (meanBlockBlackpoint == 0)
+                    {
+                        blackpoint = camconstBlack;
+                    }
+                }
+                cout << "new black: " << blackpoint << endl;
+            }
 
             //Modern Nikons have camconst.json white levels specified as if they were 14-bit
             // even if the raw files are 12-bit-only, like the entry level cams
             //So we need to detect if it's 12-bit and if the camconst specifies as 14-bit.
-            if ((QString(IDATA.make) == "Nikon") && (libraw->imgdata.color.maximum < 4096) && (whiteClippingPoint >= 4096))
+            if ((QString(IDATA.make) == "Nikon") && (libraw->imgdata.color.maximum < 4096) && (camconstWhite >= 4096))
             {
-                whiteClippingPoint = whiteClippingPoint*4095/16383;
-                cout << "Nikon 12-bit camconst white clipping point: " << whiteClippingPoint << endl;
+                camconstWhite = camconstWhite*4095/16383;
+                cout << "Nikon 12-bit camconst white clipping point: " << camconstWhite << endl;
             }
-            cout << "is the file dng?: " << isDNG << endl;
 
-            if (camconstStatus == CAMCONST_READ_OK && !isDNG) //dngs provide their own correct whitepoint
+            if (camconstWhite > 0 && !isDNG) //dngs provide their own correct whitepoint and we should trust it
             {
-                maxValue = whiteClippingPoint - blackpoint - maxBlockBlackpoint;
+                maxValue = camconstWhite - blackpoint - meanBlockBlackpoint;
             } else {
-                maxValue = libraw->imgdata.color.maximum - blackpoint - maxBlockBlackpoint;
+                maxValue = libraw->imgdata.color.maximum - blackpoint - meanBlockBlackpoint;
             }
             cout << "black-subtracted maximum: " << maxValue << endl;
             cout << "fmaximum: " << libraw->imgdata.color.fmaximum << endl;
@@ -627,10 +668,14 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         double fitparams[2][2][16];
                         CA_correct(0, 0, raw_width, raw_height, true, demosaicParam.caEnabled, 0.0, 0.0, true, premultiplied, premultiplied, cfa, setProg, fitparams, false);
                     }
-                    amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
-                    //matrix<float> normalized_image(raw_height, raw_width);
-                    //normalized_image = premultiplied * (outputscale/inputscale);
-                    //lmmse_demosaic(raw_width, raw_height, normalized_image, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+
+                    if (!demosaicParam.nrEnabled) //use LMMSE if we are denoising
+                    {
+                        amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
+                    } else {
+                        premultiplied.mult_this(outputscale/inputscale);
+                        lmmse_demosaic(raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+                    }
                 }
                 premultiplied.set_size(0, 0);
                 cout << "demosaic end: " << timeDiff(demosaic_time) << endl;

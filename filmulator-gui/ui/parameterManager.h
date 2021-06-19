@@ -72,6 +72,7 @@ struct DemosaicParams {
     float focalLength;
     float fnumber;
     float rotationAngle;
+    bool nrEnabled;
 };
 
 struct NoiseReductionParams {

@@ -305,7 +305,7 @@ SlimSplitView {
                 ToolSwitch {
                     id: nrEnabledSwitch
                     text: qsTr("Noise Reduction")
-                    tooltipText: qsTr("Perform noise reduction to remove grain and color splotches from the image.")
+                    tooltipText: qsTr("Perform noise reduction to remove grain and color splotches from the image.\n\nEnabling this also changes demosaicing to produce less color noise.")
                     isOn: paramManager.nrEnabled
                     defaultOn: paramManager.defNrEnabled
                     onIsOnChanged: {
@@ -339,7 +339,8 @@ SlimSplitView {
                     title: qsTr("NR Strength")
                     tooltipText: qsTr("General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled. This may cause speckles, so use Speckle NR to remove them.")
                     minimumValue: 0
-                    maximumValue: 0.03
+                    maximumValue: 0.1
+                    valueText: (value*1000).toFixed(2)
                     value: paramManager.nlStrength
                     defaultValue: paramManager.defNlStrength
                     property bool bindingLoopCutoff: true
@@ -365,6 +366,43 @@ SlimSplitView {
                     }
                     uiScale: root.uiScale
                 }
+
+                /*
+                ToolSlider {
+                    id: nlThresholdSlider
+                    visible: nrEnabledSwitch.isOn
+                    highlight: nrEnabledSwitch.hovered
+                    title: qsTr("NR Threshold")
+                    tooltipText: qsTr("The larger this value, the fewer patterns there are allowed to be reproduced in the output.")
+                    minimumValue: -9*Math.log(10)
+                    maximumValue: 1*Math.log(10)
+                    value: Math.log(paramManager.nlThresh)
+                    defaultValue: Math.log(paramManager.defNlThresh)
+                    valueText: Math.exp(value).toExponential(3)
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.nlThresh = Math.exp(value)
+                        }
+                    }
+                    //onEditComplete: paramManager.writeback()//it's not stored in the database
+                    Connections {
+                        target: paramManager
+                        function onNlClustersChanged() {
+                            nlThresholdSlider.value = Math.log(paramManager.nlThresh)
+                        }
+                        function onDefNlClustersChanged() {
+                            nlThresholdSlider.defaultValue = Math.log(paramManager.defNlThresh)
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        nlThresholdSlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+                */
 
                 ToolSlider {
                     id: nlClustersSlider
@@ -411,6 +449,7 @@ SlimSplitView {
                     maximumValue: 10
                     value: paramManager.impulseThresh
                     defaultValue: paramManager.defImpulseThresh
+                    valueText: value.toFixed(3)
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
@@ -445,6 +484,7 @@ SlimSplitView {
                     maximumValue: 100
                     value: paramManager.chromaStrength
                     defaultValue: paramManager.defChromaStrength
+                    valueText: value.toFixed(2)
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
