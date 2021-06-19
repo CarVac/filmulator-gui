@@ -75,7 +75,12 @@ SlimSplitView {
 
     onCroppingChanged: {
         if (flicky.fit) {
-            bottomImage.scale = flicky.fitScale
+            if (cropping) {
+                bottomImage.scale = flicky.fitScale * 0.8
+                flicky.fit = false
+            } else {
+                bottomImage.scale = flicky.fitScale
+            }
         }
         flicky.returnToBounds()
         flicky.contentX = flicky.contentX + 2*Math.floor(cropMargin*uiScale*cropping) - Math.floor(cropMargin*uiScale)
