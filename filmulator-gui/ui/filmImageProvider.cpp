@@ -434,11 +434,21 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord)
     float red;
     float green;
     float blue;
-    pipeline.sampleWB(xCoord, yCoord,
-                      rotation,
-                      cropHeight, cropAspect,
-                      cropVoffset, cropHoffset,
-                      red, green, blue);
+    if (useQuickPipe)
+    {
+
+        quickPipe.sampleWB(xCoord, yCoord,
+                           rotation,
+                           cropHeight, cropAspect,
+                           cropVoffset, cropHoffset,
+                           red, green, blue);
+    } else {
+        pipeline.sampleWB(xCoord, yCoord,
+                          rotation,
+                          cropHeight, cropAspect,
+                          cropVoffset, cropHoffset,
+                          red, green, blue);
+    }
 
     float rMult = 1/red;
     float gMult = 1/green;
@@ -472,5 +482,7 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord)
     paramManager->setWB(temp, tint);
 
     //Now we need to tell the parametermanager to store the white balance value
-    paramManager->saveCustomWb();
+    //paramManager->saveCustomWb();
+    //We don't actually want to do this because we want to let the user
+    // swap between a sampled WB and the saved one without losing the saved one.
 }
