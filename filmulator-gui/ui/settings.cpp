@@ -282,7 +282,7 @@ void Settings::setPreviewResolution(int resolutionIn)
 int Settings::getPreviewResolution()
 {
     QSettings settings(QSettings::UserScope, "Filmulator", "Filmulator");
-    //Default: 1000 pixels wide
+    //Default: 1500 pixels wide
     previewResolution = settings.value("edit/previewResolution", 1500).toInt();
     emit previewResolutionChanged();
     return previewResolution;

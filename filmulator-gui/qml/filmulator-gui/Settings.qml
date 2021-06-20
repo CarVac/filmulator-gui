@@ -22,6 +22,78 @@ Rectangle {
         y: 3 * uiScale
         width: 350 * uiScale
 
+        ToolButton {
+            id: resetAll
+            text: active ? qsTr("Are you sure?") : qsTr("...Wait a moment...")
+            width: settingsList.width
+            height: 40 * uiScale
+            property bool active: false
+
+            onTriggered: {
+                if (resetAll.active) {
+                    uiScaleSlider.value = uiScaleSlider.defaultValue
+                    settings.uiScale = uiScaleSlider.value
+                    useSystemLanguageSwitch.isOn = useSystemLanguageSwitch.defaultOn
+                    settings.useSystemLanguage = useSystemLanguageSwitch.isOn
+                    mipmapSwitch.isOn = mipmapSwitch.defaultOn
+                    settings.mipmapView = mipmapSwitch.isOn
+                    lowMemModeSwitch.isOn = lowMemModeSwitch.defaultOn
+                    settings.lowMemMode = lowMemModeSwitch.isOn
+                    quickPreviewSwitch.isOn = quickPreviewSwitch.defaultOn
+                    settings.quickPreview = quickPreviewSwitch.isOn
+                    previewResSlider.value = previewResSlider.defaultValue
+                    settings.previewResolution = previewResSlider.value
+                } else {
+                    resetAllCover.visible = true
+                    resetAll.active = false
+                    resetAllDelay.stop()
+                }
+            }
+
+            onPressedChanged: {
+                if (resetAll.pressed && !resetAll.active) {
+                    resetAllCover.visible = true
+                    resetAll.active = false
+                    resetAllDelay.stop()
+                }
+            }
+
+            Component.onCompleted: {
+                resetAll.tooltipWanted.connect(root.tooltipWanted)
+            }
+            uiScale: root.uiScale
+
+            Timer {
+                id: resetAllDelay
+                interval: 1000
+                onTriggered: {
+                    resetAll.active = true
+                    resetAllTimeout.start()
+                }
+            }
+
+            Timer {
+                id: resetAllTimeout
+                interval: 5000
+                onTriggered: {
+                    resetAllCover.visible = true
+                    resetAll.active = false
+                }
+            }
+
+            ToolButton {
+                id: resetAllCover
+                text: qsTr("Reset All Settings")
+                anchors.fill: parent
+                uiScale: root.uiScale
+                onTriggered: {
+                    resetAll.active = false
+                    resetAllCover.visible = false
+                    resetAllDelay.start()
+                }
+            }
+        }
+
         ToolSlider {
             id: uiScaleSlider
             title: qsTr("User Interface Scale")
@@ -33,7 +105,7 @@ Rectangle {
             tickmarkFactor: 5
             minorTicksEnabled: true
             value: settings.getUiScale()
-            defaultValue: settings.getUiScale()
+            defaultValue: 1
             valueText: value.toFixed(1)
             changed: false
             onValueChanged: {
@@ -55,7 +127,7 @@ Rectangle {
             text: qsTr("Use system language")
             tooltipText: true ? qsTr("Turning this off will set the language to English.\n\nThis setting takes effect after applying settings and then restarting Filmulator.") : qsTr("Turning this off will let you select the interface language from a list.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
             isOn: settings.getUseSystemLanguage()
-            defaultOn: settings.getUseSystemLanguage()
+            defaultOn: true
             onIsOnChanged: useSystemLanguageSwitch.changed = true
             tooltipInstant: root.helpMode
             Component.onCompleted: {
@@ -70,7 +142,7 @@ Rectangle {
             text: qsTr("Smooth editor image")
             tooltipText: qsTr("This enables mipmaps for the Filmulate tab's image view. It's recommended for noisy images where not mipmapping may cause patterns to appear at different zoom levels.\n\nIt has slight impact on responsiveness for the last few tools, but it doesn't affect performance when zooming and panning. It also softens the image slightly, which may be undesireable.\n\nThis is applied as soon as you save settings.")
             isOn: settings.getMipmapView()
-            defaultOn: settings.getMipmapView()
+            defaultOn: false
             onIsOnChanged: mipmapSwitch.changed = true
             tooltipInstant: root.helpMode
             Component.onCompleted: {
@@ -85,7 +157,7 @@ Rectangle {
             text: qsTr("Reduce memory usage")
             tooltipText: qsTr("Warning: VERY SLOW!\n\nEnabling this turns off high-resolution caching in the editor. It will consume less memory but the full resolution image will recompute from the beginning for any edit you make.\n\nThis setting takes effect after applying settings and then restarting Filmulator.")
             isOn: settings.getLowMemMode()
-            defaultOn: settings.getLowMemMode()
+            defaultOn: false
             onIsOnChanged: lowMemModeSwitch.changed = true
             tooltipInstant: root.helpMode
             Component.onCompleted: {
@@ -100,7 +172,7 @@ Rectangle {
             text: qsTr("Render small preview first")
             tooltipText: qsTr("Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.\n\nThis takes effect after applying settings and restarting Filmulator.")
             isOn: settings.getQuickPreview()
-            defaultOn: settings.getQuickPreview()
+            defaultOn: true
             onIsOnChanged: quickPreviewSwitch.changed = true
             tooltipInstant: root.helpMode
             Component.onCompleted: {
@@ -118,7 +190,7 @@ Rectangle {
             maximumValue: 8000
             stepSize: 100
             value: settings.getPreviewResolution()
-            defaultValue: settings.getPreviewResolution()
+            defaultValue: 1500
             changed: false
             onValueChanged: {
                 if (Math.abs(value - defaultValue) < 0.5) {
