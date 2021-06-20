@@ -328,7 +328,7 @@ ApplicationWindow {
                 onTriggered: {
                     root.helpMode = !root.helpMode
                 }
-                tooltipInstant: root.helpMode
+                tooltipInstant: true //we always want this button to show tooltips instantly
                 Component.onCompleted: {
                     helpButton.tooltipWanted.connect(root.tooltipWanted)
                 }

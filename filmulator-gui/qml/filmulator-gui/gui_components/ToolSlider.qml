@@ -168,7 +168,7 @@ Rectangle {
     ToolTip {
         id: buttonTooltip
         anchors.fill: reset
-        tooltipText: qsTr("Reset to default")
+        tooltipText: qsTr("Reset to default.\n\nDouble-right-clicking on the slider will also reset to default.")
         instant: root.tooltipInstant
         Component.onCompleted: {
             buttonTooltip.tooltipWanted.connect(root.tooltipWanted)
