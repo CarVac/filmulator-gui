@@ -21,7 +21,7 @@ Rectangle {
     property alias valueText: valueText.text
     property alias pressed: slider.pressed
     property alias precisePressed: spinnerCircle.dragging
-    property alias tooltipText: toolTooltip.tooltipText
+    property string tooltipText: ""
     property bool tooltipInstant: false
 
     property bool changed: true
@@ -157,6 +157,7 @@ Rectangle {
     }
     ToolTip {
         id: toolTooltip
+        tooltipText: (root.stepSize != 0) ? root.tooltipText : root.tooltipText + qsTr("\n\nRight-click on the tool name to open a dial for more precise input.")
         anchors.fill: label
         instant: root.tooltipInstant
         Component.onCompleted: {

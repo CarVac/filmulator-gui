@@ -1382,7 +1382,7 @@ SlimSplitView {
             y: 0
             notDisabled: root.imageReady && (!root.cropping) && (!root.leveling) && (!root.imageError)
             text: qsTr("Save TIFF")
-            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : (root.leveling ? qsTr("Finish leveling to save the result.") : qsTr("Save a TIFF to the directory containing the raw file."))
+            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : (root.leveling ? qsTr("Finish leveling to save the result.") : qsTr("Save a TIFF to the directory containing the raw file. If you've saved an output file before, it will be overwritten."))
             onTriggered: {
                 filmProvider.writeTiff()
                 queueModel.markSaved(paramManager.imageIndex)
@@ -1402,7 +1402,7 @@ SlimSplitView {
             y: 0
             notDisabled: root.imageReady && (!root.cropping) && (!root.leveling) && (!root.imageError)
             text: qsTr("Save JPEG")
-            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : (root.leveling ? qsTr("Finish leveling to save the result.") : qsTr("Save a JPEG to the directory containing the raw file."))
+            tooltipText: root.cropping ? qsTr("Finish cropping to save the result.") : (root.leveling ? qsTr("Finish leveling to save the result.") : qsTr("Save a JPEG to the directory containing the raw file. If you've saved an output file before, it will be overwritten."))
             onTriggered: {
                 filmProvider.writeJpeg()
                 queueModel.markSaved(paramManager.imageIndex)
