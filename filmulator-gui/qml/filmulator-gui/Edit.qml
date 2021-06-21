@@ -2442,13 +2442,13 @@ SlimSplitView {
                 y: 33 * uiScale
                 width: parent.width - 206*uiScale
                 height: parent.height - 66*uiScale
-                visible: lensfunBox.active && (lensListBox.count < 1)
+                visible: lensfunBox.active && (lensListBox.count < 1) && (lensFilterBox.text != "")
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 color: "white"
                 font.pixelSize: 14.0 * uiScale
                 wrapMode: Text.Wrap
-                text: qsTr("There are no matching lenses.\n\nYou may need to download updated lens corrections in the Settings tab.")
+                text: qsTr("There are no lenses matching the current search.\n\nYou may need to download updated lens corrections in the Settings tab.")
             }
 
             ListView {
