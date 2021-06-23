@@ -2728,6 +2728,7 @@ SlimSplitView {
             anchors.right: wbButton.left
             y: 0 * uiScale
             tooltipText: qsTr("Change the editor's background brightness between black, gray, and white.\n\nShortcut: B")
+            enabled: !lensfunBox.active
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2773,6 +2774,7 @@ SlimSplitView {
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.cropping && !root.leveling
             tooltipText: root.wbPicking ? qsTr("Cancel setting custom white balance. Shortcut: W") : qsTr("Set a custom white balance based on where you click in the image.\n\nShortcut: W")
+            enabled: !lensfunBox.active
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2817,6 +2819,7 @@ SlimSplitView {
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.wbPicking && !root.leveling
             tooltipText: (root.cropping ? qsTr("Click this to save your crop."): qsTr("Click this to begin cropping.")) + "\n\n" + qsTr("Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.\n\nHold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.\n\nShortcut: C")
+            enabled: !lensfunBox.active
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2864,6 +2867,7 @@ SlimSplitView {
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.wbPicking && !root.cropping && !root.leveling
             tooltipText: qsTr("Rotate image 90 degrees left.")
+            enabled: !lensfunBox.active
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2888,6 +2892,7 @@ SlimSplitView {
             y: 0 * uiScale
             notDisabled: root.previewReady && !root.wbPicking && !root.cropping
             tooltipText: (root.leveling ? qsTr("Click this to apply the rotation.") : qsTr("Click this to begin leveling the image.")) + "\n\n" + qsTr("Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.\n\nReset the rotation to zero by pressing \"Shift+L\" or double right clicking.\n\nShortcut: L")
+            enabled: !lensfunBox.active
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
@@ -2942,6 +2947,7 @@ SlimSplitView {
             y: 0 * uiScale
             notDisabled: root.imageReady && !root.wbPicking && !root.cropping && !root.leveling
             tooltipText: qsTr("Rotate image 90 degrees right.")
+            enabled: !lensfunBox.active
             Image {
                 width: 14 * uiScale
                 height: 14 * uiScale
