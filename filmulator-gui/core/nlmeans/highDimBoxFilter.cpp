@@ -160,7 +160,7 @@ void highDimBoxFilter(float* __restrict const A, float* __restrict const W, floa
                 ptrdiff_t A_idx = yIdx + S + (xIdx+S)*expandedBlockSize + chanIdx*expandedBlockSize*expandedBlockSize;
 
                 // Small values of Wb are unreliable. If ln(abs(Wb)) < -3, then disregard just fall back to the original value.
-                const float confidence = std::clamp(std::log(std::abs(Wb[Wb_idx]))+3 , 0.0f, 1.0f);
+                const float confidence = std::min(std::max(std::log(std::abs(Wb[Wb_idx]))+3 , 0.0f), 1.0f);
                 const float eps = std::numeric_limits<float>::epsilon();
                 output[output_idx] =  confidence*(B[B_idx] / (Wb[Wb_idx] + eps)) + (1-confidence)*A[A_idx];
             }
