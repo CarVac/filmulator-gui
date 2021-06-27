@@ -96,12 +96,13 @@ QImage FilmImageProvider::requestImage(const QString& id,
     {
         shufflePipelines();//this'll just deal with the ID names
         filename = paramManager->getFullFilename();
+        pipeline.clearInvalid(paramManager->getValid());
         image = pipeline.processImage(paramManager, this, data, fileHash);
     }
     else
     {
         //need to check if we want the small or big image
-        if (id[0] == "q")
+        if (id[0] == "q") //small image
         {
             filename = paramManager->getFullFilename();
             if (newID != currentID && useCache)//the image changed
@@ -114,6 +115,12 @@ QImage FilmImageProvider::requestImage(const QString& id,
             } else {
                 shufflePipelines();
             }
+
+            //We want to clear both the quick pipe and the full pipe's invalid data
+            // to reduce peak memory usage
+            quickPipe.clearInvalid(paramManager->getValid());
+            pipeline.clearInvalid(paramManager->getValid());
+
             struct timeval quickTime;
             gettimeofday(&quickTime, nullptr);
             image = quickPipe.processImage(paramManager, this, data, fileHash);

@@ -32,6 +32,9 @@ public:
     //Lets the consumer turn cache on and off
     void setCache(Cache cacheIn);
 
+    //Erases invalid cached data ahead of time
+    void clearInvalid(Valid validIn);
+
     //Variable relating to stealing the demosaiced data from another imagepipeline
     bool stealData = false;
     ImagePipeline * stealVictim;

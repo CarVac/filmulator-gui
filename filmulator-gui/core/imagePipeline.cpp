@@ -1053,6 +1053,21 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             return emptyMatrix();
         }
 
+        //reduce memory usage
+        if (nlValid == nlnone)
+        {
+            luma_nr_image.set_size(0, 0);
+            impulse_nr_image.set_size(0, 0);
+            nr_image.set_size(0, 0);
+        } else if (impulseValid == impulsenone)
+        {
+            impulse_nr_image.set_size(0, 0);
+            nr_image.set_size(0, 0);
+        } else if (chromaValid == chromanone)
+        {
+            nr_image.set_size(0, 0);
+        }
+
         if ((HighQuality == quality) && stealData)//only full pipelines may steal data
         {
             //skip over this so we can steal the result later
@@ -1947,4 +1962,45 @@ void ImagePipeline::sampleWB(const float xPos, const float yPos,
     red   = rSum / (rCamMul*count);
     green = gSum / (gCamMul*count);
     blue  = bSum / (bCamMul*count);
+}
+
+void ImagePipeline::clearInvalid(Valid validIn)
+{
+    if (validIn < load)
+    {
+        raw_image.set_size(0, 0);
+    }
+    if (validIn < demosaic)
+    {
+        demosaiced_image.set_size(0, 0);
+
+        //because these have their progress tracked differently we want to clear them more conservatively
+        luma_nr_image.set_size(0, 0);
+        impulse_nr_image.set_size(0, 0);
+        nr_image.set_size(0, 0);
+    }
+    if (validIn < noisereduction)
+    {
+        //these get cleared during the pipeline according to their individual progressesa
+    }
+    if (validIn < prefilmulation)
+    {
+        pre_film_image.set_size(0, 0);
+    }
+    if (validIn < filmulation)
+    {
+        filmulated_image.set_size(0, 0);
+    }
+    if (validIn < blackwhite)
+    {
+        contrast_image.set_size(0, 0);
+    }
+    if (validIn < colorcurve)
+    {
+        color_curve_image.set_size(0, 0);
+    }
+    if (validIn < filmlikecurve)
+    {
+        vibrance_saturation_image.set_size(0, 0);
+    }
 }
