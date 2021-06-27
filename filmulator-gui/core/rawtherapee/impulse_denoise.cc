@@ -291,5 +291,6 @@ void impulse_nr (matrix<float> &imageIn, matrix<float> &imageOut,
             imageOut(i, j*3 + 2) = lab->b[i][j] / chromaFactor;
         }
     }
+    lab->deleteLab();
 }
 

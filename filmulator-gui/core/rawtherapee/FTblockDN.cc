@@ -946,7 +946,8 @@ void RGB_denoise(int kall,
                             }
 
                         }
-                        delete labdn;
+                        labdn->deleteLab();
+                        //delete labdn;
 
                     }//end of tile row
                 }//end of tile loop
