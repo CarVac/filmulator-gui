@@ -204,6 +204,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 {
                     camToRGB[i][j] = libraw->imgdata.color.rgb_cam[i][j];
                     //cout << camToRGB[i][j] << " ";
+                    xyzToCam[i][j] = libraw->imgdata.color.cam_xyz[i][j];
                 }
                 //cout << endl;
             }
@@ -302,7 +303,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             QString makeModel = IDATA.make;
             makeModel.append(" ");
             makeModel.append(IDATA.model);
-            camconst_read(makeModel, OTHER.iso_speed, OTHER.aperture, camconstWhite, camconstBlack);
+            bool camconstSuccess = CAMCONST_READ_OK == camconst_read(makeModel, OTHER.iso_speed, OTHER.aperture, camconstWhite, camconstBlack);
 
             cout << "is the file dng?: " << isDNG << endl;
 
@@ -313,7 +314,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 cout << "CamConst black: " << camconstBlack << endl;
                 cout << "LibRaw black:   " << blackpoint << endl;
                 cout << "block black:    " << meanBlockBlackpoint << endl;
-                if (blackpoint != 0)
+                if (blackpoint != 0 && camconstSuccess)
                 {
                     if (abs((camconstBlack/blackpoint) - 1) < 0.5)
                     {
@@ -327,7 +328,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     }
                 } else {
                     //if the libraw blackpoint is 0 then we replace it, unless there was a block-based blackpoint
-                    if (meanBlockBlackpoint == 0)
+                    if (meanBlockBlackpoint == 0 && camconstSuccess)
                     {
                         blackpoint = camconstBlack;
                     }
@@ -344,11 +345,13 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 cout << "Nikon 12-bit camconst white clipping point: " << camconstWhite << endl;
             }
 
-            if (camconstWhite > 0 && !isDNG) //dngs provide their own correct whitepoint and we should trust it
+            if (camconstSuccess && camconstWhite > 0 && !isDNG) //dngs provide their own correct whitepoint and we should trust it
             {
                 maxValue = camconstWhite - blackpoint - meanBlockBlackpoint;
+                cout << "normal white clipping point: " << camconstWhite << endl;
             } else {
                 maxValue = libraw->imgdata.color.maximum - blackpoint - meanBlockBlackpoint;
+                cout << "dng white clipping point: " << libraw->imgdata.color.maximum << endl;
             }
             cout << "black-subtracted maximum: " << maxValue << endl;
             cout << "fmaximum: " << libraw->imgdata.color.fmaximum << endl;
@@ -1277,6 +1280,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = stealVictim->camToRGB[i][j];
+                    xyzToCam[i][j] = stealVictim->xyzToCam[i][j];
                 }
             }
             for (int i = 0; i < 3; i++)
@@ -1789,6 +1793,7 @@ void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
     raw_height = swapTarget->raw_height;
 
     std::swap(camToRGB, swapTarget->camToRGB);
+    std::swap(xyzToCam, swapTarget->xyzToCam);
     std::swap(camToRGB4, swapTarget->camToRGB4);
 
     std::swap(rCamMul, swapTarget->rCamMul);

@@ -75,6 +75,9 @@ camconst_status camconst_download()
 // If they're the same magnitude, I'll use this one.
 camconst_status camconst_read(const QString inputMakeModel, const float iso, const float fnumber, double &whiteLevel, double &black)
 {
+    whiteLevel = 0;
+    black = 0;
+
     QString filePath = camconst_dir();
     QFile file(filePath);
     if (!file.exists())
@@ -110,8 +113,6 @@ camconst_status camconst_read(const QString inputMakeModel, const float iso, con
 
     QString makeModel;
     float apertureScaleFactor = 0;
-    whiteLevel = 0;
-    black = 0;
 
     //Only thing we care about for now is white level based on various things
     //also black level (check panasonic g9!!!) maybe?

@@ -135,8 +135,21 @@ void whiteBalancePostMults(float temperature, float tint, float camToRgb[3][3],
     float BASE_TEMP = 6594.9982f;
     float BASE_TINT = 0.9864318f;
 
+    //Libraw's pre_mul values are obtained from cam_xyz and D65. Here's the octave code for it:
+    //D65 = [.31271; .32902 .35827];
+    //d65_in_cam = cam_xyz * D65;
+    //pre_mul = max(d65_in_cam)./d65_in_cam;
+
     float rBaseMult, gBaseMult, bBaseMult;
     //Set the white balance arguments based on what libraw did.
+    //cout << "whiteBalancePostMults rCamMul: " << rCamMul << endl;
+    //cout << "whiteBalancePostMults gCamMul: " << gCamMul << endl;
+    //cout << "whiteBalancePostMults bCamMul: " << bCamMul << endl;
+    //cout << "whiteBalancePostMults rPreMul: " << rPreMul << endl;
+    //cout << "whiteBalancePostMults gPreMul: " << gPreMul << endl;
+    //cout << "whiteBalancePostMults bPreMul: " << bPreMul << endl;
+    //cout << "whiteBalancePostMults cam mul harmonic mean: " << 2.0/(gCamMul/rCamMul + gCamMul/bCamMul) << endl;
+    //cout << "whiteBalancePostMults pre mul harmonic mean: " << 2.0/(gPreMul/rPreMul + gPreMul/bPreMul) << endl;
 
     //First we divide the daylight multipliers by the camera multipliers.
     float rrBaseMult = rPreMul / rCamMul;
@@ -146,10 +159,24 @@ void whiteBalancePostMults(float temperature, float tint, float camToRgb[3][3],
     rrBaseMult /= rawMultMin;
     grBaseMult /= rawMultMin;
     brBaseMult /= rawMultMin;
+    //cout << "whiteBalancePostMults rrBaseMult: " << rrBaseMult << endl;
+    //cout << "whiteBalancePostMults grBaseMult: " << grBaseMult << endl;
+    //cout << "whiteBalancePostMults brBaseMult: " << brBaseMult << endl;
+    for (int i = 0; i < 3; i++)
+    {
+        //cout << "whiteBalancePostMults camToRGB: ";
+        for (int j = 0; j < 3; j++)
+        {
+            //cout << camToRgb[i][j] << " ";
+        }
+        //cout << endl;
+    }
     //And then we convert them from camera space to sRGB.
     matrixVectorMult(rrBaseMult, grBaseMult, brBaseMult,
                       rBaseMult,  gBaseMult,  bBaseMult,
                       camToRgb);
+
+    //if we are not handling a raw, set the base multipliers to 1 and use 5200/1 for temp/tint
     if ((1.0f == camToRgb[0][0] && 1.0f == camToRgb[1][1] && 1.0f == camToRgb[2][2])
          || (1.0f == rPreMul && 1.0f == gPreMul && 1.0f == bPreMul))
     {
@@ -160,6 +187,9 @@ void whiteBalancePostMults(float temperature, float tint, float camToRgb[3][3],
         BASE_TINT = 1;
     }
     //The result of this is the BaseMultipliers in sRGB, which we use later.
+    //cout << "whiteBalancePostMults rBaseMult: " << rBaseMult << endl;
+    //cout << "whiteBalancePostMults gBaseMult: " << gBaseMult << endl;
+    //cout << "whiteBalancePostMults bBaseMult: " << bBaseMult << endl;
 
 
     //Here we compute the ratio of the desired to the reference (kinda daylight) illuminant.

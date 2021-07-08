@@ -85,6 +85,7 @@ protected:
     int maxXtrans;
     int raw_width, raw_height;
     float camToRGB[3][3];//rgb_cam from libraw
+    float xyzToCam[3][3];//cam_xyz from libraw
     float camToRGB4[3][4];
     float rCamMul, gCamMul, bCamMul;//wb used on the image
     float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw

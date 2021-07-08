@@ -603,7 +603,7 @@ QString identifyLens(const std::string fullFilename)
         }
         */
     } else {
-        cout << "No matching cameras found in database." << endl;
+        cout << "No matching cameras found in database: " << camModel << endl;
     }
     lf_free(cameraList);
 
