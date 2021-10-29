@@ -319,6 +319,11 @@ void raw_to_sRGB(matrix<float> &in,
                  matrix<float> &out,
                  const float cam2rgb[3][3]);
 
+//Converts linear sRGB to raw
+void sRGB_to_raw(matrix<float> &in,
+                 matrix<float> &out,
+                 const float cam2rgb[3][3]);
+
 //Converts raw to oklab
 void raw_to_oklab(matrix<float> &in,
                   matrix<float> &out,
@@ -327,6 +332,6 @@ void raw_to_oklab(matrix<float> &in,
 //Converts oklab back to raw
 void oklab_to_raw(matrix<float> &in,
                   matrix<float> &out,
-                  const float xyz2cam[3][3]);
+                  const float cam2rgb[3][3]);
 
 #endif // FILMSIM_H

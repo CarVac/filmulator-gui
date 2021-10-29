@@ -553,13 +553,6 @@ void rawWhiteBalance(const matrix<float> &input, matrix<float> &output,
     float temp_gUserMul = gUserMul/gCamMul;
     float temp_bUserMul = bUserMul/bCamMul;
 
-    array<float, 2> tempTint;
-    tempTint[0] = temperature;
-    tempTint[1] = tint;
-    float distance = wbDistance(tempTint, cam_xyz, rCamMul, gCamMul, bCamMul);
-    cout << "rawWhiteBalance wbDistance: " << distance << endl;
-
-
     const int nRows = input.nr();
     const int nCols = input.nc();
 

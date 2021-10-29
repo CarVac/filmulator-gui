@@ -922,7 +922,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             gettimeofday(&nrTime, nullptr);
 
             const bool eraseNRInput = (cache == NoCache);
-            impulse_nr(nlmeans_nr_image, impulse_nr_image, nrParam.impulseThresh, 1.0, eraseNRInput);//always erase this temp lab image
+            impulse_nr(nlmeans_nr_image, impulse_nr_image, nrParam.impulseThresh, 1.0, eraseNRInput);
 
             cout << "Impulse NR duration: " << timeDiff(nrTime) << endl;
         } else if (nrParam.nrEnabled) {
@@ -1002,7 +1002,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         matrix<float> prefilm_input_image;
         if (prefilmParam.nrEnabled)
         {
-            oklab_to_raw(chroma_nr_image, prefilm_input_image,xyzToCam);
+            oklab_to_raw(chroma_nr_image, prefilm_input_image,camToRGB);
             if (cache == NoCache)
             {
                 chroma_nr_image.set_size(0, 0);

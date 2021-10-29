@@ -1,5 +1,6 @@
 //#include "filmSim.hpp"
 #include "lut.hpp"
+#include "nlmeans/eigen/Eigen/Dense"
 
 //Constants for conversion to and from L*a*b*
 #define LAB_EPSILON (216.0/24389.0)
@@ -373,6 +374,44 @@ void raw_to_sRGB(matrix<float> &input,
         }
     }
 }
+//Convert raw color to sRGB, don't clip negatives.
+void sRGB_to_raw(matrix<float> &input,
+                 matrix<float> &output,
+                 const float cam2rgb[3][3])
+{
+    int nRows = input.nr();
+    int nCols = input.nc();
+
+    float cam2rgb2[3][3];
+    float rgb2cam[3][3];
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            cam2rgb2[i][j] = cam2rgb[i][j];
+        }
+    }
+    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> c2r(cam2rgb2[0]);
+    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> r2c(rgb2cam[0]);
+    r2c = c2r.inverse();
+
+    output.set_size(nRows, nCols);
+
+#pragma omp parallel shared(output, input) firstprivate(nRows, nCols)
+    {
+#pragma omp for schedule(dynamic) nowait
+        for (int i = 0; i < nRows; i++)
+        {
+            for (int j = 0; j < nCols; j += 3)
+            {
+                output(i, j  ) = rgb2cam[0][0]*input(i, j) + rgb2cam[0][1]*input(i, j+1) + rgb2cam[0][2]*input(i, j+2);
+                output(i, j+1) = rgb2cam[1][0]*input(i, j) + rgb2cam[1][1]*input(i, j+1) + rgb2cam[1][2]*input(i, j+2);
+                output(i, j+2) = rgb2cam[2][0]*input(i, j) + rgb2cam[2][1]*input(i, j+1) + rgb2cam[2][2]*input(i, j+2);
+
+            }
+        }
+    }
+}
 
 //Convert raw color (range of roughly 65535) to 200*oklab, don't clip negatives.
 //Reference: https://bottosson.github.io/posts/oklab/
@@ -414,13 +453,53 @@ void raw_to_oklab(matrix<float> &input,
     }
 }
 
+//Convert 200*oklab to xyz
+//Reference: https://bottosson.github.io/posts/oklab/
+void oklab_to_xyz(float L, float a, float b,
+                  float &x, float &y, float &z)
+{
+    L /= 200;
+    a /= 200;
+    b /= 200;
+
+    float lp, mp, sp;
+
+    //m2 inverse
+    lp = L + 0.3963377921737679*a + 0.2158037580607588*b;
+    mp = L - 0.1055613423236563*a - 0.06385417477170588*b;
+    sp = L - 0.08948418209496574*a - 1.291485537864092*b;
+
+    float l, m, s;
+    l = lp*lp*lp;
+    m = mp*mp*mp;
+    s = sp*sp*sp;
+
+    //m1 inverse
+    x = 1.227013851103521*l - 0.5577999806518222*m + 0.2812561489664678*s;
+    y = -0.0405801784232806*l + 1.11225686961683*m - 0.07167667866560121*s;
+    z = -0.07638128450570689*l - 0.4214819784180127*m + 1.586163220440795*s;
+}
+
 //Convert 200*oklab to raw color (roughly 65535 max)
 void oklab_to_raw(matrix<float> &input,
                   matrix<float> &output,
-                  const float xyz2cam[3][3])
+                  const float cam2rgb[3][3])
 {
     int nRows = input.nr();
     int nCols = input.nc();
+
+    float cam2rgb2[3][3];
+    float rgb2cam[3][3];
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            cam2rgb2[i][j] = cam2rgb[i][j];
+        }
+    }
+    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> c2r(cam2rgb2[0]);
+    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> r2c(rgb2cam[0]);
+    r2c = c2r.inverse();
 
     output.set_size(nRows, nCols);
 
@@ -448,14 +527,10 @@ void oklab_to_raw(matrix<float> &input,
                 const float sRGBg = (-1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s) * 65535.0f;
                 const float sRGBb = (-0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s) * 65535.0f;
 
-                //then from sRGB to XYZ
-                float x, y, z;
-                sRGB_to_XYZ(sRGBr, sRGBg, sRGBb, x, y, z);
-
-                //then XYZ to raw
-                output(i, j+0) = xyz2cam[0][0] * x + xyz2cam[0][1] * y + xyz2cam[0][2] * z;
-                output(i, j+1) = xyz2cam[1][0] * x + xyz2cam[1][1] * y + xyz2cam[1][2] * z;
-                output(i, j+2) = xyz2cam[2][0] * x + xyz2cam[2][1] * y + xyz2cam[2][2] * z;
+                //Use eigen to invert cam2rgb, then use that to go from sRGB to raw color
+                output(i, j+0) = rgb2cam[0][0] * sRGBr + rgb2cam[0][1] * sRGBg + rgb2cam[0][2] * sRGBb;
+                output(i, j+1) = rgb2cam[1][0] * sRGBr + rgb2cam[1][1] * sRGBg + rgb2cam[1][2] * sRGBb;
+                output(i, j+2) = rgb2cam[2][0] * sRGBr + rgb2cam[2][1] * sRGBg + rgb2cam[2][2] * sRGBb;
             }
         }
     }
