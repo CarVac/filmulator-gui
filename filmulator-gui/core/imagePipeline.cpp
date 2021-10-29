@@ -586,7 +586,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width*3; col++)
                     {
                         int color = col % 3;
-                        demosaiced_image(row, col) = raw_image(row, col) * scaleFactor * ((color==0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
+                        demosaiced_image(row, col) = raw_image(row, col) * scaleFactor * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
                     }
                 }
             }
@@ -624,10 +624,15 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         uint color = xtrans[uint(row) % 6][uint(col) % 6];
-                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
+                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
                     }
                 }
-                markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+                if (demosaicParam.demosaicMethod == 0)
+                {
+                    markesteijn_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+                } else { //if it's 1, use xtransfast
+                    xtransfast_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, setProg);
+                }
                 //there's no inputscale for markesteijn so we need to scale
                 float scaleFactor = outputscale / inputscale;
                 #pragma omp parallel for
@@ -662,7 +667,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         uint color = cfa[uint(row) & 1][uint(col) & 1];
-                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
+                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
                     }
                 }
                 if (demosaicParam.caEnabled > 0)
@@ -678,6 +683,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 } else { //if it's 1, use LMMSE
                     premultiplied.mult_this(outputscale/inputscale);
                     lmmse_demosaic(raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
+                    //igv_demosaic(raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg);//needs inputscale and output scale to be implemented
                 }
             }
             premultiplied.set_size(0, 0);
@@ -715,10 +721,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
 
         //First thing after demosaic is to apply the user's white balance.
-        float rUserMul, gUserMul, bUserMul;
         rawWhiteBalance(demosaiced_image, post_demosaic_image,
                         postDemosaicParam.temperature, postDemosaicParam.tint, xyzToCam,
-                        rPreMul, gPreMul, bPreMul,//undoes these
+                        rCamMul, gCamMul, bCamMul,//undoes these
                         rUserMul, gUserMul, bUserMul);//used later for highlight recovery
 
         //Recover highlights now
@@ -838,7 +843,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             }
 
             float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
-            float scale = std::max(preconditioned.max() + offset, 1.0f);// /5;
+            float scale = std::max(preconditioned.max() + offset, 1.0f)/5;
 #pragma omp parallel for
             for (int row = 0; row < preconditioned.nr(); row++)
             {
@@ -1344,6 +1349,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             rPreMul = stealVictim->rPreMul;
             gPreMul = stealVictim->gPreMul;
             bPreMul = stealVictim->bPreMul;
+            rUserMul = stealVictim->rUserMul;
+            gUserMul = stealVictim->gUserMul;
+            bUserMul = stealVictim->bUserMul;
             maxValue = stealVictim->maxValue;
             isSraw = stealVictim->isSraw;
             isNikonSraw = stealVictim->isNikonSraw;
@@ -1752,6 +1760,9 @@ void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
     std::swap(rPreMul, swapTarget->rPreMul);
     std::swap(gPreMul, swapTarget->gPreMul);
     std::swap(bPreMul, swapTarget->bPreMul);
+    std::swap(rUserMul, swapTarget->rUserMul);
+    std::swap(gUserMul, swapTarget->gUserMul);
+    std::swap(bUserMul, swapTarget->bUserMul);
 
     std::swap(maxValue, swapTarget->maxValue);
     std::swap(isSraw, swapTarget->isSraw);
@@ -1909,9 +1920,9 @@ void ImagePipeline::sampleWB(const float xPos, const float yPos,
     }
 
     //Compute the average and also divide by the camera WB multipliers
-    red   = rSum / (rPreMul*count);
-    green = gSum / (gPreMul*count);
-    blue  = bSum / (bPreMul*count);
+    red   = rSum / (rUserMul*count);
+    green = gSum / (gUserMul*count);
+    blue  = bSum / (bUserMul*count);
 }
 
 void ImagePipeline::clearInvalid(Valid validIn)

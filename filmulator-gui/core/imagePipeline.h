@@ -86,8 +86,9 @@ protected:
     float camToRGB[3][3];//rgb_cam from libraw
     float xyzToCam[3][3];//cam_xyz from libraw
     float camToRGB4[3][4];
-    float rCamMul, gCamMul, bCamMul;//wb used on the image
+    float rCamMul, gCamMul, bCamMul;//wb used on the image by the camera
     float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
+    float rUserMul, gUserMul, bUserMul;//wb actually applied
     float maxValue;
     bool isSraw;//Actually we should set this for all full-color raws (including X-Transformer)
     bool isNikonSraw;

@@ -126,10 +126,10 @@ SlimSplitView {
                 ToolSwitch {
                     id: demosaicMethod
                     text: qsTr("Demosaic Method")
-                    tooltipText: qsTr("Switch this control on to use a demosaic algorithm that has less visible noise, but worse highlight recovery.")
+                    tooltipText: paramManager.autoCaAvail ? qsTr("Switch this control on to reduce line-shaped noise artifacts at the expense of fine detail.") : qsTr("Switch this control on to make noise less visible at the expense of worse fine detail and worse highlight recovery.")
                     isOn: (paramManager.demosaicMethod == 1)
                     defaultOn: (paramManager.defDemosaicMethod == 1)
-                    visible: paramManager.autoCaAvail //only for bayer sensors
+                    //visible: paramManager.autoCaAvail //
                     onIsOnChanged: {
                         paramManager.demosaicMethod = isOn ? 1 : 0
                         paramManager.writeback()
