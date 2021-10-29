@@ -6,7 +6,7 @@
 #include <QMutexLocker>
 #include <rtprocess/librtprocess.h>
 
-enum Cache {WithCache, NoCache};
+enum Cache {HighCache, NoCache};
 enum Histo {WithHisto, NoHisto};
 enum QuickQuality { LowQuality, PreviewQuality, HighQuality };
 
@@ -19,8 +19,7 @@ public:
     matrix<unsigned short>& processImage(ParameterManager * paramManager,
                                          Interface * histoInterface,
                                          Exiv2::ExifData &exifOutput,
-                                         const QString fileHash = "",
-                                         const bool forgetNR = false);
+                                         const QString fileHash = "");
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
     float getProgress(){return progress;}
@@ -95,14 +94,16 @@ protected:
     bool isMonochrome;
     bool isCR3;
 
-    matrix<float> demosaiced_image;
-    matrix<float> luma_nr_image;//lab
+    matrix<float> demosaiced_image;//raw
+    matrix<float> post_demosaic_image;//raw
+    matrix<float> nlmeans_nr_image;//lab
     matrix<float> impulse_nr_image;//lab
-    matrix<float> nr_image;//lab
-    matrix<float> pre_film_image;
+    matrix<float> chroma_nr_image;//lab
+    matrix<float> pre_film_image;//back to raw
+    matrix<float> pre_film_image_small;//
     Exiv2::ExifData exifData;
     Exiv2::ExifData basicExifData;//for tiff writing
-    matrix<float> filmulated_image;
+    matrix<float> filmulated_image;//sRGB
     matrix<unsigned short> contrast_image;
     matrix<unsigned short> color_curve_image;
     matrix<unsigned short> vibrance_saturation_image;

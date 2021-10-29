@@ -227,6 +227,14 @@ void whiteBalance(matrix<float> &input, matrix<float> &output,
                   float rCamMul, float gCamMul, float bCamMul,
                   float rPreMul, float gPreMul, float bPreMul,
                   float expCompMult = 1.f);
+
+//This should be applied between demosaic and highlight recovery.
+//It undoes the camera WB and applies the user's WB, and reports the user WB multipliers.
+void rawWhiteBalance(const matrix<float> &input, matrix<float> &output,
+                     const float temperature, const float tint, const float xyz2cam[3][3],
+                     float rCamMul, float gCamMul, float bCamMul,
+                     float & rUserMul, float & gUserMul, float & bUserMul);
+
 //This one only applies temperature and tint and exposure comp
 // to images that are already sRGB.
 void sRGBwhiteBalance(matrix<float> &input, matrix<float> &output,
@@ -298,11 +306,11 @@ void sRGB_linearize(matrix<unsigned short> &RGB,
 void sRGB_gammacurve(matrix<float> &RGB,
                      matrix<unsigned short> &out);
 
-//Converts linear sRGB to Oklab
+//Converts linear sRGB to oklab
 void sRGB_to_oklab(matrix<float> &in,
                    matrix<float> &out);
 
-//Converts Oklab to linear sRGB
+//Converts oklab to linear sRGB
 void oklab_to_sRGB(matrix<float> &in,
                    matrix<float> &out);
 
@@ -311,9 +319,14 @@ void raw_to_sRGB(matrix<float> &in,
                  matrix<float> &out,
                  const float cam2rgb[3][3]);
 
-//Converts raw to Oklab
+//Converts raw to oklab
 void raw_to_oklab(matrix<float> &in,
                   matrix<float> &out,
                   const float cam2rgb[3][3]);
+
+//Converts oklab back to raw
+void oklab_to_raw(matrix<float> &in,
+                  matrix<float> &out,
+                  const float xyz2cam[3][3]);
 
 #endif // FILMSIM_H

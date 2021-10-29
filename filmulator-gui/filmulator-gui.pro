@@ -162,7 +162,7 @@ unix:!macx {
 QMAKE_LFLAGS += -fopenmp
 }
 
-LIBS += -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess -llensfun -lcurl -larchive
+LIBS += -ltiff -lexiv2 -ljpeg -lraw_r -lrtprocess -llensfun -lcurl -larchive -lz
 macx: {
 LIBS += -L /opt/local/lib /opt/local/lib/libomp.dylib
 }

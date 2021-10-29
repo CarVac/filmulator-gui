@@ -123,6 +123,37 @@ SlimSplitView {
                     }
                 }
 
+                ToolSwitch {
+                    id: demosaicMethod
+                    text: qsTr("Demosaic Method")
+                    tooltipText: qsTr("Switch this control on to use a demosaic algorithm that has less visible noise, but worse highlight recovery.")
+                    isOn: (paramManager.demosaicMethod == 1)
+                    defaultOn: (paramManager.defDemosaicMethod == 1)
+                    visible: paramManager.autoCaAvail //only for bayer sensors
+                    onIsOnChanged: {
+                        paramManager.demosaicMethod = isOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.demosaicMethod = defaultOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        function onDemosaicMethodChanged() {
+                            demosaicMethod.isOn = (paramManager.demosaicMethod == 1)
+                        }
+                        function onDefDemosaicMethodChanged() {
+                            demosaicMethod.defaultOn = (paramManager.defDemosaicMethod == 1)
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        demosaicMethod.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
                 ToolSlider {
                     id: highlightRecoverySlider
                     title: qsTr("Highlight Recovery")
@@ -153,6 +184,38 @@ SlimSplitView {
                     Component.onCompleted: {
                         highlightRecoverySlider.tooltipWanted.connect(root.tooltipWanted)
                         bindingLoopCutoff = false
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: exposureCompSlider
+                    title: qsTr("Exposure Compensation")
+                    tooltipText: qsTr("The amount the program should to over- or under-expose the \"film\" relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.")
+                    minimumValue: -5
+                    maximumValue: 5
+                    stepSize: 1/6
+                    tickmarksEnabled: true
+                    tickmarkFactor: 6
+                    value: paramManager.exposureComp
+                    defaultValue: paramManager.defExposureComp
+                    valueText: value.toFixed(4)
+                    onValueChanged: {
+                        paramManager.exposureComp = value
+                    }
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        function onExposureCompChanged() {
+                            exposureCompSlider.value = paramManager.exposureComp
+                        }
+                        function onDefExposureCompChanged() {
+                            exposureCompSlider.defaultValue = paramManager.defExposureComp
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }
@@ -608,38 +671,6 @@ SlimSplitView {
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         tintSlider.tooltipWanted.connect(root.tooltipWanted)
-                    }
-                    uiScale: root.uiScale
-                }
-
-                ToolSlider {
-                    id: exposureCompSlider
-                    title: qsTr("Exposure Compensation")
-                    tooltipText: qsTr("The amount the program should to over- or under-expose the \"film\" relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.")
-                    minimumValue: -5
-                    maximumValue: 5
-                    stepSize: 1/6
-                    tickmarksEnabled: true
-                    tickmarkFactor: 6
-                    value: paramManager.exposureComp
-                    defaultValue: paramManager.defExposureComp
-                    valueText: value.toFixed(4)
-                    onValueChanged: {
-                        paramManager.exposureComp = value
-                    }
-                    onEditComplete: paramManager.writeback()
-                    Connections {
-                        target: paramManager
-                        function onExposureCompChanged() {
-                            exposureCompSlider.value = paramManager.exposureComp
-                        }
-                        function onDefExposureCompChanged() {
-                            exposureCompSlider.defaultValue = paramManager.defExposureComp
-                        }
-                    }
-                    tooltipInstant: root.helpMode
-                    Component.onCompleted: {
-                        exposureCompSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }

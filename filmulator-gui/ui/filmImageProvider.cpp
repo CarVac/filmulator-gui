@@ -13,10 +13,10 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     QObject(0),
     QQuickImageProvider(QQuickImageProvider::Image,
                         QQuickImageProvider::ForceAsynchronousImageLoading),
-    pipeline(WithCache, WithHisto, HighQuality),
-    quickPipe(WithCache, WithHisto, PreviewQuality),
-    nextQuickPipe(WithCache, NoHisto, PreviewQuality),
-    prevQuickPipe(WithCache, NoHisto, PreviewQuality)
+    pipeline(HighCache, WithHisto, HighQuality),
+    quickPipe(HighCache, WithHisto, PreviewQuality),
+    nextQuickPipe(HighCache, NoHisto, PreviewQuality),
+    prevQuickPipe(HighCache, NoHisto, PreviewQuality)
 {
     paramManager = manager;
     cloneParam = new ParameterManager;
@@ -45,7 +45,7 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     }
     else
     {
-        pipeline.setCache(WithCache);
+        pipeline.setCache(HighCache);
         useCache = true;
     }
 
@@ -140,7 +140,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
                 struct timeval preTime;
                 gettimeofday(&preTime, nullptr);
                 cout << "requestImage nextParam valid " << nextParam->getValid() << endl;
-                nextQuickPipe.processImage(nextParam, this, exif, "", true);
+                nextQuickPipe.processImage(nextParam, this, exif, "");
                 cout << "requestImage preload time: " << timeDiff(preTime) << endl;
             }
 

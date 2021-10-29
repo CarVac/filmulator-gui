@@ -273,7 +273,7 @@ void sRGB_gammacurve(matrix<float> &in,
     }
 }
 
-//Convert linear float sRGB with a range of roughly 65535 to 200*Oklab
+//Convert linear float sRGB with a range of roughly 65535 to 200*oklab
 //Reference: https://bottosson.github.io/posts/oklab/
 void sRGB_to_oklab(matrix<float> &in,
                    matrix<float> &out)
@@ -310,7 +310,7 @@ void sRGB_to_oklab(matrix<float> &in,
     }
 }
 
-//Convert float 200*Oklab to linear float sRGB up to roughly 65535
+//Convert float 200*oklab to linear float sRGB up to roughly 65535
 
 //Reference: https://bottosson.github.io/posts/oklab/
 void oklab_to_sRGB(matrix<float> &in,
@@ -392,10 +392,12 @@ void raw_to_oklab(matrix<float> &input,
         {
             for (int j = 0; j < nCols; j += 3)
             {
+                //raw to sRGB 0-1
                 const float r = (cam2rgb[0][0]*input(i, j) + cam2rgb[0][1]*input(i, j+1) + cam2rgb[0][2]*input(i, j+2))/65535.0f;
                 const float g = (cam2rgb[1][0]*input(i, j) + cam2rgb[1][1]*input(i, j+1) + cam2rgb[1][2]*input(i, j+2))/65535.0f;
                 const float b = (cam2rgb[2][0]*input(i, j) + cam2rgb[2][1]*input(i, j+1) + cam2rgb[2][2]*input(i, j+2))/65535.0f;
 
+                //sRGB to oklab
                 const float l = 0.4122214708f * r + 0.5363325363f * g + 0.0514459929f * b;
                 const float m = 0.2119034982f * r + 0.6806995451f * g + 0.1073969566f * b;
                 const float s = 0.0883024619f * r + 0.2817188376f * g + 0.6299787005f * b;
@@ -407,6 +409,53 @@ void raw_to_oklab(matrix<float> &input,
                 output(i, j+0) = (0.2104542553f*l_ + 0.7936177850f*m_ - 0.0040720468f*s_) * 200;
                 output(i, j+1) = (1.9779984951f*l_ - 2.4285922050f*m_ + 0.4505937099f*s_) * 200;
                 output(i, j+2) = (0.0259040371f*l_ + 0.7827717662f*m_ - 0.8086757660f*s_) * 200;
+            }
+        }
+    }
+}
+
+//Convert 200*oklab to raw color (roughly 65535 max)
+void oklab_to_raw(matrix<float> &input,
+                  matrix<float> &output,
+                  const float xyz2cam[3][3])
+{
+    int nRows = input.nr();
+    int nCols = input.nc();
+
+    output.set_size(nRows, nCols);
+
+#pragma omp parallel shared(output, input) firstprivate(nRows, nCols)
+    {
+#pragma omp for schedule(dynamic) nowait
+        for (int i = 0; i < nRows; i++)
+        {
+            for (int j = 0; j < nCols; j += 3)
+            {
+                //copied straight from oklab_to_sRGB
+                const float L = input(i, j+0)/200;
+                const float a = input(i, j+1)/200;
+                const float b = input(i, j+2)/200;
+
+                const float l_ = L + 0.3963377774f * a + 0.2158037573f * b;
+                const float m_ = L - 0.1055613458f * a - 0.0638541728f * b;
+                const float s_ = L - 0.0894841775f * a - 1.2914855480f * b;
+
+                const float l = l_*l_*l_;
+                const float m = m_*m_*m_;
+                const float s = s_*s_*s_;
+
+                const float sRGBr = (+4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s) * 65535.0f;
+                const float sRGBg = (-1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s) * 65535.0f;
+                const float sRGBb = (-0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s) * 65535.0f;
+
+                //then from sRGB to XYZ
+                float x, y, z;
+                sRGB_to_XYZ(sRGBr, sRGBg, sRGBb, x, y, z);
+
+                //then XYZ to raw
+                output(i, j+0) = xyz2cam[0][0] * x + xyz2cam[0][1] * y + xyz2cam[0][2] * z;
+                output(i, j+1) = xyz2cam[1][0] * x + xyz2cam[1][1] * y + xyz2cam[1][2] * z;
+                output(i, j+2) = xyz2cam[2][0] * x + xyz2cam[2][1] * y + xyz2cam[2][2] * z;
             }
         }
     }
