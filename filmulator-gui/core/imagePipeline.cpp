@@ -843,7 +843,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             }
 
             float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
-            float scale = std::max(preconditioned.max() + offset, 1.0f)/5;
+            float scale = std::max(preconditioned.max() + offset, 1.0f);
 #pragma omp parallel for
             for (int row = 0; row < preconditioned.nr(); row++)
             {
