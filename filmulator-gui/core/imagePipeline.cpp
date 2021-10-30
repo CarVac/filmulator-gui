@@ -1256,7 +1256,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 }
 
                 //Apply the rotation
-                demosaiced_image.set_size(height, width*3);
+                pre_film_image.set_size(height, width*3);
 
                 for (int row = 0; row < height; row++)
                 {

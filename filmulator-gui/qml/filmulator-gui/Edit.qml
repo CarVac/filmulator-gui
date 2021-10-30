@@ -48,25 +48,57 @@ SlimSplitView {
                 imageRect.cropAspect = paramManager.cropAspect
                 imageRect.cropVoffset = paramManager.cropVoffset
                 imageRect.cropHoffset = paramManager.cropHoffset
-                paramManager.cropHeight = 0 //signal to image pipeline to disable cropping
+                if (paramManager.cropHeight != 0) {
+                    paramManager.cropHeight = 0 //signal to image pipeline to disable cropping
+                }
             }
         } else {//we're done cropping
             if (!cancelCropping) {//accepted the crop
+                var noChange = true
                 if (imageRect.noCrop) {
                     //if the crop is the full image, we want to set it to 0
                     //if we don't, if you rotate the image 90 degrees it keeps the aspect ratio
-                    paramManager.cropHeight = 0
-                    paramManager.cropAspect = 0
-                    paramManager.cropVoffset = 0
-                    paramManager.cropHoffset = 0
+                    /* not gonna happen because it's always set to zero when cropping
+                    if (paramManager.cropHeight != 0) {
+                        paramManager.cropHeight = 0
+                        noChange = false
+                    }*/
+                    if (paramManager.cropAspect != 0) {
+                        paramManager.cropAspect = 0
+                        noChange = false
+                    }
+                    if (paramManager.cropVoffset != 0) {
+                        paramManager.cropVoffset = 0
+                        noChange = false
+                    }
+                    if (paramManager.cropHoffset != 0) {
+                        paramManager.cropHoffset = 0
+                        noChange = false
+                    }
                 } else {//the crop isn't the entire image
-                    paramManager.cropHeight = imageRect.readHeight
-                    paramManager.cropAspect = imageRect.readAspect
-                    paramManager.cropVoffset = imageRect.readVoffset
-                    paramManager.cropHoffset = imageRect.readHoffset
+                    if (paramManager.cropHeight != imageRect.readHeight) {
+                        paramManager.cropHeight = imageRect.readHeight
+                        noChange = false
+                    }
+                    if (paramManager.cropAspect != imageRect.readAspect) {
+                        paramManager.cropAspect = imageRect.readAspect
+                        noChange = false
+                    }
+                    if (paramManager.cropVoffset != imageRect.readVoffset) {
+                        paramManager.cropVoffset = imageRect.readVoffset
+                        noChange = false
+                    }
+                    if (paramManager.cropHoffset != imageRect.readHoffset) {
+                        paramManager.cropHoffset = imageRect.readHoffset
+                        noChange = false
+                    }
                 }
                 //send stuff back to database
-                paramManager.writeback()
+                if (noChange) {
+                    cropping = false
+                } else {
+                    paramManager.writeback()
+                }
             } else { //canceling crop, so no writeback
                 cancelCropping = false
             }
@@ -126,15 +158,38 @@ SlimSplitView {
                 paramManager.rotationAngle = -50
                 //when the image is ready, then cropping will be set to true by topImage
             }
+
+            //disable cropping while we rotate
             root.tempCropHeight = paramManager.cropHeight
-            paramManager.cropHeight = 0
+            if (paramManager.cropHeight == 0) {
+                //do nothing
+            } else {
+                paramManager.cropHeight = 0
+            }
         } else {//we're done leveling
             if (!cancelLeveling) {//accepted the leveling
-                paramManager.rotationPointX = imageRect.readRotationPointX
-                paramManager.rotationPointY = imageRect.readRotationPointY
-                paramManager.rotationAngle = imageRect.rotationAngle
-                paramManager.cropHeight = root.tempCropHeight
-                paramManager.writeback()
+                var noChange = true
+                if (paramManager.rotationPointX != imageRect.readRotationPointX) {
+                    paramManager.rotationPointX = imageRect.readRotationPointX
+                    noChange = false
+                }
+                if (paramManager.rotationPointY != imageRect.readRotationPointY) {
+                    paramManager.rotationPointY = imageRect.readRotationPointY
+                    noChange = false
+                }
+                if (paramManager.rotationAngle != imageRect.rotationAngle) {
+                    paramManager.rotationAngle = imageRect.rotationAngle
+                    noChange = false
+                }
+                if (paramManager.cropHeight != root.tempCropHeight) {
+                    paramManager.cropHeight = root.tempCropHeight
+                    noChange = false
+                }
+                if (noChange) {
+                    leveling = false
+                } else {
+                    paramManager.writeback()
+                }
             } else {
                 cancelLeveling = false
             }
@@ -279,11 +334,11 @@ SlimSplitView {
                                 //now actually ask for the image
                                 if (settings.getQuickPreview()) {//load the quick pipe
                                     topImage.state = "lq"//loading quick pipe
-                                    topImage.source = "image://filmy/q" + topImage.indexString
+                                    topImage.source = "image://filmy/q" + paramManager.imageIndex + topImage.indexString
                                 }
                                 else {//load the full size image
                                     topImage.state = "lf"// loading full image
-                                    topImage.source = "image://filmy/f" + topImage.indexString
+                                    topImage.source = "image://filmy/f" + paramManager.imageIndex + topImage.indexString
                                 }
                             }
                         }
@@ -331,18 +386,18 @@ SlimSplitView {
                                 s = num+"";
                                 size = 6 //6 digit number
                                 while (s.length < size) {s = "0" + s}
-                                topImage.indexString = paramManager.imageIndex + s
+                                topImage.indexString = s
 
                                 //now actually ask for the image
                                 if (topImage.state == "lt") {//it was loading the thumbnail
                                     topImage.state = "lq"//loading quick pipe
                                     root.previewReady = false
-                                    topImage.source = "image://filmy/q" + topImage.indexString
+                                    topImage.source = "image://filmy/q" + paramManager.imageIndex + topImage.indexString
                                 }
                                 else if (topImage.state == "lq") {//it was loading the quick image
                                     topImage.state = "lf"//loading full image
                                     root.previewReady = true
-                                    topImage.source = "image://filmy/f" + topImage.indexString
+                                    topImage.source = "image://filmy/f" + paramManager.imageIndex + topImage.indexString
                                 }
                             }
 
@@ -381,7 +436,7 @@ SlimSplitView {
                             //now actually ask for the image
                             //we always go back to loading quick even when the full image fails
                             topImage.state = "lq"//loading quick pipe
-                            topImage.source = "image://filmy/q" + topImage.indexString
+                            topImage.source = "image://filmy/q" + paramManager.imageIndex + topImage.indexString //========================= cancelloop
                         }
                         console.log("topImage state became: " + topImage.state)
                     }
