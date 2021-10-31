@@ -81,25 +81,6 @@ void matrixVectorMult(const float r, const float g, const float b,
 }
 
 //Self-explanatory.
-void inverse(const float in[3][3], float (&out)[3][3])
-{
-    float det = in[0][0] * (in[1][1]*in[2][2] - in[2][1]*in[1][2]) -
-                 in[0][1] * (in[1][0]*in[2][2] - in[1][2]*in[2][0]) +
-                 in[0][2] * (in[1][0]*in[2][1] - in[1][1]*in[2][0]);
-    float invdet = 1 / det;
-
-    out[0][0] = (in[1][1]*in[2][2] - in[2][1]*in[1][2]) * invdet;
-    out[0][1] = (in[0][2]*in[2][1] - in[0][1]*in[2][2]) * invdet;
-    out[0][2] = (in[0][1]*in[1][2] - in[0][2]*in[1][1]) * invdet;
-    out[1][0] = (in[1][2]*in[2][0] - in[1][0]*in[2][2]) * invdet;
-    out[1][1] = (in[0][0]*in[2][2] - in[0][2]*in[2][0]) * invdet;
-    out[1][2] = (in[1][0]*in[0][2] - in[0][0]*in[1][2]) * invdet;
-    out[2][0] = (in[1][0]*in[2][1] - in[2][0]*in[1][1]) * invdet;
-    out[2][1] = (in[2][0]*in[0][1] - in[0][0]*in[2][1]) * invdet;
-    out[2][2] = (in[0][0]*in[1][1] - in[1][0]*in[0][1]) * invdet;
-}
-
-//Self-explanatory.
 void matrixMatrixMult(const float left[3][3], const float right[3][3], float (&output)[3][3])
 {
     for (int i = 0; i < 3; i++)
@@ -338,6 +319,40 @@ float wbDistance(array<float,2> tempTint, float camToRgb[3][3],
 }
 */
 
+//Exif lightsource tag decoding
+//We want to rank these by how close they are to d65 so that we can choose the right matrix from
+//a multi-illuminant DNG profile.
+//Lower scores will be better.
+int daylightScore(const int illuminant)
+{
+    switch (illuminant)
+    {
+    case 21:  return 0; //D65 (6500k)
+    case 19:  return 1; //standard light C (6774k)
+    case 1:   return 2; //"daylight"
+    case 9:   return 3; //"fine weather"
+    case 4:   return 4; //"flash"
+    case 12:  return 5; //daylight fluorescent (5700-7100k)
+    case 20:  return 6; //D55 (5500k)
+    case 10:  return 7; //"cloudy weather"
+    case 23:  return 8; //D50 (5000k)
+    case 13:  return 9; //day white fluorescent (4600-5400k)
+    case 18:  return 10; //standard light B (4874k)
+    case 2:   return 11; //fluorescent
+    case 22:  return 12; //D75 (7500k)
+    case 11:  return 13; //"shade"
+    case 14:  return 14; //cool white fluorescent (3900-4500k)
+    case 15:  return 15; //white fluorescent (3200-3700k)
+    case 17:  return 16; //stardard light A (2855k)
+    case 3:   return 17; //"tungsten"
+    case 24:  return 18; //"ISO studio tungsten"
+    case 255: return 19; //"other light source"
+    case 0:   return 20; //unknown
+    default:  return 21;
+    }
+}
+
+
 //Computes the distance from the WB coefficients to the target white balance coefficients
 float wbDistance(const array<float, 2> tempTint, const float cam_xyz[3][3],
                  const float rMulTarget, const float gMulTarget, const float bMulTarget)
@@ -355,6 +370,7 @@ void optimizeWBMults(std::string file,
                      float &temperature, float &tint,
                      const float rMul, const float gMul, const float bMul)//default to -1
 {
+    const bool isDNG = QString::fromStdString(file).endsWith(".dng", Qt::CaseInsensitive);
     //Load wb params from the raw file
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
 
@@ -380,6 +396,12 @@ void optimizeWBMults(std::string file,
     //float camToRGB[3][3];
     float cam_xyz[3][3];
 
+    int dngProfile = 1;
+    if (daylightScore(libraw->imgdata.color.dng_color[0].illuminant) < daylightScore(libraw->imgdata.color.dng_color[1].illuminant))
+    {
+        dngProfile = 0;
+    }
+
     //get color matrix
     for (int i = 0; i < 3; i++)
     {
@@ -387,7 +409,12 @@ void optimizeWBMults(std::string file,
         for (int j = 0; j < 3; j++)
         {
             //camToRGB[i][j] = libraw->imgdata.color.rgb_cam[i][j];
-            cam_xyz[i][j] = libraw->imgdata.color.cam_xyz[i][j];
+            if (!isDNG)
+            {
+                cam_xyz[i][j] = libraw->imgdata.color.cam_xyz[i][j];
+            } else {
+                cam_xyz[i][j] = libraw->imgdata.color.dng_color[dngProfile].colormatrix[i][j];
+            }
             //cout << camToRGB[i][j] << " ";
         }
         //cout << endl;

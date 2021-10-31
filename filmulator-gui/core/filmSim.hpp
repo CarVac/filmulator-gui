@@ -334,4 +334,10 @@ void oklab_to_raw(matrix<float> &in,
                   matrix<float> &out,
                   const float cam2rgb[3][3]);
 
+//Matrix inverse for 3x3 matrices
+void inverse(const float in[3][3], float (&out)[3][3]);
+
+//For picking which illuminant profile we want.
+int daylightScore(const int illuminant);
+
 #endif // FILMSIM_H

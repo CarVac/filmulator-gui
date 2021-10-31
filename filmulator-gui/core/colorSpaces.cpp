@@ -1,6 +1,5 @@
 //#include "filmSim.hpp"
 #include "lut.hpp"
-#include "nlmeans/eigen/Eigen/Dense"
 
 //Constants for conversion to and from L*a*b*
 #define LAB_EPSILON (216.0/24389.0)
@@ -31,6 +30,24 @@ void XYZ_to_sRGB(float  X, float  Y, float  Z,
     B =  0.0719453*X - 0.2289914*Y + 1.4052427*Z;
 }
 
+//Matrix inverse for 3x3 matrices
+void inverse(const float in[3][3], float (&out)[3][3])
+{
+    float det = in[0][0] * (in[1][1]*in[2][2] - in[2][1]*in[1][2]) -
+                 in[0][1] * (in[1][0]*in[2][2] - in[1][2]*in[2][0]) +
+                 in[0][2] * (in[1][0]*in[2][1] - in[1][1]*in[2][0]);
+    float invdet = 1 / det;
+
+    out[0][0] = (in[1][1]*in[2][2] - in[2][1]*in[1][2]) * invdet;
+    out[0][1] = (in[0][2]*in[2][1] - in[0][1]*in[2][2]) * invdet;
+    out[0][2] = (in[0][1]*in[1][2] - in[0][2]*in[1][1]) * invdet;
+    out[1][0] = (in[1][2]*in[2][0] - in[1][0]*in[2][2]) * invdet;
+    out[1][1] = (in[0][0]*in[2][2] - in[0][2]*in[2][0]) * invdet;
+    out[1][2] = (in[1][0]*in[0][2] - in[0][0]*in[1][2]) * invdet;
+    out[2][0] = (in[1][0]*in[2][1] - in[2][0]*in[1][1]) * invdet;
+    out[2][1] = (in[2][0]*in[0][1] - in[0][0]*in[2][1]) * invdet;
+    out[2][2] = (in[0][0]*in[1][1] - in[1][0]*in[0][1]) * invdet;
+}
 //Linearizes gamma-curved sRGB.
 //Reference: http://www.brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
 //http://stackoverflow.com/questions/6475373/optimizations-for-pow-with-const-non-integer-exponent
@@ -382,18 +399,8 @@ void sRGB_to_raw(matrix<float> &input,
     int nRows = input.nr();
     int nCols = input.nc();
 
-    float cam2rgb2[3][3];
     float rgb2cam[3][3];
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            cam2rgb2[i][j] = cam2rgb[i][j];
-        }
-    }
-    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> c2r(cam2rgb2[0]);
-    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> r2c(rgb2cam[0]);
-    r2c = c2r.inverse();
+    inverse(cam2rgb, rgb2cam);
 
     output.set_size(nRows, nCols);
 
@@ -488,18 +495,8 @@ void oklab_to_raw(matrix<float> &input,
     int nRows = input.nr();
     int nCols = input.nc();
 
-    float cam2rgb2[3][3];
     float rgb2cam[3][3];
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            cam2rgb2[i][j] = cam2rgb[i][j];
-        }
-    }
-    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> c2r(cam2rgb2[0]);
-    Eigen::Map<Eigen::Matrix<float,3,3,Eigen::RowMajor>> r2c(rgb2cam[0]);
-    r2c = c2r.inverse();
+    inverse(cam2rgb, rgb2cam);
 
     output.set_size(nRows, nCols);
 

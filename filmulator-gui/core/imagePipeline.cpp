@@ -202,15 +202,48 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //get color matrix
             for (int i = 0; i < 3; i++)
             {
-                //cout << "camToRGB: ";
+                cout << "camToRGB matrix: ";
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = libraw->imgdata.color.rgb_cam[i][j];
-                    //cout << camToRGB[i][j] << " ";
-                    xyzToCam[i][j] = libraw->imgdata.color.cam_xyz[i][j];
+                    cout << camToRGB[i][j] << " ";
                 }
-                //cout << endl;
+                cout << endl;
             }
+            if (!isDNG)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    cout << "xyzToCam matrix: ";
+                    for (int j = 0; j < 3; j++)
+                    {
+                        xyzToCam[i][j] = libraw->imgdata.color.cam_xyz[i][j];
+                        cout << xyzToCam[i][j] << " ";
+                    }
+                    cout << endl;
+                }
+            } else { //For Sigma fp and fp L cameras LibRaw doesn't report cam_xyz
+                cout << "dng color matrix illuminant: " << libraw->imgdata.color.dng_color[0].illuminant << endl;
+                cout << "dng color matrix illuminant: " << libraw->imgdata.color.dng_color[1].illuminant << endl;
+                int dngProfile = 1;
+                if (daylightScore(libraw->imgdata.color.dng_color[0].illuminant) < daylightScore(libraw->imgdata.color.dng_color[1].illuminant))
+                {
+                    dngProfile = 0;
+                }
+                cout << "Using dng color matrix number " << dngProfile << endl;
+                for (int i = 0; i < 3; i++)
+                {
+                    cout << "xyzToCam matrix: ";
+                    for (int j = 0; j < 3; j++)
+                    {
+                        xyzToCam[i][j] = libraw->imgdata.color.dng_color[dngProfile].colormatrix[i][j];
+                        cout << xyzToCam[i][j] << " ";
+                    }
+                    cout << endl;
+                }
+            }
+            //LibRaw doesn't give a cam_xyz matrix from the Sigma fp's dng
+            //We must reconstruct cam_xyz from rgb_cam and the srgb-to-xyz d65 matrix
             for (int i = 0; i < 3; i++)
             {
                 //cout << "camToRGB4: ";
@@ -586,7 +619,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width*3; col++)
                     {
                         int color = col % 3;
-                        demosaiced_image(row, col) = raw_image(row, col) * scaleFactor * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        demosaiced_image(row, col) = raw_image(row, col) * scaleFactor * ((color==0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
                     }
                 }
             }
@@ -624,7 +657,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         uint color = xtrans[uint(row) % 6][uint(col) % 6];
-                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
                     }
                 }
                 if (demosaicParam.demosaicMethod == 0)
@@ -667,7 +700,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         uint color = cfa[uint(row) & 1][uint(col) & 1];
-                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rCamMul : (color == 1) ? gCamMul : bCamMul);
+                        premultiplied(row, col) = raw_image(row, col) * ((color==0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
                     }
                 }
                 if (demosaicParam.caEnabled > 0)
@@ -723,8 +756,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         //First thing after demosaic is to apply the user's white balance.
         rawWhiteBalance(demosaiced_image, post_demosaic_image,
                         postDemosaicParam.temperature, postDemosaicParam.tint, xyzToCam,
-                        rCamMul, gCamMul, bCamMul,//undoes these
+                        rPreMul, gPreMul, bPreMul,//undoes these
                         rUserMul, gUserMul, bUserMul);//used later for highlight recovery
+
 
         //Recover highlights now
         cout << "hlrecovery start:" << timeDiff(timeRequested) << endl;
