@@ -477,9 +477,9 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord)
     paramLocker.unlock();//done gathering info from the
 
     //limit temperature to prevent crashes when calculating planckian locus
-    if (temp < 2000)
+    if (temp < 1500)
     {
-        temp = 2000;
+        temp = 1500;
     } else if (temp > 20000)
     {
         temp = 20000;

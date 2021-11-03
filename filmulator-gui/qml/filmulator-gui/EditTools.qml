@@ -621,7 +621,7 @@ SlimSplitView {
                     id: temperatureSlider
                     title: qsTr("Temperature")
                     tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.\n\nThe default value is the camera's chosen WB.")
-                    minimumValue: Math.log(2000)
+                    minimumValue: Math.log(1500)
                     maximumValue: Math.log(20000)
                     value: Math.log(paramManager.temperature)
                     defaultValue: Math.log(paramManager.defTemperature)

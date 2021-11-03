@@ -759,6 +759,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         rPreMul, gPreMul, bPreMul,//undoes these
                         rUserMul, gUserMul, bUserMul);//used later for highlight recovery
 
+        cout << "WB user multiplier R: " << rUserMul << endl;
+        cout << "WB user multiplier G: " << gUserMul << endl;
+        cout << "WB user multiplier B: " << bUserMul << endl;
 
         //Recover highlights now
         cout << "hlrecovery start:" << timeDiff(timeRequested) << endl;
