@@ -384,10 +384,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             if (camconstSuccess && camconstWhite > 0 && !isDNG) //dngs provide their own correct whitepoint and we should trust it
             {
                 maxValue = camconstWhite - blackpoint - meanBlockBlackpoint;
-                cout << "normal white clipping point: " << camconstWhite << endl;
+                cout << "camconst white clipping point: " << camconstWhite << endl;
             } else {
                 maxValue = libraw->imgdata.color.maximum - blackpoint - meanBlockBlackpoint;
-                cout << "dng white clipping point: " << libraw->imgdata.color.maximum << endl;
+                cout << "libraw fallback or dng white clipping point: " << libraw->imgdata.color.maximum << endl;
             }
             cout << "black-subtracted maximum: " << maxValue << endl;
             cout << "fmaximum: " << libraw->imgdata.color.fmaximum << endl;
@@ -714,9 +714,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 {
                     amaze_demosaic(raw_width, raw_height, 0, 0, raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, initialGain, border, inputscale, outputscale);
                 } else { //if it's 1, use LMMSE
-                    premultiplied.mult_this(outputscale/inputscale);
-                    lmmse_demosaic(raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, 3);//needs inputscale and output scale to be implemented
-                    //igv_demosaic(raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg);//needs inputscale and output scale to be implemented
+                    premultiplied.mult_this(1/inputscale);
+                    lmmse_demosaic(raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, 3);//doesn't like inputs > 1
+                    //igv_demosaic(raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg);//doesn't like inputs > 1
+                    red.mult_this(outputscale);
+                    green.mult_this(outputscale);
+                    blue.mult_this(outputscale);
                 }
             }
             premultiplied.set_size(0, 0);
@@ -873,9 +876,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #pragma omp parallel for
             for (int row = 0; row < preconditioned.nr(); row++)
             {
-                for (int col = 0; col < preconditioned.nc(); col++)
+                for (int col = 0; col < preconditioned.nc(); col+=3)
                 {
-                    preconditioned(row, col) = sRGB_forward_gamma_unclipped(preconditioned(row, col)/65535.0f);
+                    preconditioned(row, col+0) = sRGB_forward_gamma_unclipped(preconditioned(row, col+0)/(rUserMul*65535.0f));
+                    preconditioned(row, col+1) = sRGB_forward_gamma_unclipped(preconditioned(row, col+1)/(gUserMul*65535.0f));
+                    preconditioned(row, col+2) = sRGB_forward_gamma_unclipped(preconditioned(row, col+2)/(bUserMul*65535.0f));
                 }
             }
 
@@ -919,9 +924,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #pragma omp parallel for
             for (int row = 0; row < denoised.nr(); row++)
             {
-                for (int col = 0; col < denoised.nc(); col++)
+                for (int col = 0; col < denoised.nc(); col+=3)
                 {
-                    denoised(row, col) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col) - offset)*65535.0f;
+                    denoised(row, col+0) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+0) - offset)*rUserMul*65535.0f;
+                    denoised(row, col+1) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+1) - offset)*gUserMul*65535.0f;
+                    denoised(row, col+2) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+2) - offset)*bUserMul*65535.0f;
                 }
             }
 
