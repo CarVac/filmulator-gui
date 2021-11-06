@@ -54,7 +54,8 @@ int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
 matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramManager,
                                                     Interface * interface_in,
                                                     Exiv2::ExifData &exifOutput,
-                                                    const QString fileHash)//defaults to empty string
+                                                    const QString fileHash,//make this empty string if you don't want to mess around with validity
+                                                    ImagePipeline * stealVictim)//defaults to nullptr
 {
     //Say that we've started processing to prevent cache status from changing..
     hasStartedProcessing = true;
@@ -66,7 +67,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
     //check that file requested matches the file associated with the parameter manager
     if (fileHash != "")
     {
-        cout << "processImage fileHash: " << fileHash.toStdString() << endl;
         QString paramIndex = paramManager->getImageIndex();
         paramIndex.truncate(32);
         if (fileHash != paramIndex)
@@ -76,6 +76,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             cout << "processImage shuffle mismatch:  full pipeline?: " << (quality == HighQuality) << endl;
             valid = none;
         }
+        fileID = paramIndex;
+    } else {
+        QString paramIndex = paramManager->getImageIndex();
+        paramIndex.truncate(32);
+        fileID = paramIndex;
     }
 
     valid = paramManager->getValid();
@@ -87,6 +92,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
     //If we are a high-res pipeline that's going to steal data, skip to filmulation
     if (stealData)
     {
+        if (stealVictim == nullptr)
+        {
+            cout << "stealVictim should not be null!" << endl;
+        }
         valid = max(valid, prefilmulation);
         paramManager->setValid(valid);
     }
@@ -107,9 +116,6 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
     }
 
-
-    isCR3 = false;
-
     cout << "ImagePipeline::processImage valid: " << valid << endl;
 
     updateProgress(valid, 0.0f);
@@ -129,6 +135,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
 
         filename = QString::fromStdString(loadParam.fullFilename);
+
+        isCR3 = false;
 
         isCR3 = QString::fromStdString(loadParam.fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
         const bool isDNG = QString::fromStdString(loadParam.fullFilename).endsWith(".dng", Qt::CaseInsensitive);
@@ -1804,10 +1812,10 @@ void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
 
     std::swap(cfa, swapTarget->cfa);
     std::swap(xtrans, swapTarget->xtrans);
-    maxXtrans = swapTarget->maxXtrans;
+    std::swap(maxXtrans, swapTarget->maxXtrans);
 
-    raw_width = swapTarget->raw_width;
-    raw_height = swapTarget->raw_height;
+    std::swap(raw_width, swapTarget->raw_width);
+    std::swap(raw_height, swapTarget->raw_height);
 
     std::swap(camToRGB, swapTarget->camToRGB);
     std::swap(xyzToCam, swapTarget->xyzToCam);
@@ -1840,6 +1848,7 @@ void ImagePipeline::swapPipeline(ImagePipeline * swapTarget)
 
     raw_image.swap(swapTarget->raw_image);
     demosaiced_image.swap(swapTarget->demosaiced_image);
+    post_demosaic_image.swap(swapTarget->post_demosaic_image);
     nlmeans_nr_image.swap(swapTarget->nlmeans_nr_image);
     impulse_nr_image.swap(swapTarget->impulse_nr_image);
     chroma_nr_image.swap(swapTarget->chroma_nr_image);

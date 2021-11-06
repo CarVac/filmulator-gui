@@ -59,7 +59,6 @@ FilmImageProvider::FilmImageProvider(ParameterManager * manager) :
     {
         useQuickPipe = true;
         pipeline.stealData = true;
-        pipeline.stealVictim = &quickPipe;
     }
     else
     {
@@ -113,7 +112,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
                     quickPipe.rerunHistograms();
                 }
             } else {
-                shufflePipelines();
+                shufflePipelines();//should do nothing
             }
 
             //We want to clear both the quick pipe and the full pipe's invalid data
@@ -148,7 +147,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
             filename = cloneParam->getFullFilename();
             struct timeval fullTime;
             gettimeofday(&fullTime, nullptr);
-            image = pipeline.processImage(cloneParam, this, data, fileHash);
+            image = pipeline.processImage(cloneParam, this, data, fileHash, &quickPipe);
             cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
         }
     }
@@ -305,32 +304,36 @@ void FilmImageProvider::prepareShuffle(const QString newIDin, const QString newN
 
 void FilmImageProvider::shufflePipelines()
 {
-    cout << "shuffle newID:     " << newID.toStdString() << endl;
-    cout << "shuffle newNextID: " << newNextID.toStdString() << endl;
-    cout << "shuffle prevID:    " << prevID.toStdString() << endl;
-    cout << "shuffle currentID: " << currentID.toStdString() << endl;
-    cout << "shuffle nextID:    " << nextID.toStdString() << endl;
     struct timeval shuffleTime;
     gettimeofday(&shuffleTime, nullptr);
 
     if (!useCache)
     {
+        cout << "shuffle no cache" << endl;
         currentID = newID;
         return;
     }
     if (!useQuickPipe)
     {
+        cout << "shuffle no quick pipe" << endl;
         currentID = newID;
         return;
     }
     if (newID == "")
     {
+        cout << "shuffle no new" << endl;
         return;
     }
     if (newID == currentID)
     {
+        cout << "shuffle no change" << endl;
         return;
     }
+    cout << "shuffle begin newID:     " << newID.toStdString() << endl;
+    cout << "shuffle begin newNextID: " << newNextID.toStdString() << endl;
+    cout << "shuffle begin prevID:    " << prevID.toStdString() << endl;
+    cout << "shuffle begin currentID: " << currentID.toStdString() << endl;
+    cout << "shuffle begin nextID:    " << nextID.toStdString() << endl;
 
     if (currentID == "")//If we have no currently selected image, no copying is necessary
     {
@@ -407,6 +410,11 @@ void FilmImageProvider::shufflePipelines()
         currentID = newID;
         nextID = newNextID;
     }
+    cout << "shuffle end newID:     " << newID.toStdString() << endl;
+    cout << "shuffle end newNextID: " << newNextID.toStdString() << endl;
+    cout << "shuffle end prevID:    " << prevID.toStdString() << endl;
+    cout << "shuffle end currentID: " << currentID.toStdString() << endl;
+    cout << "shuffle end nextID:    " << nextID.toStdString() << endl;
     cout << "shuffle finished duration: " << timeDiff(shuffleTime) << endl;
 }
 

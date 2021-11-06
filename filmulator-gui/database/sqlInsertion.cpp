@@ -195,7 +195,7 @@ QString createNewProfile(const QString fileHash,
     ImagePipeline pipeline(NoCache, NoHisto, LowQuality);
 
     //Process an image.
-    matrix<unsigned short> image = pipeline.processImage(&paramManager, &dummyInterface, exif);
+    matrix<unsigned short> image = pipeline.processImage(&paramManager, &dummyInterface, exif, "");
 
     //Write the thumbnail.
     ThumbWriteWorker worker;

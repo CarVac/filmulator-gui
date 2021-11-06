@@ -19,7 +19,8 @@ public:
     matrix<unsigned short>& processImage(ParameterManager * paramManager,
                                          Interface * histoInterface,
                                          Exiv2::ExifData &exifOutput,
-                                         const QString fileHash = "");
+                                         const QString fileHash,
+                                         ImagePipeline * stealVictim = nullptr);
 
     //Returns the progress of the pipeline from 0, incomplete, to 1, complete.
     float getProgress(){return progress;}
@@ -36,7 +37,7 @@ public:
 
     //Variable relating to stealing the demosaiced data from another imagepipeline
     bool stealData = false;
-    ImagePipeline * stealVictim;
+    //ImagePipeline * stealVictim;
 
     //Method to straight up copy the data between imagepipelines
     //This is used when copying preloaded pipeline data
@@ -67,6 +68,7 @@ protected:
     Interface * histoInterface;
 
     QString filename;
+    QString fileID;
 
     Valid valid;
     float progress;

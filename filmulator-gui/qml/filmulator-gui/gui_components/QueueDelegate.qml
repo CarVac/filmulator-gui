@@ -55,7 +55,7 @@ Item {
     }
 
     /*
-    Text {
+    Text {//DEBUG
         color: "white"
         text: root.searchID
         width: root.width
