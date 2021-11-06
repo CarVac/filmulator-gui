@@ -18,13 +18,7 @@ variables:
 
 steps:
   - script: |
-      choco install wget /NoUpdate /NoPath
-      wget 'https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.sfx.exe' -o 'msys2.exe'
-      .\msys2.exe -y -o%MSYS2_ROOT%
-      Remove-Item msys2.exe
-    displayName: Install MSYS2
-  - script: |
-      %MSYS_BASH -c " "
+      %MSYS_BASH% -c " "
       %MSYS_PAC% --noconfirm -Syuu
       %MSYS_PAC% --noconfirm -Syuu
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
