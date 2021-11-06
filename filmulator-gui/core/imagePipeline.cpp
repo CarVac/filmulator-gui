@@ -93,7 +93,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
     //If we think we have valid image data,
     //check that the file last processed corresponds to the one requested.
-    if (valid > none)
+    if (valid > none && !stealData)
     {
         //if something has been processed before, and we think it's valid
         //it had better be the same filename.
@@ -200,9 +200,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //int full_height = RSIZE.raw_height;
 
             //get color matrix
+            cout << "processImage filename (matrix): " << loadParam.fullFilename << endl;
             for (int i = 0; i < 3; i++)
             {
-                cout << "camToRGB matrix: ";
+                cout << "processImage camToRGB matrix: ";
                 for (int j = 0; j < 3; j++)
                 {
                     camToRGB[i][j] = libraw->imgdata.color.rgb_cam[i][j];
@@ -214,7 +215,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    cout << "xyzToCam matrix: ";
+                    cout << "processImage xyzToCam matrix: ";
                     for (int j = 0; j < 3; j++)
                     {
                         xyzToCam[i][j] = libraw->imgdata.color.cam_xyz[i][j];
@@ -223,17 +224,17 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     cout << endl;
                 }
             } else { //For Sigma fp and fp L cameras LibRaw doesn't report cam_xyz
-                cout << "dng color matrix illuminant: " << libraw->imgdata.color.dng_color[0].illuminant << endl;
-                cout << "dng color matrix illuminant: " << libraw->imgdata.color.dng_color[1].illuminant << endl;
+                cout << "processImage dng color matrix illuminant: " << libraw->imgdata.color.dng_color[0].illuminant << endl;
+                cout << "processImage dng color matrix illuminant: " << libraw->imgdata.color.dng_color[1].illuminant << endl;
                 int dngProfile = 1;
                 if (daylightScore(libraw->imgdata.color.dng_color[0].illuminant) < daylightScore(libraw->imgdata.color.dng_color[1].illuminant))
                 {
                     dngProfile = 0;
                 }
-                cout << "Using dng color matrix number " << dngProfile << endl;
+                cout << "processImage Using dng color matrix number " << dngProfile << endl;
                 for (int i = 0; i < 3; i++)
                 {
-                    cout << "xyzToCam matrix: ";
+                    cout << "processImage xyzToCam matrix: ";
                     for (int j = 0; j < 3; j++)
                     {
                         xyzToCam[i][j] = libraw->imgdata.color.dng_color[dngProfile].colormatrix[i][j];
@@ -762,6 +763,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         rPreMul, gPreMul, bPreMul,//undoes these
                         rUserMul, gUserMul, bUserMul);//used later for highlight recovery
 
+        cout << "WB pre multiplier R: " << rPreMul << endl;
+        cout << "WB pre multiplier G: " << gPreMul << endl;
+        cout << "WB pre multiplier B: " << bPreMul << endl;
+        cout << "WB cam multiplier R: " << rCamMul << endl;
+        cout << "WB cam multiplier G: " << gCamMul << endl;
+        cout << "WB cam multiplier B: " << bCamMul << endl;
         cout << "WB user multiplier R: " << rUserMul << endl;
         cout << "WB user multiplier G: " << gUserMul << endl;
         cout << "WB user multiplier B: " << bUserMul << endl;
@@ -1967,6 +1974,9 @@ void ImagePipeline::sampleWB(const float xPos, const float yPos,
     red   = rSum / (rUserMul*count);
     green = gSum / (gUserMul*count);
     blue  = bSum / (bUserMul*count);
+    cout << "custom WB sampled r: " << red << endl;
+    cout << "custom WB sampled g: " << green << endl;
+    cout << "custom WB sampled b: " << blue << endl;
 }
 
 void ImagePipeline::clearInvalid(Valid validIn)

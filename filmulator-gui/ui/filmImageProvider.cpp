@@ -476,14 +476,6 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord)
 
     paramLocker.unlock();//done gathering info from the
 
-    //limit temperature to prevent crashes when calculating planckian locus
-    if (temp < 1500)
-    {
-        temp = 1500;
-    } else if (temp > 20000)
-    {
-        temp = 20000;
-    }
     //tint is just a multiplier for green so it won't cause crashes
 
     paramManager->setWB(temp, tint);

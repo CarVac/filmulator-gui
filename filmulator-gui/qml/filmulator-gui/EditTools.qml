@@ -126,7 +126,7 @@ SlimSplitView {
                 ToolSwitch {
                     id: demosaicMethod
                     text: qsTr("Demosaic Method")
-                    tooltipText: paramManager.autoCaAvail ? qsTr("Switch this control on to reduce line-shaped noise artifacts at the expense of fine detail.") : qsTr("Switch this control on to make noise less visible at the expense of worse fine detail and worse highlight recovery.")
+                    tooltipText: !paramManager.autoCaAvail ? qsTr("Switch this control on to reduce line-shaped noise artifacts at the expense of fine detail.") : qsTr("Switch this control on to make noise less visible at the expense of fine detail.")
                     isOn: (paramManager.demosaicMethod == 1)
                     defaultOn: (paramManager.defDemosaicMethod == 1)
                     //visible: paramManager.autoCaAvail //
@@ -150,6 +150,46 @@ SlimSplitView {
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
                         demosaicMethod.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSlider {
+                    id: autoCASlider
+                    title: qsTr("Auto CA Correction")
+                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.\n\nNot available for non-Bayer photos.")
+                    minimumValue: 0
+                    maximumValue: 5
+                    stepSize: 1
+                    tickmarksEnabled: true
+                    value: paramManager.caEnabled
+                    defaultValue: paramManager.defCaEnabled
+                    visible: paramManager.autoCaAvail
+                    property bool bindingLoopCutoff: true
+                    onValueChanged: {
+                        if (!bindingLoopCutoff) {
+                            paramManager.caEnabled = value
+                            if (value > 0) {
+                                lensfunCASwitch.setByAutoCA = true
+                                lensfunCASwitch.isOn = false
+                            }
+                        }
+                    }
+                    onResetPerformed: paramManager.resetAutoCa()
+                    onEditComplete: paramManager.writeback()
+                    Connections {
+                        target: paramManager
+                        function onCaEnabledChanged() {
+                            autoCASlider.value = paramManager.caEnabled
+                        }
+                        function onDefCaEnabledChanged() {
+                            autoCASlider.defaultValue = paramManager.defCaEnabled
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        autoCASlider.tooltipWanted.connect(root.tooltipWanted)
+                        bindingLoopCutoff = false
                     }
                     uiScale: root.uiScale
                 }
@@ -220,147 +260,105 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
-                ToolSlider {
-                    id: autoCASlider
-                    title: qsTr("Auto CA Correction")
-                    tooltipText: qsTr("Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.\n\nNot available for non-Bayer photos.")
-                    minimumValue: 0
-                    maximumValue: 5
-                    stepSize: 1
-                    tickmarksEnabled: true
-                    value: paramManager.caEnabled
-                    defaultValue: paramManager.defCaEnabled
-                    visible: paramManager.autoCaAvail
-                    property bool bindingLoopCutoff: true
-                    onValueChanged: {
-                        if (!bindingLoopCutoff) {
-                            paramManager.caEnabled = value
-                            if (value > 0) {
-                                lensfunCASwitch.setByAutoCA = true
-                                lensfunCASwitch.isOn = false
-                            }
+                Rectangle {
+                    id: wbButtonRect
+                    Layout.preferredHeight: 36 * uiScale
+                    Layout.fillWidth: true
+                    color: Colors.darkGray
+
+                    ToolButton {
+                        id: saveWbButton
+                        width: parent.width/2
+                        height: parent.height
+                        x: 0
+                        y: 0
+                        notDisabled: root.imageReady || root.previewReady //an image needs to be loaded
+                        text: qsTr("Store WB","white balance; keep short")
+                        tooltipText: qsTr("Save the current white balance settings for later use with images from the same camera. They remain stored until Filmulator is closed, or until overwritten by clicking this button again.")
+                        onTriggered: {
+                            paramManager.saveCustomWb()
                         }
+                        tooltipInstant: root.helpMode
+                        Component.onCompleted: {
+                            saveWbButton.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
                     }
-                    onResetPerformed: paramManager.resetAutoCa()
+
+                    ToolButton {
+                        id: recallWbButton
+                        width: parent.width/2
+                        height: parent.height
+                        x: width
+                        y: 0
+                        notDisabled: (root.imageReady || root.previewReady) && paramManager.customWbAvail
+                        text: qsTr("Recall WB","white balance; keep short")
+                        tooltipText: paramManager.customWbAvail ? qsTr("Apply the stored white balance settings.") : qsTr("No white balance has been stored for this camera.")
+                        onTriggered: {
+                            paramManager.recallCustomWb()
+                        }
+                        tooltipInstant: root.helpMode
+                        Component.onCompleted: {
+                            recallWbButton.tooltipWanted.connect(root.tooltipWanted)
+                        }
+                        uiScale: root.uiScale
+                    }
+                }
+
+                ToolSlider {
+                    id: temperatureSlider
+                    title: qsTr("Temperature")
+                    tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.\n\nThe default value is the camera's chosen WB.")
+                    minimumValue: Math.log(1700)//limited by the 5D Classic @ 1674
+                    maximumValue: Math.log(20000)
+                    value: Math.log(paramManager.temperature)
+                    defaultValue: Math.log(paramManager.defTemperature)
+                    valueText: Math.exp(value).toFixed(1)
+                    onValueChanged: {
+                        paramManager.temperature = Math.exp(value)
+                    }
                     onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        function onCaEnabledChanged() {
-                            autoCASlider.value = paramManager.caEnabled
+                        function onTemperatureChanged() {
+                            temperatureSlider.value = Math.log(paramManager.temperature)
                         }
-                        function onDefCaEnabledChanged() {
-                            autoCASlider.defaultValue = paramManager.defCaEnabled
+                        function onDefTemperatureChanged() {
+                            temperatureSlider.defaultValue = Math.log(paramManager.defTemperature)
                         }
                     }
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
-                        autoCASlider.tooltipWanted.connect(root.tooltipWanted)
-                        bindingLoopCutoff = false
+                        temperatureSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }
 
-                ToolSwitch {
-                    id: lensfunCASwitch
-                    text: qsTr("Profiled CA")
-                    tooltipText: qsTr("Correct directional color fringing based on a profile stored for this lens model.")
-                    isOn: (paramManager.lensfunCa == 1)
-                    defaultOn: (paramManager.defLensfunCa == 1)
-                    visible: paramManager.lensfunCaAvail
-                    property bool setByAutoCA: false
-                    onIsOnChanged: {
-                        paramManager.lensfunCa = isOn ? 1 : 0
-                        if (isOn) {
-                            autoCASlider.value = 0
-                        }
-                        if (!setByAutoCA) {
-                            paramManager.writeback()
-                        }
+                ToolSlider {
+                    id: tintSlider
+                    title: qsTr("Tint")
+                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.\n\nThe default value is the camera's chosen WB.")
+                    minimumValue: Math.log(0.1)
+                    maximumValue: Math.log(10)
+                    value: Math.log(paramManager.tint)
+                    defaultValue: Math.log(paramManager.defTint)
+                    valueText: Math.exp(value).toFixed(4)
+                    onValueChanged: {
+                        paramManager.tint = Math.exp(value)
                     }
-                    onResetToDefault: {
-                        paramManager.lensfunCa = defaultOn ? 1 : 0
-                        if (isOn) {
-                            autoCASlider.value = 0
-                        }
-                        paramManager.resetLensfunCa()
-                        paramManager.writeback()
-                    }
+                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        function onLensfunCaChanged() {
-                            lensfunCASwitch.isOn = (paramManager.lensfunCa == 1)
+                        function onTintChanged() {
+                            tintSlider.value = Math.log(paramManager.tint)
                         }
-                        function onDefLensfunCaChanged() {
-                            lensfunCASwitch.defaultOn = (paramManager.defLensfunCa == 1)
+                        function onDefTintChanged() {
+                            tintSlider.defaultValue = Math.log(paramManager.defTint);
                         }
                     }
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
-                        lensfunCASwitch.tooltipWanted.connect(root.tooltipWanted)
-                    }
-                    uiScale: root.uiScale
-                }
-
-                ToolSwitch {
-                    id: lensfunVignSwitch
-                    text: qsTr("Profiled Vignetting")
-                    tooltipText: qsTr("Correct vignetting based on a profile stored for this lens model.")
-                    isOn: (paramManager.lensfunVign == 1)
-                    defaultOn: (paramManager.defLensfunVign == 1)
-                    visible: paramManager.lensfunVignAvail
-                    onIsOnChanged: {
-                        paramManager.lensfunVign = isOn ? 1 : 0
-                        paramManager.writeback()
-                    }
-                    onResetToDefault: {
-                        paramManager.lensfunVign = defaultOn ? 1 : 0
-                        paramManager.resetLensfunVign()
-                        paramManager.writeback()
-                    }
-                    Connections {
-                        target: paramManager
-                        function onLensfunVignChanged() {
-                            lensfunVignSwitch.isOn = (paramManager.lensfunVign == 1)
-                        }
-                        function onDefLensfunVignChanged() {
-                            lensfunVignSwitch.defaultOn = (paramManager.defLensfunVign == 1)
-                        }
-                    }
-                    tooltipInstant: root.helpMode
-                    Component.onCompleted: {
-                        lensfunVignSwitch.tooltipWanted.connect(root.tooltipWanted)
-                    }
-                    uiScale: root.uiScale
-                }
-
-                ToolSwitch {
-                    id: lensfunDistSwitch
-                    text: qsTr("Profiled Distortion")
-                    tooltipText: qsTr("Correct geometric distortion based on a profile stored for this lens model.")
-                    isOn: (paramManager.lensfunDist == 1)
-                    defaultOn: (paramManager.defLensfunDist == 1)
-                    visible: paramManager.lensfunDistAvail
-                    onIsOnChanged: {
-                        paramManager.lensfunDist = isOn ? 1 : 0
-                        paramManager.writeback()
-                    }
-                    onResetToDefault: {
-                        paramManager.lensfunDist = defaultOn ? 1 : 0
-                        paramManager.resetLensfunDist()
-                        paramManager.writeback()
-                    }
-                    Connections {
-                        target: paramManager
-                        function onLensfunDistChanged() {
-                            lensfunDistSwitch.isOn = (paramManager.lensfunDist == 1)
-                        }
-                        function onDefLensfunDistChanged() {
-                            lensfunDistSwitch.defaultOn = (paramManager.defLensfunDist == 1)
-                        }
-                    }
-                    tooltipInstant: root.helpMode
-                    Component.onCompleted: {
-                        lensfunDistSwitch.tooltipWanted.connect(root.tooltipWanted)
+                        tintSlider.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }
@@ -572,105 +570,107 @@ SlimSplitView {
                     uiScale: root.uiScale
                 }
 
-                Rectangle {
-                    id: wbButtonRect
-                    Layout.preferredHeight: 36 * uiScale
-                    Layout.fillWidth: true
-                    color: Colors.darkGray
-
-                    ToolButton {
-                        id: saveWbButton
-                        width: parent.width/2
-                        height: parent.height
-                        x: 0
-                        y: 0
-                        notDisabled: root.imageReady || root.previewReady //an image needs to be loaded
-                        text: qsTr("Store WB","white balance; keep short")
-                        tooltipText: qsTr("Save the current white balance settings for later use with images from the same camera. They remain stored until Filmulator is closed, or until overwritten by clicking this button again.")
-                        onTriggered: {
-                            paramManager.saveCustomWb()
+                ToolSwitch {
+                    id: lensfunCASwitch
+                    text: qsTr("Profiled CA")
+                    tooltipText: qsTr("Correct directional color fringing based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunCa == 1)
+                    defaultOn: (paramManager.defLensfunCa == 1)
+                    visible: paramManager.lensfunCaAvail
+                    property bool setByAutoCA: false
+                    onIsOnChanged: {
+                        paramManager.lensfunCa = isOn ? 1 : 0
+                        if (isOn) {
+                            autoCASlider.value = 0
                         }
-                        tooltipInstant: root.helpMode
-                        Component.onCompleted: {
-                            saveWbButton.tooltipWanted.connect(root.tooltipWanted)
+                        if (!setByAutoCA) {
+                            paramManager.writeback()
                         }
-                        uiScale: root.uiScale
                     }
-
-                    ToolButton {
-                        id: recallWbButton
-                        width: parent.width/2
-                        height: parent.height
-                        x: width
-                        y: 0
-                        notDisabled: (root.imageReady || root.previewReady) && paramManager.customWbAvail
-                        text: qsTr("Recall WB","white balance; keep short")
-                        tooltipText: paramManager.customWbAvail ? qsTr("Apply the stored white balance settings.") : qsTr("No white balance has been stored for this camera.")
-                        onTriggered: {
-                            paramManager.recallCustomWb()
+                    onResetToDefault: {
+                        paramManager.lensfunCa = defaultOn ? 1 : 0
+                        if (isOn) {
+                            autoCASlider.value = 0
                         }
-                        tooltipInstant: root.helpMode
-                        Component.onCompleted: {
-                            recallWbButton.tooltipWanted.connect(root.tooltipWanted)
-                        }
-                        uiScale: root.uiScale
+                        paramManager.resetLensfunCa()
+                        paramManager.writeback()
                     }
-                }
-
-                ToolSlider {
-                    id: temperatureSlider
-                    title: qsTr("Temperature")
-                    tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.\n\nThe default value is the camera's chosen WB.")
-                    minimumValue: Math.log(1500)
-                    maximumValue: Math.log(20000)
-                    value: Math.log(paramManager.temperature)
-                    defaultValue: Math.log(paramManager.defTemperature)
-                    valueText: Math.exp(value).toFixed(1)
-                    onValueChanged: {
-                        paramManager.temperature = Math.exp(value)
-                    }
-                    onEditComplete: paramManager.writeback()
                     Connections {
                         target: paramManager
-                        function onTemperatureChanged() {
-                            temperatureSlider.value = Math.log(paramManager.temperature)
+                        function onLensfunCaChanged() {
+                            lensfunCASwitch.isOn = (paramManager.lensfunCa == 1)
                         }
-                        function onDefTemperatureChanged() {
-                            temperatureSlider.defaultValue = Math.log(paramManager.defTemperature)
+                        function onDefLensfunCaChanged() {
+                            lensfunCASwitch.defaultOn = (paramManager.defLensfunCa == 1)
                         }
                     }
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
-                        temperatureSlider.tooltipWanted.connect(root.tooltipWanted)
+                        lensfunCASwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }
 
-                ToolSlider {
-                    id: tintSlider
-                    title: qsTr("Tint")
-                    tooltipText: qsTr("Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.\n\nThe default value is the camera's chosen WB.")
-                    minimumValue: Math.log(0.1)
-                    maximumValue: Math.log(10)
-                    value: Math.log(paramManager.tint)
-                    defaultValue: Math.log(paramManager.defTint)
-                    valueText: Math.exp(value).toFixed(4)
-                    onValueChanged: {
-                        paramManager.tint = Math.exp(value)
+                ToolSwitch {
+                    id: lensfunVignSwitch
+                    text: qsTr("Profiled Vignetting")
+                    tooltipText: qsTr("Correct vignetting based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunVign == 1)
+                    defaultOn: (paramManager.defLensfunVign == 1)
+                    visible: paramManager.lensfunVignAvail
+                    onIsOnChanged: {
+                        paramManager.lensfunVign = isOn ? 1 : 0
+                        paramManager.writeback()
                     }
-                    onEditComplete: paramManager.writeback()
+                    onResetToDefault: {
+                        paramManager.lensfunVign = defaultOn ? 1 : 0
+                        paramManager.resetLensfunVign()
+                        paramManager.writeback()
+                    }
                     Connections {
                         target: paramManager
-                        function onTintChanged() {
-                            tintSlider.value = Math.log(paramManager.tint)
+                        function onLensfunVignChanged() {
+                            lensfunVignSwitch.isOn = (paramManager.lensfunVign == 1)
                         }
-                        function onDefTintChanged() {
-                            tintSlider.defaultValue = Math.log(paramManager.defTint);
+                        function onDefLensfunVignChanged() {
+                            lensfunVignSwitch.defaultOn = (paramManager.defLensfunVign == 1)
                         }
                     }
                     tooltipInstant: root.helpMode
                     Component.onCompleted: {
-                        tintSlider.tooltipWanted.connect(root.tooltipWanted)
+                        lensfunVignSwitch.tooltipWanted.connect(root.tooltipWanted)
+                    }
+                    uiScale: root.uiScale
+                }
+
+                ToolSwitch {
+                    id: lensfunDistSwitch
+                    text: qsTr("Profiled Distortion")
+                    tooltipText: qsTr("Correct geometric distortion based on a profile stored for this lens model.")
+                    isOn: (paramManager.lensfunDist == 1)
+                    defaultOn: (paramManager.defLensfunDist == 1)
+                    visible: paramManager.lensfunDistAvail
+                    onIsOnChanged: {
+                        paramManager.lensfunDist = isOn ? 1 : 0
+                        paramManager.writeback()
+                    }
+                    onResetToDefault: {
+                        paramManager.lensfunDist = defaultOn ? 1 : 0
+                        paramManager.resetLensfunDist()
+                        paramManager.writeback()
+                    }
+                    Connections {
+                        target: paramManager
+                        function onLensfunDistChanged() {
+                            lensfunDistSwitch.isOn = (paramManager.lensfunDist == 1)
+                        }
+                        function onDefLensfunDistChanged() {
+                            lensfunDistSwitch.defaultOn = (paramManager.defLensfunDist == 1)
+                        }
+                    }
+                    tooltipInstant: root.helpMode
+                    Component.onCompleted: {
+                        lensfunDistSwitch.tooltipWanted.connect(root.tooltipWanted)
                     }
                     uiScale: root.uiScale
                 }

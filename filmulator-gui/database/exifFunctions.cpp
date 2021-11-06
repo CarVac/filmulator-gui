@@ -21,7 +21,7 @@ using std::unique_ptr;
 
 QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
 {
-    const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+    //const bool isCR3 = QString::fromStdString(fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
 
     std::unique_ptr<LibRaw> libraw = std::unique_ptr<LibRaw>(new LibRaw());
 
@@ -37,7 +37,7 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     if (libraw_error)
     {
         cout << "exifUtcTime: Could not read input file!" << endl;
-        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        cout << "exifUtcTime libraw error text: " << libraw_strerror(libraw_error) << endl;
         return QDateTime();
     }
 
@@ -46,6 +46,7 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
 
     //exiv2 and libraw read the image capture date as if the camera time zone is the computer time zone
     cameraDateTime.setOffsetFromUtc(localTZ);
+    /* we might as well just use libraw for everything
     if (!isCR3) //we can use exiv2
     {
         //Grab the exif data
@@ -55,6 +56,9 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
         Exiv2::ExifData exifData = exifImage->exifData();
 
         QString exifDateTime = QString::fromStdString(exifData["Exif.Image.DateTime"].toString());
+        cout << "exifUtcTime Exif.Image.DateTime: " << exifData["Exif.Image.DateTime"].toString() << endl;
+        cout << "exifUtcTime Exif.Image.DateTimeOriginal: " << exifData["Exif.Image.DateTimeOriginal"].toString() << endl;
+        cout << "exifUtcTime Exif.Image.DateTimeOriginal: " << exifData["Exif.Image.DateTimeOriginal"].toString() << endl;
         if (exifDateTime.length()==0)
         {
             //leica DNG seems to not have DateTime
@@ -65,6 +69,8 @@ QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ)
     } else { //we have to rely on libraw for CR3
         cameraDateTime.setSecsSinceEpoch(OTHER.timestamp);
     }
+    */
+    cameraDateTime.setSecsSinceEpoch(OTHER.timestamp);
 
     //but we have the user input the actual camera time zone to correct this
     cameraDateTime.setOffsetFromUtc(cameraTZ);
