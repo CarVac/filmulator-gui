@@ -300,7 +300,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             int blackRow = int(libraw->imgdata.color.cblack[4]);
             int blackCol = int(libraw->imgdata.color.cblack[5]);
 
-            cout << "BLACKPOINT" << endl;
+            cout << "BLACKPOINT: ";
             cout << blackpoint << endl;
             //cout << "color channel blackpoints" << endl;
             //cout << rBlack << endl;
