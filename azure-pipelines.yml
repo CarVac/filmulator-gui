@@ -12,13 +12,12 @@ pool:
   vmImage: "windows-2019"
 
 variables:
-  MSYS2_ROOT: $(System.Workfolder)/msys64
-  MSYS_PAC: $(System.Workfolder)/msys64/usr/bin/pacman.exe
-  MSYS_BASH: $(System.Workfolder)/msys64/usr/bin/bash.exe
+  MSYS2_ROOT: C:/msys64
+  MSYS_PAC: C:/msys64/usr/bin/pacman.exe
+  MSYS_BASH: C:/msys64/usr/bin/bash.exe
 
 steps:
   - script: |
-      %MSYS_BASH% -c " "
       %MSYS_PAC% --noconfirm -Syuu
       %MSYS_PAC% --noconfirm -Syuu
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
