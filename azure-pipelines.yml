@@ -9,7 +9,7 @@ trigger:
 - testbuild
 
 pool:
-  vmImage: "vs2017-win2016"
+  vmImage: "windows-2019"
 
 variables:
   MSYS2_ROOT: $(System.Workfolder)/msys64
@@ -20,10 +20,8 @@ steps:
   - script: |
       choco install wget /NoUpdate /NoPath
       wget 'https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.sfx.exe' -o 'msys2.exe'
-      # (New-Object System.Net.WebClient).DownloadFile('https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.sfx.exe', 'msys2.exe')
-      .\msys2.exe -y -o%MSYS2_ROOT%  # Extract to C:\msys64
+      .\msys2.exe -y -o%MSYS2_ROOT%
       Remove-Item msys2.exe
-      # choco install msys2 --params="/InstallDir:%MSYS2_ROOT% /NoUpdate /NoPath"
     displayName: Install MSYS2
   - script: |
       %MSYS_BASH -c " "
@@ -127,7 +125,7 @@ steps:
       find "/d/Program Files (x86)/" -name mt.exe
       find "D:/Program Files (x86)/" -name mt.exe
       %MSYS_BASH% -c "/bin/cp --verbose codepage.xaml -t build/installed/bin"
-      "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x64/mt.exe" -manifest "codepage.xaml" -outputresource:"build/installed/bin/filmulator.exe";#1
+      "C:/Program Files (x86)/Windows Kits/10/bin/10.0.21381.0/x64/mt.exe" -manifest "codepage.xaml" -outputresource:"build/installed/bin/filmulator.exe";#1
       %MSYS_BASH% -c "/bin/cp --verbose LICENSE.txt -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator-gui/filmulator-gui80.ico -t build/installed/bin"
       %MSYS_BASH% -c "/bin/cp --verbose filmulator_build.iss -t build/installed"
