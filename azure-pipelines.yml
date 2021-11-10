@@ -52,7 +52,7 @@ steps:
       echo "ls 1"
       ls D:/a/msys64/usr/include/glib-2.0/
       echo "cygpathing 1"
-      %MSYS_BASH% -c "cygpath -m '/usr/lib/glib-2.0/include/'"
+      %MSYS_BASH% -l -c "cygpath -m '/usr/lib/glib-2.0/include/'"
       echo "ls 2"
       ls D:/a/msys64/usr/lib/glib-2.0/include/
       echo "ls 3"
