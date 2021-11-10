@@ -34,6 +34,7 @@ find_package(OpenMP REQUIRED)
 find_package(LENSFUN REQUIRED)
 find_package(CURL REQUIRED)
 find_package(LibArchive REQUIRED)
+find_package(ZLIB REQUIRED)
 
 # SET( EIGEN3_INCLUDE_DIR "$ENV{EIGEN3_INCLUDE_DIR}" )
 # IF( NOT EIGEN3_INCLUDE_DIR )
@@ -159,6 +160,7 @@ target_include_directories(filmulator
         ${CURL_INCLUDE_DIRS}
         ${LibArchive_INCLUDE_DIRS}
         ${GLIB2_INCLUDE_DIRS}
+        ${ZLIB_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 #glib2 needed for static lensfun on windows above and below
@@ -178,6 +180,7 @@ target_link_libraries(filmulator
     ${LibArchive_LIBRARIES}
     ${OpenMP_CXX_LIBRARIES}
     ${GLIB2_LIBRARIES}
+    ${ZLIB_LIBRARIES}
     rtprocess::rtprocess
 )
 
