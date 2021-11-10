@@ -51,7 +51,8 @@ steps:
       sed -i 's/scripts\" ON/scripts\" OFF/g' ./lf/CMakeLists.txt
       echo "ls 1"
       ls D:/a/msys64/usr/include/glib-2.0/
-      cygpath -m '/usr/lib/glib-2.0/include/'
+      echo "cygpathing 1"
+      %MSYS_BASH% -c "cygpath -m '/usr/lib/glib-2.0/include/'"
       echo "ls 2"
       ls D:/a/msys64/usr/lib/glib-2.0/include/
       echo "ls 3"
