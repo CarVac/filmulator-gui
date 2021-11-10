@@ -1,24 +1,17 @@
-From 1b160c66aca3d8192c483835d5aeb7928a5f048e Mon Sep 17 00:00:00 2001
+From c62fbee733fcb4479d43d69e9e2db41fdbcbfb71 Mon Sep 17 00:00:00 2001
 From: CarVac <c.lo.to.da.down.lo@gmail.com>
-Date: Wed, 12 Sep 2018 21:45:07 -0400
-Subject: [PATCH] patch makefile
+Date: Tue, 9 Nov 2021 19:42:10 -0500
+Subject: [PATCH] add openmp and libjpeg to makefile
 
 ---
- Makefile.dist | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ Makefile.dist | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.dist b/Makefile.dist
-index cb2f159..793cfe0 100644
+index 61194a07..0d8c6e78 100644
 --- a/Makefile.dist
 +++ b/Makefile.dist
-@@ -1,12 +1,12 @@
- all: library all_samples
- 
--#CFLAGS=-arch i386 -arch x86_64 -O3  -I. -w
--CFLAGS=-O3  -I. -w
-+CFLAGS=-march=i386 -march=x86-64 -O3  -I. -w
-+#CFLAGS=-O3  -I. -w
- CC=gcc
+@@ -6,7 +6,7 @@ CC=gcc
  CXX=g++
  
  # OpenMP support
@@ -27,17 +20,17 @@ index cb2f159..793cfe0 100644
  
  # RawSpeed Support
  #CFLAGS+=-pthread -DUSE_RAWSPEED -I../RawSpeed -I/usr/local/include/libxml2
-@@ -22,8 +22,8 @@ CXX=g++
- #LDADD+=-L/usr/local/lib -ljasper
+@@ -26,8 +26,8 @@ CFLAGS+=-DUSE_ZLIB
+ LDADD+=-lz
  
  # JPEG support for lossy DNG
 -#CFLAGS+=-DUSE_JPEG -I/usr/local/include
 -#LDADD+=-L/usr/local/lib -ljpeg
-+CFLAGS+=-DUSE_JPEG
-+LDADD+=-ljpeg
++CFLAGS+=-DUSE_JPEG -I/usr/local/include
++LDADD+=-L/usr/local/lib -ljpeg
  # LIBJPEG8:
  #CFLAGS+=-DUSE_JPEG8
  
 -- 
-2.17.1
+2.30.2
 
