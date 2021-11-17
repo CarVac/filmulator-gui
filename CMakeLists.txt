@@ -24,7 +24,7 @@ if(WIN32) #maybe if(APPLE) too
     find_package(Qt6Qml CONFIG REQUIRED)
     find_package(Qt6QuickCompiler CONFIG REQUIRED)
     # find_package(Qt6LinguistTools CONFIG REQUIRED)
-elseif()
+else()
     find_package(Qt5Core CONFIG REQUIRED)
     find_package(Qt5Widgets CONFIG REQUIRED)
     find_package(Qt5Quick CONFIG REQUIRED)
