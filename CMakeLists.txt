@@ -16,21 +16,19 @@ set(CMAKE_AUTOMOC ON)
 # Create code from a list of Qt designer ui files
 #set(CMAKE_AUTOUIC ON)
 
-if(WIN32) #maybe if(APPLE) too
-    find_package(Qt6Core CONFIG REQUIRED)
-    find_package(Qt6Widgets CONFIG REQUIRED)
-    find_package(Qt6Quick CONFIG REQUIRED)
-    find_package(Qt6Sql CONFIG REQUIRED)
-    find_package(Qt6Qml CONFIG REQUIRED)
-    find_package(Qt6QuickCompiler CONFIG REQUIRED)
-    # find_package(Qt6LinguistTools CONFIG REQUIRED)
-else()
+find_package(Qt6 COMPONENTS Core REQUIRED)
+find_package(Qt6 COMPONENTS Qml REQUIRED)
+find_package(Qt6 COMPONENTS Quick REQUIRED)
+find_package(Qt6 COMPONENTS Sql REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
+
+if(NOT Qt6_FOUND)
     find_package(Qt5Core CONFIG REQUIRED)
     find_package(Qt5Widgets CONFIG REQUIRED)
     find_package(Qt5Quick CONFIG REQUIRED)
     find_package(Qt5Sql CONFIG REQUIRED)
     find_package(Qt5Qml CONFIG REQUIRED)
-    find_package(Qt5QuickCompiler CONFIG REQUIRED)
+    # find_package(Qt5QuickCompiler CONFIG REQUIRED)
     # find_package(Qt5LinguistTools CONFIG REQUIRED)
 endif()
 
@@ -176,11 +174,11 @@ target_include_directories(filmulator
 #glib2 needed for static lensfun on windows above and below
 
 target_link_libraries(filmulator
-    Qt5::Core
-    Qt5::Sql
-    Qt5::Widgets
-    Qt5::Quick
-    Qt5::Qml
+    Qt::Core
+    Qt::Sql
+    Qt::Widgets
+    Qt::Quick
+    Qt::Qml
     ${EXIV2_LIBRARIES}
     ${LIBRAW_LIBRARIES}
     ${JPEG_LIBRARIES}
