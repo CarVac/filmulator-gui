@@ -15,20 +15,23 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 # Create code from a list of Qt designer ui files
 #set(CMAKE_AUTOUIC ON)
+# Tell automoc to not process generated source files
+# cmake_policy(SET CMP0071 OLD) //trying out new?
+cmake_policy(SET CMP0071 NEW)
 
-find_package(Qt6 COMPONENTS Core REQUIRED)
-find_package(Qt6 COMPONENTS Qml REQUIRED)
-find_package(Qt6 COMPONENTS Quick REQUIRED)
-find_package(Qt6 COMPONENTS Sql REQUIRED)
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
-
-if(NOT Qt6_FOUND)
+if(WIN32) # then look for qt 6 (maybe if(APPLE) too)
+    find_package(Qt6 COMPONENTS Core REQUIRED)
+    find_package(Qt6 COMPONENTS Qml REQUIRED)
+    find_package(Qt6 COMPONENTS Quick REQUIRED)
+    find_package(Qt6 COMPONENTS Sql REQUIRED)
+    find_package(Qt6 COMPONENTS Widgets REQUIRED)
+else()
     find_package(Qt5Core CONFIG REQUIRED)
     find_package(Qt5Widgets CONFIG REQUIRED)
     find_package(Qt5Quick CONFIG REQUIRED)
     find_package(Qt5Sql CONFIG REQUIRED)
     find_package(Qt5Qml CONFIG REQUIRED)
-    # find_package(Qt5QuickCompiler CONFIG REQUIRED)
+    find_package(Qt5QuickCompiler CONFIG REQUIRED)
     # find_package(Qt5LinguistTools CONFIG REQUIRED)
 endif()
 
