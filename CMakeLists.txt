@@ -20,6 +20,7 @@ set(CMAKE_AUTOMOC ON)
 cmake_policy(SET CMP0071 NEW)
 
 if(WIN32) # then look for qt 6 (maybe if(APPLE) too)
+    message("this is win32, looking for qt6")
     find_package(Qt6 COMPONENTS Core REQUIRED)
     find_package(Qt6 COMPONENTS Qml REQUIRED)
     find_package(Qt6 COMPONENTS Quick REQUIRED)
