@@ -369,7 +369,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         //if they're very different, we add them because we think it's an offset
                         //this is mostly applicable to Panasonics, and I think the full value
                         // overcorrects the issue so I only apply it 95%.
-                        blackpoint += 0.95*camconstBlack;
+                        //blackpoint += 0.95*camconstBlack;
+                        //blackpoint += camconstBlack;
                     }
                 } else {
                     //if the libraw blackpoint is 0 then we replace it, unless there was a block-based blackpoint

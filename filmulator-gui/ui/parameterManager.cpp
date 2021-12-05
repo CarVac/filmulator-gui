@@ -717,6 +717,10 @@ void ParameterManager::setLensfunCa(int caEnabled)
         QMutexLocker paramLocker(&paramMutex);
         s_lensfunCa = caEnabled;
         m_lensfunCa = caEnabled;
+        //We need to apply the s_lensfunName to m_lensfunName to make sure it gets applied
+        if (caEnabled > 0) {
+            m_lensfunName = s_lensfunName;
+        }
         validity = min(validity, Valid::nrchroma);
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
@@ -731,6 +735,10 @@ void ParameterManager::setLensfunVign(int vignEnabled)
         QMutexLocker paramLocker(&paramMutex);
         s_lensfunVign = vignEnabled;
         m_lensfunVign = vignEnabled;
+        //We need to apply the s_lensfunName to m_lensfunName to make sure it gets applied
+        if (vignEnabled > 0) {
+            m_lensfunName = s_lensfunName;
+        }
         validity = min(validity, Valid::nrchroma);
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
@@ -745,6 +753,10 @@ void ParameterManager::setLensfunDist(int distEnabled)
         QMutexLocker paramLocker(&paramMutex);
         s_lensfunDist = distEnabled;
         m_lensfunDist = distEnabled;
+        //We need to apply the s_lensfunName to m_lensfunName to make sure it gets applied
+        if (distEnabled > 0) {
+            m_lensfunName = s_lensfunName;
+        }
         validity = min(validity, Valid::nrchroma);
         paramLocker.unlock();
         QMutexLocker signalLocker(&signalMutex);
@@ -1849,7 +1861,7 @@ void ParameterManager::selectImage(const QString imageID)
     const bool hasPreferences = (query.value(0).toInt() > 0);
     if (hasPreferences)
     {
-        //cout << "Has lens preferences" << endl;
+        //cout << "parameterManager Has lens preferences" << endl;
         query.prepare("SELECT LensfunLens, LensfunCa, LensfunVign, LensfunDist, AutoCa FROM LensPrefs  WHERE ExifCamera = ? AND ExifLens = ?;");
         query.bindValue(0, model);
         query.bindValue(1, exifLensName);
@@ -1884,7 +1896,7 @@ void ParameterManager::selectImage(const QString imageID)
         s_caEnabled = d_caEnabled;
     } else {
         //No preferences
-        //cout << "Has no lens preferences" << endl;
+        //cout << "parameterManager Has no lens preferences" << endl;
         //If there's a match for the exif lens, use that
         d_lensfunName = identifyLens(m_fullFilename);
         s_lensfunName = d_lensfunName;
@@ -1923,7 +1935,7 @@ void ParameterManager::selectImage(const QString imageID)
         }
     } else {
         //If there's no matching lens, disable all the lensfun corrections.
-        //cout << "No lens found" << endl;
+        //cout << "parameterManager No lens found" << endl;
         //s_caEnabled needs to be changed to whatever the database said though.
         if (m_caEnabled > -1)
         {
