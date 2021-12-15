@@ -291,39 +291,41 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //get black subtraction values
             //for everything
             float blackpoint = libraw->imgdata.color.black;
-            //some cameras have individual color channel subtraction. This hasn't been implemented yet.
-            //float rBlack = libraw->imgdata.color.cblack[0];
-            //float gBlack = libraw->imgdata.color.cblack[1];
-            //float bBlack = libraw->imgdata.color.cblack[2];
-            //float g2Black = libraw->imgdata.color.cblack[3];
+            //some cameras have individual color channel subtraction.
+            //this seems to be an offset from the overall blackpoint
+            float rBlack = libraw->imgdata.color.cblack[0];
+            float gBlack = libraw->imgdata.color.cblack[1];
+            float bBlack = libraw->imgdata.color.cblack[2];
+            float g2Black = libraw->imgdata.color.cblack[3];
+            float maxChanBlack = max(rBlack, max(gBlack, max(bBlack, g2Black)));
             //Still others have a matrix to subtract.
             int blackRow = int(libraw->imgdata.color.cblack[4]);
             int blackCol = int(libraw->imgdata.color.cblack[5]);
 
             cout << "BLACKPOINT: ";
             cout << blackpoint << endl;
-            //cout << "color channel blackpoints" << endl;
-            //cout << rBlack << endl;
-            //cout << gBlack << endl;
-            //cout << bBlack << endl;
-            //cout << g2Black << endl;
-            //cout << "block-based blackpoint dimensions:" << endl;
-            //cout << libraw->imgdata.color.cblack[4] << endl;
-            //cout << libraw->imgdata.color.cblack[5] << endl;
-            //cout << "block-based blackpoint: " << endl;
+            cout << "color channel blackpoints" << endl;
+            cout << "R  blackpoint: " << rBlack << endl;
+            cout << "G  blackpoint: " << gBlack << endl;
+            cout << "B  blackpoint: " << bBlack << endl;
+            cout << "G2 blackpoint: " << g2Black << endl;
+            cout << "block-based blackpoint dimensions:" << endl;
+            cout << "blackpoint dim 1: " << libraw->imgdata.color.cblack[4] << endl;
+            cout << "blackpoint dim 2: " << libraw->imgdata.color.cblack[5] << endl;
             double sumBlockBlackpoint = 0;
             int count = 0;
             if (blackRow > 0 && blackCol > 0)
             {
+                cout << "block-based blackpoint: " << endl;
                 for (int i = 0; i < blackRow; i++)
                 {
                     for (int j = 0; j < blackCol; j++)
                     {
                         sumBlockBlackpoint += libraw->imgdata.color.cblack[6 + i*blackCol + j];
                         count++;
-                        //cout << libraw->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
+                        cout << libraw->imgdata.color.cblack[6 + i*blackCol + j] << "  ";
                     }
-                    //cout << endl;
+                    cout << endl;
                 }
             }
             double meanBlockBlackpoint = 0;
@@ -366,10 +368,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         //if they're within 50%, we want to replace the libraw one
                         blackpoint = camconstBlack;
                     } else {
-                        //if they're very different, we add them because we think it's an offset
-                        //this is mostly applicable to Panasonics, and I think the full value
-                        // overcorrects the issue so I only apply it 95%.
-                        blackpoint += 0.95*camconstBlack;
+                        //Ignore if they're very different, this only applies to Panasonics and there's a better way
                     }
                 } else {
                     //if the libraw blackpoint is 0 then we replace it, unless there was a block-based blackpoint
@@ -390,12 +389,13 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 cout << "Nikon 12-bit camconst white clipping point: " << camconstWhite << endl;
             }
 
+
             if (camconstSuccess && camconstWhite > 0 && !isDNG) //dngs provide their own correct whitepoint and we should trust it
             {
-                maxValue = camconstWhite - blackpoint - meanBlockBlackpoint;
+                maxValue = camconstWhite - blackpoint - maxChanBlack - meanBlockBlackpoint;
                 cout << "camconst white clipping point: " << camconstWhite << endl;
             } else {
-                maxValue = libraw->imgdata.color.maximum - blackpoint - meanBlockBlackpoint;
+                maxValue = libraw->imgdata.color.maximum - blackpoint - maxChanBlack - meanBlockBlackpoint;
                 cout << "libraw fallback or dng white clipping point: " << libraw->imgdata.color.maximum << endl;
             }
             cout << "black-subtracted maximum: " << maxValue << endl;
@@ -524,6 +524,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         float tempBlackpoint = blackpoint;
+                        int color = cfa[row % 2][col % 2];
+                        if (color == 0) {tempBlackpoint += rBlack;}
+                        if (color == 1) {tempBlackpoint += gBlack;}
+                        if (color == 2) {tempBlackpoint += bBlack;}
+                        if (color == 3) {tempBlackpoint += g2Black;}
                         if (blackRow > 0 && blackCol > 0)
                         {
                             tempBlackpoint = tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
@@ -542,6 +547,11 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         float tempBlackpoint = blackpoint;
+                        int color = cfa[row % 2][col % 2];
+                        if (color == 0) {tempBlackpoint += rBlack;}
+                        if (color == 1) {tempBlackpoint += gBlack;}
+                        if (color == 2) {tempBlackpoint += bBlack;}
+                        if (color == 3) {tempBlackpoint += g2Black;}
                         if (blackRow > 0 && blackCol > 0)
                         {
                             tempBlackpoint = tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
