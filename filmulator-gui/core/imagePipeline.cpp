@@ -1568,10 +1568,18 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             rotation = blackWhiteParam.rotation;
             if (updatePrePostFilm)
             {
-                histoInterface->updateHistPreFilm(pre_film_image, 65535,
-                                                  rotation,
-                                                  cropHeight, cropAspect,
-                                                  cropHoffset, cropVoffset);
+                if (!stealData)
+                {
+                    histoInterface->updateHistPreFilm(pre_film_image, 65535,
+                                                      rotation,
+                                                      cropHeight, cropAspect,
+                                                      cropHoffset, cropVoffset);
+                } else {
+                    histoInterface->updateHistPreFilm(stealVictim->pre_film_image, 65535,
+                                                      rotation,
+                                                      cropHeight, cropAspect,
+                                                      cropHoffset, cropVoffset);
+                }
                 histoInterface->updateHistPostFilm(filmulated_image, .0025f,//TODO connect this magic number to the qml
                                                    rotation,
                                                    cropHeight, cropAspect,
