@@ -205,7 +205,10 @@ camconst_status camconst_read(const QString inputMakeModel, const float iso, con
                                 std::cout << "CamConst black is array" << std::endl;
                                 cJSON * blackItem;
                                 bool correctIso = false;
-                                cJSON_ArrayForEach(blackItem, rangeItem)
+                                double tempIso = iso;
+                                double minIso = 1e10;
+                                double maxIso = 0;
+                                cJSON_ArrayForEach(blackItem, rangeItem) //check that the iso exists
                                 {
                                     correctIso = false;
                                     //We have to get the objectitems
@@ -217,6 +220,8 @@ camconst_status camconst_read(const QString inputMakeModel, const float iso, con
                                         {
                                             correctIso = true;
                                         }
+                                        minIso = std::min(isoItem->valuedouble, minIso);
+                                        maxIso = std::max(isoItem->valuedouble, maxIso);
                                     }
                                     if (cJSON_IsArray(isoItem))
                                     {
@@ -225,10 +230,52 @@ camconst_status camconst_read(const QString inputMakeModel, const float iso, con
                                         cJSON_ArrayForEach(isoSubItem, isoItem)
                                         {
                                             std::cout << isoSubItem->valuedouble << " ";
-                                           if (abs(isoSubItem->valuedouble - iso) < 3)
-                                           {
-                                               correctIso = true;
-                                           }
+                                            if (abs(isoSubItem->valuedouble - iso) < 3)
+                                            {
+                                                correctIso = true;
+                                            }
+                                            minIso = std::min(isoSubItem->valuedouble, minIso);
+                                            maxIso = std::max(isoSubItem->valuedouble, maxIso);
+                                        }
+                                        std::cout << std::endl;
+                                    }
+                                }
+                                if (!correctIso) //if not present, see if we can match an ISO that's either double or half
+                                {
+                                    if (iso < minIso)
+                                    {
+                                        tempIso = iso * 2;
+                                    }
+                                    else if (iso > maxIso)
+                                    {
+                                        tempIso = iso / 2;
+                                    }
+                                    std::cout << "temp ISO for whitepoint: " << tempIso << std::endl;
+                                }
+                                cJSON_ArrayForEach(blackItem, rangeItem) //actually find the value
+                                {
+                                    correctIso = false;
+                                    //We have to get the objectitems
+                                    cJSON * isoItem = cJSON_GetObjectItemCaseSensitive(blackItem, "iso");
+                                    if (cJSON_IsNumber(isoItem))
+                                    {
+                                        std::cout << "CamConst black iso: " << isoItem->valuedouble << std::endl;
+                                        if (abs(isoItem->valuedouble - tempIso) < 3)
+                                        {
+                                            correctIso = true;
+                                        }
+                                    }
+                                    if (cJSON_IsArray(isoItem))
+                                    {
+                                        cJSON * isoSubItem;
+                                        std::cout << "CamConst black isos: ";
+                                        cJSON_ArrayForEach(isoSubItem, isoItem)
+                                        {
+                                            std::cout << isoSubItem->valuedouble << " ";
+                                            if (abs(isoSubItem->valuedouble - tempIso) < 3)
+                                            {
+                                                correctIso = true;
+                                            }
                                         }
                                         std::cout << std::endl;
                                     }
@@ -272,7 +319,10 @@ camconst_status camconst_read(const QString inputMakeModel, const float iso, con
                                 std::cout << "CamConst whitepoint is array" << std::endl;
                                 cJSON * whiteItem;
                                 bool correctIso = false;
-                                cJSON_ArrayForEach(whiteItem, rangeItem)
+                                double tempIso = iso;
+                                double minIso = 1e10;
+                                double maxIso = 0;
+                                cJSON_ArrayForEach(whiteItem, rangeItem) //check that the iso exists
                                 {
                                     correctIso = false;
                                     //We have to get the objectitems
@@ -284,6 +334,8 @@ camconst_status camconst_read(const QString inputMakeModel, const float iso, con
                                         {
                                             correctIso = true;
                                         }
+                                        minIso = std::min(isoItem->valuedouble, minIso);
+                                        maxIso = std::max(isoItem->valuedouble, maxIso);
                                     }
                                     if (cJSON_IsArray(isoItem))
                                     {
@@ -292,10 +344,52 @@ camconst_status camconst_read(const QString inputMakeModel, const float iso, con
                                         cJSON_ArrayForEach(isoSubItem, isoItem)
                                         {
                                             std::cout << isoSubItem->valuedouble << " ";
-                                           if (abs(isoSubItem->valuedouble - iso) < 3)
-                                           {
-                                               correctIso = true;
-                                           }
+                                            if (abs(isoSubItem->valuedouble - iso) < 3)
+                                            {
+                                                correctIso = true;
+                                            }
+                                            minIso = std::min(isoSubItem->valuedouble, minIso);
+                                            maxIso = std::max(isoSubItem->valuedouble, maxIso);
+                                        }
+                                        std::cout << std::endl;
+                                    }
+                                }
+                                if (!correctIso) //see if we can match an ISO that's either double or half
+                                {
+                                    if (iso < minIso)
+                                    {
+                                        tempIso = iso * 2;
+                                    }
+                                    else if (iso > maxIso)
+                                    {
+                                        tempIso = iso / 2;
+                                    }
+                                    std::cout << "temp ISO for whitepoint: " << tempIso << std::endl;
+                                }
+                                cJSON_ArrayForEach(whiteItem, rangeItem) //actually find the value
+                                {
+                                    correctIso = false;
+                                    //We have to get the objectitems
+                                    cJSON * isoItem = cJSON_GetObjectItemCaseSensitive(whiteItem, "iso");
+                                    if (cJSON_IsNumber(isoItem))
+                                    {
+                                        std::cout << "CamConst whitepoint iso: " << isoItem->valuedouble << std::endl;
+                                        if (abs(isoItem->valuedouble - tempIso) < 3)
+                                        {
+                                            correctIso = true;
+                                        }
+                                    }
+                                    if (cJSON_IsArray(isoItem))
+                                    {
+                                        cJSON * isoSubItem;
+                                        std::cout << "CamConst whitepoint isos: ";
+                                        cJSON_ArrayForEach(isoSubItem, isoItem)
+                                        {
+                                            std::cout << isoSubItem->valuedouble << " ";
+                                            if (abs(isoSubItem->valuedouble - tempIso) < 3)
+                                            {
+                                                correctIso = true;
+                                            }
                                         }
                                         std::cout << std::endl;
                                     }
