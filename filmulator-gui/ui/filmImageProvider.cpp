@@ -118,10 +118,11 @@ QImage FilmImageProvider::requestImage(const QString& id,
             //We want to clear both the quick pipe and the full pipe's invalid data
             // to reduce peak memory usage
             quickPipe.clearInvalid(paramManager->getValid());
-            pipeline.clearInvalid(paramManager->getValid());
+            pipeline.clearInvalid(cloneParam->getValid());
 
             struct timeval quickTime;
             gettimeofday(&quickTime, nullptr);
+            cout << "requestImage quick pipeline valid " << paramManager->getValid() << endl;
             image = quickPipe.processImage(paramManager, this, data, fileHash);
             cout << "requestImage quickPipe time: " << timeDiff(quickTime) << endl;
         }
@@ -147,6 +148,7 @@ QImage FilmImageProvider::requestImage(const QString& id,
             filename = cloneParam->getFullFilename();
             struct timeval fullTime;
             gettimeofday(&fullTime, nullptr);
+            cout << "requestImage full pipeline valid " << cloneParam->getValid() << endl;
             image = pipeline.processImage(cloneParam, this, data, fileHash, &quickPipe);
             cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
         }
