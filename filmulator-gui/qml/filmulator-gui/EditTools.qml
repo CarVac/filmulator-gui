@@ -366,7 +366,7 @@ SlimSplitView {
                 ToolSwitch {
                     id: nrEnabledSwitch
                     text: qsTr("Noise Reduction")
-                    tooltipText: qsTr("Perform noise reduction to remove grain and color splotches from the image.\n\nEnabling this also changes demosaicing to produce less color noise.")
+                    tooltipText: qsTr("Enable the noise reduction tools to help remove grain and color splotches from the image.")
                     isOn: paramManager.nrEnabled
                     defaultOn: paramManager.defNrEnabled
                     onIsOnChanged: {
@@ -400,24 +400,24 @@ SlimSplitView {
                     title: qsTr("NR Strength")
                     tooltipText: qsTr("General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled. This may cause speckles, so use Speckle NR to remove them.")
                     minimumValue: 0
-                    maximumValue: 0.1
-                    valueText: (value*1000).toFixed(2)
-                    value: paramManager.nlStrength
-                    defaultValue: paramManager.defNlStrength
+                    maximumValue: Math.sqrt(0.1)
+                    valueText: (value/Math.sqrt(0.1)*100).toFixed(2)
+                    value: Math.sqrt(paramManager.nlStrength)
+                    defaultValue: Math.sqrt(paramManager.defNlStrength)
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
-                            paramManager.nlStrength = value
+                            paramManager.nlStrength = value*value
                         }
                     }
                     //onEditComplete: paramManager.writeback()//it's not stored in the database
                     Connections {
                         target: paramManager
                         function onNlStrengthChanged() {
-                            nlStrengthSlider.value = paramManager.nlStrength
+                            nlStrengthSlider.value = Math.sqrt(paramManager.nlStrength)
                         }
                         function onDefNlStrengthChanged() {
-                            nlStrengthSlider.defaultValue = paramManager.defNlStrength
+                            nlStrengthSlider.defaultValue = Math.sqrt(paramManager.defNlStrength)
                         }
                     }
                     tooltipInstant: root.helpMode

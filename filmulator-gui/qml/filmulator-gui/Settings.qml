@@ -488,6 +488,6 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.margins: 4 * uiScale
         font.pixelSize: 12.0 * uiScale
-        text: "v0.11.2rc10" + " "
+        text: "v0.11.2rc11" + " "
     }
 }
