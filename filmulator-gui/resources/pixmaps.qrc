@@ -13,6 +13,6 @@
         <file>whitebalanceactive.png</file>
         <file>whitebalanceplus.png</file>
         <file>whitebalanceplusactive.png</file>
-        <file>filmulator64icon.svg</file>
+        <file>filmulator64icon_square.png</file>
     </qresource>
 </RCC>
