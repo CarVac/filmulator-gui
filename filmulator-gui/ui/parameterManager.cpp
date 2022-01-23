@@ -1861,7 +1861,7 @@ void ParameterManager::selectImage(const QString imageID)
     const bool hasPreferences = (query.value(0).toInt() > 0);
     if (hasPreferences)
     {
-        //cout << "parameterManager Has lens preferences" << endl;
+        cout << "parameterManager Has lens preferences" << endl;
         query.prepare("SELECT LensfunLens, LensfunCa, LensfunVign, LensfunDist, AutoCa FROM LensPrefs  WHERE ExifCamera = ? AND ExifLens = ?;");
         query.bindValue(0, model);
         query.bindValue(1, exifLensName);
@@ -1896,7 +1896,7 @@ void ParameterManager::selectImage(const QString imageID)
         s_caEnabled = d_caEnabled;
     } else {
         //No preferences
-        //cout << "parameterManager Has no lens preferences" << endl;
+        cout << "parameterManager Has no lens preferences" << endl;
         //If there's a match for the exif lens, use that
         d_lensfunName = identifyLens(m_fullFilename);
         s_lensfunName = d_lensfunName;
@@ -1912,11 +1912,11 @@ void ParameterManager::selectImage(const QString imageID)
         s_lensfunDist = 0;
     }
 
-    //Now, if the m_ params are set, we overwrite the s_ params accordingly
+    //Now, if the m_ params are set, we overwrite the preferred settings in the s_ params accordingly
     if (m_lensfunName != "NoLens")
     {
         s_lensfunName = m_lensfunName;
-        //cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
+        cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
         if (m_caEnabled > -1)
         {
             s_caEnabled = m_caEnabled;
@@ -1934,16 +1934,25 @@ void ParameterManager::selectImage(const QString imageID)
             s_lensfunDist = m_lensfunDist;
         }
     } else {
-        //If there's no matching lens, disable all the lensfun corrections.
-        //cout << "parameterManager No lens found" << endl;
-        //s_caEnabled needs to be changed to whatever the database said though.
-        if (m_caEnabled > -1)
+        if (s_lensfunName == "NoLens")
         {
-            s_caEnabled = m_caEnabled;
+            //If there's no matching lens, disable all the lensfun corrections.
+            cout << "parameterManager No lens found" << endl;
+            //s_caEnabled needs to be changed to whatever the database said though.
+            if (m_caEnabled > -1)
+            {
+                s_caEnabled = m_caEnabled;
+            }
+            s_lensfunCa = 0;
+            s_lensfunVign = 0;
+            s_lensfunDist = 0;
+        } else {
+            cout << "parameterManager Using preferred lens" << endl;
+            m_caEnabled = s_caEnabled;
+            m_lensfunCa = s_lensfunCa;
+            m_lensfunVign = s_lensfunVign;
+            m_lensfunDist = s_lensfunDist;
         }
-        s_lensfunCa = 0;
-        s_lensfunVign = 0;
-        s_lensfunDist = 0;
     }
     //cout << "Default lens: " << d_lensfunName.toStdString() << endl;
 
