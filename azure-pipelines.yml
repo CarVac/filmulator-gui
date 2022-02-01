@@ -26,15 +26,16 @@ steps:
       mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,qt5,curl,libarchive}
     displayName: Install Dependencies
   - script: |
-      echo "ls .."
-      ls ..
       mkdir libraw
-      echo "ls "
+      echo ls
       ls
       cd libraw
       git clone https://github.com/LibRaw/LibRaw.git
       cd LibRaw
-      # 2021-10-06 snapshot
+      echo ls ..
+      ls ..
+      echo ls ../patches/
+      ls ../patches
       git checkout 68b409baf660c57f88e509eac9b1c2b1aea33983
       git apply ../patches/libraw-makefile.patch
       %MSYS_BASH% -c "make -j2 -f Makefile.dist"
