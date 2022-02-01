@@ -47,8 +47,9 @@ steps:
       cd libraw
       git clone https://github.com/LibRaw/LibRaw.git
       cd LibRaw
-      git checkout 68b409baf660c57f88e509eac9b1c2b1aea33983 #2021-10-26 snapshot
-      git apply ../../patches/libraw-makefile.patch
+      # 2021-10-06 snapshot
+      git checkout 68b409baf660c57f88e509eac9b1c2b1aea33983
+      git apply ../patches/libraw-makefile.patch
       %MSYS_BASH% -c "make -j2 -f Makefile.dist"
       %MSYS_BASH% -c "make install -f Makefile.dist"
     displayname: build LibRaw
