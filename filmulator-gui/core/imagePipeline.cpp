@@ -174,17 +174,19 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #define RAW3  libraw->imgdata.rawdata.color3_image
 #define RAW4  libraw->imgdata.rawdata.color4_image
 #define RAWF  libraw->imgdata.rawdata.float_image
+#define RAWF3 libraw->imgdata.rawdata.float3_image
+#define RAWF4 libraw->imgdata.rawdata.float4_image
 #define IDATA libraw->imgdata.idata
 #define LENS  libraw->imgdata.lens
 #define MAKER libraw->imgdata.lens.makernotes
 #define OTHER libraw->imgdata.other
 #define SIZES libraw->imgdata.sizes
+#define OPTIONS libraw->imgdata.rawparams.options
 
             if (libraw->is_floating_point())
             {
-                cout << "processImage: libraw cannot open a floating point raw" << endl;
-                //LibRaw cannot process floating point images unless compiled with the DNG SDK.
-                return emptyMatrix();
+                //tell libraw to not convert to int when unpacking.
+                OPTIONS = OPTIONS & ~LIBRAW_RAWOPTIONS_CONVERTFLOAT_TO_INT;
             }
             //This makes IMAGE contains the sensel value and 3 blank values at every
             //location.
@@ -195,6 +197,8 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
                 return emptyMatrix();
             }
+
+            bool isFloat = libraw->have_fpdata();
 
             //get dimensions
             raw_width  = RSIZE.width;
@@ -488,8 +492,33 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
 
             isNikonSraw = libraw->is_nikon_sraw();
-            if (isSraw)
-            {
+            if (isFloat && isSraw) { //floating point full-color-per-pixel raws
+                raw_image.set_size(raw_height, raw_width*3);
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                for (int row = 0; row < raw_height; row++)
+                {
+                    //IMAGE is an (width*height) by 4 array, not width by height by 4.
+                    int rowoffset = (row + topmargin)*full_width;
+                    for (int col = 0; col < raw_width; col++)
+                    {
+                        float tempBlackpoint = blackpoint;
+                        if (blackRow > 0 && blackCol > 0)
+                        {
+                            tempBlackpoint = tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                        }
+                        //sraw comes from raw4 but only uses 3 channels
+                        raw_image[row][col*3   ] = RAWF4[rowoffset + col + leftmargin][0] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col*3   ]);
+                        rawMax = std::max(rawMax, raw_image[row][col*3   ]);
+                        raw_image[row][col*3 +1] = RAWF4[rowoffset + col + leftmargin][1] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col*3 +1]);
+                        rawMax = std::max(rawMax, raw_image[row][col*3 +1]);
+                        raw_image[row][col*3 +2] = RAWF4[rowoffset + col + leftmargin][2] - tempBlackpoint;
+                        rawMin = std::min(rawMin, raw_image[row][col*3 +2]);
+                        rawMax = std::max(rawMax, raw_image[row][col*3 +2]);
+                    }
+                }
+            } else if (isSraw) { //full-color-per-pixel integer raws
                 raw_image.set_size(raw_height, raw_width*3);
                 #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
                 for (int row = 0; row < raw_height; row++)
@@ -515,7 +544,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         rawMax = std::max(rawMax, raw_image[row][col*3 +2]);
                     }
                 }
-            } else if (libraw->is_floating_point()){//we can't even get here until libraw supports floating point raw
+            } else if (isFloat) { //floating point one-color-per-pixel raws
                 #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
                 for (int row = 0; row < raw_height; row++)
                 {
@@ -538,7 +567,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                         rawMax = std::max(rawMax, raw_image[row][col]);
                     }
                 }
-            } else {
+            } else { //normal one-color-per-pixel integer raws
                 #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
                 for (int row = 0; row < raw_height; row++)
                 {

@@ -54,11 +54,13 @@ QString ImportWorker::importFile(const QFileInfo infoIn,
         emit doneProcessing(false);
         return "";
     }
+#define OPTIONS libraw->imgdata.rawparams.options
     if (libraw->is_floating_point())
     {
-        cout << "importFile: libraw cannot open a floating point raw" << endl;
-        emit doneProcessing(false);
-        return "";
+        cout << "importFile: floating point raw" << endl;
+        //tell libraw to not convert to int when unpacking.
+        //may not be necessary here but whatever, just in case
+        OPTIONS = OPTIONS & ~LIBRAW_RAWOPTIONS_CONVERTFLOAT_TO_INT;
     }
     libraw_error = libraw->unpack();
     if (libraw_error)
