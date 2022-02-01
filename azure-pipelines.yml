@@ -23,7 +23,7 @@ steps:
       %MSYS_PAC% --noconfirm --needed -S --verbose --debug ^
       tar gzip nano make diffutils intltool git cmake libcurl-devel glib2-devel msys2-runtime-devel ^
       mingw-w64-x86_64-{gcc,gdb,make,pkgconf,cmake} ^
-      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,libraw,qt5,curl,libarchive}
+      mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,qt5,curl,libarchive}
     displayName: Install Dependencies
   - script: |
       mkdir librt
@@ -38,6 +38,19 @@ steps:
       %MSYS_BASH% -c "make -j2"
       %MSYS_BASH% -c "make install"
     displayName: build librtprocess
+  - script: |
+      echo "ls .."
+      ls ..
+      mkdir libraw
+      echo "ls "
+      ls
+      cd libraw
+      git clone https://github.com/LibRaw/LibRaw.git
+      cd LibRaw
+      git checkout 68b409baf660c57f88e509eac9b1c2b1aea33983 #2021-10-26 snapshot
+      git apply ../../patches/libraw-makefile.patch
+      %MSYS_BASH% -c "make -j2 -f Makefile.dist"
+      %MSYS_BASH% -c "make install -f Makefile.dist"
   - script: |
       pwd
       mkdir lensfun
