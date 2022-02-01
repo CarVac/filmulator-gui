@@ -32,14 +32,14 @@ steps:
       cd libraw
       git clone https://github.com/LibRaw/LibRaw.git
       cd LibRaw
-      echo ls ..
-      ls ..
-      echo ls ../patches/
-      ls ../patches
+      echo ls ../..
+      ls ../..
+      echo ls ../../patches/
+      ls ../../patches
       git checkout 68b409baf660c57f88e509eac9b1c2b1aea33983
-      git apply ../patches/libraw-makefile.patch
-      %MSYS_BASH% -c "make -j2 -f Makefile.dist"
-      %MSYS_BASH% -c "make install -f Makefile.dist"
+      git apply ../../patches/libraw-makefile.patch
+      %MSYS_BASH% -c "make -j2 -f Makefile.mingw"
+      %MSYS_BASH% -c "make install -f Makefile.mingw"
     displayName: build LibRaw
   - script: |
       mkdir librt

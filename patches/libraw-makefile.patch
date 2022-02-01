@@ -1,14 +1,5 @@
-From c62fbee733fcb4479d43d69e9e2db41fdbcbfb71 Mon Sep 17 00:00:00 2001
-From: CarVac <c.lo.to.da.down.lo@gmail.com>
-Date: Tue, 9 Nov 2021 19:42:10 -0500
-Subject: [PATCH] add openmp and libjpeg to makefile
-
----
- Makefile.dist | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
 diff --git a/Makefile.dist b/Makefile.dist
-index 61194a07..0d8c6e78 100644
+index 61194a07..a1597d9f 100644
 --- a/Makefile.dist
 +++ b/Makefile.dist
 @@ -6,7 +6,7 @@ CC=gcc
@@ -20,8 +11,35 @@ index 61194a07..0d8c6e78 100644
  
  # RawSpeed Support
  #CFLAGS+=-pthread -DUSE_RAWSPEED -I../RawSpeed -I/usr/local/include/libxml2
-@@ -26,8 +26,8 @@ CFLAGS+=-DUSE_ZLIB
+@@ -26,10 +26,10 @@ CFLAGS+=-DUSE_ZLIB
  LDADD+=-lz
+ 
+ # JPEG support for lossy DNG
+-#CFLAGS+=-DUSE_JPEG -I/usr/local/include
+-#LDADD+=-L/usr/local/lib -ljpeg
++CFLAGS+=-DUSE_JPEG -I/usr/local/include
++LDADD+=-L/usr/local/lib -ljpeg
+ # LIBJPEG8:
+-#CFLAGS+=-DUSE_JPEG8
++CFLAGS+=-DUSE_JPEG8
+ 
+ # LCMS support
+ #CFLAGS+=-DUSE_LCMS -I/usr/local/include
+diff --git a/Makefile.mingw b/Makefile.mingw
+index f2c291e2..a266dfee 100644
+--- a/Makefile.mingw
++++ b/Makefile.mingw
+@@ -5,7 +5,7 @@ CC=gcc
+ CXX=g++
+ 
+ # OpenMP support
+-#CFLAGS+=-fopenmp
++CFLAGS+=-fopenmp
+ 
+ # RawSpeed Support
+ #CFLAGS+=-pthread -DUSE_RAWSPEED -I../RawSpeed -I/usr/local/include/libxml2
+@@ -21,8 +21,8 @@ CXX=g++
+ #LDADD+=-L/usr/local/lib -ljasper
  
  # JPEG support for lossy DNG
 -#CFLAGS+=-DUSE_JPEG -I/usr/local/include
@@ -31,6 +49,3 @@ index 61194a07..0d8c6e78 100644
  # LIBJPEG8:
  #CFLAGS+=-DUSE_JPEG8
  
--- 
-2.30.2
-
