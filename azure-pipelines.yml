@@ -26,19 +26,6 @@ steps:
       mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,qt5,curl,libarchive}
     displayName: Install Dependencies
   - script: |
-      mkdir librt
-      ls
-      cd librt
-      git clone https://github.com/CarVac/librtprocess lrt
-      echo "done clone"
-      mkdir buildDir
-      cd buildDir
-      set HOME=.
-      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lrt > out.log 2>err.log"
-      %MSYS_BASH% -c "make -j2"
-      %MSYS_BASH% -c "make install"
-    displayName: build librtprocess
-  - script: |
       echo "ls .."
       ls ..
       mkdir libraw
@@ -52,7 +39,20 @@ steps:
       git apply ../patches/libraw-makefile.patch
       %MSYS_BASH% -c "make -j2 -f Makefile.dist"
       %MSYS_BASH% -c "make install -f Makefile.dist"
-    displayname: build LibRaw
+    displayName: build LibRaw
+  - script: |
+      mkdir librt
+      ls
+      cd librt
+      git clone https://github.com/CarVac/librtprocess lrt
+      echo "done clone"
+      mkdir buildDir
+      cd buildDir
+      set HOME=.
+      %MSYS_BASH% -c "cmake -G\"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=\"/mingw64/\" -DCMAKE_BUILD_TYPE=\"Release\" ../lrt > out.log 2>err.log"
+      %MSYS_BASH% -c "make -j2"
+      %MSYS_BASH% -c "make install"
+    displayName: build librtprocess
   - script: |
       pwd
       mkdir lensfun
