@@ -129,7 +129,7 @@ SlimSplitView {
                     tooltipText: !paramManager.autoCaAvail ? qsTr("Switch this control on to reduce line-shaped noise artifacts at the expense of fine detail.") : qsTr("Switch this control on to make noise less visible at the expense of fine detail.")
                     isOn: (paramManager.demosaicMethod == 1)
                     defaultOn: (paramManager.defDemosaicMethod == 1)
-                    //visible: paramManager.autoCaAvail //
+                    visible: paramManager.demosaicAvail //it's available for both bayer and x-trans but not some sraw
                     onIsOnChanged: {
                         paramManager.demosaicMethod = isOn ? 1 : 0
                         paramManager.writeback()
@@ -204,6 +204,7 @@ SlimSplitView {
                     tickmarksEnabled: true
                     value: paramManager.highlights
                     defaultValue: paramManager.defHighlights
+                    visible: paramManager.colorAvail //requires color images
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
@@ -265,6 +266,7 @@ SlimSplitView {
                     Layout.preferredHeight: 36 * uiScale
                     Layout.fillWidth: true
                     color: Colors.darkGray
+                    visible: paramManager.colorAvail //requires color images
 
                     ToolButton {
                         id: saveWbButton
@@ -314,6 +316,7 @@ SlimSplitView {
                     value: Math.log(paramManager.temperature)
                     defaultValue: Math.log(paramManager.defTemperature)
                     valueText: Math.exp(value).toFixed(1)
+                    visible: paramManager.colorAvail //requires color images
                     onValueChanged: {
                         paramManager.temperature = Math.exp(value)
                     }
@@ -343,6 +346,7 @@ SlimSplitView {
                     value: Math.log(paramManager.tint)
                     defaultValue: Math.log(paramManager.defTint)
                     valueText: Math.exp(value).toFixed(4)
+                    visible: paramManager.colorAvail //requires color images
                     onValueChanged: {
                         paramManager.tint = Math.exp(value)
                     }
@@ -537,7 +541,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: chromaStrengthSlider
-                    visible: nrEnabledSwitch.isOn
+                    visible: nrEnabledSwitch.isOn && paramManager.colorAvail //requires color images
                     highlight: nrEnabledSwitch.hovered
                     title: qsTr("Chroma NR Strength")
                     tooltipText: qsTr("Reduce color noise. Works in combination with the above standard NR. Higher values increase the effect, but add color smearing. When set to zero, chroma noise reduction is disabled.")
@@ -1054,6 +1058,7 @@ SlimSplitView {
                     tooltipText: qsTr("Turn this on to convert to black-and-white.")
                     isOn: paramManager.monochrome
                     defaultOn: paramManager.defMonochrome
+                    visible: paramManager.colorAvail //requires color images
                     onIsOnChanged: {
                         paramManager.monochrome = isOn
                         paramManager.writeback()
@@ -1080,7 +1085,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: vibranceSlider
-                    visible: !monochromeSwitch.isOn
+                    visible: !monochromeSwitch.isOn && paramManager.colorAvail //requires color images
                     highlight: monochromeSwitch.hovered
                     title: qsTr("Vibrance")
                     tooltipText: qsTr("This adjusts the vividness of the less-saturated colors in the image.")
@@ -1111,7 +1116,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: saturationSlider
-                    visible: !monochromeSwitch.isOn
+                    visible: !monochromeSwitch.isOn && paramManager.colorAvail //requires color images
                     highlight: monochromeSwitch.hovered
                     title: qsTr("Saturation")
                     tooltipText: qsTr("This adjusts the vividness of the entire image.")
@@ -1142,7 +1147,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: bwRmultSlider
-                    visible: monochromeSwitch.isOn
+                    visible: monochromeSwitch.isOn && paramManager.colorAvail //requires color images
                     highlight: monochromeSwitch.hovered
                     title: qsTr("Red Weight")
                     tooltipText: qsTr("How much to weight the red channel when converting to monochrome.")
@@ -1172,7 +1177,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: bwGmultSlider
-                    visible: monochromeSwitch.isOn
+                    visible: monochromeSwitch.isOn && paramManager.colorAvail //requires color images
                     highlight: monochromeSwitch.hovered
                     title: qsTr("Green Weight")
                     tooltipText: qsTr("How much to weight the green channel when converting to monochrome.")
@@ -1202,7 +1207,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: bwBmultSlider
-                    visible: monochromeSwitch.isOn
+                    visible: monochromeSwitch.isOn && paramManager.colorAvail //requires color images
                     highlight: monochromeSwitch.hovered
                     title: qsTr("Blue Weight")
                     tooltipText: qsTr("How much to weight the blue channel when converting to monochrome.")

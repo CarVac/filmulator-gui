@@ -1990,7 +1990,27 @@ void ParameterManager::selectImage(const QString imageID)
     }
     bool isXtrans = maxXtrans > 0;
     //cout << "Is xtrans: " << isXtrans << endl;
-    autoCaAvail = !isSraw && !isWeird && !isXtrans;
+
+    //Check if sensor is monochrome
+    //Monochrome images make some tools useless
+    const bool isCR3 = fullFilenameQstr.endsWith(".cr3", Qt::CaseInsensitive);
+    isMonochrome = false;
+    if (!isCR3) //no CR3 cameras are monochrome
+    {
+        cout << "updateAvailability exiv filename: " << m_fullFilename << endl;
+        auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
+        exifImage->readMetadata();
+        Exiv2::ExifData exifData = exifImage->exifData();
+        std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
+        isMonochrome = wb.length()==0;
+        colorAvail = !isMonochrome;
+        emit colorAvailChanged();
+    }
+    isSraw = isSraw || (isWeird && !isMonochrome);
+    demosaicAvail = !isSraw && !isWeird && !isMonochrome;
+    emit demosaicAvailChanged();
+
+    autoCaAvail = !isSraw && !isWeird && !isXtrans && !isMonochrome;
     //cout << "Auto CA is available: " << autoCaAvail << endl;
     emit autoCaAvailChanged();
 
@@ -3907,6 +3927,7 @@ void ParameterManager::paste(QString toImageID)
 void ParameterManager::updateLensfunAvailability()
 {
     cout << "Updating availability" << endl;
+
     std::string camModel = model.toStdString();
     const lfCamera * camera = NULL;
     const lfCamera ** cameraList = ldb->FindCamerasExt(NULL, camModel.c_str());
@@ -3930,18 +3951,6 @@ void ParameterManager::updateLensfunAvailability()
             const lfLens ** lensList = ldb->FindLenses(camera, NULL, lensModel.c_str());
             if (lensList)
             {
-                //Check if sensor is monochrome
-                const bool isCR3 = fullFilenameQstr.endsWith(".cr3", Qt::CaseInsensitive);
-                bool isMonochrome = false;
-                if (!isCR3) //no CR3 cameras are monochrome
-                {
-                    cout << "updateAvailability exiv filename: " << m_fullFilename << endl;
-                    auto exifImage = Exiv2::ImageFactory::open(m_fullFilename);
-                    exifImage->readMetadata();
-                    Exiv2::ExifData exifData = exifImage->exifData();
-                    std::string wb = exifData["Exif.Photo.WhiteBalance"].toString();
-                    isMonochrome = wb.length()==0;
-                }
 
                 auto calibrationSet = lensList[0]->GetCalibrationSets();
 

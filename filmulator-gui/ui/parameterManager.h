@@ -175,6 +175,10 @@ class ParameterManager : public QObject
     Q_PROPERTY(bool lensfunDistAvail READ getLensfunDistAvail NOTIFY lensfunDistAvailChanged)
     //Read-only thing for custom wb
     Q_PROPERTY(bool customWbAvail    READ getCustomWbAvail    NOTIFY customWbAvailChanged)
+    //Read-only thing for general monochromeness (monochrome raws don't need this)
+    Q_PROPERTY(bool colorAvail       READ getColorAvail       NOTIFY colorAvailChanged)
+    //Read-only thing for demosaicing
+    Q_PROPERTY(bool demosaicAvail    READ getDemosaicAvail    NOTIFY demosaicAvailChanged)
 
     Q_PROPERTY(bool tiffIn MEMBER m_tiffIn WRITE setTiffIn NOTIFY tiffInChanged)
     Q_PROPERTY(bool jpegIn MEMBER m_jpegIn WRITE setJpegIn NOTIFY jpegInChanged)
@@ -430,6 +434,9 @@ public:
 
     bool getCustomWbAvail(){return customWbAvail;}
 
+    bool getColorAvail(){return colorAvail;}
+    bool getDemosaicAvail(){return demosaicAvail;}
+
     bool getPasteable(){return pasteable;}
 
     //Getters for the defaults
@@ -638,6 +645,9 @@ protected:
     bool lensfunVignAvail;
     bool lensfunDistAvail;
     bool customWbAvail;
+    bool isMonochrome;
+    bool colorAvail;
+    bool demosaicAvail;
 
     Valid validity;
     Valid validityWhenCanceled;
@@ -877,6 +887,8 @@ signals:
     void lensfunVignAvailChanged();
     void lensfunDistAvailChanged();
     void customWbAvailChanged();
+    void colorAvailChanged();
+    void demosaicAvailChanged();
 
     //Copy/pasteing
     void pasteableChanged();

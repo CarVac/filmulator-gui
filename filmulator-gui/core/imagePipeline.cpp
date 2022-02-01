@@ -776,20 +776,25 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         }
 
         //First thing after demosaic is to apply the user's white balance.
-        rawWhiteBalance(demosaiced_image, post_demosaic_image,
-                        postDemosaicParam.temperature, postDemosaicParam.tint, xyzToCam,
-                        rPreMul, gPreMul, bPreMul,//undoes these
-                        rUserMul, gUserMul, bUserMul);//used later for highlight recovery
+        if (!isMonochrome)
+        {
+            rawWhiteBalance(demosaiced_image, post_demosaic_image,
+                            postDemosaicParam.temperature, postDemosaicParam.tint, xyzToCam,
+                            rPreMul, gPreMul, bPreMul,//undoes these
+                            rUserMul, gUserMul, bUserMul);//used later for highlight recovery
 
-        cout << "WB pre multiplier R: " << rPreMul << endl;
-        cout << "WB pre multiplier G: " << gPreMul << endl;
-        cout << "WB pre multiplier B: " << bPreMul << endl;
-        cout << "WB cam multiplier R: " << rCamMul << endl;
-        cout << "WB cam multiplier G: " << gCamMul << endl;
-        cout << "WB cam multiplier B: " << bCamMul << endl;
-        cout << "WB user multiplier R: " << rUserMul << endl;
-        cout << "WB user multiplier G: " << gUserMul << endl;
-        cout << "WB user multiplier B: " << bUserMul << endl;
+            cout << "WB pre multiplier R: " << rPreMul << endl;
+            cout << "WB pre multiplier G: " << gPreMul << endl;
+            cout << "WB pre multiplier B: " << bPreMul << endl;
+            cout << "WB cam multiplier R: " << rCamMul << endl;
+            cout << "WB cam multiplier G: " << gCamMul << endl;
+            cout << "WB cam multiplier B: " << bCamMul << endl;
+            cout << "WB user multiplier R: " << rUserMul << endl;
+            cout << "WB user multiplier G: " << gUserMul << endl;
+            cout << "WB user multiplier B: " << bUserMul << endl;
+        } else {
+            post_demosaic_image = demosaiced_image;
+        }
 
         //Recover highlights now
         cout << "hlrecovery start:" << timeDiff(timeRequested) << endl;
@@ -802,7 +807,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
         //Now, recover highlights.
         std::function<bool(double)> setProg = [](double) -> bool {return false;};
         //And return it back to a single layer
-        if (postDemosaicParam.highlights >= 2)
+        if (postDemosaicParam.highlights >= 2 && !isMonochrome)
         {
             //For highlight recovery, we need to split up the image into three separate layers.
             matrix<float> rChannel(height, width), gChannel(height, width), bChannel(height, width);
@@ -836,7 +841,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     post_demosaic_image(row, col*3 + 2) = bChannel(row, col);
                 }
             }
-        } else if (postDemosaicParam.highlights == 0)
+        } else if (postDemosaicParam.highlights == 0 && !isMonochrome)
         {
             #pragma omp parallel for
             for (int row = 0; row < height; row++)
@@ -848,7 +853,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     post_demosaic_image(row, col*3 + 2) = min(post_demosaic_image(row, col*3 + 2), 65535.0f);
                 }
             }
-        } else { //params = 1
+        } else { //params = 1, or isMonochrome
             //do nothing
         }
         cout << "hlrecovery duration: " << timeDiff(hlrecovery_time) << endl;
@@ -898,17 +903,21 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                 cacheEmpty = false;
             }
 
+            //we don't want to apply nonexistent WB multipliers to monochrome images
+            const float rMulTemp = isMonochrome ? 1.0f : rUserMul;
+            const float gMulTemp = isMonochrome ? 1.0f : gUserMul;
+            const float bMulTemp = isMonochrome ? 1.0f : bUserMul;
+
 #pragma omp parallel for
             for (int row = 0; row < preconditioned.nr(); row++)
             {
                 for (int col = 0; col < preconditioned.nc(); col+=3)
                 {
-                    preconditioned(row, col+0) = sRGB_forward_gamma_unclipped(preconditioned(row, col+0)/(rUserMul*65535.0f));
-                    preconditioned(row, col+1) = sRGB_forward_gamma_unclipped(preconditioned(row, col+1)/(gUserMul*65535.0f));
-                    preconditioned(row, col+2) = sRGB_forward_gamma_unclipped(preconditioned(row, col+2)/(bUserMul*65535.0f));
+                    preconditioned(row, col+0) = sRGB_forward_gamma_unclipped(preconditioned(row, col+0)/(rMulTemp*65535.0f));
+                    preconditioned(row, col+1) = sRGB_forward_gamma_unclipped(preconditioned(row, col+1)/(gMulTemp*65535.0f));
+                    preconditioned(row, col+2) = sRGB_forward_gamma_unclipped(preconditioned(row, col+2)/(bMulTemp*65535.0f));
                 }
             }
-
             float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
             float scale = std::max(preconditioned.max() + offset, 1.0f);
 #pragma omp parallel for
@@ -951,9 +960,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             {
                 for (int col = 0; col < denoised.nc(); col+=3)
                 {
-                    denoised(row, col+0) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+0) - offset)*rUserMul*65535.0f;
-                    denoised(row, col+1) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+1) - offset)*gUserMul*65535.0f;
-                    denoised(row, col+2) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+2) - offset)*bUserMul*65535.0f;
+                    denoised(row, col+0) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+0) - offset)*rMulTemp*65535.0f;
+                    denoised(row, col+1) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+1) - offset)*gMulTemp*65535.0f;
+                    denoised(row, col+2) = sRGB_inverse_gamma_unclipped(scale*denoised(row, col+2) - offset)*bMulTemp*65535.0f;
                 }
             }
 
@@ -1445,15 +1454,30 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     camToRGB4[i][j] = stealVictim->camToRGB4[i][j];
                 }
             }
-            raw_to_sRGB(stealVictim->pre_film_image, film_input_image, camToRGB);
+            if (!isMonochrome)
+            {
+                raw_to_sRGB(stealVictim->pre_film_image, film_input_image, camToRGB);
+            } else {
+                film_input_image = stealVictim->pre_film_image;
+            }
         } else {
             cout << "imagePipeline not stealing data" << endl;
             if (quality == LowQuality || quality == PreviewQuality)
             {
                 //grab shrunken image
-                raw_to_sRGB(pre_film_image_small, film_input_image, camToRGB);
+                if (!isMonochrome)
+                {
+                    raw_to_sRGB(pre_film_image_small, film_input_image, camToRGB);
+                } else {
+                    film_input_image = pre_film_image_small;
+                }
             } else {
-                raw_to_sRGB(pre_film_image, film_input_image, camToRGB);
+                if (!isMonochrome)
+                {
+                    raw_to_sRGB(pre_film_image, film_input_image, camToRGB);
+                } else {
+                    film_input_image = pre_film_image;
+                }
             }
 
             if (NoCache == cache)

@@ -2827,8 +2827,8 @@ SlimSplitView {
             id: wbButton
             anchors.right: crop.left
             y: 0 * uiScale
-            notDisabled: root.imageReady && !root.cropping && !root.leveling
-            tooltipText: root.wbPicking ? qsTr("Cancel setting custom white balance. Shortcut: W") : qsTr("Set a custom white balance based on where you click in the image.\n\nShortcut: W")
+            notDisabled: root.imageReady && !root.cropping && !root.leveling && paramManager.colorAvail
+            tooltipText: root.wbPicking ? qsTr("Cancel setting custom white balance. Shortcut: W") : paramManager.colorAvail ? qsTr("Set a custom white balance based on where you click in the image.\n\nShortcut: W") : qsTr("White balance picker not available for monochrome raw images.")
             enabled: !lensfunBox.active
             Image {
                 width: 14 * uiScale
