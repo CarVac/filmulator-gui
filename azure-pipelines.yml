@@ -51,6 +51,7 @@ steps:
       git apply ../../patches/libraw-makefile.patch
       %MSYS_BASH% -c "make -j2 -f Makefile.dist"
       %MSYS_BASH% -c "make install -f Makefile.dist"
+    displayname: build LibRaw
   - script: |
       pwd
       mkdir lensfun
