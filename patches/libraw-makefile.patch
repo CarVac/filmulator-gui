@@ -45,7 +45,7 @@ index f2c291e2..a266dfee 100644
 -#CFLAGS+=-DUSE_JPEG -I/usr/local/include
 -#LDADD+=-L/usr/local/lib -ljpeg
 +CFLAGS+=-DUSE_JPEG -Ic:/msys64/mingw64/include
-+LDADD+=-L/usr/local/lib -ljpeg
++LDADD+=-Lc:/msys64/mingw64/lib -ljpeg
  # LIBJPEG8:
  #CFLAGS+=-DUSE_JPEG8
  
