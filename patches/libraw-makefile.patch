@@ -58,7 +58,7 @@ index f2c291e2..966fb07e 100644
  install: library
 -	@if [ -d /usr/local/include ] ; then cp -R libraw /usr/local/include/ ; else echo 'no /usr/local/include' ; fi
 -	@if [ -d /usr/local/lib ] ; then cp lib/libraw.a lib/libraw_r.a /usr/local/lib/ ; else echo 'no /usr/local/lib' ; fi
-+	@if [ -d c:/msys64/mingw64//include ] ; then cp -R libraw c:/msys64/mingw64/include/ ; else echo 'no c:/msys64/mingw64/include' ; fi
++	@if [ -d c:/msys64/mingw64/include ] ; then cp -R libraw c:/msys64/mingw64/include/ ; else echo 'no c:/msys64/mingw64/include' ; fi
 +	@if [ -d c:/msys64/mingw64/lib ] ; then cp lib/libraw.a lib/libraw_r.a c:/msys64/mingw64/lib/ ; else echo 'no c:/msys64/mingw64/lib' ; fi
  
  install-binaries: all_samples

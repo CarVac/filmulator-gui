@@ -39,6 +39,8 @@ steps:
       git checkout 1325536d51e5123909d20f0ae8656152b6e117ee
       git apply ../../patches/libraw-makefile.patch
       %MSYS_BASH% -c "make -j2 -f Makefile.mingw"
+      echo ls after making
+      ls
       %MSYS_BASH% -c "make install -f Makefile.mingw"
     displayName: build LibRaw
   - script: |
