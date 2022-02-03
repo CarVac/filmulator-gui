@@ -38,6 +38,7 @@ steps:
       ls ../../patches
       git checkout 1325536d51e5123909d20f0ae8656152b6e117ee
       git apply ../../patches/libraw-makefile.patch
+      set HOME=.
       %MSYS_BASH% -c "make -j2 -f Makefile.mingw"
       pwd
       echo ls after making
