@@ -156,6 +156,7 @@ target_include_directories(filmulator
         filmulator-gui/qtquick2applicationviewer
         ${EXIV2_INCLUDE_DIR}
         ${LIBRAW_INCLUDE_DIR}
+        ${LIBRAW_INCLUDE_DIRS}
         ${JPEG_INCLUDE_DIRS}
         ${TIFF_INCLUDE_DIR}
         ${RTPROCESS_INCLUDE_DIR}
@@ -167,6 +168,7 @@ target_include_directories(filmulator
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 #glib2 needed for static lensfun on windows above and below
+#libraw_include_dirs for pointing windows build at it
 
 target_link_libraries(filmulator
     Qt::Core
