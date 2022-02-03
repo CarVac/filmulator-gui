@@ -26,7 +26,7 @@ index 61194a07..a1597d9f 100644
  # LCMS support
  #CFLAGS+=-DUSE_LCMS -I/usr/local/include
 diff --git a/Makefile.mingw b/Makefile.mingw
-index f2c291e2..966fb07e 100644
+index f2c291e2..a3715b48 100644
 --- a/Makefile.mingw
 +++ b/Makefile.mingw
 @@ -5,7 +5,7 @@ CC=gcc
@@ -52,14 +52,22 @@ index f2c291e2..966fb07e 100644
  
  # LCMS support
  #CFLAGS+=-DUSE_LCMS -I/usr/local/include
-@@ -82,8 +82,8 @@ all_samples: bin/raw-identify bin/simple_dcraw  bin/dcraw_emu bin/dcraw_half bin
+@@ -75,15 +75,15 @@ LR_INCLUDES=libraw/libraw.h libraw/libraw_alloc.h \
+   libraw/libraw_internal.h libraw/libraw_types.h \
+   libraw/libraw_version.h
+ 
+-library: lib/libraw.a
++library: lib/libraw.a lib/libraw_r.a
+ 
+ all_samples: bin/raw-identify bin/simple_dcraw  bin/dcraw_emu bin/dcraw_half bin/mem_image \
+              bin/unprocessed_raw bin/4channels bin/multirender_test bin/postprocessing_benchmark \
               bin/rawtextdump
  
  install: library
 -	@if [ -d /usr/local/include ] ; then cp -R libraw /usr/local/include/ ; else echo 'no /usr/local/include' ; fi
 -	@if [ -d /usr/local/lib ] ; then cp lib/libraw.a lib/libraw_r.a /usr/local/lib/ ; else echo 'no /usr/local/lib' ; fi
 +	@if [ -d c:/msys64/mingw64/include ] ; then cp -R libraw c:/msys64/mingw64/include/ ; else echo 'no c:/msys64/mingw64/include' ; fi
-+	@if [ -d c:/msys64/mingw64/lib ] ; then cp d:/a/1/s/libraw/Libraw/lib/libraw.a d:/a/1/s/libraw/Libraw/lib/libraw_r.a c:/msys64/mingw64/lib/ ; else echo 'no c:/msys64/mingw64/lib' ; fi
++	@if [ -d c:/msys64/mingw64/lib ] ; then cp lib/libraw.a lib/libraw_r.a c:/msys64/mingw64/lib/ ; else echo 'no c:/msys64/mingw64/lib' ; fi
  
  install-binaries: all_samples
  	@if [ -d /usr/local/bin ] ; then cp bin/[a-z]* /usr/local/bin/ ; else echo 'no /usr/local/bin' ; fi
