@@ -41,6 +41,8 @@ steps:
       %MSYS_BASH% -c "make -j2 -f Makefile.mingw"
       echo ls after making
       ls
+      echo ls lib
+      ls lib
       %MSYS_BASH% -c "make install -f Makefile.mingw"
     displayName: build LibRaw
   - script: |
