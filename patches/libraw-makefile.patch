@@ -26,7 +26,7 @@ index 61194a07..a1597d9f 100644
  # LCMS support
  #CFLAGS+=-DUSE_LCMS -I/usr/local/include
 diff --git a/Makefile.mingw b/Makefile.mingw
-index f2c291e2..a266dfee 100644
+index f2c291e2..966fb07e 100644
 --- a/Makefile.mingw
 +++ b/Makefile.mingw
 @@ -5,7 +5,7 @@ CC=gcc
@@ -38,7 +38,7 @@ index f2c291e2..a266dfee 100644
  
  # RawSpeed Support
  #CFLAGS+=-pthread -DUSE_RAWSPEED -I../RawSpeed -I/usr/local/include/libxml2
-@@ -21,8 +21,8 @@ CXX=g++
+@@ -21,10 +21,10 @@ CXX=g++
  #LDADD+=-L/usr/local/lib -ljasper
  
  # JPEG support for lossy DNG
@@ -47,5 +47,19 @@ index f2c291e2..a266dfee 100644
 +CFLAGS+=-DUSE_JPEG -Ic:/msys64/mingw64/include
 +LDADD+=-Lc:/msys64/mingw64/lib -ljpeg
  # LIBJPEG8:
- #CFLAGS+=-DUSE_JPEG8
+-#CFLAGS+=-DUSE_JPEG8
++CFLAGS+=-DUSE_JPEG8
  
+ # LCMS support
+ #CFLAGS+=-DUSE_LCMS -I/usr/local/include
+@@ -82,8 +82,8 @@ all_samples: bin/raw-identify bin/simple_dcraw  bin/dcraw_emu bin/dcraw_half bin
+              bin/rawtextdump
+ 
+ install: library
+-	@if [ -d /usr/local/include ] ; then cp -R libraw /usr/local/include/ ; else echo 'no /usr/local/include' ; fi
+-	@if [ -d /usr/local/lib ] ; then cp lib/libraw.a lib/libraw_r.a /usr/local/lib/ ; else echo 'no /usr/local/lib' ; fi
++	@if [ -d c:/msys64/mingw64//include ] ; then cp -R libraw c:/msys64/mingw64/include/ ; else echo 'no c:/msys64/mingw64/include' ; fi
++	@if [ -d c:/msys64/mingw64/lib ] ; then cp lib/libraw.a lib/libraw_r.a c:/msys64/mingw64/lib/ ; else echo 'no c:/msys64/mingw64/lib' ; fi
+ 
+ install-binaries: all_samples
+ 	@if [ -d /usr/local/bin ] ; then cp bin/[a-z]* /usr/local/bin/ ; else echo 'no /usr/local/bin' ; fi
