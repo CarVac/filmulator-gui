@@ -37,15 +37,11 @@ steps:
       echo ls ../../patches/
       ls ../../patches
       git checkout 1325536d51e5123909d20f0ae8656152b6e117ee
-      git apply ../../patches/libraw-makefile.patch
       set HOME=.
-      %MSYS_BASH% -c "make -j2 -f Makefile.mingw"
-      pwd
-      echo ls after making
-      ls
-      echo ls lib
-      ls lib
-      %MSYS_BASH% -c "make install -f Makefile.mingw"
+      %MSYS_BASH% -c "autoreconf -ifv"
+      %MSYS_BASH% -c "./configure --prefix=%{MINGW_PREFXI} --build=${MINGW_CHOST} --host=${MINGW_CHOST}"
+      %MSYS_BASH% -c "make -j2"
+      %MSYS_BASH% -c "make install"
     displayName: build LibRaw
   - script: |
       mkdir librt
