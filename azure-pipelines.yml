@@ -38,6 +38,10 @@ steps:
       ls ../../patches
       git checkout 1325536d51e5123909d20f0ae8656152b6e117ee
       set HOME=.
+      echo look for autoreconf in "c:/msys64/usr/bin"
+      ls "c:/msys64/usr/bin" | grep autoreconf
+      echo look for autoreconf in "c:/msys64/mingw64/usr/bin"
+      ls "c:/msys64/mingw64/usr/bin" | grep autoreconf
       echo autoreconf in bash
       %MSYS_BASH% -c "autoreconf-2.71 -ifv"
       %MSYS_BASH% -c "./configure --prefix=%{MINGW_PREFIX} --build=${MINGW_CHOST} --host=${MINGW_CHOST}"
