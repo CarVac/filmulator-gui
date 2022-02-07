@@ -718,7 +718,7 @@ void ParameterManager::setLensfunCa(int caEnabled)
         s_lensfunCa = caEnabled;
         m_lensfunCa = caEnabled;
         //We need to apply the s_lensfunName to m_lensfunName to make sure it gets applied
-        if (caEnabled > 0) {
+        if (caEnabled > 0 && s_lensfunName != "") {
             m_lensfunName = s_lensfunName;
         }
         validity = min(validity, Valid::nrchroma);
@@ -736,7 +736,7 @@ void ParameterManager::setLensfunVign(int vignEnabled)
         s_lensfunVign = vignEnabled;
         m_lensfunVign = vignEnabled;
         //We need to apply the s_lensfunName to m_lensfunName to make sure it gets applied
-        if (vignEnabled > 0) {
+        if (vignEnabled > 0 && s_lensfunName != "") {
             m_lensfunName = s_lensfunName;
         }
         validity = min(validity, Valid::nrchroma);
@@ -754,7 +754,7 @@ void ParameterManager::setLensfunDist(int distEnabled)
         s_lensfunDist = distEnabled;
         m_lensfunDist = distEnabled;
         //We need to apply the s_lensfunName to m_lensfunName to make sure it gets applied
-        if (distEnabled > 0) {
+        if (distEnabled > 0 && s_lensfunName != "") {
             m_lensfunName = s_lensfunName;
         }
         validity = min(validity, Valid::nrchroma);
@@ -1911,16 +1911,21 @@ void ParameterManager::selectImage(const QString imageID)
         d_lensfunDist = 0;
         s_lensfunDist = 0;
     }
+    cout << "parameterManager m_lensfunName: " << m_lensfunName.toStdString() << endl;
+    cout << "parameterManager s_lensfunName: " << s_lensfunName.toStdString() << endl;
 
     //Now, if the m_ params are set, we overwrite the preferred settings in the s_ params accordingly
-    if (m_lensfunName != "NoLens")
+    if (m_caEnabled > -1)
     {
+        s_caEnabled = m_caEnabled;//happens regardless of what else happens
+    }
+
+    if (m_lensfunName != "NoLens" && m_lensfunName != "")
+    {
+        //If the settings from the database have a lens saved,
+        //then we need to copy the valid m_ parameters to the s_parameters for processing
         s_lensfunName = m_lensfunName;
         cout << "Lens was in database: " << s_lensfunName.toStdString() << endl;
-        if (m_caEnabled > -1)
-        {
-            s_caEnabled = m_caEnabled;
-        }
         if (m_lensfunCa > -1)
         {
             s_lensfunCa = m_lensfunCa;
@@ -1934,24 +1939,30 @@ void ParameterManager::selectImage(const QString imageID)
             s_lensfunDist = m_lensfunDist;
         }
     } else {
-        if (s_lensfunName == "NoLens")
+        //The database doesn't have a lens model set.
+
+        if (s_lensfunName == "")
         {
-            //If there's no matching lens, disable all the lensfun corrections.
+            //If lensfun can't automatically find a matching lens, disable lensfun corrections.
             cout << "parameterManager No lens found" << endl;
-            //s_caEnabled needs to be changed to whatever the database said though.
-            if (m_caEnabled > -1)
-            {
-                s_caEnabled = m_caEnabled;
-            }
             s_lensfunCa = 0;
             s_lensfunVign = 0;
             s_lensfunDist = 0;
+            //We also set the database ones to zero if they were turned on
+            if (m_lensfunCa > 0)
+            {
+                m_lensfunCa = 0;
+            }
+            if (m_lensfunVign > 0)
+            {
+                m_lensfunVign = 0;
+            }
+            if (m_lensfunDist > 0)
+            {
+                m_lensfunDist = 0;
+            }
         } else {
-            cout << "parameterManager Using preferred lens" << endl;
-            m_caEnabled = s_caEnabled;
-            m_lensfunCa = s_lensfunCa;
-            m_lensfunVign = s_lensfunVign;
-            m_lensfunDist = s_lensfunDist;
+            //If lensfun did find a matching lens, all the s_parameters should be set already
         }
     }
     //cout << "Default lens: " << d_lensfunName.toStdString() << endl;
