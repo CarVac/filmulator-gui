@@ -35,6 +35,10 @@ Rectangle {
 
     property real __precise
 
+    property alias boldValue: slider.boldValue
+
+    property alias boldTickEnabled: slider.boldTickEnabled
+
     signal tooltipWanted(string text, int coordX, int coordY)
 
     signal resetPerformed()

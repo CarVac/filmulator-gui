@@ -164,6 +164,8 @@ SlimSplitView {
                     tickmarksEnabled: true
                     value: paramManager.caEnabled
                     defaultValue: paramManager.defCaEnabled
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     visible: paramManager.autoCaAvail
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
@@ -204,6 +206,8 @@ SlimSplitView {
                     tickmarksEnabled: true
                     value: paramManager.highlights
                     defaultValue: paramManager.defHighlights
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     visible: paramManager.colorAvail //requires color images
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
@@ -233,11 +237,13 @@ SlimSplitView {
                     id: exposureCompSlider
                     title: qsTr("Exposure Compensation")
                     tooltipText: qsTr("The amount the program should to over- or under-expose the \"film\" relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.")
-                    minimumValue: -5
-                    maximumValue: 5
+                    minimumValue: -3
+                    maximumValue: 8
                     stepSize: 1/6
                     tickmarksEnabled: true
                     tickmarkFactor: 6
+                    boldTickEnabled: true
+                    boldValue: 0
                     value: paramManager.exposureComp
                     defaultValue: paramManager.defExposureComp
                     valueText: value.toFixed(4)
@@ -316,6 +322,8 @@ SlimSplitView {
                     value: Math.log(paramManager.temperature)
                     defaultValue: Math.log(paramManager.defTemperature)
                     valueText: Math.exp(value).toFixed(1)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     visible: paramManager.colorAvail //requires color images
                     onValueChanged: {
                         paramManager.temperature = Math.exp(value)
@@ -346,6 +354,8 @@ SlimSplitView {
                     value: Math.log(paramManager.tint)
                     defaultValue: Math.log(paramManager.defTint)
                     valueText: Math.exp(value).toFixed(4)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     visible: paramManager.colorAvail //requires color images
                     onValueChanged: {
                         paramManager.tint = Math.exp(value)
@@ -408,6 +418,8 @@ SlimSplitView {
                     valueText: (value/Math.sqrt(0.1)*100).toFixed(2)
                     value: Math.sqrt(paramManager.nlStrength)
                     defaultValue: Math.sqrt(paramManager.defNlStrength)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
@@ -444,6 +456,8 @@ SlimSplitView {
                     value: Math.log(paramManager.nlThresh)
                     defaultValue: Math.log(paramManager.defNlThresh)
                     valueText: Math.exp(value).toExponential(3)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
@@ -480,6 +494,8 @@ SlimSplitView {
                     stepSize: 1
                     value: paramManager.nlClusters
                     defaultValue: paramManager.defNlClusters
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
@@ -515,6 +531,8 @@ SlimSplitView {
                     value: paramManager.impulseThresh
                     defaultValue: paramManager.defImpulseThresh
                     valueText: value.toFixed(3)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
@@ -550,6 +568,8 @@ SlimSplitView {
                     value: paramManager.chromaStrength
                     defaultValue: paramManager.defChromaStrength
                     valueText: value.toFixed(2)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     property bool bindingLoopCutoff: true
                     onValueChanged: {
                         if (!bindingLoopCutoff) {
@@ -737,6 +757,8 @@ SlimSplitView {
                     value: Math.sqrt(paramManager.toeBoundary)
                     defaultValue: Math.sqrt(paramManager.defToeBoundary)
                     valueText: (value*value/65535).toFixed(6)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.toeBoundary = value*value
                         //The parameter manager won't notify anything else that the param has changed, so we need to manually update the consumer
@@ -768,6 +790,8 @@ SlimSplitView {
                     value: paramManager.rolloffBoundary
                     defaultValue: paramManager.defRolloffBoundary
                     valueText: (value/65535).toFixed(6)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.rolloffBoundary = value
                         //The parameter manager won't notify anything else that the param has changed, so we need to manually update the consumer
@@ -801,6 +825,8 @@ SlimSplitView {
                     //The following thresholds are 24mmx65mm and twice 6x9cm film's
                     // areas, respectively.
                     valueText: (Math.exp(value*2)).toFixed(1)//(Math.exp(value*2) < 1560) ? "SF" : (Math.exp(value*2) < 9408) ? "MF" : "LF"
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.filmArea = Math.exp(value*2)
                     }
@@ -830,6 +856,8 @@ SlimSplitView {
                     value: 100*paramManager.layerMixConst
                     defaultValue: 100*paramManager.defLayerMixConst
                     valueText: value.toFixed(4)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.layerMixConst = value/100;
                     }
@@ -972,6 +1000,8 @@ SlimSplitView {
                     value: paramManager.whitepoint
                     defaultValue: paramManager.defWhitepoint
                     valueText: (value*500).toFixed(5)// 1000/2
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.whitepoint = value
                         //The parameter manager won't notify anything else that the param has changed, so we need to manually update the consumer
@@ -1003,6 +1033,8 @@ SlimSplitView {
                     value: paramManager.shadowsY
                     defaultValue: paramManager.defShadowsY
                     valueText: (value*1000).toFixed(3)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.shadowsY = value
                     }
@@ -1032,6 +1064,8 @@ SlimSplitView {
                     value: paramManager.highlightsY
                     defaultValue: paramManager.defHighlightsY
                     valueText: (value*1000).toFixed(3)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.highlightsY = value
                     }
@@ -1094,6 +1128,8 @@ SlimSplitView {
                     value: paramManager.vibrance
                     defaultValue: paramManager.defVibrance
                     valueText: (value*200).toFixed(3)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.vibrance = value
                     }
@@ -1125,6 +1161,8 @@ SlimSplitView {
                     value: paramManager.saturation
                     defaultValue: paramManager.defSaturation
                     valueText: (value*200).toFixed(3)
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.saturation = value
                     }
@@ -1155,6 +1193,8 @@ SlimSplitView {
                     maximumValue: 2.0
                     value: paramManager.bwRmult
                     defaultValue: paramManager.defBwRmult
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.bwRmult = value
                     }
@@ -1185,6 +1225,8 @@ SlimSplitView {
                     maximumValue: 2.0
                     value: paramManager.bwGmult
                     defaultValue: paramManager.defBwGmult
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.bwGmult = value
                     }
@@ -1215,6 +1257,8 @@ SlimSplitView {
                     maximumValue: 2.0
                     value: paramManager.bwBmult
                     defaultValue: paramManager.defBwBmult
+                    boldTickEnabled: true
+                    boldValue: defaultValue
                     onValueChanged: {
                         paramManager.bwBmult = value
                     }

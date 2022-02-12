@@ -157,6 +157,10 @@ Item {
     */
     property bool tickmarksEnabled: false
 
+    property bool boldTickEnabled: false
+
+    property real boldValue: 0
+
     /*! \internal */
     //property bool __horizontal: true//orientation === Qt.Horizontal
 
@@ -245,9 +249,19 @@ Item {
                     height: 2 * uiScale
                     radius: 1 * uiScale
                     //You have to add the tickmarkFactor to it because the % operator doesn't work with negative numbers...
-                    color: (0>((index+tickmarkFactor-tickmarkOffset+.5)%tickmarkFactor-.5) - posRange/1000) ? Colors.darkGray : (minorTicksEnabled ? Colors.thinDarkGray :  "#01000000")
+                    color: (0>((index+tickmarkFactor-tickmarkOffset+.5)%tickmarkFactor-.5) - posRange/1000) ? Colors.darkGray : (minorTicksEnabled ? Colors.thinDarkGray : "#00000000")
                 }
             }
+        }
+        Rectangle {
+            id: boldTickRect
+            x: posAtMinimum + fakeHandle.width/2 + (boldValue-minimumValue)*posRange/valRange - width/2
+            y: 0.5 * uiScale
+            width: 3 * uiScale
+            height: 3 * uiScale
+            radius: 1 * uiScale
+            visible: boldValue >= minimumValue && boldValue <= maximumValue && boldTickEnabled
+            color: Colors.darkGray
         }
     }
 
