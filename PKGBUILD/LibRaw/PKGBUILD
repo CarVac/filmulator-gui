@@ -1,0 +1,63 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Miloš Komarčević <miloskomarcevic@aim.com>
+
+_realname=LibRaw
+pkgbase=mingw-w64-libraw
+pkgname="${MINGW_PACKAGE_PREFIX}-libraw"
+provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.20.2.1
+pkgrel=4
+pkgdesc="Library for reading RAW files obtained from digital photo cameras (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+url="https://www.libraw.org/"
+license=("LGPL")
+makedepends=("${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-jasper"
+         "${MINGW_PACKAGE_PREFIX}-lcms2"
+         "${MINGW_PACKAGE_PREFIX}-libjpeg"
+         "${MINGW_PACKAGE_PREFIX}-zlib")
+options=('staticlibs' 'strip')
+source=("https://github.com/LibRaw/LibRaw/archive/1325536d51e5123909d20f0ae8656152b6e117ee.zip"
+        "LibRaw_obsolete-macros.patch"
+        "Enable-openmp-mingw.patch")
+sha256sums=('6cbdca663dfe3cc3b5189ec90185fae19d3b9549e4b916e3df56fad1eaa44519'
+            '4a31c0ee066f43915beff6f7959b6b2cd246d390720df379bfc047d4cedb6a8f'
+            '222f435b1f0983167ea356ea1da1c5c6624ce0633efc6c4838becbc6d667af65')
+
+prepare() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  patch -p1 -i "${srcdir}/LibRaw_obsolete-macros.patch"
+  # From https://github.com/LibRaw/LibRaw/commit/4c954948ba2de262b9cb23a1843fb8651aa3dcc1
+  patch -p1 -i "${srcdir}/Enable-openmp-mingw.patch"
+
+  autoreconf -ifv
+}
+
+build() {
+  [[ -d "${srcdir}/build-${MSYSTEM}" ]] && rm -rf "${srcdir}/build-${MSYSTEM}"
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
+  # This would enable more formats (X3F (Foveon), Rapsberry Pi RAW+JPEG),
+  # but upstream recommends against it for security reasons, see
+  # https://github.com/LibRaw/LibRaw/blob/27144e42000/Changelog.txt#L417
+  # CPPFLAGS+=" -DUSE_6BY9RPI -DUSE_X3FTOOLS"
+
+  ../${_realname}-${pkgver}/configure \
+      --prefix=${MINGW_PREFIX} \
+      --build=${MINGW_CHOST} \
+      --host=${MINGW_CHOST}
+
+  make
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/LICENSE.LGPL" "${pkgdir}${MINGW_PREFIX}/share/licenses/libraw/LICENSE"
+}

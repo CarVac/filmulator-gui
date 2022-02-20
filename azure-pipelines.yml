@@ -26,25 +26,11 @@ steps:
       mingw-w64-x86_64-{lcms2,libtiff,exiv2,libjpeg-turbo,qt5,curl,libarchive}
     displayName: Install Dependencies
   - script: |
-      mkdir libraw
       echo ls
       ls
-      cd libraw
-      git clone https://github.com/LibRaw/LibRaw.git
-      cd LibRaw
-      echo ls ../..
-      ls ../..
-      echo ls ../../patches/
-      ls ../../patches
-      git checkout 1325536d51e5123909d20f0ae8656152b6e117ee
-      set HOME=.
-      echo look for autoreconf in "c:/msys64/usr/bin"
-      ls "c:/msys64/usr/bin" | grep autoreconf
-      echo autoreconf in bash
-      %MSYS_BASH% -c "c:/msys64/usr/bin/autoreconf -ifv"
-      %MSYS_BASH% -c "./configure --prefix=%{MINGW_PREFIX} --build=${MINGW_CHOST} --host=${MINGW_CHOST}"
-      %MSYS_BASH% -c "make -j2"
-      %MSYS_BASH% -c "make install"
+      cd PKGBUILD/LibRaw
+      makepkg-mingw -sCLf
+      pacman -U mingw-w64-*.pkg.tar.zst
     displayName: build LibRaw
   - script: |
       mkdir librt
