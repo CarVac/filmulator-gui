@@ -29,7 +29,7 @@ steps:
       echo ls
       ls
       cd PKGBUILD/LibRaw
-      makepkg-mingw -sCLf
+      C:/msys64/usr/bin/makepkg-mingw -sCLf
       pacman -U mingw-w64-*.pkg.tar.zst
     displayName: build LibRaw
   - script: |
