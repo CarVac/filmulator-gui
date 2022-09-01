@@ -183,11 +183,13 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 #define SIZES libraw->imgdata.sizes
 #define OPTIONS libraw->imgdata.rawparams.options
 
+#ifndef WIN32
             if (libraw->is_floating_point())
             {
                 //tell libraw to not convert to int when unpacking.
                 OPTIONS = OPTIONS & ~LIBRAW_RAWOPTIONS_CONVERTFLOAT_TO_INT;
             }
+#endif // WIN32
             //This makes IMAGE contains the sensel value and 3 blank values at every
             //location.
             libraw_error = libraw->unpack();
