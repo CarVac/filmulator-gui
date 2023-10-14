@@ -92,6 +92,7 @@ protected:
     float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
     float rUserMul, gUserMul, bUserMul;//wb actually applied
     float maxValue;
+    float colorMaxValue[3];
     bool isSraw;//Actually we should set this for all full-color raws (including X-Transformer)
     bool isNikonSraw;
     bool isMonochrome;

@@ -22,7 +22,7 @@ class Interface
 {
 public:
     virtual void setProgress(float){}
-    virtual void updateHistRaw(const matrix<float>& /*image*/, const float /*maximum*/, unsigned /*cfa*/[2][2], unsigned /*xtrans*/[6][6], int /*maxXtrans*/, bool /*isRGB*/, bool /*isMonochrome*/){}
+    virtual void updateHistRaw(const matrix<float>& /*image*/, const float /*maximum*/[3], unsigned /*cfa*/[2][2], unsigned /*xtrans*/[6][6], int /*maxXtrans*/, bool /*isRGB*/, bool /*isMonochrome*/){}
     virtual void updateHistPreFilm(const matrix<float>& /*image*/, const float /*maximum*/,
                                    const int /*rotation*/,
                                    const float /*cropHeight*/, const float /*cropAspect*/,

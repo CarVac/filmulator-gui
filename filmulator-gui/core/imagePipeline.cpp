@@ -348,10 +348,10 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
             //Calculate the white point based on the camera settings.
             //This needs the black point subtracted, and a fudge factor to ensure clipping is hard and fast.
-            double camconstWhite;
+            double camconstWhite[4];
 
             //Some cameras have a black offset, as well, even if the black level is already specified.
-            double camconstBlack;
+            double camconstBlack[4];
 
             QString makeModel = IDATA.make;
             makeModel.append(" ");
@@ -360,19 +360,30 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
 
             cout << "is the file dng?: " << isDNG << endl;
 
+            //we only process with 3 channels later, so we merge the two green channels here...
+            camconstWhite[1] = min(camconstWhite[1], camconstWhite[3]);
+
+            double camconstWhiteMax = max(max(max(camconstWhite[0], camconstWhite[1]), camconstWhite[2]), camconstWhite[3]);
+            double camconstWhiteAvg = (camconstWhite[0] + camconstWhite[1] + camconstWhite[2] + camconstWhite[3])/4;
+            double camconstBlackAvg = (camconstBlack[0] + camconstBlack[1] + camconstBlack[2] + camconstBlack[3])/4;
+
             //If the black levels are significantly different, we'll add them.
-            if (camconstBlack != blackpoint && !isDNG) //dngs provide their own correct black level and we should trust it
+            if (camconstBlackAvg != blackpoint && !isDNG) //dngs provide their own correct black level and we should trust it
             {
                 cout << "Black level discrepancy" << endl;
-                cout << "CamConst black: " << camconstBlack << endl;
+                cout << "CamConst black: " << camconstBlackAvg << endl;
                 cout << "LibRaw black:   " << blackpoint << endl;
                 cout << "block black:    " << meanBlockBlackpoint << endl;
                 if (blackpoint != 0 && camconstSuccess)
                 {
-                    if (abs((camconstBlack/blackpoint) - 1) < 0.5)
+                    if (abs((camconstBlackAvg/blackpoint) - 1) < 0.5)
                     {
                         //if they're within 50%, we want to replace the libraw one
-                        blackpoint = camconstBlack;
+                        blackpoint = camconstBlack[0];
+                        rBlack  = 0;
+                        gBlack  = camconstBlack[1] - camconstBlack[0];
+                        bBlack  = camconstBlack[2] - camconstBlack[0];
+                        maxChanBlack = max(rBlack, max(gBlack, bBlack));
                     } else {
                         //Ignore if they're very different, this only applies to Panasonics and there's a better way
                     }
@@ -380,7 +391,12 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     //if the libraw blackpoint is 0 then we replace it, unless there was a block-based blackpoint
                     if (meanBlockBlackpoint == 0 && camconstSuccess)
                     {
-                        blackpoint = camconstBlack;
+                        blackpoint = camconstBlack[0];
+                        rBlack  = 0;
+                        gBlack  = camconstBlack[1] - camconstBlack[0];
+                        bBlack  = camconstBlack[2] - camconstBlack[0];
+                        g2Black = camconstBlack[3] - camconstBlack[0];
+                        maxChanBlack = max(rBlack, max(gBlack, max(bBlack, g2Black)));
                     }
                 }
                 cout << "new black: " << blackpoint << endl;
@@ -389,20 +405,30 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //Modern Nikons have camconst.json white levels specified as if they were 14-bit
             // even if the raw files are 12-bit-only, like the entry level cams
             //So we need to detect if it's 12-bit and if the camconst specifies as 14-bit.
-            if ((QString(IDATA.make) == "Nikon") && (libraw->imgdata.color.maximum < 4096) && (camconstWhite >= 4096))
+            if ((QString(IDATA.make) == "Nikon") && (libraw->imgdata.color.maximum < 4096) && (camconstWhiteAvg >= 4096))
             {
-                camconstWhite = camconstWhite*4095/16383;
-                cout << "Nikon 12-bit camconst white clipping point: " << camconstWhite << endl;
+                camconstWhite[0] = camconstWhite[0]*4095/16383;
+                camconstWhite[1] = camconstWhite[1]*4095/16383;
+                camconstWhite[2] = camconstWhite[2]*4095/16383;
+                cout << "Nikon 12-bit camconst white clipping point: " << camconstWhite[0] << endl;
             }
 
 
-            if (camconstSuccess && camconstWhite > 0 && !isDNG) //dngs provide their own correct whitepoint and we should trust it
+            if (camconstSuccess && camconstWhiteAvg > 0 && !isDNG) //dngs provide their own correct whitepoint and we should trust it over camconst
             {
-                maxValue = camconstWhite - blackpoint - maxChanBlack - meanBlockBlackpoint;
-                cout << "camconst white clipping point: " << camconstWhite << endl;
+                maxValue = camconstWhiteMax - blackpoint - maxChanBlack - meanBlockBlackpoint;
+                cout << "camconst r white clipping point: " << camconstWhite[0] << endl;
+                cout << "camconst g white clipping point: " << camconstWhite[1] << endl;
+                cout << "camconst b white clipping point: " << camconstWhite[2] << endl;
+                colorMaxValue[0] = camconstWhite[0] - blackpoint - maxChanBlack - meanBlockBlackpoint;
+                colorMaxValue[1] = camconstWhite[1] - blackpoint - maxChanBlack - meanBlockBlackpoint;
+                colorMaxValue[2] = camconstWhite[2] - blackpoint - maxChanBlack - meanBlockBlackpoint;
             } else {
                 maxValue = libraw->imgdata.color.maximum - blackpoint - maxChanBlack - meanBlockBlackpoint;
                 cout << "libraw fallback or dng white clipping point: " << libraw->imgdata.color.maximum << endl;
+                colorMaxValue[0] = maxValue;
+                colorMaxValue[1] = maxValue;
+                colorMaxValue[2] = maxValue;
             }
             cout << "black-subtracted maximum: " << maxValue << endl;
             cout << "fmaximum: " << libraw->imgdata.color.fmaximum << endl;
@@ -472,6 +498,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //copy raw data
             float rawMin = std::numeric_limits<float>::max();
             float rawMax = std::numeric_limits<float>::min();
+            float rawRMax = std::numeric_limits<float>::min();
+            float rawGMax = std::numeric_limits<float>::min();
+            float rawBMax = std::numeric_limits<float>::min();
 
             isSraw = libraw->is_sraw();
 
@@ -496,7 +525,7 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             isNikonSraw = libraw->is_nikon_sraw();
             if (isFloat && isSraw) { //floating point full-color-per-pixel raws
                 raw_image.set_size(raw_height, raw_width*3);
-                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax) reduction(max:rawRMax) reduction(max:rawGMax) reduction(max:rawBMax)
                 for (int row = 0; row < raw_height; row++)
                 {
                     //IMAGE is an (width*height) by 4 array, not width by height by 4.
@@ -509,20 +538,24 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             tempBlackpoint = tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
                         }
                         //sraw comes from raw4 but only uses 3 channels
-                        raw_image[row][col*3   ] = RAWF4[rowoffset + col + leftmargin][0] - tempBlackpoint;
+                        raw_image[row][col*3   ] = min(RAWF4[rowoffset + col + leftmargin][0] - tempBlackpoint, colorMaxValue[0]);
                         rawMin = std::min(rawMin, raw_image[row][col*3   ]);
                         rawMax = std::max(rawMax, raw_image[row][col*3   ]);
-                        raw_image[row][col*3 +1] = RAWF4[rowoffset + col + leftmargin][1] - tempBlackpoint;
+                        rawRMax = std::max(rawRMax, raw_image[row][col*3   ]);
+                        raw_image[row][col*3 +1] = min(RAWF4[rowoffset + col + leftmargin][1] - tempBlackpoint, colorMaxValue[1]);
                         rawMin = std::min(rawMin, raw_image[row][col*3 +1]);
                         rawMax = std::max(rawMax, raw_image[row][col*3 +1]);
-                        raw_image[row][col*3 +2] = RAWF4[rowoffset + col + leftmargin][2] - tempBlackpoint;
+                        rawGMax = std::max(rawGMax, raw_image[row][col*3 +1]);
+                        raw_image[row][col*3 +2] = min(RAWF4[rowoffset + col + leftmargin][2] - tempBlackpoint, colorMaxValue[2]);
                         rawMin = std::min(rawMin, raw_image[row][col*3 +2]);
                         rawMax = std::max(rawMax, raw_image[row][col*3 +2]);
+                        rawBMax = std::max(rawBMax, raw_image[row][col*3 +2]);
                     }
                 }
             } else if (isSraw) { //full-color-per-pixel integer raws
                 raw_image.set_size(raw_height, raw_width*3);
-                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax) reduction(max:rawRMax) reduction(max:rawGMax) reduction(max:rawBMax)
+
                 for (int row = 0; row < raw_height; row++)
                 {
                     //IMAGE is an (width*height) by 4 array, not width by height by 4.
@@ -535,19 +568,23 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                             tempBlackpoint = tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
                         }
                         //sraw comes from raw4 but only uses 3 channels
-                        raw_image[row][col*3   ] = RAW4[rowoffset + col + leftmargin][0] - tempBlackpoint;
+                        raw_image[row][col*3   ] = min(RAW4[rowoffset + col + leftmargin][0] - tempBlackpoint, colorMaxValue[0]);
                         rawMin = std::min(rawMin, raw_image[row][col*3   ]);
                         rawMax = std::max(rawMax, raw_image[row][col*3   ]);
-                        raw_image[row][col*3 +1] = RAW4[rowoffset + col + leftmargin][1] - tempBlackpoint;
+                        rawRMax = std::max(rawRMax, raw_image[row][col*3   ]);
+                        raw_image[row][col*3 +1] = min(RAW4[rowoffset + col + leftmargin][1] - tempBlackpoint, colorMaxValue[1]);
                         rawMin = std::min(rawMin, raw_image[row][col*3 +1]);
                         rawMax = std::max(rawMax, raw_image[row][col*3 +1]);
-                        raw_image[row][col*3 +2] = RAW4[rowoffset + col + leftmargin][2] - tempBlackpoint;
+                        rawGMax = std::max(rawGMax, raw_image[row][col*3 +1]);
+                        raw_image[row][col*3 +2] = min(RAW4[rowoffset + col + leftmargin][2] - tempBlackpoint, colorMaxValue[2]);
                         rawMin = std::min(rawMin, raw_image[row][col*3 +2]);
                         rawMax = std::max(rawMax, raw_image[row][col*3 +2]);
+                        rawBMax = std::max(rawBMax, raw_image[row][col*3 +2]);
                     }
                 }
             } else if (isFloat) { //floating point one-color-per-pixel raws
-                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax) reduction(max:rawRMax) reduction(max:rawGMax) reduction(max:rawBMax)
+
                 for (int row = 0; row < raw_height; row++)
                 {
                     //IMAGE is an (width*height) by 4 array, not width by height by 4.
@@ -555,22 +592,40 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         float tempBlackpoint = blackpoint;
+                        float tempWhitepoint = maxValue;
                         int color = cfa[row % 2][col % 2];
-                        if (color == 0) {tempBlackpoint += rBlack;}
-                        if (color == 1) {tempBlackpoint += gBlack;}
-                        if (color == 2) {tempBlackpoint += bBlack;}
-                        if (color == 3) {tempBlackpoint += g2Black;}
+                        if (color == 0) {
+                            tempBlackpoint += rBlack;
+                            tempWhitepoint = colorMaxValue[0];
+                        }
+                        if (color == 1) {
+                            tempBlackpoint += gBlack;
+                            tempWhitepoint = colorMaxValue[1];
+                        }
+                        if (color == 2) {
+                            tempBlackpoint += bBlack;
+                            tempWhitepoint = colorMaxValue[2];
+                        }
+                        if (color == 3) {
+                            tempBlackpoint += g2Black;
+                            tempWhitepoint = colorMaxValue[1];
+                        }
                         if (blackRow > 0 && blackCol > 0)
                         {
-                            tempBlackpoint = tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                            tempBlackpoint = min(tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol], tempWhitepoint);
                         }
                         raw_image[row][col] = RAWF[rowoffset + col + leftmargin] - tempBlackpoint;
                         rawMin = std::min(rawMin, raw_image[row][col]);
                         rawMax = std::max(rawMax, raw_image[row][col]);
+                        if (color == 0) {rawRMax = std::max(rawRMax, raw_image[row][col]);}
+                        if (color == 1) {rawGMax = std::max(rawGMax, raw_image[row][col]);}
+                        if (color == 2) {rawBMax = std::max(rawBMax, raw_image[row][col]);}
+                        if (color == 3) {rawGMax = std::max(rawGMax, raw_image[row][col]);}
                     }
                 }
             } else { //normal one-color-per-pixel integer raws
-                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax)
+                #pragma omp parallel for reduction (min:rawMin) reduction(max:rawMax) reduction(max:rawRMax) reduction(max:rawGMax) reduction(max:rawBMax)
+
                 for (int row = 0; row < raw_height; row++)
                 {
                     //IMAGE is an (width*height) by 4 array, not width by height by 4.
@@ -578,18 +633,35 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
                     for (int col = 0; col < raw_width; col++)
                     {
                         float tempBlackpoint = blackpoint;
+                        float tempWhitepoint = maxValue;
                         int color = cfa[row % 2][col % 2];
-                        if (color == 0) {tempBlackpoint += rBlack;}
-                        if (color == 1) {tempBlackpoint += gBlack;}
-                        if (color == 2) {tempBlackpoint += bBlack;}
-                        if (color == 3) {tempBlackpoint += g2Black;}
+                        if (color == 0) {
+                            tempBlackpoint += rBlack;
+                            tempWhitepoint = colorMaxValue[0];
+                        }
+                        if (color == 1) {
+                            tempBlackpoint += gBlack;
+                            tempWhitepoint = colorMaxValue[1];
+                        }
+                        if (color == 2) {
+                            tempBlackpoint += bBlack;
+                            tempWhitepoint = colorMaxValue[2];
+                        }
+                        if (color == 3) {
+                            tempBlackpoint += g2Black;
+                            tempWhitepoint = colorMaxValue[1];
+                        }
                         if (blackRow > 0 && blackCol > 0)
                         {
-                            tempBlackpoint = tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol];
+                            tempBlackpoint = min(tempBlackpoint + libraw->imgdata.color.cblack[6 + (row%blackRow)*blackCol + col%blackCol], tempWhitepoint);
                         }
                         raw_image[row][col] = RAW[rowoffset + col + leftmargin] - tempBlackpoint;
                         rawMin = std::min(rawMin, raw_image[row][col]);
                         rawMax = std::max(rawMax, raw_image[row][col]);
+                        if (color == 0) {rawRMax = std::max(rawRMax, raw_image[row][col]);}
+                        if (color == 1) {rawGMax = std::max(rawGMax, raw_image[row][col]);}
+                        if (color == 2) {rawBMax = std::max(rawBMax, raw_image[row][col]);}
+                        if (color == 3) {rawGMax = std::max(rawGMax, raw_image[row][col]);}
                     }
                 }
             }
@@ -597,11 +669,14 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //generate raw histogram
             if (WithHisto == histo)
             {
-                histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
+                histoInterface->updateHistRaw(raw_image, colorMaxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
             }
 
             cout << "max of raw_image: " << rawMax << endl;
             cout << "min of raw_image: " << rawMin << endl;
+            cout << "max of raw red:   " << rawRMax << endl;
+            cout << "max of raw green: " << rawGMax << endl;
+            cout << "max of raw blue:  " << rawBMax << endl;
         }
         valid = paramManager->markLoadComplete();
         updateProgress(valid, 0.0f);
@@ -859,7 +934,9 @@ matrix<unsigned short>& ImagePipeline::processImage(ParameterManager * paramMana
             //Channel max:
             const float chmax[3] = {rChannel.max(), gChannel.max(), bChannel.max()};
             //Max clip point:
-            const float clmax[3] = {65535.0f*rUserMul, 65535.0f*gUserMul, 65535.0f*bUserMul};
+            const float clmax[3] = {65535.0f*rUserMul*colorMaxValue[0]/maxValue,
+                                    65535.0f*gUserMul*colorMaxValue[1]/maxValue,
+                                    65535.0f*bUserMul*colorMaxValue[2]/maxValue};
 
             HLRecovery_inpaint(width, height, rChannel, gChannel, bChannel, chmax, clmax, setProg);
             #pragma omp parallel for
@@ -1940,7 +2017,7 @@ void ImagePipeline::rerunHistograms()
     {
         if (valid >= Valid::load)
         {
-            histoInterface->updateHistRaw(raw_image, maxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
+            histoInterface->updateHistRaw(raw_image, colorMaxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
         }
         if (valid >= Valid::prefilmulation)
         {

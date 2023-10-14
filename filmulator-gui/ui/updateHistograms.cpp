@@ -210,7 +210,7 @@ void FilmImageProvider::updateFloatHistogram(Histogram &hist, const matrix<float
     hist.empty = false;
 }
 
-void FilmImageProvider::updateHistRaw(const matrix<float>& image, const float maximum,
+void FilmImageProvider::updateHistRaw(const matrix<float>& image, const float maximum[3],
                                       unsigned cfa[2][2], unsigned xtrans[6][6], int maxXtrans, bool isRGB, bool isMonochrome)
 {
     //long long lHist[128];
@@ -240,9 +240,9 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, const float ma
         {
             for(int j = 0; j < image.nc(); j = j + 3)
             {
-                rHist[histIndex(image(i,j  ),maximum)]++;
-                gHist[histIndex(image(i,j+1),maximum)]++;
-                bHist[histIndex(image(i,j+2),maximum)]++;
+                rHist[histIndex(image(i,j  ),maximum[0])]++;
+                gHist[histIndex(image(i,j+1),maximum[1])]++;
+                bHist[histIndex(image(i,j+2),maximum[2])]++;
             }
         }
     }
@@ -253,9 +253,9 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, const float ma
         {
             for(int j = 0; j < image.nc(); j = j + 1)
             {
-                rHist[histIndex(image(i,j),maximum)]++;
-                gHist[histIndex(image(i,j),maximum)]++;
-                bHist[histIndex(image(i,j),maximum)]++;
+                rHist[histIndex(image(i,j),maximum[0])]++;
+                gHist[histIndex(image(i,j),maximum[1])]++;
+                bHist[histIndex(image(i,j),maximum[2])]++;
             }
         }
     }
@@ -269,11 +269,11 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, const float ma
                 uint color = cfa[i%2][j%2];
                 //histIndex returns a value from 0 to 127.
                 if(color == 1) {//green is most common
-                    gHist[histIndex(image(i,j),maximum)]++;
+                    gHist[histIndex(image(i,j),maximum[1])]++;
                 } else if (color == 0) {//red
-                    rHist[histIndex(image(i,j),maximum)]++;
+                    rHist[histIndex(image(i,j),maximum[0])]++;
                 } else {//blue
-                    bHist[histIndex(image(i,j),maximum)]++;
+                    bHist[histIndex(image(i,j),maximum[2])]++;
                 }
             }
         }
@@ -288,11 +288,11 @@ void FilmImageProvider::updateHistRaw(const matrix<float>& image, const float ma
                 uint color = xtrans[i%6][j%6];
                 //histIndex returns a value from 0 to 127.
                 if(color == 1) {//green is most common
-                    gHist[histIndex(image(i,j),maximum)]++;
+                    gHist[histIndex(image(i,j),maximum[0])]++;
                 } else if (color == 0) {//red
-                    rHist[histIndex(image(i,j),maximum)]++;
+                    rHist[histIndex(image(i,j),maximum[1])]++;
                 } else {//blue
-                    bHist[histIndex(image(i,j),maximum)]++;
+                    bHist[histIndex(image(i,j),maximum[2])]++;
                 }
             }
         }
