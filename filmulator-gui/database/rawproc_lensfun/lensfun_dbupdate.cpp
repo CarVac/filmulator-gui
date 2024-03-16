@@ -398,7 +398,8 @@ lf_db_return lensfun_dbupdate(int version, std::string dbpath, std::string dburl
     }
 
     //alternate: https://wilson.bronger.org/lensfun-db/
-    std::string repositoryurl = "http://lensfun.sourceforge.net/db/";
+    //previous: http://lensfun.sourceforge.net/db/
+    std::string repositoryurl = "https://wilson.bronger.org/lensfun-db/";
     if (!dburl.empty())
     {
         repositoryurl = dburl;
