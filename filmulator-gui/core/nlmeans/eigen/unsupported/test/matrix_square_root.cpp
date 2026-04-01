@@ -9,8 +9,7 @@
 
 #include "matrix_functions.h"
 
-template<typename MatrixType>
-void testMatrixSqrt(const MatrixType& m)
+template<typename MatrixType> void testMatrixSqrt(const MatrixType &m)
 {
   MatrixType A;
   generateTestMatrix<MatrixType>::run(A, m.rows());
@@ -22,10 +21,10 @@ void test_matrix_square_root()
 {
   for (int i = 0; i < g_repeat; i++) {
     CALL_SUBTEST_1(testMatrixSqrt(Matrix3cf()));
-    CALL_SUBTEST_2(testMatrixSqrt(MatrixXcd(12,12)));
+    CALL_SUBTEST_2(testMatrixSqrt(MatrixXcd(12, 12)));
     CALL_SUBTEST_3(testMatrixSqrt(Matrix4f()));
-    CALL_SUBTEST_4(testMatrixSqrt(Matrix<double,Dynamic,Dynamic,RowMajor>(9, 9)));
-    CALL_SUBTEST_5(testMatrixSqrt(Matrix<float,1,1>()));
-    CALL_SUBTEST_5(testMatrixSqrt(Matrix<std::complex<float>,1,1>()));
+    CALL_SUBTEST_4(testMatrixSqrt(Matrix<double, Dynamic, Dynamic, RowMajor>(9, 9)));
+    CALL_SUBTEST_5(testMatrixSqrt(Matrix<float, 1, 1>()));
+    CALL_SUBTEST_5(testMatrixSqrt(Matrix<std::complex<float>, 1, 1>()));
   }
 }

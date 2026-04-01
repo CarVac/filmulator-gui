@@ -17,24 +17,22 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-#include "utilities.h"
-#include "tvmet_interface.hh"
-#include "static/bench_static.hh"
-#include "action_matrix_vector_product.hh"
-#include "action_matrix_matrix_product.hh"
 #include "action_atv_product.hh"
 #include "action_axpy.hh"
+#include "action_matrix_matrix_product.hh"
+#include "action_matrix_vector_product.hh"
+#include "static/bench_static.hh"
+#include "tvmet_interface.hh"
+#include "utilities.h"
 
 BTL_MAIN;
 
 int main()
 {
-  bench_static<Action_axpy,tvmet_interface>();
-  bench_static<Action_matrix_matrix_product,tvmet_interface>();
-  bench_static<Action_matrix_vector_product,tvmet_interface>();
-  bench_static<Action_atv_product,tvmet_interface>();
+  bench_static<Action_axpy, tvmet_interface>();
+  bench_static<Action_matrix_matrix_product, tvmet_interface>();
+  bench_static<Action_matrix_vector_product, tvmet_interface>();
+  bench_static<Action_atv_product, tvmet_interface>();
 
   return 0;
 }
-
-

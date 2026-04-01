@@ -1,0 +1,12 @@
+[project]
+name = "filmulator-gui-tests"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ipykernel>=7.2.0",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.4",
+    "pillow>=12.1.1",
+]

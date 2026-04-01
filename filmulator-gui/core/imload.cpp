@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of Filmulator.
  *
  * Copyright 2013 Omer Mano and Carlo Vaccari
@@ -20,47 +20,36 @@
 // This file contains the function imload, which calls an image retrieval
 // function and loads the data into a matrix.
 
-//TODO: remove this file
-//PROBABLY NOT NECESSARY ANYMORE
-//We've included this code into ImagePipeline now.
+// TODO: remove this file
+// PROBABLY NOT NECESSARY ANYMORE
+// We've included this code into ImagePipeline now.
 #include "filmSim.hpp"
 
 bool imload(std::string filename,
-            matrix<float> &input_image,
-            bool tiff,
-            bool jpeg_in,
-            Exiv2::ExifData &exifData,
-            int highlights,
-            bool caEnabled,
-            bool lowQuality )
+  matrix<float> &input_image,
+  bool tiff,
+  bool jpeg_in,
+  Exiv2::ExifData &exifData,
+  int highlights,
+  bool caEnabled,
+  bool lowQuality)
 {
-    if(tiff)
-    {
-        if(imread_tiff(filename, input_image, exifData))
-        {
-            cerr << "Could not open image " << filename <<
-                    "; Exiting..." << endl;
-            return true;
-        }
+  if (tiff) {
+    if (imread_tiff(filename, input_image, exifData)) {
+      cerr << "Could not open image " << filename << "; Exiting..." << endl;
+      return true;
     }
-    else if(jpeg_in)
-    {
-        if(imread_jpeg(filename, input_image, exifData))
-        {
-            cerr << "Could not open image " << filename <<
-                    "; Exiting..." << endl;
-            return true;
-        }
+  } else if (jpeg_in) {
+    if (imread_jpeg(filename, input_image, exifData)) {
+      cerr << "Could not open image " << filename << "; Exiting..." << endl;
+      return true;
     }
-    else//raw
-    {
-        if( imread(filename, input_image, exifData, highlights,
-                   caEnabled, lowQuality))
-        {
-            cerr << "Could not open image " << filename <<
-                    "; Exiting..." << endl;
-            return true;
-        }
+  } else// raw
+  {
+    if (imread(filename, input_image, exifData, highlights, caEnabled, lowQuality)) {
+      cerr << "Could not open image " << filename << "; Exiting..." << endl;
+      return true;
     }
-    return false;
+  }
+  return false;
 }

@@ -39,6 +39,7 @@ find_package(libraw CONFIG REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(TIFF REQUIRED)
 find_package(OpenMP REQUIRED)
+
 set(_lensfun_found FALSE)
 find_package(lensfun QUIET)
 if(lensfun_FOUND)
@@ -61,6 +62,38 @@ endif()
 find_package(CURL CONFIG REQUIRED)
 find_package(LibArchive REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+
+# Spix E2E testing support (optional)
+option(ENABLE_SPIX_TESTING "Enable Spix-based E2E testing" OFF)
+
+if(NOT DEFINED ENABLE_NAN_TRAPPING)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(ENABLE_NAN_TRAPPING ON)
+    else()
+        set(ENABLE_NAN_TRAPPING OFF)
+    endif()
+endif()
+option(ENABLE_NAN_TRAPPING "Enable NaN trapping and debug breaks" ${ENABLE_NAN_TRAPPING})
+
+if(ENABLE_SPIX_TESTING)
+    # AnyRPC from vcpkg (no CMake config, so set paths manually)
+    set(AnyRPC_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include")
+    set(AnyRPC_LIBRARIES "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib/libanyrpc.a")
+    
+    include(FetchContent)
+    
+    # Spix - UI test automation library (not in vcpkg, so fetch it)
+    FetchContent_Declare(
+        spix
+        GIT_REPOSITORY https://github.com/faaxm/spix.git
+        GIT_TAG v0.9
+    )
+    set(SPIX_QT_MAJOR 5 CACHE STRING "" FORCE)
+    set(SPIX_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    
+    FetchContent_MakeAvailable(spix)
+endif()
 
 # SET( EIGEN3_INCLUDE_DIR "$ENV{EIGEN3_INCLUDE_DIR}" )
 # IF( NOT EIGEN3_INCLUDE_DIR )
@@ -72,8 +105,7 @@ find_package(ZLIB REQUIRED)
 include(ConfigureChecks.cmake)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-set(filmulator_SRCS
-    filmulator-gui/main.cpp
+set(filmulator_CORE_SRCS
     filmulator-gui/core/agitate.cpp
     filmulator-gui/core/colorCurves.cpp
     filmulator-gui/core/colorSpaces.cpp
@@ -83,6 +115,13 @@ set(filmulator_SRCS
     filmulator-gui/core/exposure.cpp
     filmulator-gui/core/filmulate.cpp
     filmulator-gui/core/imagePipeline.cpp
+    filmulator-gui/core/pipeline/LoadStage.cpp
+    filmulator-gui/core/pipeline/DemosaicStage.cpp
+    filmulator-gui/core/pipeline/PostDemosaicStage.cpp
+    filmulator-gui/core/pipeline/NlmeansNRStage.cpp
+    filmulator-gui/core/pipeline/ImpulseNRStage.cpp
+    filmulator-gui/core/pipeline/ChromaNRStage.cpp
+    filmulator-gui/core/pipeline/PrefilmulationStage.cpp
     filmulator-gui/core/imload.cpp
     filmulator-gui/core/imread.cpp
     filmulator-gui/core/imreadJpeg.cpp
@@ -90,6 +129,7 @@ set(filmulator_SRCS
     filmulator-gui/core/imwriteJpeg.cpp
     filmulator-gui/core/imwriteTiff.cpp
     filmulator-gui/core/layerMix.cpp
+    filmulator-gui/core/logging.cpp
     filmulator-gui/core/mergeExps.cpp
     filmulator-gui/core/outputFile.cpp
     filmulator-gui/core/rotateImage.cpp
@@ -143,51 +183,34 @@ qtquick_compiler_add_resources(filmulator_RSCS
     filmulator-gui/resources/pixmaps.qrc
 )
 
-if(APPLE)
-    add_executable(filmulator MACOSX_BUNDLE
-        ${filmulator_SRCS}
-        ${filmulator_RSCS}
-    )
-elseif(WIN32)
-    add_executable(filmulator # WIN32 # comment out WIN32 to get a terminal window
-        ${filmulator_SRCS}
-        ${filmulator_RSCS}
-    )
-    target_link_directories(filmulator PRIVATE ${GLIB2_LIBRARY_DIRS})
-else()
-    add_executable(filmulator
-        ${filmulator_SRCS}
-        ${filmulator_RSCS}
-    )
-endif()
-target_compile_definitions(filmulator PRIVATE)
+# Create the core library
+add_library(filmulator-lib STATIC
+    ${filmulator_CORE_SRCS}
+    ${filmulator_RSCS}
+)
 
+target_compile_definitions(filmulator-lib
+    PUBLIC
+        $<$<BOOL:${ENABLE_NAN_TRAPPING}>:ENABLE_NAN_TRAPPING>
+)
 
-
-target_compile_options(filmulator
+# Compile options for the library
+target_compile_options(filmulator-lib
     PRIVATE
         ${DEFAULT_CXX_COMPILER_FLAGS}
         -DHAVE_CONFIG_H
         $<$<CXX_COMPILER_ID:MSVC>:/openmp:experimental>
 )
 
-set_target_properties(filmulator PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-)
-
-# Note: Modern CMake imported targets handle include directories automatically
-# when linked via target_link_libraries. Only local directories need explicit listing.
-target_include_directories(filmulator
-    PRIVATE
+# Include directories for the library
+target_include_directories(filmulator-lib
+    PUBLIC
         filmulator-gui/core
         filmulator-gui/database
         filmulator-gui/ui
         filmulator-gui/qtquick2applicationviewer
         ${CMAKE_CURRENT_BINARY_DIR}
 )
-#glib2 needed for static lensfun on windows above and below
-#libraw_include_dirs for pointing windows build at it
 
 if(TARGET PkgConfig::LENSFUN)
     set(LENSFUN_TARGET PkgConfig::LENSFUN)
@@ -197,9 +220,9 @@ else()
     message(FATAL_ERROR "lensfun target not found")
 endif()
 
-# Use modern CMake imported targets for proper include/link handling
-target_link_libraries(filmulator
-    PRIVATE
+# Link libraries for the library
+target_link_libraries(filmulator-lib
+    PUBLIC
         Qt5::Core
         Qt5::Sql
         Qt5::Widgets
@@ -211,12 +234,53 @@ target_link_libraries(filmulator
         TIFF::TIFF            # TIFF modern target
         ${LENSFUN_TARGET}
         PkgConfig::GLIB
-        CURL::libcurl         # CURL modern target
+        CURL::libcurl
         LibArchive::LibArchive
-        ZLIB::ZLIB            # ZLIB modern target
+        ZLIB::ZLIB
         OpenMP::OpenMP_CXX
         rtprocess::rtprocess
+        spdlog::spdlog
 )
+
+# Define the executable
+if(APPLE)
+    add_executable(filmulator MACOSX_BUNDLE
+        filmulator-gui/main.cpp
+    )
+
+elseif(WIN32)
+    add_executable(filmulator
+        filmulator-gui/main.cpp
+    )
+    target_link_directories(filmulator PRIVATE ${GLIB2_LIBRARY_DIRS})
+else()
+    add_executable(filmulator
+        filmulator-gui/main.cpp
+    )
+endif()
+target_compile_definitions(filmulator PRIVATE)
+set_target_properties(filmulator PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Link the executable to the library
+target_link_libraries(filmulator
+    PRIVATE
+        filmulator-lib
+)
+
+# Conditionally link Spix for E2E testing
+if(ENABLE_SPIX_TESTING)
+    target_link_libraries(filmulator PRIVATE Spix ${AnyRPC_LIBRARIES})
+    target_include_directories(filmulator PRIVATE 
+        ${spix_SOURCE_DIR}/lib/include
+    )
+    target_compile_definitions(filmulator PRIVATE ENABLE_SPIX_TESTING)
+endif()
+
+enable_testing()
+add_subdirectory(tests)
 
     # let's see where all this stuff is...
     #message(STATUS "EXIV2_VERSION=${EXIV2_VERSION}")
@@ -260,3 +324,36 @@ endif()
 qt5_import_qml_plugins(filmulator)
 
 add_subdirectory(filmulator-gui/qml)
+
+# Code formatting and linting
+find_program(CLANG_FORMAT "clang-format")
+if(CLANG_FORMAT)
+    file(GLOB_RECURSE ALL_S_FILES 
+        "filmulator-gui/*.cpp" 
+        "filmulator-gui/*.hpp" 
+        "filmulator-gui/*.h"
+        "tests/*.cpp"
+        "tests/*.hpp"
+        "tests/*.h"
+    )
+    # Exclude third-party cJSON
+    list(REMOVE_ITEM ALL_S_FILES "${CMAKE_SOURCE_DIR}/filmulator-gui/database/cJSON.c")
+    
+    add_custom_target(
+        format
+        COMMAND ${CLANG_FORMAT} -i -style=file ${ALL_S_FILES}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-format on all source files..."
+    )
+endif()
+
+find_program(CLANG_TIDY "clang-tidy")
+if(CLANG_TIDY)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
+    add_custom_target(
+        tidy
+        COMMAND ${CLANG_TIDY} -p ${CMAKE_BINARY_DIR} ${filmulator_CORE_SRCS} filmulator-gui/main.cpp
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-tidy on core source files..."
+    )
+endif()

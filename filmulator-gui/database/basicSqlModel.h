@@ -9,19 +9,19 @@
 
 class BasicSqlModel : public SqlModel
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit BasicSqlModel(QObject *parent = 0);
-    void setQuery(const QSqlQuery &query);
-    void signalChange() {emit basicSqlModelChanged();}
+  explicit BasicSqlModel(QObject *parent = 0);
+  void setQuery(const QSqlQuery &query);
+  void signalChange() { emit basicSqlModelChanged(); }
 signals:
-    void basicSqlModelChanged();
+  void basicSqlModelChanged();
+
 protected:
-    QSqlQuery m_modelQuery;
-    QSqlQuery modelQuery() {return m_modelQuery;}
-    void emitChange() {emit basicSqlModelChanged();}
+  QSqlQuery m_modelQuery;
+  QSqlQuery modelQuery() { return m_modelQuery; }
+  void emitChange() { emit basicSqlModelChanged(); }
 };
 
-#endif // BASICSQLMODEL_H
-
+#endif// BASICSQLMODEL_H

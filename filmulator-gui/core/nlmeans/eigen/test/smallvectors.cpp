@@ -16,9 +16,7 @@ template<typename Scalar> void smallVectors()
   typedef Matrix<Scalar, 3, 1> V3;
   typedef Matrix<Scalar, 1, 4> V4;
   typedef Matrix<Scalar, Dynamic, 1> VX;
-  Scalar x1 = internal::random<Scalar>(),
-         x2 = internal::random<Scalar>(),
-         x3 = internal::random<Scalar>(),
+  Scalar x1 = internal::random<Scalar>(), x2 = internal::random<Scalar>(), x3 = internal::random<Scalar>(),
          x4 = internal::random<Scalar>();
   V2 v2(x1, x2);
   V3 v3(x1, x2, x3);
@@ -33,8 +31,7 @@ template<typename Scalar> void smallVectors()
   VERIFY_IS_APPROX(x3, v4.z());
   VERIFY_IS_APPROX(x4, v4.w());
 
-  if (!NumTraits<Scalar>::IsInteger)
-  {
+  if (!NumTraits<Scalar>::IsInteger) {
     VERIFY_RAISES_ASSERT(V3(2, 1))
     VERIFY_RAISES_ASSERT(V3(3, 2))
     VERIFY_RAISES_ASSERT(V3(Scalar(3), 1))
@@ -59,9 +56,9 @@ template<typename Scalar> void smallVectors()
 
 void test_smallvectors()
 {
-  for(int i = 0; i < g_repeat; i++) {
-    CALL_SUBTEST(smallVectors<int>() );
-    CALL_SUBTEST(smallVectors<float>() );
-    CALL_SUBTEST(smallVectors<double>() );
+  for (int i = 0; i < g_repeat; i++) {
+    CALL_SUBTEST(smallVectors<int>());
+    CALL_SUBTEST(smallVectors<float>());
+    CALL_SUBTEST(smallVectors<double>());
   }
 }

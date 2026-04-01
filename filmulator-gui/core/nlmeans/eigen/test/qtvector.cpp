@@ -11,34 +11,27 @@
 #define EIGEN_WORK_AROUND_QT_BUG_CALLING_WRONG_OPERATOR_NEW_FIXED_IN_QT_4_5
 
 #include "main.h"
-#include <QtCore/QVector>
 #include <Eigen/Geometry>
 #include <Eigen/QtAlignedMalloc>
+#include <QtCore/QVector>
 
-template<typename MatrixType>
-void check_qtvector_matrix(const MatrixType& m)
+template<typename MatrixType> void check_qtvector_matrix(const MatrixType &m)
 {
   Index rows = m.rows();
   Index cols = m.cols();
-  MatrixType x = MatrixType::Random(rows,cols), y = MatrixType::Random(rows,cols);
-  QVector<MatrixType> v(10, MatrixType(rows,cols)), w(20, y);
-  for(int i = 0; i < 20; i++)
-  {
-    VERIFY_IS_APPROX(w[i], y);
-  }
+  MatrixType x = MatrixType::Random(rows, cols), y = MatrixType::Random(rows, cols);
+  QVector<MatrixType> v(10, MatrixType(rows, cols)), w(20, y);
+  for (int i = 0; i < 20; i++) { VERIFY_IS_APPROX(w[i], y); }
   v[5] = x;
   w[6] = v[5];
   VERIFY_IS_APPROX(w[6], v[5]);
   v = w;
-  for(int i = 0; i < 20; i++)
-  {
-    VERIFY_IS_APPROX(w[i], v[i]);
-  }
+  for (int i = 0; i < 20; i++) { VERIFY_IS_APPROX(w[i], v[i]); }
 
   v.resize(21);
   v[20] = x;
   VERIFY_IS_APPROX(v[20], x);
-  v.fill(y,22);
+  v.fill(y, 22);
   VERIFY_IS_APPROX(v[21], y);
   v.push_back(x);
   VERIFY_IS_APPROX(v[22], x);
@@ -46,17 +39,12 @@ void check_qtvector_matrix(const MatrixType& m)
 
   // do a lot of push_back such that the vector gets internally resized
   // (with memory reallocation)
-  MatrixType* ref = &w[0];
-  for(int i=0; i<30 || ((ref==&w[0]) && i<300); ++i)
-    v.push_back(w[i%w.size()]);
-  for(int i=23; i<v.size(); ++i)
-  {
-    VERIFY(v[i]==w[(i-23)%w.size()]);
-  }
+  MatrixType *ref = &w[0];
+  for (int i = 0; i < 30 || ((ref == &w[0]) && i < 300); ++i) v.push_back(w[i % w.size()]);
+  for (int i = 23; i < v.size(); ++i) { VERIFY(v[i] == w[(i - 23) % w.size()]); }
 }
 
-template<typename TransformType>
-void check_qtvector_transform(const TransformType&)
+template<typename TransformType> void check_qtvector_transform(const TransformType &)
 {
   typedef typename TransformType::MatrixType MatrixType;
   TransformType x(MatrixType::Random()), y(MatrixType::Random());
@@ -65,15 +53,12 @@ void check_qtvector_transform(const TransformType&)
   w[6] = v[5];
   VERIFY_IS_APPROX(w[6], v[5]);
   v = w;
-  for(int i = 0; i < 20; i++)
-  {
-    VERIFY_IS_APPROX(w[i], v[i]);
-  }
+  for (int i = 0; i < 20; i++) { VERIFY_IS_APPROX(w[i], v[i]); }
 
   v.resize(21);
   v[20] = x;
   VERIFY_IS_APPROX(v[20], x);
-  v.fill(y,22);
+  v.fill(y, 22);
   VERIFY_IS_APPROX(v[21], y);
   v.push_back(x);
   VERIFY_IS_APPROX(v[22], x);
@@ -81,17 +66,12 @@ void check_qtvector_transform(const TransformType&)
 
   // do a lot of push_back such that the vector gets internally resized
   // (with memory reallocation)
-  TransformType* ref = &w[0];
-  for(int i=0; i<30 || ((ref==&w[0]) && i<300); ++i)
-    v.push_back(w[i%w.size()]);
-  for(unsigned int i=23; int(i)<v.size(); ++i)
-  {
-    VERIFY(v[i].matrix()==w[(i-23)%w.size()].matrix());
-  }
+  TransformType *ref = &w[0];
+  for (int i = 0; i < 30 || ((ref == &w[0]) && i < 300); ++i) v.push_back(w[i % w.size()]);
+  for (unsigned int i = 23; int(i) < v.size(); ++i) { VERIFY(v[i].matrix() == w[(i - 23) % w.size()].matrix()); }
 }
 
-template<typename QuaternionType>
-void check_qtvector_quaternion(const QuaternionType&)
+template<typename QuaternionType> void check_qtvector_quaternion(const QuaternionType &)
 {
   typedef typename QuaternionType::Coefficients Coefficients;
   QuaternionType x(Coefficients::Random()), y(Coefficients::Random());
@@ -100,15 +80,12 @@ void check_qtvector_quaternion(const QuaternionType&)
   w[6] = v[5];
   VERIFY_IS_APPROX(w[6], v[5]);
   v = w;
-  for(int i = 0; i < 20; i++)
-  {
-    VERIFY_IS_APPROX(w[i], v[i]);
-  }
+  for (int i = 0; i < 20; i++) { VERIFY_IS_APPROX(w[i], v[i]); }
 
   v.resize(21);
   v[20] = x;
   VERIFY_IS_APPROX(v[20], x);
-  v.fill(y,22);
+  v.fill(y, 22);
   VERIFY_IS_APPROX(v[21], y);
   v.push_back(x);
   VERIFY_IS_APPROX(v[22], x);
@@ -116,13 +93,9 @@ void check_qtvector_quaternion(const QuaternionType&)
 
   // do a lot of push_back such that the vector gets internally resized
   // (with memory reallocation)
-  QuaternionType* ref = &w[0];
-  for(int i=0; i<30 || ((ref==&w[0]) && i<300); ++i)
-    v.push_back(w[i%w.size()]);
-  for(unsigned int i=23; int(i)<v.size(); ++i)
-  {
-    VERIFY(v[i].coeffs()==w[(i-23)%w.size()].coeffs());
-  }
+  QuaternionType *ref = &w[0];
+  for (int i = 0; i < 30 || ((ref == &w[0]) && i < 300); ++i) v.push_back(w[i % w.size()]);
+  for (unsigned int i = 23; int(i) < v.size(); ++i) { VERIFY(v[i].coeffs() == w[(i - 23) % w.size()].coeffs()); }
 }
 
 void test_qtvector()
@@ -139,16 +112,16 @@ void test_qtvector()
   CALL_SUBTEST(check_qtvector_matrix(Matrix4d()));
 
   // some dynamic sizes
-  CALL_SUBTEST(check_qtvector_matrix(MatrixXd(1,1)));
+  CALL_SUBTEST(check_qtvector_matrix(MatrixXd(1, 1)));
   CALL_SUBTEST(check_qtvector_matrix(VectorXd(20)));
   CALL_SUBTEST(check_qtvector_matrix(RowVectorXf(20)));
-  CALL_SUBTEST(check_qtvector_matrix(MatrixXcf(10,10)));
+  CALL_SUBTEST(check_qtvector_matrix(MatrixXcf(10, 10)));
 
   // some Transform
   CALL_SUBTEST(check_qtvector_transform(Affine2f()));
   CALL_SUBTEST(check_qtvector_transform(Affine3f()));
   CALL_SUBTEST(check_qtvector_transform(Affine3d()));
-  //CALL_SUBTEST(check_qtvector_transform(Transform4d()));
+  // CALL_SUBTEST(check_qtvector_transform(Transform4d()));
 
   // some Quaternion
   CALL_SUBTEST(check_qtvector_quaternion(Quaternionf()));

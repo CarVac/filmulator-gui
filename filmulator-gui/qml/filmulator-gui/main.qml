@@ -6,6 +6,7 @@ import "colors.js" as Colors
 
 ApplicationWindow {
     id: root
+    objectName: "mainWindow"
     title: qsTr("Filmulator")
     property real uiScale: settings.getUiScale()
     property int tempVisibility
@@ -18,6 +19,12 @@ ApplicationWindow {
     signal imageURL(string newURL)
     property bool cropping: false
     property bool helpMode: false
+    function currentImageIndex() {
+        return paramManager.imageIndex
+    }
+    function selectImageBySearchID(searchID) {
+        paramManager.selectImage(searchID)
+    }
 
     onClosing: {
         close.accepted = false
@@ -42,6 +49,7 @@ ApplicationWindow {
             Layout.minimumHeight: 200 * uiScale
             TabBar {
                 id: tabs
+                objectName: "mainTabBar"
 
                 background:  Rectangle {
                     //needs to be invisible
@@ -78,6 +86,7 @@ ApplicationWindow {
 
                 TabButton {
                     id: importButton
+                    objectName: "importTabButton"
                     text: qsTr("Import")
                     width: tabs.tabwidth * uiScale
                     height: tabs.tabheight * uiScale
@@ -134,6 +143,7 @@ ApplicationWindow {
                 }
                 TabButton {
                     id: organizeButton
+                    objectName: "organizeTabButton"
                     text: qsTr("Organize")
                     width: tabs.tabwidth * uiScale
                     height: tabs.tabheight * uiScale
@@ -173,6 +183,7 @@ ApplicationWindow {
                 }
                 TabButton {
                     id: filmulateButton
+                    objectName: "filmulateTabButton"
                     text: qsTr("Filmulate")
                     width: tabs.tabwidth * uiScale
                     height: tabs.tabheight * uiScale
@@ -253,6 +264,7 @@ ApplicationWindow {
 
             StackLayout {
                 id: mainContent
+                objectName: "mainContent"
                 x: 0
                 y: Math.ceil(36 * uiScale)
                 width: parent.width
@@ -262,6 +274,7 @@ ApplicationWindow {
 
                 Import {
                     id: importItem
+                    objectName: "importView"
                     helpMode: root.helpMode
                     Component.onCompleted: {
                         importItem.tooltipWanted.connect(root.tooltipWanted)
@@ -271,6 +284,7 @@ ApplicationWindow {
 
                 Organize {
                     id: organizeItem
+                    objectName: "organizeView"
                     onOrganizeTab: tabs.currentIndex == 1
                     helpMode: root.helpMode
                     Component.onCompleted: {
@@ -281,6 +295,7 @@ ApplicationWindow {
 
                 Edit {
                     id: editItem
+                    objectName: "editView"
                     onEditTab: tabs.currentIndex == 2
                     helpMode: root.helpMode
                     Component.onCompleted: {
@@ -339,12 +354,14 @@ ApplicationWindow {
 
         Rectangle {
             id: queue
+            objectName: "queueArea"
             color: Colors.darkGray
             height: 100 * uiScale
             Layout.minimumHeight: 50 * uiScale
 
             Queue {
                 id: queueItem
+                objectName: "queueView"
                 onEditTab: tabs.currentIndex == 2
                 anchors.fill: parent
                 uiScale: root.uiScale

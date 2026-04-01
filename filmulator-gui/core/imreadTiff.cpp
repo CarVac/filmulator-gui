@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of Filmulator.
  *
  * Copyright 2013 Omer Mano and Carlo Vaccari
@@ -18,71 +18,62 @@
  */
 #include "filmSim.hpp"
 
-bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix,
-		Exiv2::ExifData &exifData)
+bool imread_tiff(string input_image_filename, matrix<float> &returnmatrix, Exiv2::ExifData &exifData)
 {
-    TIFFSetWarningHandler(NULL);
-    TIFF* tif = TIFFOpen(input_image_filename.c_str(), "r");
-    if (!tif)
-	{
-        cerr << "imread_tiff: Could not read input file!" << endl;
-        return true;
-	}
-	uint32 imagelength;
-	uint32 imagewidth;
-	uint16 num_chan;//number of color channels
-	unsigned short * buf16;
-	unsigned char  * buf8;
-	uint16 bits_per_sample;
+  TIFFSetWarningHandler(NULL);
+  TIFF *tif = TIFFOpen(input_image_filename.c_str(), "r");
+  if (!tif) {
+    cerr << "imread_tiff: Could not read input file!" << endl;
+    return true;
+  }
+  uint32 imagelength;
+  uint32 imagewidth;
+  uint16 num_chan;// number of color channels
+  unsigned short *buf16;
+  unsigned char *buf8;
+  uint16 bits_per_sample;
 
-	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
-	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &imagewidth);
-	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &num_chan);
-	TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits_per_sample);
+  TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
+  TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &imagewidth);
+  TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &num_chan);
+  TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits_per_sample);
 
-	returnmatrix.set_size(imagelength,imagewidth*3);
+  returnmatrix.set_size(imagelength, imagewidth * 3);
 
-    //The matrix is 3x wider than the image, interleaving the channels.
-	if(bits_per_sample == 16)
-	{
-	  buf16 = (unsigned short *)_TIFFmalloc(TIFFScanlineSize(tif));
-      for ( unsigned int row = 0; row < imagelength; row++)
-	  {
-	      TIFFReadScanline(tif, buf16, row);
-          for( unsigned int col = 0; col < imagewidth; col++)
-		  {
-			  returnmatrix(row,col*3    ) = buf16[col*num_chan    ];
-			  returnmatrix(row,col*3 + 1) = buf16[col*num_chan + 1];
-              returnmatrix(row,col*3 + 2) = buf16[col*num_chan + 2];
-		  }
-	  }
-	  _TIFFfree(buf16);
-	}
-	else
-	{
-	  buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif));
-      for ( unsigned int row = 0; row < imagelength; row++)
-	  {
-	      TIFFReadScanline(tif, buf8, row);
-          for( unsigned int col = 0; col < imagewidth; col++)
-		  {
-			  returnmatrix(row,col*3    ) = buf8[col*num_chan    ];
-			  returnmatrix(row,col*3    ) *= 257;
-			  returnmatrix(row,col*3 + 1) = buf8[col*num_chan + 1];
-			  returnmatrix(row,col*3 + 1) *= 257;
-              returnmatrix(row,col*3 + 2) = buf8[col*num_chan + 2];
-              returnmatrix(row,col*3 + 2) *= 257;
-		  }
-	  }
-	  _TIFFfree(buf8 );
-	}
-	TIFFClose(tif);
+  // The matrix is 3x wider than the image, interleaving the channels.
+  if (bits_per_sample == 16) {
+    buf16 = (unsigned short *)_TIFFmalloc(TIFFScanlineSize(tif));
+    for (unsigned int row = 0; row < imagelength; row++) {
+      TIFFReadScanline(tif, buf16, row);
+      for (unsigned int col = 0; col < imagewidth; col++) {
+        returnmatrix(row, col * 3) = buf16[col * num_chan];
+        returnmatrix(row, col * 3 + 1) = buf16[col * num_chan + 1];
+        returnmatrix(row, col * 3 + 2) = buf16[col * num_chan + 2];
+      }
+    }
+    _TIFFfree(buf16);
+  } else {
+    buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif));
+    for (unsigned int row = 0; row < imagelength; row++) {
+      TIFFReadScanline(tif, buf8, row);
+      for (unsigned int col = 0; col < imagewidth; col++) {
+        returnmatrix(row, col * 3) = buf8[col * num_chan];
+        returnmatrix(row, col * 3) *= 257;
+        returnmatrix(row, col * 3 + 1) = buf8[col * num_chan + 1];
+        returnmatrix(row, col * 3 + 1) *= 257;
+        returnmatrix(row, col * 3 + 2) = buf8[col * num_chan + 2];
+        returnmatrix(row, col * 3 + 2) *= 257;
+      }
+    }
+    _TIFFfree(buf8);
+  }
+  TIFFClose(tif);
 
-    cout << "imread_tiff exiv filename: " << input_image_filename << endl;
-    auto image = Exiv2::ImageFactory::open(input_image_filename);
-	assert(image.get() != 0);
-    image->readMetadata();
-	exifData = image->exifData();
+  cout << "imread_tiff exiv filename: " << input_image_filename << endl;
+  auto image = Exiv2::ImageFactory::open(input_image_filename);
+  assert(image.get() != 0);
+  image->readMetadata();
+  exifData = image->exifData();
 
-	return false;
+  return false;
 }

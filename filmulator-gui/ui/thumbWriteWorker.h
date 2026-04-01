@@ -1,10 +1,10 @@
 #ifndef THUMBWRITEWORKER_H
 #define THUMBWRITEWORKER_H
 
-#include <QObject>
 #include "../core/imagePipeline.h"
 #include <QMutex>
 #include <QMutexLocker>
+#include <QObject>
 #include <QSqlQuery>
 
 /*The ThumbWriteWorker is an object that lets the main pipeline write thumbnails
@@ -13,23 +13,22 @@
 
 class ThumbWriteWorker : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit ThumbWriteWorker(QObject *parent = 0);
-    void setImage(matrix<unsigned short> imageIn,
-                  Exiv2::ExifData dataIn);
+  explicit ThumbWriteWorker(QObject *parent = 0);
+  void setImage(matrix<unsigned short> imageIn, Exiv2::ExifData dataIn);
 
 public slots:
-    bool writeThumb(QString searchID);
+  bool writeThumb(QString searchID);
 
 signals:
-    void doneWritingThumb();
+  void doneWritingThumb();
 
 protected:
-    matrix<unsigned short> image;
-    Exiv2::ExifData exifData;
-    QMutex dataMutex;
+  matrix<unsigned short> image;
+  Exiv2::ExifData exifData;
+  QMutex dataMutex;
 };
 
-#endif // THUMBWRITEWORKER_H
+#endif// THUMBWRITEWORKER_H

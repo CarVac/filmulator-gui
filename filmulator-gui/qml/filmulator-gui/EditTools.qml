@@ -235,6 +235,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: exposureCompSlider
+                    objectName: "exposureCompSlider"
                     title: qsTr("Exposure Compensation")
                     tooltipText: qsTr("The amount the program should to over- or under-expose the \"film\" relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.")
                     minimumValue: -3
@@ -315,6 +316,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: temperatureSlider
+                    objectName: "temperatureSlider"
                     title: qsTr("Temperature")
                     tooltipText: qsTr("Correct the image color for a light source of the indicated Kelvin temperature.\n\nThe default value is the camera's chosen WB.")
                     minimumValue: Math.log(1700)//limited by the 5D Classic @ 1674
@@ -379,6 +381,7 @@ SlimSplitView {
 
                 ToolSwitch {
                     id: nrEnabledSwitch
+                    objectName: "nrEnabledSwitch"
                     text: qsTr("Noise Reduction")
                     tooltipText: qsTr("Enable the noise reduction tools to help remove grain and color splotches from the image.")
                     isOn: paramManager.nrEnabled
@@ -409,6 +412,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: nlStrengthSlider
+                    objectName: "nlStrengthSlider"
                     visible: nrEnabledSwitch.isOn
                     highlight: nrEnabledSwitch.hovered
                     title: qsTr("NR Strength")
@@ -559,6 +563,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: chromaStrengthSlider
+                    objectName: "chromaStrengthSlider"
                     visible: nrEnabledSwitch.isOn && paramManager.colorAvail //requires color images
                     highlight: nrEnabledSwitch.hovered
                     title: qsTr("Chroma NR Strength")
@@ -816,6 +821,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: crosstalkSlider
+                    objectName: "crosstalkSlider"
                     title: qsTr("Highlight Crosstalk")
                     tooltipText: qsTr("This desaturates highlights as they get brighter past the highlight rolloff point, reducing ugly highlight colors and making deeply saturated colors appear brighter and closer to white.")
                     minimumValue: 0
@@ -880,6 +886,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: filmDramaSlider
+                    objectName: "filmDramaSlider"
                     title: qsTr("Drama")
                     tooltipText: qsTr("Pulls down highlights to retain detail. This is the real \"filmy\" effect. This not only helps bring down bright highlights, but it can also rescue extremely saturated regions such as flowers.")
                     minimumValue: 0
@@ -1522,6 +1529,7 @@ SlimSplitView {
         }
         ToolButton {
             id: saveJPEGButton
+            objectName: "saveJPEGButton"
             width: parent.width/2
             height: 40 * uiScale
             x: width

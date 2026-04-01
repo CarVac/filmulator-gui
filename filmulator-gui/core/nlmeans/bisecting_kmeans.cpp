@@ -5,7 +5,8 @@
 #include <optional>
 #include <tuple>
 
-struct clusterInfo {
+struct clusterInfo
+{
   std::vector<float> center;
   std::vector<int> members;
   double summedSquareDistances;
@@ -14,9 +15,8 @@ struct clusterInfo {
 // X is in points major, dimensions minor order
 // Returns center locations (clusters major). Will always return at least two
 // clusters
-std::vector<float> bisecting_kmeans(float *__restrict const X,
-                                    const int maxNumClusters,
-                                    const float threshold) {
+std::vector<float> bisecting_kmeans(float *__restrict const X, const int maxNumClusters, const float threshold)
+{
 
   const int numDimensions = patchSize * numChannels;
   std::vector<clusterInfo> currentClusters;
@@ -26,31 +26,27 @@ std::vector<float> bisecting_kmeans(float *__restrict const X,
   clusterInfo allPointsClustInfo;
   allPointsClustInfo.members = std::vector<int>(numPoints);
   allPointsClustInfo.summedSquareDistances = std::numeric_limits<float>::max();
-  std::iota(allPointsClustInfo.members.begin(),
-            allPointsClustInfo.members.end(), 0);
+  std::iota(allPointsClustInfo.members.begin(), allPointsClustInfo.members.end(), 0);
   currentClusters.push_back(allPointsClustInfo);
 
   double totalSSD = std::numeric_limits<double>::max();
 
-  while ((currentClusters.size() < maxNumClusters) &
-         (totalSSD > threshold * numPoints)) {
+  while ((currentClusters.size() < maxNumClusters) & (totalSSD > threshold * numPoints)) {
 
     // Split the cluster with the highest summed squared distance
     int nextClusterToSplitIdx = -1;
     float highestSSD = 0;
     for (int clustIdx = 0; clustIdx < currentClusters.size(); clustIdx++) {
       auto &thisCluster = currentClusters[clustIdx];
-      if ((thisCluster.summedSquareDistances > highestSSD) &
-          (thisCluster.members.size() >
-           2)) { // Don't split a cluster of only 2 points- it just has two
-                 // outliers
+      if ((thisCluster.summedSquareDistances > highestSSD)
+          & (thisCluster.members.size() > 2)) {// Don't split a cluster of only 2 points- it just has two
+                                               // outliers
         nextClusterToSplitIdx = clustIdx;
         highestSSD = thisCluster.summedSquareDistances;
       }
     }
 
-    if (nextClusterToSplitIdx ==
-        -1) { // all clusters have only two points, so we are done.
+    if (nextClusterToSplitIdx == -1) {// all clusters have only two points, so we are done.
       break;
     }
 
@@ -60,25 +56,21 @@ std::vector<float> bisecting_kmeans(float *__restrict const X,
     for (int dimIdx = 0; dimIdx < numDimensions; dimIdx++) {
       for (int pointIdx = 0; pointIdx < numPointsToSplit; pointIdx++) {
         int sourcePointIdx = clusterToSplit.members[pointIdx];
-        clusterToSplitX[pointIdx + dimIdx * numPointsToSplit] =
-            X[sourcePointIdx + dimIdx * numPoints];
+        clusterToSplitX[pointIdx + dimIdx * numPointsToSplit] = X[sourcePointIdx + dimIdx * numPoints];
       }
     }
 
-    auto [twoCenters, isInSecondCluster, SSDs, numMembers] =
-        splitCluster(clusterToSplitX.data(), numPointsToSplit);
+    auto [twoCenters, isInSecondCluster, SSDs, numMembers] = splitCluster(clusterToSplitX.data(), numPointsToSplit);
 
     // If either cluster only has one member, discard that cluster
-    int discardCluster = std::distance(
-        numMembers.begin(), std::find(numMembers.begin(), numMembers.end(),
-                                      1)); // takes on values 0,1 or 2 for none
+    int discardCluster = std::distance(numMembers.begin(),
+      std::find(numMembers.begin(),
+        numMembers.end(),
+        1));// takes on values 0,1 or 2 for none
 
     for (int clustIdx = 0, numInsertedClusters = 0; clustIdx < 2; clustIdx++) {
-      if (clustIdx == discardCluster) {
-        continue;
-      }
-      auto centerRangeToCopyStart =
-          twoCenters.begin() + clustIdx * numDimensions;
+      if (clustIdx == discardCluster) { continue; }
+      auto centerRangeToCopyStart = twoCenters.begin() + clustIdx * numDimensions;
       auto centerRangeToCopyEnd = centerRangeToCopyStart + numDimensions;
 
       std::vector<int> clusterMembers;
@@ -88,8 +80,7 @@ std::vector<float> bisecting_kmeans(float *__restrict const X,
         }
       }
       clusterInfo clustInfo;
-      clustInfo.center =
-          std::vector<float>(centerRangeToCopyStart, centerRangeToCopyEnd);
+      clustInfo.center = std::vector<float>(centerRangeToCopyStart, centerRangeToCopyEnd);
       clustInfo.members = clusterMembers;
       clustInfo.summedSquareDistances = SSDs[clustIdx];
 
@@ -111,8 +102,7 @@ std::vector<float> bisecting_kmeans(float *__restrict const X,
   std::vector<float> clusterCenters(numClusters * numDimensions);
   for (int dimIdx = 0; dimIdx < numDimensions; dimIdx++) {
     for (int clustIdx = 0; clustIdx < numClusters; clustIdx++) {
-      clusterCenters[clustIdx + dimIdx * numClusters] =
-          currentClusters[clustIdx].center[dimIdx];
+      clusterCenters[clustIdx + dimIdx * numClusters] = currentClusters[clustIdx].center[dimIdx];
     }
   }
 

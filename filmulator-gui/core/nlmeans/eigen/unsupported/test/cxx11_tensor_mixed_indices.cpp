@@ -17,12 +17,18 @@ static void test_simple()
   Tensor<float, 1, ColMajor> vec1(6);
   Tensor<float, 1, ColMajor, int> vec2(6);
 
-  vec1(0) = 4.0;  vec2(0) = 0.0;
-  vec1(1) = 8.0;  vec2(1) = 1.0;
-  vec1(2) = 15.0; vec2(2) = 2.0;
-  vec1(3) = 16.0; vec2(3) = 3.0;
-  vec1(4) = 23.0; vec2(4) = 4.0;
-  vec1(5) = 42.0; vec2(5) = 5.0;
+  vec1(0) = 4.0;
+  vec2(0) = 0.0;
+  vec1(1) = 8.0;
+  vec2(1) = 1.0;
+  vec1(2) = 15.0;
+  vec2(2) = 2.0;
+  vec1(3) = 16.0;
+  vec2(3) = 3.0;
+  vec1(4) = 23.0;
+  vec2(4) = 4.0;
+  vec1(5) = 42.0;
+  vec2(5) = 5.0;
 
   float data3[6];
   TensorMap<Tensor<float, 1, ColMajor>> vec3(data3, 6);
@@ -47,7 +53,4 @@ static void test_simple()
 }
 
 
-void test_cxx11_tensor_mixed_indices()
-{
-  CALL_SUBTEST(test_simple());
-}
+void test_cxx11_tensor_mixed_indices() { CALL_SUBTEST(test_simple()); }

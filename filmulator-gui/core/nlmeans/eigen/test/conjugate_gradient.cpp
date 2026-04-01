@@ -12,23 +12,23 @@
 
 template<typename T, typename I> void test_conjugate_gradient_T()
 {
-  typedef SparseMatrix<T,0,I> SparseMatrixType;
-  ConjugateGradient<SparseMatrixType, Lower      > cg_colmajor_lower_diag;
-  ConjugateGradient<SparseMatrixType, Upper      > cg_colmajor_upper_diag;
-  ConjugateGradient<SparseMatrixType, Lower|Upper> cg_colmajor_loup_diag;
+  typedef SparseMatrix<T, 0, I> SparseMatrixType;
+  ConjugateGradient<SparseMatrixType, Lower> cg_colmajor_lower_diag;
+  ConjugateGradient<SparseMatrixType, Upper> cg_colmajor_upper_diag;
+  ConjugateGradient<SparseMatrixType, Lower | Upper> cg_colmajor_loup_diag;
   ConjugateGradient<SparseMatrixType, Lower, IdentityPreconditioner> cg_colmajor_lower_I;
   ConjugateGradient<SparseMatrixType, Upper, IdentityPreconditioner> cg_colmajor_upper_I;
 
-  CALL_SUBTEST( check_sparse_spd_solving(cg_colmajor_lower_diag)  );
-  CALL_SUBTEST( check_sparse_spd_solving(cg_colmajor_upper_diag)  );
-  CALL_SUBTEST( check_sparse_spd_solving(cg_colmajor_loup_diag)   );
-  CALL_SUBTEST( check_sparse_spd_solving(cg_colmajor_lower_I)     );
-  CALL_SUBTEST( check_sparse_spd_solving(cg_colmajor_upper_I)     );
+  CALL_SUBTEST(check_sparse_spd_solving(cg_colmajor_lower_diag));
+  CALL_SUBTEST(check_sparse_spd_solving(cg_colmajor_upper_diag));
+  CALL_SUBTEST(check_sparse_spd_solving(cg_colmajor_loup_diag));
+  CALL_SUBTEST(check_sparse_spd_solving(cg_colmajor_lower_I));
+  CALL_SUBTEST(check_sparse_spd_solving(cg_colmajor_upper_I));
 }
 
 void test_conjugate_gradient()
 {
-  CALL_SUBTEST_1(( test_conjugate_gradient_T<double,int>() ));
-  CALL_SUBTEST_2(( test_conjugate_gradient_T<std::complex<double>, int>() ));
-  CALL_SUBTEST_3(( test_conjugate_gradient_T<double,long int>() ));
+  CALL_SUBTEST_1((test_conjugate_gradient_T<double, int>()));
+  CALL_SUBTEST_2((test_conjugate_gradient_T<std::complex<double>, int>()));
+  CALL_SUBTEST_3((test_conjugate_gradient_T<double, long int>()));
 }

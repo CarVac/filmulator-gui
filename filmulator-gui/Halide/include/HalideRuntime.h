@@ -60,7 +60,8 @@ extern void halide_print(void *user_context, const char *);
 extern void halide_error(void *user_context, const char *);
 
 /** A macro that calls halide_error if the supplied condition is false. */
-#define halide_assert(user_context, cond) if (!(cond)) halide_error(user_context, #cond);
+#define halide_assert(user_context, cond) \
+  if (!(cond)) halide_error(user_context, #cond);
 
 /** These are allocated statically inside the runtime, hence the fixed
  * size. They must be initialized with zero. The first time
@@ -69,8 +70,9 @@ extern void halide_error(void *user_context, const char *);
  * mechanism, but makes the lock reliably easy to setup and use
  * without depending on e.g. C++ constructor logic.
  */
-struct halide_mutex {
-    unsigned char _private[64];
+struct halide_mutex
+{
+  unsigned char _private[64];
 };
 
 /** A basic set of mutex functions, which call platform specific code
@@ -93,9 +95,8 @@ extern void halide_mutex_cleanup(struct halide_mutex *mutex_arg);
  * jobs otherwise.
  */
 //@{
-extern int halide_do_par_for(void *user_context,
-                             int (*f)(void *ctx, int, uint8_t *),
-                             int min, int size, uint8_t *closure);
+extern int
+  halide_do_par_for(void *user_context, int (*f)(void *ctx, int, uint8_t *), int min, int size, uint8_t *closure);
 extern void halide_shutdown_thread_pool();
 //@}
 
@@ -120,32 +121,40 @@ extern void halide_free(void *user_context, void *ptr);
  *
  * Cannot be replaced in JITted code at present.
  */
-extern int32_t halide_debug_to_file(void *user_context, const char *filename,
-                                    uint8_t *data, int32_t s0, int32_t s1, int32_t s2,
-                                    int32_t s3, int32_t type_code,
-                                    int32_t bytes_per_element);
+extern int32_t halide_debug_to_file(void *user_context,
+  const char *filename,
+  uint8_t *data,
+  int32_t s0,
+  int32_t s1,
+  int32_t s2,
+  int32_t s3,
+  int32_t type_code,
+  int32_t bytes_per_element);
 
 
-enum halide_trace_event_code {halide_trace_load = 0,
-                              halide_trace_store = 1,
-                              halide_trace_begin_realization = 2,
-                              halide_trace_end_realization = 3,
-                              halide_trace_produce = 4,
-                              halide_trace_update = 5,
-                              halide_trace_consume = 6,
-                              halide_trace_end_consume = 7};
+enum halide_trace_event_code {
+  halide_trace_load = 0,
+  halide_trace_store = 1,
+  halide_trace_begin_realization = 2,
+  halide_trace_end_realization = 3,
+  halide_trace_produce = 4,
+  halide_trace_update = 5,
+  halide_trace_consume = 6,
+  halide_trace_end_consume = 7
+};
 
-struct halide_trace_event {
-    const char *func;
-    halide_trace_event_code event;
-    int32_t parent_id;
-    int32_t type_code;
-    int32_t bits;
-    int32_t vector_width;
-    int32_t value_index;
-    void *value;
-    int32_t dimensions;
-    int32_t *coordinates;
+struct halide_trace_event
+{
+  const char *func;
+  halide_trace_event_code event;
+  int32_t parent_id;
+  int32_t type_code;
+  int32_t bits;
+  int32_t vector_width;
+  int32_t value_index;
+  void *value;
+  int32_t dimensions;
+  int32_t *coordinates;
 };
 
 /** Called when Funcs are marked as trace_load, trace_store, or
@@ -227,16 +236,19 @@ extern int halide_dev_free(void *user_context, struct buffer_t *buf);
  * signature across different Halide gpu backends. Do not call
  * them. */
 // @{
-extern int halide_init_kernels(void *user_context, void **state_ptr,
-                               const char *src, int size);
+extern int halide_init_kernels(void *user_context, void **state_ptr, const char *src, int size);
 extern int halide_dev_run(void *user_context,
-                          void *state_ptr,
-                          const char *entry_name,
-                          int blocksX, int blocksY, int blocksZ,
-                          int threadsX, int threadsY, int threadsZ,
-                          int shared_mem_bytes,
-                          size_t arg_sizes[],
-                          void *args[]);
+  void *state_ptr,
+  const char *entry_name,
+  int blocksX,
+  int blocksY,
+  int blocksZ,
+  int threadsX,
+  int threadsY,
+  int threadsZ,
+  int shared_mem_bytes,
+  size_t arg_sizes[],
+  void *args[]);
 // @}
 
 /** This function is called to populate the buffer_t.dev field with a constant
@@ -311,8 +323,12 @@ extern void halide_memoization_cache_set_size(int64_t size);
  *  return a Tuple, there will only be one buffer_t in the list. The
  *  tuple_count parameters determines the length of the list.
  */
-extern bool halide_memoization_cache_lookup(void *user_context, const uint8_t *cache_key, int32_t size,
-                                            buffer_t *realized_bounds, int32_t tuple_count, buffer_t **tuple_buffers);
+extern bool halide_memoization_cache_lookup(void *user_context,
+  const uint8_t *cache_key,
+  int32_t size,
+  buffer_t *realized_bounds,
+  int32_t tuple_count,
+  buffer_t **tuple_buffers);
 
 /** Given a cache key for a memoized result, currently constructed
  *  from the Func name and top-level Func name plus the arguments of
@@ -325,8 +341,12 @@ extern bool halide_memoization_cache_lookup(void *user_context, const uint8_t *c
  *  only be one buffer_t in the list. The tuple_count parameters
  *  determines the length of the list.
  */
-extern void halide_memoization_cache_store(void *user_context, const uint8_t *cache_key, int32_t size,
-                                           buffer_t *realized_bounds, int32_t tuple_count, buffer_t **tuple_buffers);
+extern void halide_memoization_cache_store(void *user_context,
+  const uint8_t *cache_key,
+  int32_t size,
+  buffer_t *realized_bounds,
+  int32_t tuple_count,
+  buffer_t **tuple_buffers);
 
 
 /** Free all memory and resources associated with the memoization cache.
@@ -335,7 +355,7 @@ extern void halide_memoization_cache_store(void *user_context, const uint8_t *ca
 extern void halide_memoization_cache_cleanup();
 
 #ifdef __cplusplus
-} // End extern "C"
+}// End extern "C"
 #endif
 
-#endif // HALIDE_HALIDERUNTIME_H
+#endif// HALIDE_HALIDERUNTIME_H

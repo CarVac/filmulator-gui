@@ -17,35 +17,37 @@
 #ifdef EIGEN_USE_SYCL
 
 // global pointer to set different attribute state for a class
-template <class T>
-struct MakeGlobalPointer {
+template<class T> struct MakeGlobalPointer
+{
   typedef typename cl::sycl::global_ptr<T>::pointer_t Type;
 };
 
 // global pointer to set different attribute state for a class
-template <class T>
-struct MakeLocalPointer {
+template<class T> struct MakeLocalPointer
+{
   typedef typename cl::sycl::local_ptr<T>::pointer_t Type;
 };
 
 
 namespace Eigen {
 namespace TensorSycl {
-namespace internal {
+  namespace internal {
 
-/// This struct is used for special expression nodes with no operations (for example assign and selectOP).
-  struct NoOP;
+    /// This struct is used for special expression nodes with no operations (for example assign and selectOP).
+    struct NoOP;
 
-template<bool IsConst, typename T> struct GetType{
-  typedef const T Type;
-};
-template<typename T> struct GetType<false, T>{
-  typedef T Type;
-};
+    template<bool IsConst, typename T> struct GetType
+    {
+      typedef const T Type;
+    };
+    template<typename T> struct GetType<false, T>
+    {
+      typedef T Type;
+    };
 
-}
-}
-}
+  }// namespace internal
+}// namespace TensorSycl
+}// namespace Eigen
 
 // tuple construction
 #include "TensorSyclTuple.h"
@@ -78,5 +80,5 @@ template<typename T> struct GetType<false, T>{
 // kernel execution using fusion
 #include "TensorSyclRun.h"
 
-#endif  // end of EIGEN_USE_SYCL
-#endif  // UNSUPPORTED_EIGEN_CXX11_SRC_TENSOR_TENSORSYCL_H
+#endif// end of EIGEN_USE_SYCL
+#endif// UNSUPPORTED_EIGEN_CXX11_SRC_TENSOR_TENSORSYCL_H

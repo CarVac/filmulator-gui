@@ -73,6 +73,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: minRatingSlider
+                    objectName: "minRatingSlider"
                     title: qsTr("Min Rating")
                     tooltipText: qsTr("Controls the minimum rating of images to display.")
                     minimumValue: -1
@@ -106,6 +107,7 @@ SlimSplitView {
 
                 ToolSlider {
                     id: maxRatingSlider
+                    objectName: "maxRatingSlider"
                     title: qsTr("Max Rating")
                     tooltipText: qsTr("Controls the maximum rating of images to display.")
                     minimumValue: -1
@@ -165,6 +167,7 @@ SlimSplitView {
 
             GridView {
                 id: dateHistoView
+                objectName: "dateHistoView"
                 x: 0
                 y: 0
                 width: parent.width
@@ -231,6 +234,7 @@ SlimSplitView {
                     }
                     MouseArea {//Change the date when double-clicked.
                         id: dateChanger
+                        objectName: "dateChanger"
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
                         onDoubleClicked: {
@@ -424,6 +428,7 @@ SlimSplitView {
 
             GridView {
                 id: gridView
+                objectName: "organizeGridView"
                 x: 0
                 y: 0
                 width: parent.width - 5*uiScale
@@ -452,6 +457,7 @@ SlimSplitView {
 
                 delegate: OrganizeDelegate {
                     id: organizeDelegate
+                    objectName: "organizeDelegate"
                     rootDir: organizeModel.thumbDir()
 
                     searchID: STsearchID
@@ -732,5 +738,11 @@ SlimSplitView {
             organizeModel.extendCaptureTimeRange(1)
             gridView.returnToBounds()
         }
+    }
+    function selectDateInHistogram(dateString) {
+        console.log("Searching for date in histogram: " + dateString)
+        organizeModel.setMinMaxCaptureTimeString(dateString)
+        gridView.returnToBounds()
+        return true
     }
 }

@@ -13,116 +13,115 @@
 namespace Eigen {
 
 namespace internal {
-template<typename ViewOp, typename MatrixType>
-struct traits<CwiseUnaryView<ViewOp, MatrixType> >
- : traits<MatrixType>
-{
-  typedef typename result_of<
-                     ViewOp(const typename traits<MatrixType>::Scalar&)
-                   >::type Scalar;
-  typedef typename MatrixType::Nested MatrixTypeNested;
-  typedef typename remove_all<MatrixTypeNested>::type _MatrixTypeNested;
-  enum {
-    FlagsLvalueBit = is_lvalue<MatrixType>::value ? LvalueBit : 0,
-    Flags = traits<_MatrixTypeNested>::Flags & (RowMajorBit | FlagsLvalueBit | DirectAccessBit), // FIXME DirectAccessBit should not be handled by expressions
-    MatrixTypeInnerStride =  inner_stride_at_compile_time<MatrixType>::ret,
-    // need to cast the sizeof's from size_t to int explicitly, otherwise:
-    // "error: no integral type can represent all of the enumerator values
-    InnerStrideAtCompileTime = MatrixTypeInnerStride == Dynamic
-                             ? int(Dynamic)
-                             : int(MatrixTypeInnerStride) * int(sizeof(typename traits<MatrixType>::Scalar) / sizeof(Scalar)),
-    OuterStrideAtCompileTime = outer_stride_at_compile_time<MatrixType>::ret == Dynamic
-                             ? int(Dynamic)
-                             : outer_stride_at_compile_time<MatrixType>::ret * int(sizeof(typename traits<MatrixType>::Scalar) / sizeof(Scalar))
+  template<typename ViewOp, typename MatrixType> struct traits<CwiseUnaryView<ViewOp, MatrixType>> : traits<MatrixType>
+  {
+    typedef typename result_of<ViewOp(const typename traits<MatrixType>::Scalar &)>::type Scalar;
+    typedef typename MatrixType::Nested MatrixTypeNested;
+    typedef typename remove_all<MatrixTypeNested>::type _MatrixTypeNested;
+    enum {
+      FlagsLvalueBit = is_lvalue<MatrixType>::value ? LvalueBit : 0,
+      Flags =
+        traits<_MatrixTypeNested>::Flags
+        & (RowMajorBit | FlagsLvalueBit | DirectAccessBit),// FIXME DirectAccessBit should not be handled by expressions
+      MatrixTypeInnerStride = inner_stride_at_compile_time<MatrixType>::ret,
+      // need to cast the sizeof's from size_t to int explicitly, otherwise:
+      // "error: no integral type can represent all of the enumerator values
+      InnerStrideAtCompileTime =
+        MatrixTypeInnerStride == Dynamic
+          ? int(Dynamic)
+          : int(MatrixTypeInnerStride) * int(sizeof(typename traits<MatrixType>::Scalar) / sizeof(Scalar)),
+      OuterStrideAtCompileTime = outer_stride_at_compile_time<MatrixType>::ret == Dynamic
+                                   ? int(Dynamic)
+                                   : outer_stride_at_compile_time<MatrixType>::ret
+                                       * int(sizeof(typename traits<MatrixType>::Scalar) / sizeof(Scalar))
+    };
   };
-};
-}
+}// namespace internal
 
-template<typename ViewOp, typename MatrixType, typename StorageKind>
-class CwiseUnaryViewImpl;
+template<typename ViewOp, typename MatrixType, typename StorageKind> class CwiseUnaryViewImpl;
 
 /** \class CwiseUnaryView
-  * \ingroup Core_Module
-  *
-  * \brief Generic lvalue expression of a coefficient-wise unary operator of a matrix or a vector
-  *
-  * \tparam ViewOp template functor implementing the view
-  * \tparam MatrixType the type of the matrix we are applying the unary operator
-  *
-  * This class represents a lvalue expression of a generic unary view operator of a matrix or a vector.
-  * It is the return type of real() and imag(), and most of the time this is the only way it is used.
-  *
-  * \sa MatrixBase::unaryViewExpr(const CustomUnaryOp &) const, class CwiseUnaryOp
-  */
+ * \ingroup Core_Module
+ *
+ * \brief Generic lvalue expression of a coefficient-wise unary operator of a matrix or a vector
+ *
+ * \tparam ViewOp template functor implementing the view
+ * \tparam MatrixType the type of the matrix we are applying the unary operator
+ *
+ * This class represents a lvalue expression of a generic unary view operator of a matrix or a vector.
+ * It is the return type of real() and imag(), and most of the time this is the only way it is used.
+ *
+ * \sa MatrixBase::unaryViewExpr(const CustomUnaryOp &) const, class CwiseUnaryOp
+ */
 template<typename ViewOp, typename MatrixType>
 class CwiseUnaryView : public CwiseUnaryViewImpl<ViewOp, MatrixType, typename internal::traits<MatrixType>::StorageKind>
 {
-  public:
+public:
+  typedef
+    typename CwiseUnaryViewImpl<ViewOp, MatrixType, typename internal::traits<MatrixType>::StorageKind>::Base Base;
+  EIGEN_GENERIC_PUBLIC_INTERFACE(CwiseUnaryView)
+  typedef typename internal::ref_selector<MatrixType>::non_const_type MatrixTypeNested;
+  typedef typename internal::remove_all<MatrixType>::type NestedExpression;
 
-    typedef typename CwiseUnaryViewImpl<ViewOp, MatrixType,typename internal::traits<MatrixType>::StorageKind>::Base Base;
-    EIGEN_GENERIC_PUBLIC_INTERFACE(CwiseUnaryView)
-    typedef typename internal::ref_selector<MatrixType>::non_const_type MatrixTypeNested;
-    typedef typename internal::remove_all<MatrixType>::type NestedExpression;
+  explicit inline CwiseUnaryView(MatrixType &mat, const ViewOp &func = ViewOp()) : m_matrix(mat), m_functor(func) {}
 
-    explicit inline CwiseUnaryView(MatrixType& mat, const ViewOp& func = ViewOp())
-      : m_matrix(mat), m_functor(func) {}
+  EIGEN_INHERIT_ASSIGNMENT_OPERATORS(CwiseUnaryView)
 
-    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(CwiseUnaryView)
+  EIGEN_STRONG_INLINE Index rows() const { return m_matrix.rows(); }
+  EIGEN_STRONG_INLINE Index cols() const { return m_matrix.cols(); }
 
-    EIGEN_STRONG_INLINE Index rows() const { return m_matrix.rows(); }
-    EIGEN_STRONG_INLINE Index cols() const { return m_matrix.cols(); }
+  /** \returns the functor representing unary operation */
+  const ViewOp &functor() const { return m_functor; }
 
-    /** \returns the functor representing unary operation */
-    const ViewOp& functor() const { return m_functor; }
+  /** \returns the nested expression */
+  const typename internal::remove_all<MatrixTypeNested>::type &nestedExpression() const { return m_matrix; }
 
-    /** \returns the nested expression */
-    const typename internal::remove_all<MatrixTypeNested>::type&
-    nestedExpression() const { return m_matrix; }
+  /** \returns the nested expression */
+  typename internal::remove_reference<MatrixTypeNested>::type &nestedExpression()
+  {
+    return m_matrix.const_cast_derived();
+  }
 
-    /** \returns the nested expression */
-    typename internal::remove_reference<MatrixTypeNested>::type&
-    nestedExpression() { return m_matrix.const_cast_derived(); }
-
-  protected:
-    MatrixTypeNested m_matrix;
-    ViewOp m_functor;
+protected:
+  MatrixTypeNested m_matrix;
+  ViewOp m_functor;
 };
 
 // Generic API dispatcher
 template<typename ViewOp, typename XprType, typename StorageKind>
-class CwiseUnaryViewImpl
-  : public internal::generic_xpr_base<CwiseUnaryView<ViewOp, XprType> >::type
+class CwiseUnaryViewImpl : public internal::generic_xpr_base<CwiseUnaryView<ViewOp, XprType>>::type
 {
 public:
-  typedef typename internal::generic_xpr_base<CwiseUnaryView<ViewOp, XprType> >::type Base;
+  typedef typename internal::generic_xpr_base<CwiseUnaryView<ViewOp, XprType>>::type Base;
 };
 
 template<typename ViewOp, typename MatrixType>
-class CwiseUnaryViewImpl<ViewOp,MatrixType,Dense>
-  : public internal::dense_xpr_base< CwiseUnaryView<ViewOp, MatrixType> >::type
+class CwiseUnaryViewImpl<ViewOp, MatrixType, Dense>
+  : public internal::dense_xpr_base<CwiseUnaryView<ViewOp, MatrixType>>::type
 {
-  public:
+public:
+  typedef CwiseUnaryView<ViewOp, MatrixType> Derived;
+  typedef typename internal::dense_xpr_base<CwiseUnaryView<ViewOp, MatrixType>>::type Base;
 
-    typedef CwiseUnaryView<ViewOp, MatrixType> Derived;
-    typedef typename internal::dense_xpr_base< CwiseUnaryView<ViewOp, MatrixType> >::type Base;
+  EIGEN_DENSE_PUBLIC_INTERFACE(Derived)
+  EIGEN_INHERIT_ASSIGNMENT_OPERATORS(CwiseUnaryViewImpl)
 
-    EIGEN_DENSE_PUBLIC_INTERFACE(Derived)
-    EIGEN_INHERIT_ASSIGNMENT_OPERATORS(CwiseUnaryViewImpl)
-    
-    EIGEN_DEVICE_FUNC inline Scalar* data() { return &(this->coeffRef(0)); }
-    EIGEN_DEVICE_FUNC inline const Scalar* data() const { return &(this->coeff(0)); }
+  EIGEN_DEVICE_FUNC inline Scalar *data() { return &(this->coeffRef(0)); }
+  EIGEN_DEVICE_FUNC inline const Scalar *data() const { return &(this->coeff(0)); }
 
-    EIGEN_DEVICE_FUNC inline Index innerStride() const
-    {
-      return derived().nestedExpression().innerStride() * sizeof(typename internal::traits<MatrixType>::Scalar) / sizeof(Scalar);
-    }
+  EIGEN_DEVICE_FUNC inline Index innerStride() const
+  {
+    return derived().nestedExpression().innerStride() * sizeof(typename internal::traits<MatrixType>::Scalar)
+           / sizeof(Scalar);
+  }
 
-    EIGEN_DEVICE_FUNC inline Index outerStride() const
-    {
-      return derived().nestedExpression().outerStride() * sizeof(typename internal::traits<MatrixType>::Scalar) / sizeof(Scalar);
-    }
+  EIGEN_DEVICE_FUNC inline Index outerStride() const
+  {
+    return derived().nestedExpression().outerStride() * sizeof(typename internal::traits<MatrixType>::Scalar)
+           / sizeof(Scalar);
+  }
 };
 
-} // end namespace Eigen
+}// end namespace Eigen
 
-#endif // EIGEN_CWISE_UNARY_VIEW_H
+#endif// EIGEN_CWISE_UNARY_VIEW_H

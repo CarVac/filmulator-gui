@@ -9,14 +9,15 @@
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #define EIGEN_USE_THREADS
-#include <cstdlib>
 #include "main.h"
 #include <Eigen/CXX11/ThreadPool>
+#include <cstdlib>
 
 
 // Visual studio doesn't implement a rand_r() function since its
 // implementation of rand() is already thread safe
-int rand_reentrant(unsigned int* s) {
+int rand_reentrant(unsigned int *s)
+{
 #ifdef EIGEN_COMP_MSVC_STRICT
   EIGEN_UNUSED_VARIABLE(s);
   return rand();

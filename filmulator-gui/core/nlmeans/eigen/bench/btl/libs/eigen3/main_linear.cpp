@@ -15,21 +15,19 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-#include "utilities.h"
-#include "eigen3_interface.hh"
-#include "bench.hh"
 #include "basic_actions.hh"
+#include "bench.hh"
+#include "eigen3_interface.hh"
+#include "utilities.h"
 
 BTL_MAIN;
 
 int main()
 {
 
-  bench<Action_axpy<eigen3_interface<REAL_TYPE> > >(MIN_AXPY,MAX_AXPY,NB_POINT);
-  bench<Action_axpby<eigen3_interface<REAL_TYPE> > >(MIN_AXPY,MAX_AXPY,NB_POINT);
-  bench<Action_rot<eigen3_interface<REAL_TYPE> > >(MIN_AXPY,MAX_AXPY,NB_POINT);
-  
+  bench<Action_axpy<eigen3_interface<REAL_TYPE>>>(MIN_AXPY, MAX_AXPY, NB_POINT);
+  bench<Action_axpby<eigen3_interface<REAL_TYPE>>>(MIN_AXPY, MAX_AXPY, NB_POINT);
+  bench<Action_rot<eigen3_interface<REAL_TYPE>>>(MIN_AXPY, MAX_AXPY, NB_POINT);
+
   return 0;
 }
-
-

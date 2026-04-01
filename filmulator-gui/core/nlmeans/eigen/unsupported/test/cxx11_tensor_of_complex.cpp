@@ -15,7 +15,6 @@ using Eigen::Tensor;
 using Eigen::TensorMap;
 
 
-
 static void test_additions()
 {
   Tensor<std::complex<float>, 1> data1(3);
@@ -26,9 +25,7 @@ static void test_additions()
   }
 
   Tensor<std::complex<float>, 1> sum = data1 + data2;
-  for (int i = 0; i < 3; ++i) {
-    VERIFY_IS_EQUAL(sum(i),  std::complex<float>(2*i, 6*i));
-  }
+  for (int i = 0; i < 3; ++i) { VERIFY_IS_EQUAL(sum(i), std::complex<float>(2 * i, 6 * i)); }
 }
 
 

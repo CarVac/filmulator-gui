@@ -9,8 +9,8 @@
 
 #include "main.h"
 
-#include <array>
 #include <Eigen/CXX11/src/util/CXX11Meta.h>
+#include <array>
 
 using Eigen::internal::is_same;
 using Eigen::internal::type_list;
@@ -47,30 +47,86 @@ using Eigen::internal::array_apply_and_reduce;
 using Eigen::internal::repeat;
 using Eigen::internal::instantiate_by_c_array;
 
-struct dummy_a {};
-struct dummy_b {};
-struct dummy_c {};
-struct dummy_d {};
-struct dummy_e {};
+struct dummy_a
+{
+};
+struct dummy_b
+{
+};
+struct dummy_c
+{
+};
+struct dummy_d
+{
+};
+struct dummy_e
+{
+};
 
 // dummy operation for testing apply
 template<typename A, typename B> struct dummy_op;
-template<> struct dummy_op<dummy_a, dummy_b> { typedef dummy_c type; };
-template<> struct dummy_op<dummy_b, dummy_a> { typedef dummy_d type; };
-template<> struct dummy_op<dummy_b, dummy_c> { typedef dummy_a type; };
-template<> struct dummy_op<dummy_c, dummy_b> { typedef dummy_d type; };
-template<> struct dummy_op<dummy_c, dummy_a> { typedef dummy_b type; };
-template<> struct dummy_op<dummy_a, dummy_c> { typedef dummy_d type; };
-template<> struct dummy_op<dummy_a, dummy_a> { typedef dummy_e type; };
-template<> struct dummy_op<dummy_b, dummy_b> { typedef dummy_e type; };
-template<> struct dummy_op<dummy_c, dummy_c> { typedef dummy_e type; };
+template<> struct dummy_op<dummy_a, dummy_b>
+{
+  typedef dummy_c type;
+};
+template<> struct dummy_op<dummy_b, dummy_a>
+{
+  typedef dummy_d type;
+};
+template<> struct dummy_op<dummy_b, dummy_c>
+{
+  typedef dummy_a type;
+};
+template<> struct dummy_op<dummy_c, dummy_b>
+{
+  typedef dummy_d type;
+};
+template<> struct dummy_op<dummy_c, dummy_a>
+{
+  typedef dummy_b type;
+};
+template<> struct dummy_op<dummy_a, dummy_c>
+{
+  typedef dummy_d type;
+};
+template<> struct dummy_op<dummy_a, dummy_a>
+{
+  typedef dummy_e type;
+};
+template<> struct dummy_op<dummy_b, dummy_b>
+{
+  typedef dummy_e type;
+};
+template<> struct dummy_op<dummy_c, dummy_c>
+{
+  typedef dummy_e type;
+};
 
-template<typename A, typename B> struct dummy_test { constexpr static bool value = false; constexpr static int global_flags = 0; };
-template<> struct dummy_test<dummy_a, dummy_a>     { constexpr static bool value = true;  constexpr static int global_flags = 1; };
-template<> struct dummy_test<dummy_b, dummy_b>     { constexpr static bool value = true;  constexpr static int global_flags = 2; };
-template<> struct dummy_test<dummy_c, dummy_c>     { constexpr static bool value = true;  constexpr static int global_flags = 4; };
+template<typename A, typename B> struct dummy_test
+{
+  constexpr static bool value = false;
+  constexpr static int global_flags = 0;
+};
+template<> struct dummy_test<dummy_a, dummy_a>
+{
+  constexpr static bool value = true;
+  constexpr static int global_flags = 1;
+};
+template<> struct dummy_test<dummy_b, dummy_b>
+{
+  constexpr static bool value = true;
+  constexpr static int global_flags = 2;
+};
+template<> struct dummy_test<dummy_c, dummy_c>
+{
+  constexpr static bool value = true;
+  constexpr static int global_flags = 4;
+};
 
-struct times2_op { template<typename A> static A run(A v) { return v * 2; } };
+struct times2_op
+{
+  template<typename A> static A run(A v) { return v * 2; }
+};
 
 struct dummy_inst
 {
@@ -96,64 +152,86 @@ static void test_gen_numeric_list()
   VERIFY((is_same<typename gen_numeric_list<int, 1, 42>::type, numeric_list<int, 42>>::value));
   VERIFY((is_same<typename gen_numeric_list<int, 2, 42>::type, numeric_list<int, 42, 43>>::value));
   VERIFY((is_same<typename gen_numeric_list<int, 5, 42>::type, numeric_list<int, 42, 43, 44, 45, 46>>::value));
-  VERIFY((is_same<typename gen_numeric_list<int, 10, 42>::type, numeric_list<int, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51>>::value));
+  VERIFY((is_same<typename gen_numeric_list<int, 10, 42>::type,
+    numeric_list<int, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51>>::value));
 
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 0>::type, numeric_list<int>>::value));
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 1>::type, numeric_list<int, 0>>::value));
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 2>::type, numeric_list<int, 1, 0>>::value));
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 5>::type, numeric_list<int, 4, 3, 2, 1, 0>>::value));
-  VERIFY((is_same<typename gen_numeric_list_reversed<int, 10>::type, numeric_list<int, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0>>::value));
+  VERIFY((is_same<typename gen_numeric_list_reversed<int, 10>::type,
+    numeric_list<int, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0>>::value));
 
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 0, 42>::type, numeric_list<int>>::value));
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 1, 42>::type, numeric_list<int, 42>>::value));
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 2, 42>::type, numeric_list<int, 43, 42>>::value));
   VERIFY((is_same<typename gen_numeric_list_reversed<int, 5, 42>::type, numeric_list<int, 46, 45, 44, 43, 42>>::value));
-  VERIFY((is_same<typename gen_numeric_list_reversed<int, 10, 42>::type, numeric_list<int, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42>>::value));
+  VERIFY((is_same<typename gen_numeric_list_reversed<int, 10, 42>::type,
+    numeric_list<int, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42>>::value));
 
   VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 0, 2, 3>::type, numeric_list<int>>::value));
   VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 1, 2, 3>::type, numeric_list<int, 0>>::value));
   VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 2, 2, 3>::type, numeric_list<int, 0, 1>>::value));
-  VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 5, 2, 3>::type, numeric_list<int, 0, 1, 3, 2, 4>>::value));
-  VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 10, 2, 3>::type, numeric_list<int, 0, 1, 3, 2, 4, 5, 6, 7, 8, 9>>::value));
+  VERIFY(
+    (is_same<typename gen_numeric_list_swapped_pair<int, 5, 2, 3>::type, numeric_list<int, 0, 1, 3, 2, 4>>::value));
+  VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 10, 2, 3>::type,
+    numeric_list<int, 0, 1, 3, 2, 4, 5, 6, 7, 8, 9>>::value));
 
   VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 0, 44, 45, 42>::type, numeric_list<int>>::value));
   VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 1, 44, 45, 42>::type, numeric_list<int, 42>>::value));
   VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 2, 44, 45, 42>::type, numeric_list<int, 42, 43>>::value));
-  VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 5, 44, 45, 42>::type, numeric_list<int, 42, 43, 45, 44, 46>>::value));
-  VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 10, 44, 45, 42>::type, numeric_list<int, 42, 43, 45, 44, 46, 47, 48, 49, 50, 51>>::value));
+  VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 5, 44, 45, 42>::type,
+    numeric_list<int, 42, 43, 45, 44, 46>>::value));
+  VERIFY((is_same<typename gen_numeric_list_swapped_pair<int, 10, 44, 45, 42>::type,
+    numeric_list<int, 42, 43, 45, 44, 46, 47, 48, 49, 50, 51>>::value));
 
   VERIFY((is_same<typename gen_numeric_list_repeated<int, 0, 0>::type, numeric_list<int>>::value));
   VERIFY((is_same<typename gen_numeric_list_repeated<int, 1, 0>::type, numeric_list<int, 0>>::value));
   VERIFY((is_same<typename gen_numeric_list_repeated<int, 2, 0>::type, numeric_list<int, 0, 0>>::value));
   VERIFY((is_same<typename gen_numeric_list_repeated<int, 5, 0>::type, numeric_list<int, 0, 0, 0, 0, 0>>::value));
-  VERIFY((is_same<typename gen_numeric_list_repeated<int, 10, 0>::type, numeric_list<int, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>::value));
+  VERIFY((is_same<typename gen_numeric_list_repeated<int, 10, 0>::type,
+    numeric_list<int, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>>::value));
 }
 
 static void test_concat()
 {
-  VERIFY((is_same<typename concat<type_list<dummy_a, dummy_a>, type_list<>>::type, type_list<dummy_a, dummy_a>>::value));
-  VERIFY((is_same<typename concat<type_list<>, type_list<dummy_a, dummy_a>>::type, type_list<dummy_a, dummy_a>>::value));
-  VERIFY((is_same<typename concat<type_list<dummy_a, dummy_a>, type_list<dummy_a, dummy_a>>::type, type_list<dummy_a, dummy_a, dummy_a, dummy_a>>::value));
-  VERIFY((is_same<typename concat<type_list<dummy_a, dummy_a>, type_list<dummy_b, dummy_c>>::type, type_list<dummy_a, dummy_a, dummy_b, dummy_c>>::value));
-  VERIFY((is_same<typename concat<type_list<dummy_a>, type_list<dummy_b, dummy_c>>::type, type_list<dummy_a, dummy_b, dummy_c>>::value));
+  VERIFY(
+    (is_same<typename concat<type_list<dummy_a, dummy_a>, type_list<>>::type, type_list<dummy_a, dummy_a>>::value));
+  VERIFY(
+    (is_same<typename concat<type_list<>, type_list<dummy_a, dummy_a>>::type, type_list<dummy_a, dummy_a>>::value));
+  VERIFY((is_same<typename concat<type_list<dummy_a, dummy_a>, type_list<dummy_a, dummy_a>>::type,
+    type_list<dummy_a, dummy_a, dummy_a, dummy_a>>::value));
+  VERIFY((is_same<typename concat<type_list<dummy_a, dummy_a>, type_list<dummy_b, dummy_c>>::type,
+    type_list<dummy_a, dummy_a, dummy_b, dummy_c>>::value));
+  VERIFY((is_same<typename concat<type_list<dummy_a>, type_list<dummy_b, dummy_c>>::type,
+    type_list<dummy_a, dummy_b, dummy_c>>::value));
 
   VERIFY((is_same<typename concat<numeric_list<int, 0, 0>, numeric_list<int>>::type, numeric_list<int, 0, 0>>::value));
   VERIFY((is_same<typename concat<numeric_list<int>, numeric_list<int, 0, 0>>::type, numeric_list<int, 0, 0>>::value));
-  VERIFY((is_same<typename concat<numeric_list<int, 0, 0>, numeric_list<int, 0, 0>>::type, numeric_list<int, 0, 0, 0, 0>>::value));
-  VERIFY((is_same<typename concat<numeric_list<int, 0, 0>, numeric_list<int, 1, 2>>::type, numeric_list<int, 0, 0, 1, 2>>::value));
-  VERIFY((is_same<typename concat<numeric_list<int, 0>, numeric_list<int, 1, 2>>::type, numeric_list<int, 0, 1, 2>>::value));
+  VERIFY((is_same<typename concat<numeric_list<int, 0, 0>, numeric_list<int, 0, 0>>::type,
+    numeric_list<int, 0, 0, 0, 0>>::value));
+  VERIFY((is_same<typename concat<numeric_list<int, 0, 0>, numeric_list<int, 1, 2>>::type,
+    numeric_list<int, 0, 0, 1, 2>>::value));
+  VERIFY(
+    (is_same<typename concat<numeric_list<int, 0>, numeric_list<int, 1, 2>>::type, numeric_list<int, 0, 1, 2>>::value));
 
   VERIFY((is_same<typename mconcat<type_list<dummy_a>>::type, type_list<dummy_a>>::value));
   VERIFY((is_same<typename mconcat<type_list<dummy_a>, type_list<dummy_b>>::type, type_list<dummy_a, dummy_b>>::value));
-  VERIFY((is_same<typename mconcat<type_list<dummy_a>, type_list<dummy_b>, type_list<dummy_c>>::type, type_list<dummy_a, dummy_b, dummy_c>>::value));
-  VERIFY((is_same<typename mconcat<type_list<dummy_a>, type_list<dummy_b, dummy_c>>::type, type_list<dummy_a, dummy_b, dummy_c>>::value));
-  VERIFY((is_same<typename mconcat<type_list<dummy_a, dummy_b>, type_list<dummy_c>>::type, type_list<dummy_a, dummy_b, dummy_c>>::value));
+  VERIFY((is_same<typename mconcat<type_list<dummy_a>, type_list<dummy_b>, type_list<dummy_c>>::type,
+    type_list<dummy_a, dummy_b, dummy_c>>::value));
+  VERIFY((is_same<typename mconcat<type_list<dummy_a>, type_list<dummy_b, dummy_c>>::type,
+    type_list<dummy_a, dummy_b, dummy_c>>::value));
+  VERIFY((is_same<typename mconcat<type_list<dummy_a, dummy_b>, type_list<dummy_c>>::type,
+    type_list<dummy_a, dummy_b, dummy_c>>::value));
 
   VERIFY((is_same<typename mconcat<numeric_list<int, 0>>::type, numeric_list<int, 0>>::value));
   VERIFY((is_same<typename mconcat<numeric_list<int, 0>, numeric_list<int, 1>>::type, numeric_list<int, 0, 1>>::value));
-  VERIFY((is_same<typename mconcat<numeric_list<int, 0>, numeric_list<int, 1>, numeric_list<int, 2>>::type, numeric_list<int, 0, 1, 2>>::value));
-  VERIFY((is_same<typename mconcat<numeric_list<int, 0>, numeric_list<int, 1, 2>>::type, numeric_list<int, 0, 1, 2>>::value));
-  VERIFY((is_same<typename mconcat<numeric_list<int, 0, 1>, numeric_list<int, 2>>::type, numeric_list<int, 0, 1, 2>>::value));
+  VERIFY((is_same<typename mconcat<numeric_list<int, 0>, numeric_list<int, 1>, numeric_list<int, 2>>::type,
+    numeric_list<int, 0, 1, 2>>::value));
+  VERIFY((
+    is_same<typename mconcat<numeric_list<int, 0>, numeric_list<int, 1, 2>>::type, numeric_list<int, 0, 1, 2>>::value));
+  VERIFY((
+    is_same<typename mconcat<numeric_list<int, 0, 1>, numeric_list<int, 2>>::type, numeric_list<int, 0, 1, 2>>::value));
 }
 
 static void test_slice()
@@ -176,7 +254,7 @@ static void test_slice()
   VERIFY((is_same<typename take<4, il>::type, numeric_list<int, 0, 1, 2, 3>>::value));
   VERIFY((is_same<typename take<5, il>::type, numeric_list<int, 0, 1, 2, 3, 4>>::value));
   VERIFY((is_same<typename take<6, il>::type, numeric_list<int, 0, 1, 2, 3, 4, 5>>::value));
-  
+
   VERIFY((is_same<typename skip<0, tl>::type, type_list<dummy_a, dummy_a, dummy_b, dummy_b, dummy_c, dummy_c>>::value));
   VERIFY((is_same<typename skip<1, tl>::type, type_list<dummy_a, dummy_b, dummy_b, dummy_c, dummy_c>>::value));
   VERIFY((is_same<typename skip<2, tl>::type, type_list<dummy_b, dummy_b, dummy_c, dummy_c>>::value));
@@ -226,17 +304,9 @@ static void test_id_helper(dummy_a a, dummy_a b, dummy_a c)
   (void)c;
 }
 
-template<int... ii>
-static void test_id_numeric()
-{
-  test_id_helper(typename id_numeric<int, ii, dummy_a>::type()...);
-}
+template<int... ii> static void test_id_numeric() { test_id_helper(typename id_numeric<int, ii, dummy_a>::type()...); }
 
-template<typename... tt>
-static void test_id_type()
-{
-  test_id_helper(typename id_type<tt, dummy_a>::type()...);
-}
+template<typename... tt> static void test_id_type() { test_id_helper(typename id_type<tt, dummy_a>::type()...); }
 
 static void test_id()
 {
@@ -257,8 +327,10 @@ static void test_is_same_gf()
 static void test_apply_op()
 {
   typedef type_list<dummy_a, dummy_b, dummy_c> tl;
-  VERIFY((!!is_same<typename apply_op_from_left<dummy_op, dummy_a, tl>::type, type_list<dummy_e, dummy_c, dummy_d>>::value));
-  VERIFY((!!is_same<typename apply_op_from_right<dummy_op, dummy_a, tl>::type, type_list<dummy_e, dummy_d, dummy_b>>::value));
+  VERIFY(
+    (!!is_same<typename apply_op_from_left<dummy_op, dummy_a, tl>::type, type_list<dummy_e, dummy_c, dummy_d>>::value));
+  VERIFY((
+    !!is_same<typename apply_op_from_right<dummy_op, dummy_a, tl>::type, type_list<dummy_e, dummy_d, dummy_b>>::value));
 }
 
 static void test_contained_in_list()
@@ -286,16 +358,16 @@ static void test_contained_in_list()
 
 static void test_arg_reductions()
 {
-  VERIFY_IS_EQUAL(arg_sum(1,2,3,4), 10);
-  VERIFY_IS_EQUAL(arg_prod(1,2,3,4), 24);
+  VERIFY_IS_EQUAL(arg_sum(1, 2, 3, 4), 10);
+  VERIFY_IS_EQUAL(arg_prod(1, 2, 3, 4), 24);
   VERIFY_IS_APPROX(arg_sum(0.5, 2, 5), 7.5);
   VERIFY_IS_APPROX(arg_prod(0.5, 2, 5), 5.0);
 }
 
 static void test_array_reverse_and_reduce()
 {
-  array<int, 6> a{{4, 8, 15, 16, 23, 42}};
-  array<int, 6> b{{42, 23, 16, 15, 8, 4}};
+  array<int, 6> a{ { 4, 8, 15, 16, 23, 42 } };
+  array<int, 6> b{ { 42, 23, 16, 15, 8, 4 } };
 
   // there is no operator<< for std::array, so VERIFY_IS_EQUAL will
   // not compile
@@ -309,11 +381,11 @@ static void test_array_reverse_and_reduce()
 
 static void test_array_zip_and_apply()
 {
-  array<int, 6> a{{4, 8, 15, 16, 23, 42}};
-  array<int, 6> b{{0, 1, 2, 3, 4, 5}};
-  array<int, 6> c{{4, 9, 17, 19, 27, 47}};
-  array<int, 6> d{{0, 8, 30, 48, 92, 210}};
-  array<int, 6> e{{0, 2, 4, 6, 8, 10}};
+  array<int, 6> a{ { 4, 8, 15, 16, 23, 42 } };
+  array<int, 6> b{ { 0, 1, 2, 3, 4, 5 } };
+  array<int, 6> c{ { 4, 9, 17, 19, 27, 47 } };
+  array<int, 6> d{ { 0, 8, 30, 48, 92, 210 } };
+  array<int, 6> e{ { 0, 2, 4, 6, 8, 10 } };
 
   VERIFY((array_zip<sum_op>(a, b) == c));
   VERIFY((array_zip<product_op>(a, b) == d));
@@ -326,8 +398,8 @@ static void test_array_zip_and_apply()
 
 static void test_array_misc()
 {
-  array<int, 3> a3{{1, 1, 1}};
-  array<int, 6> a6{{2, 2, 2, 2, 2, 2}};
+  array<int, 3> a3{ { 1, 1, 1 } };
+  array<int, 6> a6{ { 2, 2, 2, 2, 2, 2 } };
   VERIFY((repeat<3, int>(1) == a3));
   VERIFY((repeat<6, int>(2) == a6));
 

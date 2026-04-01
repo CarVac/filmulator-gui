@@ -1,0 +1,33 @@
+#!/bin/bash
+# Check if clang-format is installed
+if ! command -v clang-format &> /dev/null; then
+    echo "clang-format not found. Skipping format check."
+    exit 0
+fi
+
+# Get list of staged files that are C/C++ source
+files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(cpp|c|cc|cxx|h|hpp|hxx)$')
+
+if [ -z "$files" ]; then
+    exit 0
+fi
+
+failed=0
+for file in $files; do
+    if [ -f "$file" ]; then
+        # Check formatting
+        output=$(clang-format -output-replacements-xml "$file")
+        if [[ $output == *"<replacement "* ]]; then
+            echo "Format check failed: $file"
+            failed=1
+        fi
+    fi
+done
+
+if [ $failed -eq 1 ]; then
+    echo "Error: Some files are not formatted properly."
+    echo "Please format them (e.g., using your IDE or 'cmake --build build --target format') and stage the changes."
+    exit 1
+fi
+
+exit 0

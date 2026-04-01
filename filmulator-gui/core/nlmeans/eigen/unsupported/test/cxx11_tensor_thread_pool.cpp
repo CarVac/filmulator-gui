@@ -11,17 +11,17 @@
 
 
 #include "main.h"
-#include <iostream>
 #include <Eigen/CXX11/Tensor>
+#include <iostream>
 
 using Eigen::Tensor;
 
 
 void test_multithread_elementwise()
 {
-  Tensor<float, 3> in1(2,3,7);
-  Tensor<float, 3> in2(2,3,7);
-  Tensor<float, 3> out(2,3,7);
+  Tensor<float, 3> in1(2, 3, 7);
+  Tensor<float, 3> in2(2, 3, 7);
+  Tensor<float, 3> out(2, 3, 7);
 
   in1.setRandom();
   in2.setRandom();
@@ -32,9 +32,7 @@ void test_multithread_elementwise()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      for (int k = 0; k < 7; ++k) {
-        VERIFY_IS_APPROX(out(i,j,k), in1(i,j,k) + in2(i,j,k) * 3.14f);
-      }
+      for (int k = 0; k < 7; ++k) { VERIFY_IS_APPROX(out(i, j, k), in1(i, j, k) + in2(i, j, k) * 3.14f); }
     }
   }
 }
@@ -42,9 +40,9 @@ void test_multithread_elementwise()
 
 void test_multithread_compound_assignment()
 {
-  Tensor<float, 3> in1(2,3,7);
-  Tensor<float, 3> in2(2,3,7);
-  Tensor<float, 3> out(2,3,7);
+  Tensor<float, 3> in1(2, 3, 7);
+  Tensor<float, 3> in2(2, 3, 7);
+  Tensor<float, 3> out(2, 3, 7);
 
   in1.setRandom();
   in2.setRandom();
@@ -56,15 +54,12 @@ void test_multithread_compound_assignment()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      for (int k = 0; k < 7; ++k) {
-        VERIFY_IS_APPROX(out(i,j,k), in1(i,j,k) + in2(i,j,k) * 3.14f);
-      }
+      for (int k = 0; k < 7; ++k) { VERIFY_IS_APPROX(out(i, j, k), in1(i, j, k) + in2(i, j, k) * 3.14f); }
     }
   }
 }
 
-template<int DataLayout>
-void test_multithread_contraction()
+template<int DataLayout> void test_multithread_contraction()
 {
   Tensor<float, 4, DataLayout> t_left(30, 50, 37, 31);
   Tensor<float, 5, DataLayout> t_right(37, 31, 70, 2, 10);
@@ -75,7 +70,7 @@ void test_multithread_contraction()
 
   // this contraction should be equivalent to a single matrix multiplication
   typedef Tensor<float, 1>::DimensionPair DimPair;
-  Eigen::array<DimPair, 2> dims({{DimPair(2, 0), DimPair(3, 1)}});
+  Eigen::array<DimPair, 2> dims({ { DimPair(2, 0), DimPair(3, 1) } });
 
   typedef Map<Matrix<float, Dynamic, Dynamic, DataLayout>> MapXf;
   MapXf m_left(t_left.data(), 1500, 1147);
@@ -89,26 +84,20 @@ void test_multithread_contraction()
   t_result.device(thread_pool_device) = t_left.contract(t_right, dims);
   m_result = m_left * m_right;
 
- for (ptrdiff_t i = 0; i < t_result.size(); i++) {
+  for (ptrdiff_t i = 0; i < t_result.size(); i++) {
     VERIFY(&t_result.data()[i] != &m_result.data()[i]);
-    if (fabsf(t_result(i) - m_result(i)) < 1e-4f) {
-      continue;
-    }
-    if (Eigen::internal::isApprox(t_result(i), m_result(i), 1e-4f)) {
-      continue;
-    }
-    std::cout << "mismatch detected at index " << i << ": " << t_result(i)
-              << " vs " <<  m_result(i) << std::endl;
+    if (fabsf(t_result(i) - m_result(i)) < 1e-4f) { continue; }
+    if (Eigen::internal::isApprox(t_result(i), m_result(i), 1e-4f)) { continue; }
+    std::cout << "mismatch detected at index " << i << ": " << t_result(i) << " vs " << m_result(i) << std::endl;
     assert(false);
   }
 }
 
-template<int DataLayout>
-void test_contraction_corner_cases()
+template<int DataLayout> void test_contraction_corner_cases()
 {
   Tensor<float, 2, DataLayout> t_left(32, 500);
-  Tensor<float, 2, DataLayout> t_right(32, 28*28);
-  Tensor<float, 2, DataLayout> t_result(500, 28*28);
+  Tensor<float, 2, DataLayout> t_right(32, 28 * 28);
+  Tensor<float, 2, DataLayout> t_result(500, 28 * 28);
 
   t_left = (t_left.constant(-0.5f) + t_left.random()) * 2.0f;
   t_right = (t_right.constant(-0.6f) + t_right.random()) * 2.0f;
@@ -116,12 +105,12 @@ void test_contraction_corner_cases()
 
   // this contraction should be equivalent to a single matrix multiplication
   typedef Tensor<float, 1>::DimensionPair DimPair;
-  Eigen::array<DimPair, 1> dims{{DimPair(0, 0)}};
+  Eigen::array<DimPair, 1> dims{ { DimPair(0, 0) } };
 
   typedef Map<Matrix<float, Dynamic, Dynamic, DataLayout>> MapXf;
   MapXf m_left(t_left.data(), 32, 500);
-  MapXf m_right(t_right.data(), 32, 28*28);
-  Matrix<float, Dynamic, Dynamic, DataLayout> m_result(500, 28*28);
+  MapXf m_right(t_right.data(), 32, 28 * 28);
+  Matrix<float, Dynamic, Dynamic, DataLayout> m_result(500, 28 * 28);
 
   Eigen::ThreadPool tp(12);
   Eigen::ThreadPoolDevice thread_pool_device(&tp, 12);
@@ -133,22 +122,23 @@ void test_contraction_corner_cases()
   for (ptrdiff_t i = 0; i < t_result.size(); i++) {
     assert(!(numext::isnan)(t_result.data()[i]));
     if (fabsf(t_result.data()[i] - m_result.data()[i]) >= 1e-4f) {
-      std::cout << "mismatch detected at index " << i << " : " << t_result.data()[i] << " vs " <<  m_result.data()[i] << std::endl;
+      std::cout << "mismatch detected at index " << i << " : " << t_result.data()[i] << " vs " << m_result.data()[i]
+                << std::endl;
       assert(false);
     }
   }
 
   t_left.resize(32, 1);
   t_left = (t_left.constant(-0.5f) + t_left.random()) * 2.0f;
-  t_result.resize (1, 28*28);
+  t_result.resize(1, 28 * 28);
   t_result = t_result.constant(NAN);
   t_result.device(thread_pool_device) = t_left.contract(t_right, dims);
-  new(&m_left) MapXf(t_left.data(), 32, 1);
+  new (&m_left) MapXf(t_left.data(), 32, 1);
   m_result = m_left.transpose() * m_right;
   for (ptrdiff_t i = 0; i < t_result.size(); i++) {
     assert(!(numext::isnan)(t_result.data()[i]));
     if (fabsf(t_result.data()[i] - m_result.data()[i]) >= 1e-4f) {
-      std::cout << "mismatch detected: " << t_result.data()[i] << " vs " <<  m_result.data()[i] << std::endl;
+      std::cout << "mismatch detected: " << t_result.data()[i] << " vs " << m_result.data()[i] << std::endl;
       assert(false);
     }
   }
@@ -157,16 +147,16 @@ void test_contraction_corner_cases()
   t_right.resize(32, 4);
   t_left = (t_left.constant(-0.5f) + t_left.random()) * 2.0f;
   t_right = (t_right.constant(-0.6f) + t_right.random()) * 2.0f;
-  t_result.resize (500, 4);
+  t_result.resize(500, 4);
   t_result = t_result.constant(NAN);
   t_result.device(thread_pool_device) = t_left.contract(t_right, dims);
-  new(&m_left) MapXf(t_left.data(), 32, 500);
-  new(&m_right) MapXf(t_right.data(), 32, 4);
+  new (&m_left) MapXf(t_left.data(), 32, 500);
+  new (&m_right) MapXf(t_right.data(), 32, 4);
   m_result = m_left.transpose() * m_right;
   for (ptrdiff_t i = 0; i < t_result.size(); i++) {
     assert(!(numext::isnan)(t_result.data()[i]));
     if (fabsf(t_result.data()[i] - m_result.data()[i]) >= 1e-4f) {
-      std::cout << "mismatch detected: " << t_result.data()[i] << " vs " <<  m_result.data()[i] << std::endl;
+      std::cout << "mismatch detected: " << t_result.data()[i] << " vs " << m_result.data()[i] << std::endl;
       assert(false);
     }
   }
@@ -175,33 +165,29 @@ void test_contraction_corner_cases()
   t_right.resize(32, 4);
   t_left = (t_left.constant(-0.5f) + t_left.random()) * 2.0f;
   t_right = (t_right.constant(-0.6f) + t_right.random()) * 2.0f;
-  t_result.resize (1, 4);
+  t_result.resize(1, 4);
   t_result = t_result.constant(NAN);
   t_result.device(thread_pool_device) = t_left.contract(t_right, dims);
-  new(&m_left) MapXf(t_left.data(), 32, 1);
-  new(&m_right) MapXf(t_right.data(), 32, 4);
+  new (&m_left) MapXf(t_left.data(), 32, 1);
+  new (&m_right) MapXf(t_right.data(), 32, 4);
   m_result = m_left.transpose() * m_right;
   for (ptrdiff_t i = 0; i < t_result.size(); i++) {
     assert(!(numext::isnan)(t_result.data()[i]));
     if (fabsf(t_result.data()[i] - m_result.data()[i]) >= 1e-4f) {
-      std::cout << "mismatch detected: " << t_result.data()[i] << " vs " <<  m_result.data()[i] << std::endl;
+      std::cout << "mismatch detected: " << t_result.data()[i] << " vs " << m_result.data()[i] << std::endl;
       assert(false);
     }
   }
 }
 
-template<int DataLayout>
-void test_multithread_contraction_agrees_with_singlethread() {
+template<int DataLayout> void test_multithread_contraction_agrees_with_singlethread()
+{
   int contract_size = internal::random<int>(1, 5000);
 
-  Tensor<float, 3, DataLayout> left(internal::random<int>(1, 80),
-                                    contract_size,
-                                    internal::random<int>(1, 100));
+  Tensor<float, 3, DataLayout> left(internal::random<int>(1, 80), contract_size, internal::random<int>(1, 100));
 
-  Tensor<float, 4, DataLayout> right(internal::random<int>(1, 25),
-                                     internal::random<int>(1, 37),
-                                     contract_size,
-                                     internal::random<int>(1, 51));
+  Tensor<float, 4, DataLayout> right(
+    internal::random<int>(1, 25), internal::random<int>(1, 37), contract_size, internal::random<int>(1, 51));
 
   left.setRandom();
   right.setRandom();
@@ -211,7 +197,7 @@ void test_multithread_contraction_agrees_with_singlethread() {
   right += right.constant(1.5f);
 
   typedef Tensor<float, 1>::DimensionPair DimPair;
-  Eigen::array<DimPair, 1> dims({{DimPair(1, 2)}});
+  Eigen::array<DimPair, 1> dims({ { DimPair(1, 2) } });
 
   Eigen::ThreadPool tp(internal::random<int>(2, 11));
   Eigen::ThreadPoolDevice thread_pool_device(&tp, internal::random<int>(2, 11));
@@ -233,15 +219,13 @@ void test_multithread_contraction_agrees_with_singlethread() {
 }
 
 
-template<int DataLayout>
-void test_full_contraction() {
+template<int DataLayout> void test_full_contraction()
+{
   int contract_size1 = internal::random<int>(1, 500);
   int contract_size2 = internal::random<int>(1, 500);
 
-  Tensor<float, 2, DataLayout> left(contract_size1,
-                                    contract_size2);
-  Tensor<float, 2, DataLayout> right(contract_size1,
-                                    contract_size2);
+  Tensor<float, 2, DataLayout> left(contract_size1, contract_size2);
+  Tensor<float, 2, DataLayout> right(contract_size1, contract_size2);
   left.setRandom();
   right.setRandom();
 
@@ -250,7 +234,7 @@ void test_full_contraction() {
   right += right.constant(1.5f);
 
   typedef Tensor<float, 2>::DimensionPair DimPair;
-  Eigen::array<DimPair, 2> dims({{DimPair(0, 0), DimPair(1, 1)}});
+  Eigen::array<DimPair, 2> dims({ { DimPair(0, 0), DimPair(1, 1) } });
 
   Eigen::ThreadPool tp(internal::random<int>(2, 11));
   Eigen::ThreadPoolDevice thread_pool_device(&tp, internal::random<int>(2, 11));
@@ -264,13 +248,11 @@ void test_full_contraction() {
   VERIFY(dimensions_match(st_result.dimensions(), tp_result.dimensions()));
   // if both of the values are very small, then do nothing (because the test will fail
   // due to numerical precision issues when values are small)
-  if (numext::abs(st_result() - tp_result()) >= 1e-4f) {
-    VERIFY_IS_APPROX(st_result(), tp_result());
-  }
+  if (numext::abs(st_result() - tp_result()) >= 1e-4f) { VERIFY_IS_APPROX(st_result(), tp_result()); }
 }
 
-template<int DataLayout>
-void test_multithreaded_reductions() {
+template<int DataLayout> void test_multithreaded_reductions()
+{
   const int num_threads = internal::random<int>(3, 11);
   ThreadPool thread_pool(num_threads);
   Eigen::ThreadPoolDevice thread_pool_device(&thread_pool, num_threads);
@@ -292,7 +274,8 @@ void test_multithreaded_reductions() {
 }
 
 
-void test_memcpy() {
+void test_memcpy()
+{
 
   for (int i = 0; i < 5; ++i) {
     const int num_threads = internal::random<int>(3, 11);
@@ -303,10 +286,8 @@ void test_memcpy() {
     Tensor<float, 1> t1(size);
     t1.setRandom();
     std::vector<float> result(size);
-    thread_pool_device.memcpy(&result[0], t1.data(), size*sizeof(float));
-    for (int j = 0; j < size; j++) {
-      VERIFY_IS_EQUAL(t1(j), result[j]);
-    }
+    thread_pool_device.memcpy(&result[0], t1.data(), size * sizeof(float));
+    for (int j = 0; j < size; j++) { VERIFY_IS_EQUAL(t1(j), result[j]); }
   }
 }
 
@@ -319,26 +300,23 @@ void test_multithread_random()
   t.device(device) = t.random<Eigen::internal::NormalRandomGenerator<float>>();
 }
 
-template<int DataLayout>
-void test_multithread_shuffle()
+template<int DataLayout> void test_multithread_shuffle()
 {
-  Tensor<float, 4, DataLayout> tensor(17,5,7,11);
+  Tensor<float, 4, DataLayout> tensor(17, 5, 7, 11);
   tensor.setRandom();
 
   const int num_threads = internal::random<int>(2, 11);
   ThreadPool threads(num_threads);
   Eigen::ThreadPoolDevice device(&threads, num_threads);
 
-  Tensor<float, 4, DataLayout> shuffle(7,5,11,17);
-  array<ptrdiff_t, 4> shuffles = {{2,1,3,0}};
+  Tensor<float, 4, DataLayout> shuffle(7, 5, 11, 17);
+  array<ptrdiff_t, 4> shuffles = { { 2, 1, 3, 0 } };
   shuffle.device(device) = tensor.shuffle(shuffles);
 
   for (int i = 0; i < 17; ++i) {
     for (int j = 0; j < 5; ++j) {
       for (int k = 0; k < 7; ++k) {
-        for (int l = 0; l < 11; ++l) {
-          VERIFY_IS_EQUAL(tensor(i,j,k,l), shuffle(k,j,l,i));
-        }
+        for (int l = 0; l < 11; ++l) { VERIFY_IS_EQUAL(tensor(i, j, k, l), shuffle(k, j, l, i)); }
       }
     }
   }

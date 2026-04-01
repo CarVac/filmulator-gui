@@ -66,6 +66,7 @@ Rectangle {
 
             ToolRadioButton {
                 id: sourceDirButton
+                objectName: "sourceDirButton"
                 width: parent.width/2 - 2*uiScale
                 height: parent.height
                 x: 2*uiScale
@@ -88,6 +89,7 @@ Rectangle {
 
             ToolRadioButton {
                 id: sourceFileButton
+                objectName: "sourceFileButton"
                 width: parent.width/2 - 2*uiScale
                 height: parent.height
                 x: parent.width/2
@@ -110,6 +112,7 @@ Rectangle {
 
         ImportDirEntry {
             id: sourceDirEntry
+            objectName: "sourceDirEntry"
             title: qsTr("Source Directory")
             tooltipText: qsTr("Select or type in the directory containing photos to be imported.")
             dirDialogTitle: qsTr("Select the directory containing the photos to import. It will only import raw files.")
@@ -133,6 +136,7 @@ Rectangle {
 
         ImportFileEntry {
             id: sourceFileEntry
+            objectName: "sourceFileEntry"
             title: qsTr("Source Files")
             tooltipText: qsTr("Select one or more files to import.")
             fileDialogTitle: qsTr("Select the file(s) to import.")
@@ -199,6 +203,7 @@ Rectangle {
 
             ToolRadioButton {
                 id: importInPlaceButton
+                objectName: "importInPlaceButton"
                 width: parent.width/2 - 2*uiScale
                 height: parent.height
                 x: parent.width/2
@@ -379,6 +384,7 @@ Rectangle {
 
         ToolButton {
             id: importButton
+            objectName: "importButton"
             x: 0 * uiScale
             y: 0 * uiScale
             text: qsTr("Import")

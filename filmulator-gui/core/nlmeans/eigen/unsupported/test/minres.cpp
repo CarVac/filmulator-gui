@@ -15,30 +15,28 @@
 template<typename T> void test_minres_T()
 {
   // Identity preconditioner
-  MINRES<SparseMatrix<T>, Lower, IdentityPreconditioner    > minres_colmajor_lower_I;
-  MINRES<SparseMatrix<T>, Upper, IdentityPreconditioner    > minres_colmajor_upper_I;
+  MINRES<SparseMatrix<T>, Lower, IdentityPreconditioner> minres_colmajor_lower_I;
+  MINRES<SparseMatrix<T>, Upper, IdentityPreconditioner> minres_colmajor_upper_I;
 
   // Diagonal preconditioner
-  MINRES<SparseMatrix<T>, Lower, DiagonalPreconditioner<T> > minres_colmajor_lower_diag;
-  MINRES<SparseMatrix<T>, Upper, DiagonalPreconditioner<T> > minres_colmajor_upper_diag;
-  MINRES<SparseMatrix<T>, Lower|Upper, DiagonalPreconditioner<T> > minres_colmajor_uplo_diag;
-  
+  MINRES<SparseMatrix<T>, Lower, DiagonalPreconditioner<T>> minres_colmajor_lower_diag;
+  MINRES<SparseMatrix<T>, Upper, DiagonalPreconditioner<T>> minres_colmajor_upper_diag;
+  MINRES<SparseMatrix<T>, Lower | Upper, DiagonalPreconditioner<T>> minres_colmajor_uplo_diag;
+
   // call tests for SPD matrix
-  CALL_SUBTEST( check_sparse_spd_solving(minres_colmajor_lower_I) );
-  CALL_SUBTEST( check_sparse_spd_solving(minres_colmajor_upper_I) );
-    
-  CALL_SUBTEST( check_sparse_spd_solving(minres_colmajor_lower_diag)  );
-  CALL_SUBTEST( check_sparse_spd_solving(minres_colmajor_upper_diag)  );
-  CALL_SUBTEST( check_sparse_spd_solving(minres_colmajor_uplo_diag)  );
-    
+  CALL_SUBTEST(check_sparse_spd_solving(minres_colmajor_lower_I));
+  CALL_SUBTEST(check_sparse_spd_solving(minres_colmajor_upper_I));
+
+  CALL_SUBTEST(check_sparse_spd_solving(minres_colmajor_lower_diag));
+  CALL_SUBTEST(check_sparse_spd_solving(minres_colmajor_upper_diag));
+  CALL_SUBTEST(check_sparse_spd_solving(minres_colmajor_uplo_diag));
+
   // TO DO: symmetric semi-definite matrix
   // TO DO: symmetric indefinite matrix
-
 }
 
 void test_minres()
 {
   CALL_SUBTEST_1(test_minres_T<double>());
-//  CALL_SUBTEST_2(test_minres_T<std::compex<double> >());
-
+  //  CALL_SUBTEST_2(test_minres_T<std::compex<double> >());
 }

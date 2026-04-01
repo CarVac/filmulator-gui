@@ -14,6 +14,84 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  static-analysis:
+    name: Static Analysis (Format & Tidy)
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TYPE: Release
+      VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite"
+      VCPKG_DEFAULT_TRIPLET: x64-linux
+      VCPKG_TARGET_TRIPLET: x64-linux
+      CMAKE_GENERATOR: "Ninja"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: "3.14.3"
+        enable-cache: true
+
+    - name: Install dependencies
+      run: |
+        sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
+        sudo apt-get update
+        sudo apt-get build-dep -y qtbase5-dev
+        sudo apt-get install -y \
+          ninja-build \
+          mold \
+          autoconf \
+          autoconf-archive \
+          automake \
+          libtool \
+          libltdl-dev \
+          mono-complete \
+          clang-tidy \
+          clang-format
+
+    - name: Setup vcpkg (lukka/run-vcpkg)
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: b5d1a94fb7f88fd835e360fd23a45a09ceedbf48
+        vcpkgJsonGlob: 'vcpkg.json'
+
+    - name: Find NuGet
+      shell: bash
+      run: |
+        nuget_path=$(vcpkg fetch nuget | tail -n 1)
+        echo "NUGET_EXE=$nuget_path" >> "$GITHUB_ENV"
+
+    - name: Setup NuGet Credentials
+      shell: bash
+      run: |
+        mono "$NUGET_EXE" sources remove -Name GitHubPackages -Source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" || true
+        mono "$NUGET_EXE" sources add \
+          -Source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          -StorePasswordInClearText \
+          -Name GitHubPackages \
+          -UserName "${{ github.repository_owner }}" \
+          -Password "${{ secrets.GITHUB_TOKEN }}"
+        mono "$NUGET_EXE" setapikey "${{ secrets.GITHUB_TOKEN }}" \
+          -Source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+    - name: Setup CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build/release -G Ninja -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    - name: Check Formatting
+      run: |
+        cmake --build build/release --target format
+        git diff --exit-code
+
+    - name: Run Clang-Tidy
+      run: cmake --build build/release --target tidy
+
   build:
     name: ${{ matrix.os }}-build
     runs-on: ${{ matrix.os }}
@@ -63,6 +141,12 @@ jobs:
         echo "Disk space after cleanup:"
         df -h /
 
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: "3.14.3"
+        enable-cache: true
+
     - name: Install Linux Dependencies
       if: runner.os == 'Linux'
       run: |
@@ -79,7 +163,10 @@ jobs:
           automake \
           libtool \
           libltdl-dev \
-          mono-complete
+          mono-complete \
+          xvfb \
+          clang-tidy \
+          clang-format
 
     - name: Install macOS Dependencies
       if: runner.os == 'macOS'
@@ -151,7 +238,7 @@ jobs:
       uses: lukka/get-cmake@latest
 
     - name: Configure CMake
-      run: cmake --preset ${{ matrix.preset }} -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
+      run: cmake --preset ${{ matrix.preset }} -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} -DENABLE_SPIX_TESTING=ON
 
     - name: Print vcpkg ABI info
       if: always()
@@ -177,7 +264,33 @@ jobs:
         fi
 
     - name: Build
-      run: cmake --build --preset ${{ matrix.preset }}
+      run: cmake --build build/${{ matrix.preset }}
+
+    - name: Test
+      run: ctest --preset ${{ matrix.preset }} --output-on-failure
+
+    - name: Run E2E Tests (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        xvfb-run -a bash -c "./build/${{ matrix.preset }}/filmulator --test-mode & sleep 10 && uv run python tests/e2e/test_raw_pipeline.py"
+
+    - name: Run E2E Tests (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        ./build/${{ matrix.preset }}/filmulator.app/Contents/MacOS/filmulator --test-mode &
+        PID=$!
+        sleep 10
+        uv run python tests/e2e/test_raw_pipeline.py
+        kill $PID || true
+
+    - name: Run E2E Tests (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Start-Process -FilePath ".\build\${{ matrix.preset }}\filmulator.exe" -ArgumentList "--test-mode" -PassThru
+        Start-Sleep -Seconds 10
+        uv run python tests/e2e/test_raw_pipeline.py
+        Stop-Process -Name "filmulator" -Force -ErrorAction SilentlyContinue
 
     - name: Install (Windows)
       if: runner.os == 'Windows'
@@ -471,6 +584,14 @@ jobs:
       with:
         name: filmulator-windows-installer
 
+    - name: Checkout Source
+      uses: actions/checkout@v4
+
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+
     - name: Test AppImage (Linux)
       if: runner.os == 'Linux'
       run: |
@@ -492,24 +613,9 @@ jobs:
         # Also install system-level OpenGL graphics libraries (libgl1, libegl1) since headless runners lack them by default.
         sudo apt-get update && sudo apt-get install -y xvfb libfuse2 libgl1 libegl1
         
-        echo "Running smoke test with xvfb..."
+        echo "Running E2E tests with xvfb..."
         # Use xvfb-run to provide virtual X11 display for xcb platform
-        xvfb-run -a ./"$APPIMAGE" &> smoke_test.log &
-        APP_PID=$!
-        
-        # Give it time to load and initialize
-        sleep 10
-        
-        # Check if process is still running
-        if ! ps -p $APP_PID > /dev/null; then
-          echo "Application exited prematurely"
-          echo "--- Output Log ---"
-          cat smoke_test.log || echo "(no log captured)"
-          exit 1
-        fi
-        
-        echo "Application started successfully. Smoke test passed!"
-        kill $APP_PID 2>/dev/null || true
+        xvfb-run -a uv run python tests/e2e/test_raw_pipeline.py --bin ./"$APPIMAGE"
 
     - name: Test DMG (macOS)
       if: runner.os == 'macOS'
@@ -557,39 +663,11 @@ jobs:
         mkdir -p "$TEST_DIR"
         cp -R "$APP_BUNDLE" "$TEST_DIR/"
         
-        echo "Running smoke test..."
+        echo "Running E2E tests..."
         # macOS runners have a display server, so cocoa platform should work
-        LAUNCHER="$TEST_DIR/Filmulator.app/Contents/MacOS/filmulator-gui"
-        if [ ! -f "$LAUNCHER" ]; then
-          echo "Error: Launcher script not found at $LAUNCHER"
-          exit 1
-        fi
+        LAUNCHER="$TEST_DIR/Filmulator.app/Contents/MacOS/filmulator"
 
-        # Make sure launcher is executable
-        chmod +x "$LAUNCHER"
-        
-        "$LAUNCHER" &> smoke_test.log &
-        APP_PID=$!
-        
-        # Give it time to load and initialize
-        sleep 10
-        
-        # Check if process is still running
-        if ! ps -p $APP_PID > /dev/null; then
-          echo "Application exited prematurely or crashed"
-          echo "--- Smoke Test Log ---"
-          cat smoke_test.log || echo "(no log captured)"
-          
-          # Try to get more info from system log if it crashed
-          echo "--- Tail of system console log (last 50 lines) ---"
-          log show --predicate 'process == "filmulator"' --last 2m | tail -n 50
-          
-          hdiutil detach "$VOLUME" || true
-          exit 1
-        fi
-        
-        echo "Application started successfully. Smoke test passed!"
-        kill $APP_PID 2>/dev/null || true
+        uv run python tests/e2e/test_raw_pipeline.py --bin "$LAUNCHER"
         
         # Cleanup
         hdiutil detach "$VOLUME"
@@ -639,35 +717,8 @@ jobs:
         }
         $env:PATH = $oldPath
         
-        Write-Host "Running smoke test on installed application..."
-        $outputLog = "${{ github.workspace }}\smoke_test_output.log"
-        $errorLog = "${{ github.workspace }}\smoke_test_error.log"
-        $startTime = Get-Date
-        
-        # Start the process and capture output
-        $process = Start-Process -FilePath $exePath -PassThru -RedirectStandardOutput $outputLog -RedirectStandardError $errorLog
-        
-        # Give it some time to load DLLs and fail if there's an issue
-        Start-Sleep -Seconds 10
-        
-        if ($process.HasExited) {
-            $exitCode = $process.ExitCode
-            Write-Host "Application exited prematurely with code $exitCode." -ForegroundColor Red
-            
-            Write-Host "--- Standard Output ---"
-            if (Test-Path $outputLog) { Get-Content $outputLog } else { Write-Host "(no output captured)" }
-            Write-Host "--- Standard Error ---"
-            if (Test-Path $errorLog) { Get-Content $errorLog } else { Write-Host "(no error captured)" }
-            
-            Write-Host "--- Querying Windows Event Logs for Application Errors ---"
-            $events = Get-EventLog -LogName Application -After $startTime -EntryType Error -Newest 10 | Where-Object { $_.Source -match "Application Error" -or $_.Source -match "SideBySide" }
-            if ($events) { $events | Format-List } else { Write-Host "No relevant Event Log entries found." }
-            
-            exit 1
-        }
-        
-        Write-Host "Application started successfully. Smoke test passed!"
-        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        Write-Host "Running E2E tests on installed application..."
+        uv run python tests/e2e/test_raw_pipeline.py --bin $exePath
 
     # Tests will be added later when the test framework is set up
     # - name: Test

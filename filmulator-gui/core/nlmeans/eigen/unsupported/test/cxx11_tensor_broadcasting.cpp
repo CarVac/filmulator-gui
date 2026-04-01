@@ -13,10 +13,9 @@
 
 using Eigen::Tensor;
 
-template <int DataLayout>
-static void test_simple_broadcasting()
+template<int DataLayout> static void test_simple_broadcasting()
 {
-  Tensor<float, 4, DataLayout> tensor(2,3,5,7);
+  Tensor<float, 4, DataLayout> tensor(2, 3, 5, 7);
   tensor.setRandom();
   array<ptrdiff_t, 4> broadcasts;
   broadcasts[0] = 1;
@@ -35,9 +34,7 @@ static void test_simple_broadcasting()
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
       for (int k = 0; k < 5; ++k) {
-        for (int l = 0; l < 7; ++l) {
-          VERIFY_IS_EQUAL(tensor(i,j,k,l), no_broadcast(i,j,k,l));
-        }
+        for (int l = 0; l < 7; ++l) { VERIFY_IS_EQUAL(tensor(i, j, k, l), no_broadcast(i, j, k, l)); }
       }
     }
   }
@@ -57,19 +54,16 @@ static void test_simple_broadcasting()
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 9; ++j) {
       for (int k = 0; k < 5; ++k) {
-        for (int l = 0; l < 28; ++l) {
-          VERIFY_IS_EQUAL(tensor(i%2,j%3,k%5,l%7), broadcast(i,j,k,l));
-        }
+        for (int l = 0; l < 28; ++l) { VERIFY_IS_EQUAL(tensor(i % 2, j % 3, k % 5, l % 7), broadcast(i, j, k, l)); }
       }
     }
   }
 }
 
 
-template <int DataLayout>
-static void test_vectorized_broadcasting()
+template<int DataLayout> static void test_vectorized_broadcasting()
 {
-  Tensor<float, 3, DataLayout> tensor(8,3,5);
+  Tensor<float, 3, DataLayout> tensor(8, 3, 5);
   tensor.setRandom();
   array<ptrdiff_t, 3> broadcasts;
   broadcasts[0] = 2;
@@ -85,13 +79,11 @@ static void test_vectorized_broadcasting()
 
   for (int i = 0; i < 16; ++i) {
     for (int j = 0; j < 9; ++j) {
-      for (int k = 0; k < 20; ++k) {
-        VERIFY_IS_EQUAL(tensor(i%8,j%3,k%5), broadcast(i,j,k));
-      }
+      for (int k = 0; k < 20; ++k) { VERIFY_IS_EQUAL(tensor(i % 8, j % 3, k % 5), broadcast(i, j, k)); }
     }
   }
 
-  tensor.resize(11,3,5);
+  tensor.resize(11, 3, 5);
   tensor.setRandom();
   broadcast = tensor.broadcast(broadcasts);
 
@@ -101,18 +93,15 @@ static void test_vectorized_broadcasting()
 
   for (int i = 0; i < 22; ++i) {
     for (int j = 0; j < 9; ++j) {
-      for (int k = 0; k < 20; ++k) {
-        VERIFY_IS_EQUAL(tensor(i%11,j%3,k%5), broadcast(i,j,k));
-      }
+      for (int k = 0; k < 20; ++k) { VERIFY_IS_EQUAL(tensor(i % 11, j % 3, k % 5), broadcast(i, j, k)); }
     }
   }
 }
 
 
-template <int DataLayout>
-static void test_static_broadcasting()
+template<int DataLayout> static void test_static_broadcasting()
 {
-  Tensor<float, 3, DataLayout> tensor(8,3,5);
+  Tensor<float, 3, DataLayout> tensor(8, 3, 5);
   tensor.setRandom();
 
 #if EIGEN_HAS_CONSTEXPR
@@ -133,13 +122,11 @@ static void test_static_broadcasting()
 
   for (int i = 0; i < 16; ++i) {
     for (int j = 0; j < 9; ++j) {
-      for (int k = 0; k < 20; ++k) {
-        VERIFY_IS_EQUAL(tensor(i%8,j%3,k%5), broadcast(i,j,k));
-      }
+      for (int k = 0; k < 20; ++k) { VERIFY_IS_EQUAL(tensor(i % 8, j % 3, k % 5), broadcast(i, j, k)); }
     }
   }
 
-  tensor.resize(11,3,5);
+  tensor.resize(11, 3, 5);
   tensor.setRandom();
   broadcast = tensor.broadcast(broadcasts);
 
@@ -149,16 +136,13 @@ static void test_static_broadcasting()
 
   for (int i = 0; i < 22; ++i) {
     for (int j = 0; j < 9; ++j) {
-      for (int k = 0; k < 20; ++k) {
-        VERIFY_IS_EQUAL(tensor(i%11,j%3,k%5), broadcast(i,j,k));
-      }
+      for (int k = 0; k < 20; ++k) { VERIFY_IS_EQUAL(tensor(i % 11, j % 3, k % 5), broadcast(i, j, k)); }
     }
   }
 }
 
 
-template <int DataLayout>
-static void test_fixed_size_broadcasting()
+template<int DataLayout> static void test_fixed_size_broadcasting()
 {
   // Need to add a [] operator to the Size class for this to work
 #if 0

@@ -17,280 +17,255 @@
  *  2010 Emil Martinec <ejmartin@uchicago.edu>
  *
  */
-#include <cstddef>
-#include "rt_math.h"
 #include "labimage.h"
-//#include "improcfun.h"
-//#include "cieimage.h"
-#include "sleef.h"
-#include "opthelper.h"
-#include "gauss.h"
+#include "rt_math.h"
+#include <cstddef>
+// #include "improcfun.h"
+// #include "cieimage.h"
 #include "../matrix.hpp"
+#include "gauss.h"
+#include "opthelper.h"
+#include "sleef.h"
 
 using namespace std;
 
-void impulse_nr (matrix<float> &imageIn, matrix<float> &imageOut,
-                 const double thresh, const double chromaFactor, const bool eraseInput)
+void impulse_nr(matrix<float> &imageIn,
+  matrix<float> &imageOut,
+  const double thresh,
+  const double chromaFactor,
+  const bool eraseInput)
 {
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // impulse noise removal
-    // local variables
+  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  // impulse noise removal
+  // local variables
 
-    const int width = imageIn.nc()/3;
-    const int height = imageIn.nr();
+  const int width = imageIn.nc() / 3;
+  const int height = imageIn.nr();
 
-    LabImage * lab = new LabImage(width, height);
+  LabImage *lab = new LabImage(width, height);
 
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            lab->L[i][j] = imageIn(i, j*3 + 0);
-            lab->a[i][j] = imageIn(i, j*3 + 1) * chromaFactor;//increase chroma sensitivity
-            lab->b[i][j] = imageIn(i, j*3 + 2) * chromaFactor;//increase chroma sensitivity
-        }
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      lab->L[i][j] = imageIn(i, j * 3 + 0);
+      lab->a[i][j] = imageIn(i, j * 3 + 1) * chromaFactor;// increase chroma sensitivity
+      lab->b[i][j] = imageIn(i, j * 3 + 2) * chromaFactor;// increase chroma sensitivity
     }
+  }
 
-    if (eraseInput)
-    {
-        imageIn.set_size(0, 0);
-    }
+  if (eraseInput) { imageIn.set_size(0, 0); }
 
-    // buffer for the lowpass image
-    float * lpf[height] ALIGNED16;
-    lpf[0] = new float [width * height];
-    // buffer for the highpass image
-    char * impish[height] ALIGNED16;
-    impish[0] = new char [width * height];
+  // buffer for the lowpass image
+  float *lpf[height] ALIGNED16;
+  lpf[0] = new float[width * height];
+  // buffer for the highpass image
+  char *impish[height] ALIGNED16;
+  impish[0] = new char[width * height];
 
-    for (int i = 1; i < height; i++) {
-        lpf[i] = lpf[i - 1] + width;
-        impish[i] = impish[i - 1] + width;
-    }
+  for (int i = 1; i < height; i++) {
+    lpf[i] = lpf[i - 1] + width;
+    impish[i] = impish[i - 1] + width;
+  }
 
 
-    //The cleaning algorithm starts here
+  // The cleaning algorithm starts here
 
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // modified bilateral filter for lowpass image, omitting input pixel; or Gaussian blur
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  // modified bilateral filter for lowpass image, omitting input pixel; or Gaussian blur
 
-    const float eps = 1.0;
+  const float eps = 1.0;
 
 #ifdef _OPENMP
-    #pragma omp parallel
+#pragma omp parallel
 #endif
-    {
-        gaussianBlur (lab->L, lpf, width, height, max(2.0, thresh - 1.0));
-    }
+  {
+    gaussianBlur(lab->L, lpf, width, height, max(2.0, thresh - 1.0));
+  }
 
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    float impthr = max(1.0, 5.5 - thresh);
-    float impthrDiv24 = impthr / 24.0f;         //Issue 1671: moved the Division outside the loop, impthr can be optimized out too, but I let in the code at the moment
+  float impthr = max(1.0, 5.5 - thresh);
+  float impthrDiv24 = impthr / 24.0f;// Issue 1671: moved the Division outside the loop, impthr can be optimized out
+                                     // too, but I let in the code at the moment
 
 
 #ifdef _OPENMP
-    #pragma omp parallel
+#pragma omp parallel
 #endif
-    {
-        int i1, j1, j;
-        float hpfabs, hfnbrave;
+  {
+    int i1, j1, j;
+    float hpfabs, hfnbrave;
 #ifdef __SSE2__
-        vfloat hfnbravev, hpfabsv;
-        vfloat impthrDiv24v = F2V( impthrDiv24 );
+    vfloat hfnbravev, hpfabsv;
+    vfloat impthrDiv24v = F2V(impthrDiv24);
 #endif
 #ifdef _OPENMP
-        #pragma omp for
+#pragma omp for
 #endif
 
-        for (int i = 0; i < height; i++) {
-            for (j = 0; j < 2; j++) {
-                hpfabs = fabs(lab->L[i][j] - lpf[i][j]);
+    for (int i = 0; i < height; i++) {
+      for (j = 0; j < 2; j++) {
+        hpfabs = fabs(lab->L[i][j] - lpf[i][j]);
 
-                //block average of high pass data
-                for (i1 = max(0, i - 2), hfnbrave = 0; i1 <= min(i + 2, height - 1); i1++ )
-                    for (j1 = 0; j1 <= j + 2; j1++) {
-                        hfnbrave += fabs(lab->L[i1][j1] - lpf[i1][j1]);
-                    }
+        // block average of high pass data
+        for (i1 = max(0, i - 2), hfnbrave = 0; i1 <= min(i + 2, height - 1); i1++)
+          for (j1 = 0; j1 <= j + 2; j1++) { hfnbrave += fabs(lab->L[i1][j1] - lpf[i1][j1]); }
 
-                impish[i][j] = (hpfabs > ((hfnbrave - hpfabs) * impthrDiv24));
-            }
+        impish[i][j] = (hpfabs > ((hfnbrave - hpfabs) * impthrDiv24));
+      }
 
 #ifdef __SSE2__
 
-            for (; j < width - 5; j += 4) {
-                hfnbravev = ZEROV;
-                hpfabsv = vabsf(LVFU(lab->L[i][j]) - LVFU(lpf[i][j]));
+      for (; j < width - 5; j += 4) {
+        hfnbravev = ZEROV;
+        hpfabsv = vabsf(LVFU(lab->L[i][j]) - LVFU(lpf[i][j]));
 
-                //block average of high pass data
-                for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++ ) {
-                    for (j1 = j - 2; j1 <= j + 2; j1++) {
-                        hfnbravev += vabsf(LVFU(lab->L[i1][j1]) - LVFU(lpf[i1][j1]));
-                    }
-                }
+        // block average of high pass data
+        for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++) {
+          for (j1 = j - 2; j1 <= j + 2; j1++) { hfnbravev += vabsf(LVFU(lab->L[i1][j1]) - LVFU(lpf[i1][j1])); }
+        }
 
-                int mask = _mm_movemask_ps((hfnbravev - hpfabsv) * impthrDiv24v - hpfabsv);
-                impish[i][j] = (mask & 1);
-                impish[i][j + 1] = ((mask & 2) >> 1);
-                impish[i][j + 2] = ((mask & 4) >> 2);
-                impish[i][j + 3] = ((mask & 8) >> 3);
-            }
+        int mask = _mm_movemask_ps((hfnbravev - hpfabsv) * impthrDiv24v - hpfabsv);
+        impish[i][j] = (mask & 1);
+        impish[i][j + 1] = ((mask & 2) >> 1);
+        impish[i][j + 2] = ((mask & 4) >> 2);
+        impish[i][j + 3] = ((mask & 8) >> 3);
+      }
 
 #endif
 
-            for (; j < width - 2; j++) {
-                hpfabs = fabs(lab->L[i][j] - lpf[i][j]);
+      for (; j < width - 2; j++) {
+        hpfabs = fabs(lab->L[i][j] - lpf[i][j]);
 
-                //block average of high pass data
-                for (i1 = max(0, i - 2), hfnbrave = 0; i1 <= min(i + 2, height - 1); i1++ )
-                    for (j1 = j - 2; j1 <= j + 2; j1++) {
-                        hfnbrave += fabs(lab->L[i1][j1] - lpf[i1][j1]);
-                    }
+        // block average of high pass data
+        for (i1 = max(0, i - 2), hfnbrave = 0; i1 <= min(i + 2, height - 1); i1++)
+          for (j1 = j - 2; j1 <= j + 2; j1++) { hfnbrave += fabs(lab->L[i1][j1] - lpf[i1][j1]); }
 
-                impish[i][j] = (hpfabs > ((hfnbrave - hpfabs) * impthrDiv24));
-            }
+        impish[i][j] = (hpfabs > ((hfnbrave - hpfabs) * impthrDiv24));
+      }
 
-            for (; j < width; j++) {
-                hpfabs = fabs(lab->L[i][j] - lpf[i][j]);
+      for (; j < width; j++) {
+        hpfabs = fabs(lab->L[i][j] - lpf[i][j]);
 
-                //block average of high pass data
-                for (i1 = max(0, i - 2), hfnbrave = 0; i1 <= min(i + 2, height - 1); i1++ )
-                    for (j1 = j - 2; j1 < width; j1++) {
-                        hfnbrave += fabs(lab->L[i1][j1] - lpf[i1][j1]);
-                    }
+        // block average of high pass data
+        for (i1 = max(0, i - 2), hfnbrave = 0; i1 <= min(i + 2, height - 1); i1++)
+          for (j1 = j - 2; j1 < width; j1++) { hfnbrave += fabs(lab->L[i1][j1] - lpf[i1][j1]); }
 
-                impish[i][j] = (hpfabs > ((hfnbrave - hpfabs) * impthrDiv24));
-            }
-        }
+        impish[i][j] = (hpfabs > ((hfnbrave - hpfabs) * impthrDiv24));
+      }
     }
+  }
 
-//now impulsive values have been identified
+// now impulsive values have been identified
 
 // Issue 1671:
-// often, noise isn't evenly distributed, e.g. only a few noisy pixels in the bright sky, but many in the dark foreground,
-// so it's better to schedule dynamic and let every thread only process 16 rows, to avoid running big threads out of work
-// Measured it and in fact gives better performance than without schedule(dynamic,16). Of course, there could be a better
-// choice for the chunk_size than 16
-// race conditions are avoided by the array impish
+// often, noise isn't evenly distributed, e.g. only a few noisy pixels in the bright sky, but many in the dark
+// foreground, so it's better to schedule dynamic and let every thread only process 16 rows, to avoid running big
+// threads out of work Measured it and in fact gives better performance than without schedule(dynamic,16). Of course,
+// there could be a better choice for the chunk_size than 16 race conditions are avoided by the array impish
 #ifdef _OPENMP
-    #pragma omp parallel
+#pragma omp parallel
 #endif
-    {
-        int i1, j1, j;
-        float wtdsum[3], dirwt, norm;
+  {
+    int i1, j1, j;
+    float wtdsum[3], dirwt, norm;
 #ifdef _OPENMP
-        #pragma omp for schedule(dynamic,16)
+#pragma omp for schedule(dynamic, 16)
 #endif
 
-        for (int i = 0; i < height; i++) {
-            for (j = 0; j < 2; j++) {
-                if (!impish[i][j]) {
-                    continue;
-                }
+    for (int i = 0; i < height; i++) {
+      for (j = 0; j < 2; j++) {
+        if (!impish[i][j]) { continue; }
 
-                norm = 0.0;
-                wtdsum[0] = wtdsum[1] = wtdsum[2] = 0.0;
+        norm = 0.0;
+        wtdsum[0] = wtdsum[1] = wtdsum[2] = 0.0;
 
-                for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++ )
-                    for (j1 = 0; j1 <= j + 2; j1++ ) {
-                        if (impish[i1][j1]) {
-                            continue;
-                        }
+        for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++)
+          for (j1 = 0; j1 <= j + 2; j1++) {
+            if (impish[i1][j1]) { continue; }
 
-                        dirwt = 1 / (rtengine::SQR(lab->L[i1][j1] - lab->L[i][j]) + eps); //use more sophisticated rangefn???
-                        wtdsum[0] += dirwt * lab->L[i1][j1];
-                        wtdsum[1] += dirwt * lab->a[i1][j1];
-                        wtdsum[2] += dirwt * lab->b[i1][j1];
-                        norm += dirwt;
-                    }
+            dirwt = 1 / (rtengine::SQR(lab->L[i1][j1] - lab->L[i][j]) + eps);// use more sophisticated rangefn???
+            wtdsum[0] += dirwt * lab->L[i1][j1];
+            wtdsum[1] += dirwt * lab->a[i1][j1];
+            wtdsum[2] += dirwt * lab->b[i1][j1];
+            norm += dirwt;
+          }
 
-                if (norm) {
-                    lab->L[i][j] = wtdsum[0] / norm; //low pass filter
-                    lab->a[i][j] = wtdsum[1] / norm; //low pass filter
-                    lab->b[i][j] = wtdsum[2] / norm; //low pass filter
-                }
-            }
-
-            for (; j < width - 2; j++) {
-                if (!impish[i][j]) {
-                    continue;
-                }
-
-                norm = 0.0;
-                wtdsum[0] = wtdsum[1] = wtdsum[2] = 0.0;
-
-                for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++ )
-                    for (j1 = j - 2; j1 <= j + 2; j1++ ) {
-                        if (impish[i1][j1]) {
-                            continue;
-                        }
-
-                        dirwt = 1 / (rtengine::SQR(lab->L[i1][j1] - lab->L[i][j]) + eps); //use more sophisticated rangefn???
-                        wtdsum[0] += dirwt * lab->L[i1][j1];
-                        wtdsum[1] += dirwt * lab->a[i1][j1];
-                        wtdsum[2] += dirwt * lab->b[i1][j1];
-                        norm += dirwt;
-                    }
-
-                if (norm) {
-                    lab->L[i][j] = wtdsum[0] / norm; //low pass filter
-                    lab->a[i][j] = wtdsum[1] / norm; //low pass filter
-                    lab->b[i][j] = wtdsum[2] / norm; //low pass filter
-                }
-            }
-
-            for (; j < width; j++) {
-                if (!impish[i][j]) {
-                    continue;
-                }
-
-                norm = 0.0;
-                wtdsum[0] = wtdsum[1] = wtdsum[2] = 0.0;
-
-                for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++ )
-                    for (j1 = j - 2; j1 < width; j1++ ) {
-                        if (impish[i1][j1]) {
-                            continue;
-                        }
-
-                        dirwt = 1 / (rtengine::SQR(lab->L[i1][j1] - lab->L[i][j]) + eps); //use more sophisticated rangefn???
-                        wtdsum[0] += dirwt * lab->L[i1][j1];
-                        wtdsum[1] += dirwt * lab->a[i1][j1];
-                        wtdsum[2] += dirwt * lab->b[i1][j1];
-                        norm += dirwt;
-                    }
-
-                if (norm) {
-                    lab->L[i][j] = wtdsum[0] / norm; //low pass filter
-                    lab->a[i][j] = wtdsum[1] / norm; //low pass filter
-                    lab->b[i][j] = wtdsum[2] / norm; //low pass filter
-                }
-            }
+        if (norm) {
+          lab->L[i][j] = wtdsum[0] / norm;// low pass filter
+          lab->a[i][j] = wtdsum[1] / norm;// low pass filter
+          lab->b[i][j] = wtdsum[2] / norm;// low pass filter
         }
+      }
+
+      for (; j < width - 2; j++) {
+        if (!impish[i][j]) { continue; }
+
+        norm = 0.0;
+        wtdsum[0] = wtdsum[1] = wtdsum[2] = 0.0;
+
+        for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++)
+          for (j1 = j - 2; j1 <= j + 2; j1++) {
+            if (impish[i1][j1]) { continue; }
+
+            dirwt = 1 / (rtengine::SQR(lab->L[i1][j1] - lab->L[i][j]) + eps);// use more sophisticated rangefn???
+            wtdsum[0] += dirwt * lab->L[i1][j1];
+            wtdsum[1] += dirwt * lab->a[i1][j1];
+            wtdsum[2] += dirwt * lab->b[i1][j1];
+            norm += dirwt;
+          }
+
+        if (norm) {
+          lab->L[i][j] = wtdsum[0] / norm;// low pass filter
+          lab->a[i][j] = wtdsum[1] / norm;// low pass filter
+          lab->b[i][j] = wtdsum[2] / norm;// low pass filter
+        }
+      }
+
+      for (; j < width; j++) {
+        if (!impish[i][j]) { continue; }
+
+        norm = 0.0;
+        wtdsum[0] = wtdsum[1] = wtdsum[2] = 0.0;
+
+        for (i1 = max(0, i - 2); i1 <= min(i + 2, height - 1); i1++)
+          for (j1 = j - 2; j1 < width; j1++) {
+            if (impish[i1][j1]) { continue; }
+
+            dirwt = 1 / (rtengine::SQR(lab->L[i1][j1] - lab->L[i][j]) + eps);// use more sophisticated rangefn???
+            wtdsum[0] += dirwt * lab->L[i1][j1];
+            wtdsum[1] += dirwt * lab->a[i1][j1];
+            wtdsum[2] += dirwt * lab->b[i1][j1];
+            norm += dirwt;
+          }
+
+        if (norm) {
+          lab->L[i][j] = wtdsum[0] / norm;// low pass filter
+          lab->a[i][j] = wtdsum[1] / norm;// low pass filter
+          lab->b[i][j] = wtdsum[2] / norm;// low pass filter
+        }
+      }
     }
-//now impulsive values have been corrected
+  }
+  // now impulsive values have been corrected
 
-    delete [] lpf[0];
-    delete [] impish[0];
+  delete[] lpf[0];
+  delete[] impish[0];
 
-    //copy out
+  // copy out
 
-    imageOut.set_size(height, width * 3);
+  imageOut.set_size(height, width * 3);
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            imageOut(i, j*3 + 0) = lab->L[i][j];
-            imageOut(i, j*3 + 1) = lab->a[i][j] / chromaFactor;
-            imageOut(i, j*3 + 2) = lab->b[i][j] / chromaFactor;
-        }
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      imageOut(i, j * 3 + 0) = lab->L[i][j];
+      imageOut(i, j * 3 + 1) = lab->a[i][j] / chromaFactor;
+      imageOut(i, j * 3 + 2) = lab->b[i][j] / chromaFactor;
     }
-    lab->deleteLab();
+  }
+  lab->deleteLab();
 }
-

@@ -18,9 +18,7 @@ static void test_default()
 
   // Fixme: we should check that the generated numbers follow a uniform
   // distribution instead.
-  for (int i = 1; i < 6; ++i) {
-    VERIFY_IS_NOT_EQUAL(vec(i), vec(i-1));
-  }
+  for (int i = 1; i < 6; ++i) { VERIFY_IS_NOT_EQUAL(vec(i), vec(i - 1)); }
 }
 
 static void test_normal()
@@ -30,31 +28,29 @@ static void test_normal()
 
   // Fixme: we should check that the generated numbers follow a gaussian
   // distribution instead.
-  for (int i = 1; i < 6; ++i) {
-    VERIFY_IS_NOT_EQUAL(vec(i), vec(i-1));
-  }
+  for (int i = 1; i < 6; ++i) { VERIFY_IS_NOT_EQUAL(vec(i), vec(i - 1)); }
 }
 
 
-struct MyGenerator {
-  MyGenerator() { }
-  MyGenerator(const MyGenerator&) { }
+struct MyGenerator
+{
+  MyGenerator() {}
+  MyGenerator(const MyGenerator &) {}
 
   // Return a random value to be used.  "element_location" is the
   // location of the entry to set in the tensor, it can typically
   // be ignored.
-  int operator()(Eigen::DenseIndex element_location, Eigen::DenseIndex /*unused*/ = 0) const {
+  int operator()(Eigen::DenseIndex element_location, Eigen::DenseIndex /*unused*/ = 0) const
+  {
     return static_cast<int>(3 * element_location);
   }
 
   // Same as above but generates several numbers at a time.
-  internal::packet_traits<int>::type packetOp(
-      Eigen::DenseIndex packet_location, Eigen::DenseIndex /*unused*/ = 0) const {
+  internal::packet_traits<int>::type packetOp(Eigen::DenseIndex packet_location, Eigen::DenseIndex /*unused*/ = 0) const
+  {
     const int packetSize = internal::packet_traits<int>::size;
     EIGEN_ALIGN_MAX int values[packetSize];
-    for (int i = 0; i < packetSize; ++i) {
-      values[i] = static_cast<int>(3 * (packet_location + i));
-    }
+    for (int i = 0; i < packetSize; ++i) { values[i] = static_cast<int>(3 * (packet_location + i)); }
     return internal::pload<typename internal::packet_traits<int>::type>(values);
   }
 };
@@ -65,9 +61,7 @@ static void test_custom()
   Tensor<int, 1> vec(6);
   vec.setRandom<MyGenerator>();
 
-  for (int i = 0; i < 6; ++i) {
-    VERIFY_IS_EQUAL(vec(i), 3*i);
-  }
+  for (int i = 0; i < 6; ++i) { VERIFY_IS_EQUAL(vec(i), 3 * i); }
 }
 
 void test_cxx11_tensor_random()

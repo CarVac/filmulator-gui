@@ -18,32 +18,29 @@
 #include <vector>
 
 namespace testing {
-class Benchmark {
- public:
-  Benchmark(const char* name, void (*fn)(int)) {
-    Register(name, fn, NULL);
-  }
-  Benchmark(const char* name, void (*fn_range)(int, int)) {
-    Register(name, NULL, fn_range);
-  }
-  Benchmark* Arg(int x);
-  Benchmark* Range(int lo, int hi);
-  const char* Name();
-  bool ShouldRun(int argc, char* argv[]);
+class Benchmark
+{
+public:
+  Benchmark(const char *name, void (*fn)(int)) { Register(name, fn, NULL); }
+  Benchmark(const char *name, void (*fn_range)(int, int)) { Register(name, NULL, fn_range); }
+  Benchmark *Arg(int x);
+  Benchmark *Range(int lo, int hi);
+  const char *Name();
+  bool ShouldRun(int argc, char *argv[]);
   void Run();
- private:
-  const char* name_;
+
+private:
+  const char *name_;
   void (*fn_)(int);
   void (*fn_range_)(int, int);
   std::vector<int> args_;
-  void Register(const char* name, void (*fn)(int), void (*fn_range)(int, int));
+  void Register(const char *name, void (*fn)(int), void (*fn_range)(int, int));
   void RunRepeatedlyWithArg(int iterations, int arg);
   void RunWithArg(int arg);
 };
-}  // namespace testing
+}// namespace testing
 void SetBenchmarkFlopsProcessed(int64_t);
 void StopBenchmarkTiming();
 void StartBenchmarkTiming();
 #define BENCHMARK(f) \
-    static ::testing::Benchmark* _benchmark_##f __attribute__((unused)) = \
-        (new ::testing::Benchmark(#f, f))
+  static ::testing::Benchmark *_benchmark_##f __attribute__((unused)) = (new ::testing::Benchmark(#f, f))

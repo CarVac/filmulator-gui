@@ -1,0 +1,2 @@
+tests/data/raw/*.NEF filter=lfs diff=lfs merge=lfs -text
+tests/e2e/golden/golden_raw_pipeline.jpg filter=lfs diff=lfs merge=lfs -text

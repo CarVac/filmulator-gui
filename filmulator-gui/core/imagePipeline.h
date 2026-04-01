@@ -6,11 +6,12 @@
 #include <QMutexLocker>
 #include <rtprocess/librtprocess.h>
 
-enum Cache { HighCache, NoCache };
-enum Histo { WithHisto, NoHisto };
-enum QuickQuality { LowQuality, PreviewQuality, HighQuality };
+#include "pipeline/PipelineContext.h"
 
-class ImagePipeline {
+using namespace Pipeline;
+
+class ImagePipeline
+{
 public:
   ImagePipeline(Cache, Histo, QuickQuality);
   ~ImagePipeline();
@@ -18,10 +19,10 @@ public:
   // Loads and processes an image according to the 'params' structure,
   // monitoring 'aborted' for cancellation.
   matrix<unsigned short> &processImage(ParameterManager *paramManager,
-                                       Interface *histoInterface,
-                                       Exiv2::ExifData &exifOutput,
-                                       const QString fileHash,
-                                       ImagePipeline *stealVictim = nullptr);
+    Interface *histoInterface,
+    Exiv2::ExifData &exifOutput,
+    const QString fileHash,
+    ImagePipeline *stealVictim = nullptr);
 
   // Returns the progress of the pipeline from 0, incomplete, to 1, complete.
   float getProgress() { return progress; }
@@ -52,10 +53,15 @@ public:
 
   // Sample the image and return the average level of each channel
   void sampleWB(const float xPos,
-                const float yPos, // relative to the rotated and cropped image
-                const int rotation, const float cropHeight,
-                const float cropAspect, const float cropVoffset,
-                const float cropHoffset, float &red, float &green, float &blue);
+    const float yPos,// relative to the rotated and cropped image
+    const int rotation,
+    const float cropHeight,
+    const float cropAspect,
+    const float cropVoffset,
+    const float cropHoffset,
+    float &red,
+    float &green,
+    float &blue);
 
   // The resolution of a quick preview
   int resolution;
@@ -91,30 +97,30 @@ protected:
   unsigned xtrans[6][6];
   int maxXtrans;
   int raw_width, raw_height;
-  float camToRGB[3][3]; // rgb_cam from libraw
-  float xyzToCam[3][3]; // cam_xyz from libraw
+  float camToRGB[3][3];// rgb_cam from libraw
+  float xyzToCam[3][3];// cam_xyz from libraw
   float camToRGB4[3][4];
-  float rCamMul, gCamMul, bCamMul;    // wb used on the image by the camera
-  float rPreMul, gPreMul, bPreMul;    //"daylight" wb according to libraw
-  float rUserMul, gUserMul, bUserMul; // wb actually applied
+  float rCamMul, gCamMul, bCamMul;// wb used on the image by the camera
+  float rPreMul, gPreMul, bPreMul;//"daylight" wb according to libraw
+  float rUserMul, gUserMul, bUserMul;// wb actually applied
   float maxValue;
   float colorMaxValue[3];
-  bool isSraw; // Actually we should set this for all full-color raws (including
-               // X-Transformer)
+  bool isSraw;// Actually we should set this for all full-color raws (including
+              // X-Transformer)
   bool isNikonSraw;
   bool isMonochrome;
   bool isCR3;
 
-  matrix<float> demosaiced_image;     // raw
-  matrix<float> post_demosaic_image;  // raw
-  matrix<float> nlmeans_nr_image;     // lab
-  matrix<float> impulse_nr_image;     // lab
-  matrix<float> chroma_nr_image;      // lab
-  matrix<float> pre_film_image;       // back to raw
-  matrix<float> pre_film_image_small; //
+  matrix<float> demosaiced_image;// raw
+  matrix<float> post_demosaic_image;// raw
+  matrix<float> nlmeans_nr_image;// lab
+  matrix<float> impulse_nr_image;// lab
+  matrix<float> chroma_nr_image;// lab
+  matrix<float> pre_film_image;// back to raw
+  matrix<float> pre_film_image_small;//
   Exiv2::ExifData exifData;
-  Exiv2::ExifData basicExifData;  // for tiff writing
-  matrix<float> filmulated_image; // sRGB
+  Exiv2::ExifData basicExifData;// for tiff writing
+  matrix<float> filmulated_image;// sRGB
   matrix<unsigned short> contrast_image;
   matrix<unsigned short> color_curve_image;
   matrix<unsigned short> vibrance_saturation_image;
@@ -132,12 +138,13 @@ protected:
 
   // The core filmulation. It needs to access ProcessingParameters, so it's
   // here.
-  bool filmulate(matrix<float> &scaled_image, matrix<float> &output_density,
-                 ParameterManager *paramManager, ImagePipeline *pipeline);
+  bool filmulate(matrix<float> &scaled_image,
+    matrix<float> &output_density,
+    ParameterManager *paramManager,
+    ImagePipeline *pipeline);
 
   // Callback for LibRaw cancellation
-  static int libraw_callback(void *data, enum LibRaw_progress p, int iteration,
-                             int expected);
+  static int libraw_callback(void *data, enum LibRaw_progress p, int iteration, int expected);
 };
 
-#endif // IMAGEPIPELINE_H
+#endif// IMAGEPIPELINE_H

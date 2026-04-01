@@ -1,22 +1,17 @@
 #include "filmImageProvider.h"
+#include "../core/logging.h"
 #include "../database/exifFunctions.h"
 #include "../database/organizeModel.h"
 #include <QDir>
-#include <iostream>
 
-using std::cout;
-using std::endl;
 
 #define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(ParameterManager *manager)
-    : QObject(0),
-      QQuickImageProvider(QQuickImageProvider::Image,
-                          QQuickImageProvider::ForceAsynchronousImageLoading),
-      pipeline(HighCache, WithHisto, HighQuality),
-      quickPipe(HighCache, WithHisto, PreviewQuality),
-      nextQuickPipe(HighCache, NoHisto, PreviewQuality),
-      prevQuickPipe(HighCache, NoHisto, PreviewQuality) {
+  : QObject(0), QQuickImageProvider(QQuickImageProvider::Image, QQuickImageProvider::ForceAsynchronousImageLoading),
+    pipeline(HighCache, WithHisto, HighQuality), quickPipe(HighCache, WithHisto, PreviewQuality),
+    nextQuickPipe(HighCache, NoHisto, PreviewQuality), prevQuickPipe(HighCache, NoHisto, PreviewQuality)
+{
   paramManager = manager;
   cloneParam = new ParameterManager;
   cloneParam->setClone();
@@ -24,18 +19,15 @@ FilmImageProvider::FilmImageProvider(ParameterManager *manager)
   prevParam = new ParameterManager;
 
   // Make changes to the paramManager cancel computations
-  connect(paramManager, SIGNAL(updateClone(ParameterManager *)), cloneParam,
-          SLOT(cloneParams(ParameterManager *)));
-  connect(paramManager, SIGNAL(updateClone(ParameterManager *)), nextParam,
-          SLOT(cancelComputation()));
+  connect(paramManager, SIGNAL(updateClone(ParameterManager *)), cloneParam, SLOT(cloneParams(ParameterManager *)));
+  connect(paramManager, SIGNAL(updateClone(ParameterManager *)), nextParam, SLOT(cancelComputation()));
 
   zeroHistogram(finalHist);
   zeroHistogram(postFilmHist);
   zeroHistogram(preFilmHist);
 
   worker->moveToThread(&workerThread);
-  connect(this, SIGNAL(requestThumbnail(QString)), worker,
-          SLOT(writeThumb(QString)));
+  connect(this, SIGNAL(requestThumbnail(QString)), worker, SLOT(writeThumb(QString)));
   connect(worker, SIGNAL(doneWritingThumb()), this, SLOT(thumbDoneWriting()));
 
   // Check if we want the pipeline to cache.
@@ -64,10 +56,10 @@ FilmImageProvider::FilmImageProvider(ParameterManager *manager)
 
 FilmImageProvider::~FilmImageProvider() {}
 
-QImage FilmImageProvider::requestImage(const QString &id, QSize *size,
-                                       const QSize & /*requestedSize*/) {
+QImage FilmImageProvider::requestImage(const QString &id, QSize *size, const QSize & /*requestedSize*/)
+{
   request_start_time = std::chrono::steady_clock::now();
-  cout << "FilmImageProvider::requestImage id: " << id.toStdString() << endl;
+  FILM_INFO("FilmImageProvider::requestImage id: {}", id.toStdString());
 
   // Copy out the filename.
   std::string filename;
@@ -84,23 +76,21 @@ QImage FilmImageProvider::requestImage(const QString &id, QSize *size,
   Exiv2::ExifData data;
   matrix<unsigned short> image;
   if (!useQuickPipe) {
-    shufflePipelines(); // this'll just deal with the ID names
+    shufflePipelines();// this'll just deal with the ID names
     filename = paramManager->getFullFilename();
     pipeline.clearInvalid(paramManager->getValid());
     image = pipeline.processImage(paramManager, this, data, fileHash);
   } else {
     // need to check if we want the small or big image
-    if (id[0] == "q") // small image
+    if (id[0] == "q")// small image
     {
       filename = paramManager->getFullFilename();
-      if (newID != currentID && useCache) // the image changed
+      if (newID != currentID && useCache)// the image changed
       {
         shufflePipelines();
-        if (paramManager->getValid() > Valid::none) {
-          quickPipe.rerunHistograms();
-        }
+        if (paramManager->getValid() > Valid::none) { quickPipe.rerunHistograms(); }
       } else {
-        shufflePipelines(); // should do nothing
+        shufflePipelines();// should do nothing
       }
 
       // We want to clear both the quick pipe and the full pipe's invalid data
@@ -110,10 +100,9 @@ QImage FilmImageProvider::requestImage(const QString &id, QSize *size,
 
       std::chrono::steady_clock::time_point quickTime;
       quickTime = std::chrono::steady_clock::now();
-      cout << "requestImage quick pipeline valid " << paramManager->getValid()
-           << endl;
+      FILM_INFO("requestImage quick pipeline valid {}", (int)paramManager->getValid());
       image = quickPipe.processImage(paramManager, this, data, fileHash);
-      cout << "requestImage quickPipe time: " << timeDiff(quickTime) << endl;
+      FILM_DEBUG("requestImage quickPipe time: {}", timeDiff(quickTime));
     } else {
       // dummy stuff for the precomputation pipe
       Exiv2::ExifData exif;
@@ -125,21 +114,18 @@ QImage FilmImageProvider::requestImage(const QString &id, QSize *size,
       if (useCache) {
         std::chrono::steady_clock::time_point preTime;
         preTime = std::chrono::steady_clock::now();
-        cout << "requestImage nextParam valid " << nextParam->getValid()
-             << endl;
+        FILM_INFO("requestImage nextParam valid {}", (int)nextParam->getValid());
         nextQuickPipe.processImage(nextParam, this, exif, "");
-        cout << "requestImage preload time: " << timeDiff(preTime) << endl;
+        FILM_DEBUG("requestImage preload time: {}", timeDiff(preTime));
       }
 
       // run full pipeline of current image
       filename = cloneParam->getFullFilename();
       std::chrono::steady_clock::time_point fullTime;
       fullTime = std::chrono::steady_clock::now();
-      cout << "requestImage full pipeline valid " << cloneParam->getValid()
-           << endl;
-      image =
-          pipeline.processImage(cloneParam, this, data, fileHash, &quickPipe);
-      cout << "requestImage fullPipe time: " << timeDiff(fullTime) << endl;
+      FILM_INFO("requestImage full pipeline valid {}", (int)cloneParam->getValid());
+      image = pipeline.processImage(cloneParam, this, data, fileHash, &quickPipe);
+      FILM_DEBUG("requestImage fullPipe time: {}", timeDiff(fullTime));
     }
   }
 
@@ -166,27 +152,26 @@ QImage FilmImageProvider::requestImage(const QString &id, QSize *size,
   for (int i = 0; i < nrows; i++) {
     QRgb *line = (QRgb *)output.scanLine(i);
     for (int j = 0; j < ncols; j = j + 3) {
-      *line = QColor(last_image(i, j) / 256, last_image(i, j + 1) / 256,
-                     last_image(i, j + 2) / 256)
-                  .rgb();
+      *line = QColor(last_image(i, j) / 256, last_image(i, j + 1) / 256, last_image(i, j + 2) / 256).rgb();
       line++;
     }
   }
 
-  tout << "Request time: " << timeDiff(request_start_time) << " seconds"
-       << endl;
+  FILM_DEBUG("Request time: {} seconds", timeDiff(request_start_time));
   setProgress(1);
   *size = output.size();
   return output;
 }
 
-void FilmImageProvider::writeTiff() {
+void FilmImageProvider::writeTiff()
+{
   processMutex.lock();
   imwrite_tiff(last_image, outputFilename, exifData);
   processMutex.unlock();
 }
 
-void FilmImageProvider::writeJpeg() {
+void FilmImageProvider::writeJpeg()
+{
   processMutex.lock();
   // Set up the thumbnail directory.
   QDir dir = QDir::home();
@@ -198,9 +183,9 @@ void FilmImageProvider::writeJpeg() {
     dir.cd(thumbDir);
   }
   std::string thumbPath = dir.absoluteFilePath(currentID).toStdString();
-  cout << "writejpeg current id: " << currentID.toStdString() << endl;
+  FILM_DEBUG("writejpeg current id: {}", currentID.toStdString());
   thumbPath.append(".jpg");
-  cout << "writejpeg thumb path: " << thumbPath << endl;
+  FILM_DEBUG("writejpeg thumb path: {}", thumbPath);
   imwrite_jpeg(last_image, outputFilename, exifData, 95, thumbPath);
   processMutex.unlock();
 }
@@ -208,145 +193,134 @@ void FilmImageProvider::writeJpeg() {
 // TODO: There needs to be an OutputWriteWorker like the ThumbWriteWorker, but
 // hq and with some
 //  flexibility to what stages of the pipeline get run
-void FilmImageProvider::writeThumbnail(QString searchID) {
+void FilmImageProvider::writeThumbnail(QString searchID)
+{
   writeDataMutex.lock();
-  if (writeThisThumbnail) // when we have the crop temporarily disabled, don't
-                          // write the thumb
+  if (writeThisThumbnail)// when we have the crop temporarily disabled, don't
+                         // write the thumb
   {
     workerThread.start(QThread::LowPriority);
     worker->setImage(last_image, exifData);
     emit requestThumbnail(searchID);
   } else {
-    emit thumbnailDone(); // But tell the queue delegate that it was written so
-                          // it stops waiting
+    emit thumbnailDone();// But tell the queue delegate that it was written so
+                         // it stops waiting
   }
   writeDataMutex.unlock();
 }
 
-void FilmImageProvider::thumbDoneWriting() {
+void FilmImageProvider::thumbDoneWriting()
+{
   // clean up thread
   exitWorker();
   emit thumbnailDone();
 }
 
-void FilmImageProvider::setProgress(float percentDone_in) {
+void FilmImageProvider::setProgress(float percentDone_in)
+{
   progress = percentDone_in;
   emit progressChanged();
 }
 
-void FilmImageProvider::updateFilmProgress(
-    float percentDone_in) // Percent filmulation
+void FilmImageProvider::updateFilmProgress(float percentDone_in)// Percent filmulation
 {
   progress = 0.2 + percentDone_in * 0.6;
   emit progressChanged();
 }
 
-float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i,
-                                           LogY isLog) {
-  if (hist.empty) {
-    return 0.0f;
-  }
+float FilmImageProvider::getHistogramPoint(Histogram &hist, int index, int i, LogY isLog)
+{
+  if (hist.empty) { return 0.0f; }
   // index is 0 for L, 1 for R, 2 for G, and 3 for B.
   assert((index < 4) && (index >= 0));
   switch (index) {
-  case 0: // luminance
+  case 0:// luminance
     if (!isLog)
-      return float(min(float(hist.lHist[i]), hist.lHistMax)) /
-             float(hist.lHistMax);
+      return float(min(float(hist.lHist[i]), hist.lHistMax)) / float(hist.lHistMax);
     else
       return float(log(hist.lHist[i] + 1) / log(double(hist.lHistMax + 1)));
-  case 1: // red
+  case 1:// red
     if (!isLog)
-      return float(min(float(hist.rHist[i]), hist.rHistMax)) /
-             float(hist.rHistMax);
+      return float(min(float(hist.rHist[i]), hist.rHistMax)) / float(hist.rHistMax);
     else
       return float(log(hist.rHist[i] + 1) / log(double(hist.rHistMax + 1)));
-  case 2: // green
+  case 2:// green
     if (!isLog)
-      return float(min(float(hist.gHist[i]), hist.gHistMax)) /
-             float(hist.gHistMax);
+      return float(min(float(hist.gHist[i]), hist.gHistMax)) / float(hist.gHistMax);
     else
       return float(log(hist.gHist[i] + 1) / log(double(hist.gHistMax + 1)));
-  default: // case 3: //blue
+  default:// case 3: //blue
     if (!isLog)
-      return float(min(float(hist.bHist[i]), hist.bHistMax)) /
-             float(hist.bHistMax);
+      return float(min(float(hist.bHist[i]), hist.bHistMax)) / float(hist.bHistMax);
     else
       return float(log(hist.bHist[i] + 1) / log(double(hist.bHistMax + 1)));
   }
   // xHistMax is the maximum height of any bin except the extremes.
 }
 
-QImage FilmImageProvider::emptyImage() {
-  return QImage(0, 0, QImage::Format_ARGB32);
-}
+QImage FilmImageProvider::emptyImage() { return QImage(0, 0, QImage::Format_ARGB32); }
 
-void FilmImageProvider::prepareShuffle(const QString newIDin,
-                                       const QString newNextIDin) {
+void FilmImageProvider::prepareShuffle(const QString newIDin, const QString newNextIDin)
+{
   newID = newIDin;
   newNextID = newNextIDin;
   // cout << "prepareShuffle newID:     " << newID.toStdString() << endl;
   // cout << "prepareShuffle newNextID: " << newNextID.toStdString() << endl;
 }
 
-void FilmImageProvider::shufflePipelines() {
+void FilmImageProvider::shufflePipelines()
+{
   std::chrono::steady_clock::time_point shuffleTime;
   shuffleTime = std::chrono::steady_clock::now();
 
   if (!useCache) {
-    cout << "shuffle no cache" << endl;
+    FILM_DEBUG("shuffle no cache");
     currentID = newID;
     return;
   }
   if (!useQuickPipe) {
-    cout << "shuffle no quick pipe" << endl;
+    FILM_DEBUG("shuffle no quick pipe");
     currentID = newID;
     return;
   }
   if (newID == "") {
-    cout << "shuffle no new" << endl;
+    FILM_DEBUG("shuffle no new");
     return;
   }
   if (newID == currentID) {
-    cout << "shuffle no change" << endl;
+    FILM_DEBUG("shuffle no change");
     return;
   }
-  cout << "shuffle begin newID:     " << newID.toStdString() << endl;
-  cout << "shuffle begin newNextID: " << newNextID.toStdString() << endl;
-  cout << "shuffle begin prevID:    " << prevID.toStdString() << endl;
-  cout << "shuffle begin currentID: " << currentID.toStdString() << endl;
-  cout << "shuffle begin nextID:    " << nextID.toStdString() << endl;
+  FILM_DEBUG("shuffle begin newID:     {}", newID.toStdString());
+  FILM_DEBUG("shuffle begin newNextID: {}", newNextID.toStdString());
+  FILM_DEBUG("shuffle begin prevID:    {}", prevID.toStdString());
+  FILM_DEBUG("shuffle begin currentID: {}", currentID.toStdString());
+  FILM_DEBUG("shuffle begin nextID:    {}", nextID.toStdString());
 
-  if (currentID ==
-      "") // If we have no currently selected image, no copying is necessary
+  if (currentID == "")// If we have no currently selected image, no copying is necessary
   {
-    cout << "shuffle: no current image" << endl;
+    FILM_DEBUG("shuffle: no current image");
     currentID = newID;
     if (newNextID != "") {
       nextID = newNextID;
       nextParam->selectImage(nextID);
     }
-  } else if (newID == prevID) // swap new and old
+  } else if (newID == prevID)// swap new and old
   {
-    cout << "shuffle: new matches old" << endl;
+    FILM_DEBUG("shuffle: new matches old");
     // copy image data
     quickPipe.swapPipeline(&prevQuickPipe);
 
     // copy processing parameters and validity of computation
-    cout << "shuffle: prevPipeline valid: " << prevParam->getValid()
-         << " =============================================================="
-         << endl;
-    cout << "shuffle: currPipeline valid: " << paramManager->getValid()
-         << " =============================================================="
-         << endl;
-    cout << "shuffle: currPipeline valid: "
-         << paramManager->getValidityWhenCanceled()
-         << " =============================================================="
-         << endl;
-    tempValid =
-        paramManager->getValidityWhenCanceled(); // because we did selectImage
-                                                 // the validity was canceled;
-                                                 // we want the very latest
+    FILM_DEBUG("shuffle: prevPipeline valid: {} ==============================================================",
+      (int)prevParam->getValid());
+    FILM_DEBUG("shuffle: currPipeline valid: {} ==============================================================",
+      (int)paramManager->getValid());
+    FILM_DEBUG("shuffle: currPipeline valid: {} ==============================================================",
+      (int)paramManager->getValidityWhenCanceled());
+    tempValid = paramManager->getValidityWhenCanceled();// because we did selectImage
+                                                        // the validity was canceled;
+                                                        // we want the very latest
     paramManager->setValid(prevParam->getValid());
     // paramManager->selectImage(newID);//because we just set validity, this
     // doesn't reset validity or notify qml
@@ -355,9 +329,7 @@ void FilmImageProvider::shufflePipelines() {
     cloneParam->setValid(Valid::none);
 
     // select the params for the next image for preload
-    if (newNextID != "") {
-      nextParam->selectImage(newNextID);
-    }
+    if (newNextID != "") { nextParam->selectImage(newNextID); }
     // cout << "shuffle: prevPipeline valid: " << prevParam->getValid() << "
     // ==============================================================" << endl;
     // cout << "shuffle: currPipeline valid: " << paramManager->getValid() << "
@@ -371,36 +343,32 @@ void FilmImageProvider::shufflePipelines() {
     currentID = newID;
     nextID = newNextID;
   } else {
-    cout << "shuffle: new does not match old" << endl;
+    FILM_DEBUG("shuffle: new does not match old");
     // just copy current to old to start...
     prevQuickPipe.swapPipeline(&quickPipe);
     prevParam->selectImage(currentID);
     prevParam->setValid(paramManager->getValidityWhenCanceled());
 
     // check whether to use our preloaded image
-    if (newID == nextID) // copy the preloaded image to the current
+    if (newID == nextID)// copy the preloaded image to the current
     {
-      cout << "shuffle: new matches next" << endl;
-      cout << "shuffle: nextPipeline valid: " << nextParam->getValid()
-           << " =============================================================="
-           << endl;
-      cout << "shuffle: currPipeline valid: " << paramManager->getValid()
-           << " =============================================================="
-           << endl;
-      cout << "shuffle: currPipeline valid: "
-           << paramManager->getValidityWhenCanceled()
-           << " =============================================================="
-           << endl;
+      FILM_DEBUG("shuffle: new matches next");
+      FILM_DEBUG("shuffle: nextPipeline valid: {} ==============================================================",
+        (int)nextParam->getValid());
+      FILM_DEBUG("shuffle: currPipeline valid: {} ==============================================================",
+        (int)paramManager->getValid());
+      FILM_DEBUG("shuffle: currPipeline valid: {} ==============================================================",
+        (int)paramManager->getValidityWhenCanceled());
       quickPipe.swapPipeline(&nextQuickPipe);
       // we already selected the right image
       paramManager->setValid(nextParam->getValid());
       nextParam->setValid(Valid::none);
       cloneParam->setValid(Valid::none);
-    } // else, we just let qml do the selectImage afresh
+    }// else, we just let qml do the selectImage afresh
 
     // select the params for the next image for preload
     if (newNextID != "") {
-      cout << "shuffle: there is a newNext" << endl;
+      FILM_DEBUG("shuffle: there is a newNext");
       nextParam->selectImage(newNextID);
     }
     // cout << "shuffle: nextPipeline valid: " << nextParam->getValid() << "
@@ -416,31 +384,27 @@ void FilmImageProvider::shufflePipelines() {
     currentID = newID;
     nextID = newNextID;
   }
-  cout << "shuffle end newID:     " << newID.toStdString() << endl;
-  cout << "shuffle end newNextID: " << newNextID.toStdString() << endl;
-  cout << "shuffle end prevID:    " << prevID.toStdString() << endl;
-  cout << "shuffle end currentID: " << currentID.toStdString() << endl;
-  cout << "shuffle end nextID:    " << nextID.toStdString() << endl;
-  cout << "shuffle finished duration: " << timeDiff(shuffleTime) << endl;
+  FILM_DEBUG("shuffle end newID:     {}", newID.toStdString());
+  FILM_DEBUG("shuffle end newNextID: {}", newNextID.toStdString());
+  FILM_DEBUG("shuffle end prevID:    {}", prevID.toStdString());
+  FILM_DEBUG("shuffle end currentID: {}", currentID.toStdString());
+  FILM_DEBUG("shuffle end nextID:    {}", nextID.toStdString());
+  FILM_DEBUG("shuffle finished duration: {}", timeDiff(shuffleTime));
 }
 
 // called when settings are pasted, to ensure that the cached data gets
 // invalidated if settings change
-void FilmImageProvider::refreshParams(const QString IDin) {
-  if (prevParam->getImageIndex() == IDin) {
-    prevParam->selectImage(IDin);
-  }
-  if (paramManager->getImageIndex() == IDin) {
-    paramManager->selectImage(IDin);
-  }
-  if (nextParam->getImageIndex() == IDin) {
-    nextParam->selectImage(IDin);
-  }
+void FilmImageProvider::refreshParams(const QString IDin)
+{
+  if (prevParam->getImageIndex() == IDin) { prevParam->selectImage(IDin); }
+  if (paramManager->getImageIndex() == IDin) { paramManager->selectImage(IDin); }
+  if (nextParam->getImageIndex() == IDin) { nextParam->selectImage(IDin); }
 }
 
 // Coordinates relative to cropped image
 // Directly communicates with the ParamManagers, I think.
-void FilmImageProvider::customWB(const float xCoord, const float yCoord) {
+void FilmImageProvider::customWB(const float xCoord, const float yCoord)
+{
   QMutexLocker paramLocker(&(paramManager->paramMutex));
   const int rotation = paramManager->getRotation();
   const float cropHeight = paramManager->getCropHeight();
@@ -453,11 +417,9 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord) {
   float blue;
   if (useQuickPipe) {
 
-    quickPipe.sampleWB(xCoord, yCoord, rotation, cropHeight, cropAspect,
-                       cropVoffset, cropHoffset, red, green, blue);
+    quickPipe.sampleWB(xCoord, yCoord, rotation, cropHeight, cropAspect, cropVoffset, cropHoffset, red, green, blue);
   } else {
-    pipeline.sampleWB(xCoord, yCoord, rotation, cropHeight, cropAspect,
-                      cropVoffset, cropHoffset, red, green, blue);
+    pipeline.sampleWB(xCoord, yCoord, rotation, cropHeight, cropAspect, cropVoffset, cropHoffset, red, green, blue);
   }
 
   float rMult = 1 / red;
@@ -474,10 +436,10 @@ void FilmImageProvider::customWB(const float xCoord, const float yCoord) {
   float temp;
   float tint;
   optimizeWBMults(filename, temp, tint, rMult, gMult, bMult);
-  cout << "customWB temp: " << temp << endl;
-  cout << "customWB tint: " << tint << endl;
+  FILM_DEBUG("customWB temp: {}", temp);
+  FILM_DEBUG("customWB tint: {}", tint);
 
-  paramLocker.unlock(); // done gathering info from the
+  paramLocker.unlock();// done gathering info from the
 
   // tint is just a multiplier for green so it won't cause crashes
 

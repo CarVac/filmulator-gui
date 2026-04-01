@@ -17,26 +17,25 @@
  * along with Filmulator. If not, see <http://www.gnu.org/licenses/>
  */
 #include "filmSim.hpp"
+#include "logging.h"
 
 void output_file(matrix<unsigned short> &output,
-                 vector<string> input_filename_list, bool jpeg_out,
-                 Exiv2::ExifData exifData) {
+  vector<string> input_filename_list,
+  bool jpeg_out,
+  Exiv2::ExifData exifData)
+{
   std::chrono::steady_clock::time_point write_start;
   write_start = std::chrono::steady_clock::now();
 
   string output_image_filename = input_filename_list[0];
   int namelength = output_image_filename.length();
   int extension_pos = namelength;
-  for (; extension_pos >= 0;
-       extension_pos--) // Find extension so that it can be cleaved
-    if (output_image_filename[extension_pos] == '.')
-      break;
-  if (extension_pos == 0) // no extension
+  for (; extension_pos >= 0; extension_pos--)// Find extension so that it can be cleaved
+    if (output_image_filename[extension_pos] == '.') break;
+  if (extension_pos == 0)// no extension
     extension_pos = namelength;
   output_image_filename = output_image_filename.substr(0, extension_pos);
-  if (input_filename_list.size() != 1) {
-    output_image_filename = output_image_filename + "-HDR";
-  }
+  if (input_filename_list.size() != 1) { output_image_filename = output_image_filename + "-HDR"; }
   output_image_filename = output_image_filename + "-output";
 
   if (jpeg_out) {
@@ -45,5 +44,5 @@ void output_file(matrix<unsigned short> &output,
     imwrite_tiff(output, output_image_filename, exifData);
   }
 
-  tout << "Write time: " << timeDiff(write_start) << " seconds" << endl;
+  FILM_DEBUG("Write time: {} seconds", timeDiff(write_start));
 }

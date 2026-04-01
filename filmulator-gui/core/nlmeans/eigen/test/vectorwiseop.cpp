@@ -13,7 +13,7 @@
 
 #include "main.h"
 
-template<typename ArrayType> void vectorwiseop_array(const ArrayType& m)
+template<typename ArrayType> void vectorwiseop_array(const ArrayType &m)
 {
   typedef typename ArrayType::Scalar Scalar;
   typedef Array<Scalar, ArrayType::RowsAtCompileTime, 1> ColVectorType;
@@ -21,12 +21,9 @@ template<typename ArrayType> void vectorwiseop_array(const ArrayType& m)
 
   Index rows = m.rows();
   Index cols = m.cols();
-  Index r = internal::random<Index>(0, rows-1),
-        c = internal::random<Index>(0, cols-1);
+  Index r = internal::random<Index>(0, rows - 1), c = internal::random<Index>(0, cols - 1);
 
-  ArrayType m1 = ArrayType::Random(rows, cols),
-            m2(rows, cols),
-            m3(rows, cols);
+  ArrayType m1 = ArrayType::Random(rows, cols), m2(rows, cols), m3(rows, cols);
 
   ColVectorType colvec = ColVectorType::Random(rows);
   RowVectorType rowvec = RowVectorType::Random(cols);
@@ -107,26 +104,25 @@ template<typename ArrayType> void vectorwiseop_array(const ArrayType& m)
   // yes, there might be an aliasing issue there but ".rowwise() /="
   // is supposed to evaluate " m2.colwise().sum()" into a temporary to avoid
   // evaluating the reduction multiple times
-  if(ArrayType::RowsAtCompileTime>2 || ArrayType::RowsAtCompileTime==Dynamic)
-  {
+  if (ArrayType::RowsAtCompileTime > 2 || ArrayType::RowsAtCompileTime == Dynamic) {
     m2.rowwise() /= m2.colwise().sum();
     VERIFY_IS_APPROX(m2, m1.rowwise() / m1.colwise().sum());
   }
 
   // all/any
-  Array<bool,Dynamic,Dynamic> mb(rows,cols);
-  mb = (m1.real()<=0.7).colwise().all();
-  VERIFY( (mb.col(c) == (m1.real().col(c)<=0.7).all()).all() );
-  mb = (m1.real()<=0.7).rowwise().all();
-  VERIFY( (mb.row(r) == (m1.real().row(r)<=0.7).all()).all() );
+  Array<bool, Dynamic, Dynamic> mb(rows, cols);
+  mb = (m1.real() <= 0.7).colwise().all();
+  VERIFY((mb.col(c) == (m1.real().col(c) <= 0.7).all()).all());
+  mb = (m1.real() <= 0.7).rowwise().all();
+  VERIFY((mb.row(r) == (m1.real().row(r) <= 0.7).all()).all());
 
-  mb = (m1.real()>=0.7).colwise().any();
-  VERIFY( (mb.col(c) == (m1.real().col(c)>=0.7).any()).all() );
-  mb = (m1.real()>=0.7).rowwise().any();
-  VERIFY( (mb.row(r) == (m1.real().row(r)>=0.7).any()).all() );
+  mb = (m1.real() >= 0.7).colwise().any();
+  VERIFY((mb.col(c) == (m1.real().col(c) >= 0.7).any()).all());
+  mb = (m1.real() >= 0.7).rowwise().any();
+  VERIFY((mb.row(r) == (m1.real().row(r) >= 0.7).any()).all());
 }
 
-template<typename MatrixType> void vectorwiseop_matrix(const MatrixType& m)
+template<typename MatrixType> void vectorwiseop_matrix(const MatrixType &m)
 {
   typedef typename MatrixType::Scalar Scalar;
   typedef typename NumTraits<Scalar>::Real RealScalar;
@@ -137,12 +133,9 @@ template<typename MatrixType> void vectorwiseop_matrix(const MatrixType& m)
 
   Index rows = m.rows();
   Index cols = m.cols();
-  Index r = internal::random<Index>(0, rows-1),
-        c = internal::random<Index>(0, cols-1);
+  Index r = internal::random<Index>(0, rows - 1), c = internal::random<Index>(0, cols - 1);
 
-  MatrixType m1 = MatrixType::Random(rows, cols),
-            m2(rows, cols),
-            m3(rows, cols);
+  MatrixType m1 = MatrixType::Random(rows, cols), m2(rows, cols), m3(rows, cols);
 
   ColVectorType colvec = ColVectorType::Random(rows);
   RowVectorType rowvec = RowVectorType::Random(cols);
@@ -156,8 +149,7 @@ template<typename MatrixType> void vectorwiseop_matrix(const MatrixType& m)
   VERIFY_IS_APPROX(m2, m1.colwise() + colvec);
   VERIFY_IS_APPROX(m2.col(c), m1.col(c) + colvec);
 
-  if(rows>1)
-  {
+  if (rows > 1) {
     VERIFY_RAISES_ASSERT(m2.colwise() += colvec.transpose());
     VERIFY_RAISES_ASSERT(m1.colwise() + colvec.transpose());
   }
@@ -167,8 +159,7 @@ template<typename MatrixType> void vectorwiseop_matrix(const MatrixType& m)
   VERIFY_IS_APPROX(m2, m1.rowwise() + rowvec);
   VERIFY_IS_APPROX(m2.row(r), m1.row(r) + rowvec);
 
-  if(cols>1)
-  {
+  if (cols > 1) {
     VERIFY_RAISES_ASSERT(m2.rowwise() += rowvec.transpose());
     VERIFY_RAISES_ASSERT(m1.rowwise() + rowvec.transpose());
   }
@@ -180,8 +171,7 @@ template<typename MatrixType> void vectorwiseop_matrix(const MatrixType& m)
   VERIFY_IS_APPROX(m2, m1.colwise() - colvec);
   VERIFY_IS_APPROX(m2.col(c), m1.col(c) - colvec);
 
-  if(rows>1)
-  {
+  if (rows > 1) {
     VERIFY_RAISES_ASSERT(m2.colwise() -= colvec.transpose());
     VERIFY_RAISES_ASSERT(m1.colwise() - colvec.transpose());
   }
@@ -191,8 +181,7 @@ template<typename MatrixType> void vectorwiseop_matrix(const MatrixType& m)
   VERIFY_IS_APPROX(m2, m1.rowwise() - rowvec);
   VERIFY_IS_APPROX(m2.row(r), m1.row(r) - rowvec);
 
-  if(cols>1)
-  {
+  if (cols > 1) {
     VERIFY_RAISES_ASSERT(m2.rowwise() -= rowvec.transpose());
     VERIFY_RAISES_ASSERT(m1.rowwise() - rowvec.transpose());
   }
@@ -226,25 +215,27 @@ template<typename MatrixType> void vectorwiseop_matrix(const MatrixType& m)
   VERIFY_IS_APPROX(m2.row(r), m1.row(r).normalized());
 
   // test with partial reduction of products
-  Matrix<Scalar,MatrixType::RowsAtCompileTime,MatrixType::RowsAtCompileTime> m1m1 = m1 * m1.transpose();
-  VERIFY_IS_APPROX( (m1 * m1.transpose()).colwise().sum(), m1m1.colwise().sum());
-  Matrix<Scalar,1,MatrixType::RowsAtCompileTime> tmp(rows);
-  VERIFY_EVALUATION_COUNT( tmp = (m1 * m1.transpose()).colwise().sum(), 1);
+  Matrix<Scalar, MatrixType::RowsAtCompileTime, MatrixType::RowsAtCompileTime> m1m1 = m1 * m1.transpose();
+  VERIFY_IS_APPROX((m1 * m1.transpose()).colwise().sum(), m1m1.colwise().sum());
+  Matrix<Scalar, 1, MatrixType::RowsAtCompileTime> tmp(rows);
+  VERIFY_EVALUATION_COUNT(tmp = (m1 * m1.transpose()).colwise().sum(), 1);
 
-  m2 = m1.rowwise() - (m1.colwise().sum()/RealScalar(m1.rows())).eval();
-  m1 = m1.rowwise() - (m1.colwise().sum()/RealScalar(m1.rows()));
-  VERIFY_IS_APPROX( m1, m2 );
-  VERIFY_EVALUATION_COUNT( m2 = (m1.rowwise() - m1.colwise().sum()/RealScalar(m1.rows())), (MatrixType::RowsAtCompileTime!=1 ? 1 : 0) );
+  m2 = m1.rowwise() - (m1.colwise().sum() / RealScalar(m1.rows())).eval();
+  m1 = m1.rowwise() - (m1.colwise().sum() / RealScalar(m1.rows()));
+  VERIFY_IS_APPROX(m1, m2);
+  VERIFY_EVALUATION_COUNT(
+    m2 = (m1.rowwise() - m1.colwise().sum() / RealScalar(m1.rows())), (MatrixType::RowsAtCompileTime != 1 ? 1 : 0));
 }
 
 void test_vectorwiseop()
 {
-  CALL_SUBTEST_1( vectorwiseop_array(Array22cd()) );
-  CALL_SUBTEST_2( vectorwiseop_array(Array<double, 3, 2>()) );
-  CALL_SUBTEST_3( vectorwiseop_array(ArrayXXf(3, 4)) );
-  CALL_SUBTEST_4( vectorwiseop_matrix(Matrix4cf()) );
-  CALL_SUBTEST_5( vectorwiseop_matrix(Matrix<float,4,5>()) );
-  CALL_SUBTEST_6( vectorwiseop_matrix(MatrixXd(internal::random<int>(1,EIGEN_TEST_MAX_SIZE), internal::random<int>(1,EIGEN_TEST_MAX_SIZE))) );
-  CALL_SUBTEST_7( vectorwiseop_matrix(VectorXd(internal::random<int>(1,EIGEN_TEST_MAX_SIZE))) );
-  CALL_SUBTEST_7( vectorwiseop_matrix(RowVectorXd(internal::random<int>(1,EIGEN_TEST_MAX_SIZE))) );
+  CALL_SUBTEST_1(vectorwiseop_array(Array22cd()));
+  CALL_SUBTEST_2(vectorwiseop_array(Array<double, 3, 2>()));
+  CALL_SUBTEST_3(vectorwiseop_array(ArrayXXf(3, 4)));
+  CALL_SUBTEST_4(vectorwiseop_matrix(Matrix4cf()));
+  CALL_SUBTEST_5(vectorwiseop_matrix(Matrix<float, 4, 5>()));
+  CALL_SUBTEST_6(vectorwiseop_matrix(
+    MatrixXd(internal::random<int>(1, EIGEN_TEST_MAX_SIZE), internal::random<int>(1, EIGEN_TEST_MAX_SIZE))));
+  CALL_SUBTEST_7(vectorwiseop_matrix(VectorXd(internal::random<int>(1, EIGEN_TEST_MAX_SIZE))));
+  CALL_SUBTEST_7(vectorwiseop_matrix(RowVectorXd(internal::random<int>(1, EIGEN_TEST_MAX_SIZE))));
 }

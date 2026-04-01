@@ -13,87 +13,83 @@
 namespace Eigen {
 
 /** \class TensorReverse
-  * \ingroup CXX11_Tensor_Module
-  *
-  * \brief Tensor reverse elements class.
-  *
-  */
+ * \ingroup CXX11_Tensor_Module
+ *
+ * \brief Tensor reverse elements class.
+ *
+ */
 namespace internal {
-template<typename ReverseDimensions, typename XprType>
-struct traits<TensorReverseOp<ReverseDimensions,
-                              XprType> > : public traits<XprType>
-{
-  typedef typename XprType::Scalar Scalar;
-  typedef traits<XprType> XprTraits;
-  typedef typename XprTraits::StorageKind StorageKind;
-  typedef typename XprTraits::Index Index;
-  typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
-  static const int NumDimensions = XprTraits::NumDimensions;
-  static const int Layout = XprTraits::Layout;
-};
+  template<typename ReverseDimensions, typename XprType>
+  struct traits<TensorReverseOp<ReverseDimensions, XprType>> : public traits<XprType>
+  {
+    typedef typename XprType::Scalar Scalar;
+    typedef traits<XprType> XprTraits;
+    typedef typename XprTraits::StorageKind StorageKind;
+    typedef typename XprTraits::Index Index;
+    typedef typename XprType::Nested Nested;
+    typedef typename remove_reference<Nested>::type _Nested;
+    static const int NumDimensions = XprTraits::NumDimensions;
+    static const int Layout = XprTraits::Layout;
+  };
+
+  template<typename ReverseDimensions, typename XprType>
+  struct eval<TensorReverseOp<ReverseDimensions, XprType>, Eigen::Dense>
+  {
+    typedef const TensorReverseOp<ReverseDimensions, XprType> &type;
+  };
+
+  template<typename ReverseDimensions, typename XprType>
+  struct nested<TensorReverseOp<ReverseDimensions, XprType>,
+    1,
+    typename eval<TensorReverseOp<ReverseDimensions, XprType>>::type>
+  {
+    typedef TensorReverseOp<ReverseDimensions, XprType> type;
+  };
+
+}// end namespace internal
 
 template<typename ReverseDimensions, typename XprType>
-struct eval<TensorReverseOp<ReverseDimensions, XprType>, Eigen::Dense>
+class TensorReverseOp : public TensorBase<TensorReverseOp<ReverseDimensions, XprType>, WriteAccessors>
 {
-  typedef const TensorReverseOp<ReverseDimensions, XprType>& type;
-};
-
-template<typename ReverseDimensions, typename XprType>
-struct nested<TensorReverseOp<ReverseDimensions, XprType>, 1,
-            typename eval<TensorReverseOp<ReverseDimensions, XprType> >::type>
-{
-  typedef TensorReverseOp<ReverseDimensions, XprType> type;
-};
-
-}  // end namespace internal
-
-template<typename ReverseDimensions, typename XprType>
-class TensorReverseOp : public TensorBase<TensorReverseOp<ReverseDimensions,
-                                          XprType>, WriteAccessors>
-{
-  public:
+public:
   typedef typename Eigen::internal::traits<TensorReverseOp>::Scalar Scalar;
   typedef typename Eigen::NumTraits<Scalar>::Real RealScalar;
   typedef typename XprType::CoeffReturnType CoeffReturnType;
   typedef typename Eigen::internal::nested<TensorReverseOp>::type Nested;
-  typedef typename Eigen::internal::traits<TensorReverseOp>::StorageKind
-                                                                    StorageKind;
+  typedef typename Eigen::internal::traits<TensorReverseOp>::StorageKind StorageKind;
   typedef typename Eigen::internal::traits<TensorReverseOp>::Index Index;
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorReverseOp(
-      const XprType& expr, const ReverseDimensions& reverse_dims)
-      : m_xpr(expr), m_reverse_dims(reverse_dims) { }
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorReverseOp(const XprType &expr, const ReverseDimensions &reverse_dims)
+    : m_xpr(expr), m_reverse_dims(reverse_dims)
+  {}
 
-    EIGEN_DEVICE_FUNC
-    const ReverseDimensions& reverse() const { return m_reverse_dims; }
+  EIGEN_DEVICE_FUNC
+  const ReverseDimensions &reverse() const { return m_reverse_dims; }
 
-    EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename XprType::Nested>::type&
-    expression() const { return m_xpr; }
+  EIGEN_DEVICE_FUNC
+  const typename internal::remove_all<typename XprType::Nested>::type &expression() const { return m_xpr; }
 
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE TensorReverseOp& operator = (const TensorReverseOp& other)
-    {
-      typedef TensorAssignOp<TensorReverseOp, const TensorReverseOp> Assign;
-      Assign assign(*this, other);
-      internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
-      return *this;
-    }
+  EIGEN_DEVICE_FUNC
+  EIGEN_STRONG_INLINE TensorReverseOp &operator=(const TensorReverseOp &other)
+  {
+    typedef TensorAssignOp<TensorReverseOp, const TensorReverseOp> Assign;
+    Assign assign(*this, other);
+    internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
+    return *this;
+  }
 
-    template<typename OtherDerived>
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE TensorReverseOp& operator = (const OtherDerived& other)
-    {
-      typedef TensorAssignOp<TensorReverseOp, const OtherDerived> Assign;
-      Assign assign(*this, other);
-      internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
-      return *this;
-    }
+  template<typename OtherDerived>
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorReverseOp &operator=(const OtherDerived &other)
+  {
+    typedef TensorAssignOp<TensorReverseOp, const OtherDerived> Assign;
+    Assign assign(*this, other);
+    internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
+    return *this;
+  }
 
-  protected:
-    typename XprType::Nested m_xpr;
-    const ReverseDimensions m_reverse_dims;
+protected:
+  typename XprType::Nested m_xpr;
+  const ReverseDimensions m_reverse_dims;
 };
 
 // Eval as rvalue
@@ -113,13 +109,12 @@ struct TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>, Device
     IsAligned = false,
     PacketAccess = TensorEvaluator<ArgType, Device>::PacketAccess,
     Layout = TensorEvaluator<ArgType, Device>::Layout,
-    CoordAccess = false,  // to be implemented
+    CoordAccess = false,// to be implemented
     RawAccess = false
   };
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op,
-                                                        const Device& device)
-      : m_impl(op.expression(), device), m_reverse(op.reverse())
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorEvaluator(const XprType &op, const Device &device)
+    : m_impl(op.expression(), device), m_reverse(op.reverse())
   {
     // Reversing a scalar isn't supported yet. It would be a no-op anyway.
     EIGEN_STATIC_ASSERT((NumDims > 0), YOU_MADE_A_PROGRAMMING_MISTAKE);
@@ -128,40 +123,32 @@ struct TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>, Device
     m_dimensions = m_impl.dimensions();
     if (static_cast<int>(Layout) == static_cast<int>(ColMajor)) {
       m_strides[0] = 1;
-      for (int i = 1; i < NumDims; ++i) {
-        m_strides[i] = m_strides[i-1] * m_dimensions[i-1];
-      }
+      for (int i = 1; i < NumDims; ++i) { m_strides[i] = m_strides[i - 1] * m_dimensions[i - 1]; }
     } else {
-      m_strides[NumDims-1] = 1;
-      for (int i = NumDims - 2; i >= 0; --i) {
-        m_strides[i] = m_strides[i+1] * m_dimensions[i+1];
-      }
+      m_strides[NumDims - 1] = 1;
+      for (int i = NumDims - 2; i >= 0; --i) { m_strides[i] = m_strides[i + 1] * m_dimensions[i + 1]; }
     }
   }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  const Dimensions& dimensions() const { return m_dimensions; }
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Dimensions &dimensions() const { return m_dimensions; }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(Scalar*) {
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(Scalar *)
+  {
     m_impl.evalSubExprsIfNeeded(NULL);
     return true;
   }
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void cleanup() {
-    m_impl.cleanup();
-  }
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void cleanup() { m_impl.cleanup(); }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Index reverseIndex(
-      Index index) const {
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Index reverseIndex(Index index) const
+  {
     eigen_assert(index < dimensions().TotalSize());
     Index inputIndex = 0;
     if (static_cast<int>(Layout) == static_cast<int>(ColMajor)) {
       for (int i = NumDims - 1; i > 0; --i) {
         Index idx = index / m_strides[i];
         index -= idx * m_strides[i];
-        if (m_reverse[i]) {
-          idx = m_dimensions[i] - idx - 1;
-        }
-        inputIndex += idx * m_strides[i] ;
+        if (m_reverse[i]) { idx = m_dimensions[i] - idx - 1; }
+        inputIndex += idx * m_strides[i];
       }
       if (m_reverse[0]) {
         inputIndex += (m_dimensions[0] - index - 1);
@@ -172,13 +159,11 @@ struct TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>, Device
       for (int i = 0; i < NumDims - 1; ++i) {
         Index idx = index / m_strides[i];
         index -= idx * m_strides[i];
-        if (m_reverse[i]) {
-          idx = m_dimensions[i] - idx - 1;
-        }
-        inputIndex += idx * m_strides[i] ;
+        if (m_reverse[i]) { idx = m_dimensions[i] - idx - 1; }
+        inputIndex += idx * m_strides[i];
       }
-      if (m_reverse[NumDims-1]) {
-        inputIndex += (m_dimensions[NumDims-1] - index - 1);
+      if (m_reverse[NumDims - 1]) {
+        inputIndex += (m_dimensions[NumDims - 1] - index - 1);
       } else {
         inputIndex += index;
       }
@@ -186,45 +171,38 @@ struct TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>, Device
     return inputIndex;
   }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE CoeffReturnType coeff(
-      Index index) const  {
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE CoeffReturnType coeff(Index index) const
+  {
     return m_impl.coeff(reverseIndex(index));
   }
 
-  template<int LoadMode>
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  PacketReturnType packet(Index index) const
+  template<int LoadMode> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE PacketReturnType packet(Index index) const
   {
     EIGEN_STATIC_ASSERT((PacketSize > 1), YOU_MADE_A_PROGRAMMING_MISTAKE)
-    eigen_assert(index+PacketSize-1 < dimensions().TotalSize());
+    eigen_assert(index + PacketSize - 1 < dimensions().TotalSize());
 
     // TODO(ndjaitly): write a better packing routine that uses
     // local structure.
-    EIGEN_ALIGN_MAX typename internal::remove_const<CoeffReturnType>::type
-                                                            values[PacketSize];
-    for (int i = 0; i < PacketSize; ++i) {
-      values[i] = coeff(index+i);
-    }
+    EIGEN_ALIGN_MAX typename internal::remove_const<CoeffReturnType>::type values[PacketSize];
+    for (int i = 0; i < PacketSize; ++i) { values[i] = coeff(index + i); }
     PacketReturnType rslt = internal::pload<PacketReturnType>(values);
     return rslt;
   }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorOpCost costPerCoeff(bool vectorized) const {
-    double compute_cost = NumDims * (2 * TensorOpCost::AddCost<Index>() +
-                                     2 * TensorOpCost::MulCost<Index>() +
-                                     TensorOpCost::DivCost<Index>());
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorOpCost costPerCoeff(bool vectorized) const
+  {
+    double compute_cost =
+      NumDims
+      * (2 * TensorOpCost::AddCost<Index>() + 2 * TensorOpCost::MulCost<Index>() + TensorOpCost::DivCost<Index>());
     for (int i = 0; i < NumDims; ++i) {
-      if (m_reverse[i]) {
-        compute_cost += 2 * TensorOpCost::AddCost<Index>();
-      }
+      if (m_reverse[i]) { compute_cost += 2 * TensorOpCost::AddCost<Index>(); }
     }
-    return m_impl.costPerCoeff(vectorized) +
-           TensorOpCost(0, 0, compute_cost, false /* vectorized */, PacketSize);
+    return m_impl.costPerCoeff(vectorized) + TensorOpCost(0, 0, compute_cost, false /* vectorized */, PacketSize);
   }
 
-  EIGEN_DEVICE_FUNC Scalar* data() const { return NULL; }
+  EIGEN_DEVICE_FUNC Scalar *data() const { return NULL; }
 
- protected:
+protected:
   Dimensions m_dimensions;
   array<Index, NumDims> m_strides;
   TensorEvaluator<ArgType, Device> m_impl;
@@ -233,12 +211,11 @@ struct TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>, Device
 
 // Eval as lvalue
 
-template <typename ReverseDimensions, typename ArgType, typename Device>
+template<typename ReverseDimensions, typename ArgType, typename Device>
 struct TensorEvaluator<TensorReverseOp<ReverseDimensions, ArgType>, Device>
-    : public TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>,
-                             Device> {
-  typedef TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>,
-                          Device> Base;
+  : public TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>, Device>
+{
+  typedef TensorEvaluator<const TensorReverseOp<ReverseDimensions, ArgType>, Device> Base;
   typedef TensorReverseOp<ReverseDimensions, ArgType> XprType;
   typedef typename XprType::Index Index;
   static const int NumDims = internal::array_size<ReverseDimensions>::value;
@@ -248,41 +225,36 @@ struct TensorEvaluator<TensorReverseOp<ReverseDimensions, ArgType>, Device>
     IsAligned = false,
     PacketAccess = TensorEvaluator<ArgType, Device>::PacketAccess,
     Layout = TensorEvaluator<ArgType, Device>::Layout,
-    CoordAccess = false,  // to be implemented
+    CoordAccess = false,// to be implemented
     RawAccess = false
   };
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op,
-                                                        const Device& device)
-      : Base(op, device) {}
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorEvaluator(const XprType &op, const Device &device) : Base(op, device) {}
 
   typedef typename XprType::Scalar Scalar;
   typedef typename XprType::CoeffReturnType CoeffReturnType;
   typedef typename PacketType<CoeffReturnType, Device>::type PacketReturnType;
   static const int PacketSize = internal::unpacket_traits<PacketReturnType>::size;
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  const Dimensions& dimensions() const { return this->m_dimensions; }
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Dimensions &dimensions() const { return this->m_dimensions; }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Scalar& coeffRef(Index index) {
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Scalar &coeffRef(Index index)
+  {
     return this->m_impl.coeffRef(this->reverseIndex(index));
   }
 
-  template <int StoreMode> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  void writePacket(Index index, const PacketReturnType& x) {
+  template<int StoreMode> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void writePacket(Index index, const PacketReturnType &x)
+  {
     EIGEN_STATIC_ASSERT((PacketSize > 1), YOU_MADE_A_PROGRAMMING_MISTAKE)
-    eigen_assert(index+PacketSize-1 < dimensions().TotalSize());
+    eigen_assert(index + PacketSize - 1 < dimensions().TotalSize());
 
     // This code is pilfered from TensorMorphing.h
     EIGEN_ALIGN_MAX CoeffReturnType values[PacketSize];
     internal::pstore<CoeffReturnType, PacketReturnType>(values, x);
-    for (int i = 0; i < PacketSize; ++i) {
-      this->coeffRef(index+i) = values[i];
-    }
+    for (int i = 0; i < PacketSize; ++i) { this->coeffRef(index + i) = values[i]; }
   }
-
 };
 
 
-}  // end namespace Eigen
+}// end namespace Eigen
 
-#endif // EIGEN_CXX11_TENSOR_TENSOR_REVERSE_H
+#endif// EIGEN_CXX11_TENSOR_TENSOR_REVERSE_H

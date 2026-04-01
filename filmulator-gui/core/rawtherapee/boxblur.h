@@ -15,13 +15,13 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with RawTherapee.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 #ifndef BOXBLUR_H
 #define BOXBLUR_H
 
-void boxblur(float** src, float** dst, int radius, int W, int H, bool multiThread);
-void boxblur(float* src, float* dst, int radius, int W, int H, bool multiThread);
-void boxabsblur(float** src, float** dst, int radius, int W, int H, bool multiThread);
-void boxabsblur(float* src, float* dst, int radius, int W, int H, bool multiThread);
+void boxblur(float **src, float **dst, int radius, int W, int H, bool multiThread);
+void boxblur(float *src, float *dst, int radius, int W, int H, bool multiThread);
+void boxabsblur(float **src, float **dst, int radius, int W, int H, bool multiThread);
+void boxabsblur(float *src, float *dst, int radius, int W, int H, bool multiThread);
 
 #endif

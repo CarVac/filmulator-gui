@@ -14,27 +14,27 @@
 namespace Eigen {
 
 /** \class EigenBase
-  * \ingroup Core_Module
-  * 
-  * Common base class for all classes T such that MatrixBase has an operator=(T) and a constructor MatrixBase(T).
-  *
-  * In other words, an EigenBase object is an object that can be copied into a MatrixBase.
-  *
-  * Besides MatrixBase-derived classes, this also includes special matrix classes such as diagonal matrices, etc.
-  *
-  * Notice that this class is trivial, it is only used to disambiguate overloaded functions.
-  *
-  * \sa \blank \ref TopicClassHierarchy
-  */
+ * \ingroup Core_Module
+ *
+ * Common base class for all classes T such that MatrixBase has an operator=(T) and a constructor MatrixBase(T).
+ *
+ * In other words, an EigenBase object is an object that can be copied into a MatrixBase.
+ *
+ * Besides MatrixBase-derived classes, this also includes special matrix classes such as diagonal matrices, etc.
+ *
+ * Notice that this class is trivial, it is only used to disambiguate overloaded functions.
+ *
+ * \sa \blank \ref TopicClassHierarchy
+ */
 template<typename Derived> struct EigenBase
 {
-//   typedef typename internal::plain_matrix_type<Derived>::type PlainObject;
-  
+  //   typedef typename internal::plain_matrix_type<Derived>::type PlainObject;
+
   /** \brief The interface type of indices
-    * \details To change this, \c \#define the preprocessor symbol \c EIGEN_DEFAULT_DENSE_INDEX_TYPE.
-    * \deprecated Since Eigen 3.3, its usage is deprecated. Use Eigen::Index instead.
-    * \sa StorageIndex, \ref TopicPreprocessorDirectives.
-    */
+   * \details To change this, \c \#define the preprocessor symbol \c EIGEN_DEFAULT_DENSE_INDEX_TYPE.
+   * \deprecated Since Eigen 3.3, its usage is deprecated. Use Eigen::Index instead.
+   * \sa StorageIndex, \ref TopicPreprocessorDirectives.
+   */
   typedef Eigen::Index Index;
 
   // FIXME is it needed?
@@ -42,17 +42,15 @@ template<typename Derived> struct EigenBase
 
   /** \returns a reference to the derived object */
   EIGEN_DEVICE_FUNC
-  Derived& derived() { return *static_cast<Derived*>(this); }
+  Derived &derived() { return *static_cast<Derived *>(this); }
   /** \returns a const reference to the derived object */
   EIGEN_DEVICE_FUNC
-  const Derived& derived() const { return *static_cast<const Derived*>(this); }
+  const Derived &derived() const { return *static_cast<const Derived *>(this); }
 
   EIGEN_DEVICE_FUNC
-  inline Derived& const_cast_derived() const
-  { return *static_cast<Derived*>(const_cast<EigenBase*>(this)); }
+  inline Derived &const_cast_derived() const { return *static_cast<Derived *>(const_cast<EigenBase *>(this)); }
   EIGEN_DEVICE_FUNC
-  inline const Derived& const_derived() const
-  { return *static_cast<const Derived*>(this); }
+  inline const Derived &const_derived() const { return *static_cast<const Derived *>(this); }
 
   /** \returns the number of rows. \sa cols(), RowsAtCompileTime */
   EIGEN_DEVICE_FUNC
@@ -61,43 +59,35 @@ template<typename Derived> struct EigenBase
   EIGEN_DEVICE_FUNC
   inline Index cols() const { return derived().cols(); }
   /** \returns the number of coefficients, which is rows()*cols().
-    * \sa rows(), cols(), SizeAtCompileTime. */
+   * \sa rows(), cols(), SizeAtCompileTime. */
   EIGEN_DEVICE_FUNC
   inline Index size() const { return rows() * cols(); }
 
   /** \internal Don't use it, but do the equivalent: \code dst = *this; \endcode */
-  template<typename Dest>
-  EIGEN_DEVICE_FUNC
-  inline void evalTo(Dest& dst) const
-  { derived().evalTo(dst); }
+  template<typename Dest> EIGEN_DEVICE_FUNC inline void evalTo(Dest &dst) const { derived().evalTo(dst); }
 
   /** \internal Don't use it, but do the equivalent: \code dst += *this; \endcode */
-  template<typename Dest>
-  EIGEN_DEVICE_FUNC
-  inline void addTo(Dest& dst) const
+  template<typename Dest> EIGEN_DEVICE_FUNC inline void addTo(Dest &dst) const
   {
     // This is the default implementation,
     // derived class can reimplement it in a more optimized way.
-    typename Dest::PlainObject res(rows(),cols());
+    typename Dest::PlainObject res(rows(), cols());
     evalTo(res);
     dst += res;
   }
 
   /** \internal Don't use it, but do the equivalent: \code dst -= *this; \endcode */
-  template<typename Dest>
-  EIGEN_DEVICE_FUNC
-  inline void subTo(Dest& dst) const
+  template<typename Dest> EIGEN_DEVICE_FUNC inline void subTo(Dest &dst) const
   {
     // This is the default implementation,
     // derived class can reimplement it in a more optimized way.
-    typename Dest::PlainObject res(rows(),cols());
+    typename Dest::PlainObject res(rows(), cols());
     evalTo(res);
     dst -= res;
   }
 
   /** \internal Don't use it, but do the equivalent: \code dst.applyOnTheRight(*this); \endcode */
-  template<typename Dest>
-  EIGEN_DEVICE_FUNC inline void applyThisOnTheRight(Dest& dst) const
+  template<typename Dest> EIGEN_DEVICE_FUNC inline void applyThisOnTheRight(Dest &dst) const
   {
     // This is the default implementation,
     // derived class can reimplement it in a more optimized way.
@@ -105,32 +95,29 @@ template<typename Derived> struct EigenBase
   }
 
   /** \internal Don't use it, but do the equivalent: \code dst.applyOnTheLeft(*this); \endcode */
-  template<typename Dest>
-  EIGEN_DEVICE_FUNC inline void applyThisOnTheLeft(Dest& dst) const
+  template<typename Dest> EIGEN_DEVICE_FUNC inline void applyThisOnTheLeft(Dest &dst) const
   {
     // This is the default implementation,
     // derived class can reimplement it in a more optimized way.
     dst = this->derived() * dst;
   }
-
 };
 
 /***************************************************************************
-* Implementation of matrix base methods
-***************************************************************************/
+ * Implementation of matrix base methods
+ ***************************************************************************/
 
 /** \brief Copies the generic expression \a other into *this.
-  *
-  * \details The expression must provide a (templated) evalTo(Derived& dst) const
-  * function which does the actual job. In practice, this allows any user to write
-  * its own special matrix without having to modify MatrixBase
-  *
-  * \returns a reference to *this.
-  */
+ *
+ * \details The expression must provide a (templated) evalTo(Derived& dst) const
+ * function which does the actual job. In practice, this allows any user to write
+ * its own special matrix without having to modify MatrixBase
+ *
+ * \returns a reference to *this.
+ */
 template<typename Derived>
 template<typename OtherDerived>
-EIGEN_DEVICE_FUNC
-Derived& DenseBase<Derived>::operator=(const EigenBase<OtherDerived> &other)
+EIGEN_DEVICE_FUNC Derived &DenseBase<Derived>::operator=(const EigenBase<OtherDerived> &other)
 {
   call_assignment(derived(), other.derived());
   return derived();
@@ -138,22 +125,20 @@ Derived& DenseBase<Derived>::operator=(const EigenBase<OtherDerived> &other)
 
 template<typename Derived>
 template<typename OtherDerived>
-EIGEN_DEVICE_FUNC
-Derived& DenseBase<Derived>::operator+=(const EigenBase<OtherDerived> &other)
+EIGEN_DEVICE_FUNC Derived &DenseBase<Derived>::operator+=(const EigenBase<OtherDerived> &other)
 {
-  call_assignment(derived(), other.derived(), internal::add_assign_op<Scalar,typename OtherDerived::Scalar>());
+  call_assignment(derived(), other.derived(), internal::add_assign_op<Scalar, typename OtherDerived::Scalar>());
   return derived();
 }
 
 template<typename Derived>
 template<typename OtherDerived>
-EIGEN_DEVICE_FUNC
-Derived& DenseBase<Derived>::operator-=(const EigenBase<OtherDerived> &other)
+EIGEN_DEVICE_FUNC Derived &DenseBase<Derived>::operator-=(const EigenBase<OtherDerived> &other)
 {
-  call_assignment(derived(), other.derived(), internal::sub_assign_op<Scalar,typename OtherDerived::Scalar>());
+  call_assignment(derived(), other.derived(), internal::sub_assign_op<Scalar, typename OtherDerived::Scalar>());
   return derived();
 }
 
-} // end namespace Eigen
+}// end namespace Eigen
 
-#endif // EIGEN_EIGENBASE_H
+#endif// EIGEN_EIGENBASE_H

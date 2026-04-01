@@ -21,9 +21,7 @@ static void test_tanh()
 
   Tensor<float, 1> vec2 = vec1.tanh();
 
-  for (int i = 0; i < 6; ++i) {
-    VERIFY_IS_APPROX(vec2(i), tanhf(vec1(i)));
-  }
+  for (int i = 0; i < 6; ++i) { VERIFY_IS_APPROX(vec2(i), tanhf(vec1(i))); }
 }
 
 static void test_sigmoid()
@@ -33,9 +31,7 @@ static void test_sigmoid()
 
   Tensor<float, 1> vec2 = vec1.sigmoid();
 
-  for (int i = 0; i < 6; ++i) {
-    VERIFY_IS_APPROX(vec2(i), 1.0f / (1.0f + std::exp(-vec1(i))));
-  }
+  for (int i = 0; i < 6; ++i) { VERIFY_IS_APPROX(vec2(i), 1.0f / (1.0f + std::exp(-vec1(i)))); }
 }
 
 

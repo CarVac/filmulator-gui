@@ -14,7 +14,8 @@
 
 // Visual studio doesn't implement a rand_r() function since its
 // implementation of rand() is already thread safe
-int rand_reentrant(unsigned int* s) {
+int rand_reentrant(unsigned int *s)
+{
 #ifdef EIGEN_COMP_MSVC_STRICT
   EIGEN_UNUSED_VARIABLE(s);
   return rand();
@@ -28,7 +29,7 @@ static void test_basic_eventcount()
   MaxSizeVector<EventCount::Waiter> waiters(1);
   waiters.resize(1);
   EventCount ec(waiters);
-  EventCount::Waiter& w = waiters[0];
+  EventCount::Waiter &w = waiters[0];
   ec.Notify(false);
   ec.Prewait(&w);
   ec.Notify(true);
@@ -38,7 +39,8 @@ static void test_basic_eventcount()
 }
 
 // Fake bounded counter-based queue.
-struct TestQueue {
+struct TestQueue
+{
   std::atomic<int> val_;
   static const int kQueueSize = 10;
 
@@ -46,25 +48,25 @@ struct TestQueue {
 
   ~TestQueue() { VERIFY_IS_EQUAL(val_.load(), 0); }
 
-  bool Push() {
+  bool Push()
+  {
     int val = val_.load(std::memory_order_relaxed);
     for (;;) {
       VERIFY_GE(val, 0);
       VERIFY_LE(val, kQueueSize);
       if (val == kQueueSize) return false;
-      if (val_.compare_exchange_weak(val, val + 1, std::memory_order_relaxed))
-        return true;
+      if (val_.compare_exchange_weak(val, val + 1, std::memory_order_relaxed)) return true;
     }
   }
 
-  bool Pop() {
+  bool Pop()
+  {
     int val = val_.load(std::memory_order_relaxed);
     for (;;) {
       VERIFY_GE(val, 0);
       VERIFY_LE(val, kQueueSize);
       if (val == 0) return false;
-      if (val_.compare_exchange_weak(val, val - 1, std::memory_order_relaxed))
-        return true;
+      if (val_.compare_exchange_weak(val, val - 1, std::memory_order_relaxed)) return true;
     }
   }
 
@@ -106,7 +108,7 @@ static void test_stress_eventcount()
   std::vector<std::unique_ptr<std::thread>> consumers;
   for (int i = 0; i < kThreads; i++) {
     consumers.emplace_back(new std::thread([&ec, &queues, &waiters, i]() {
-      EventCount::Waiter& w = waiters[i];
+      EventCount::Waiter &w = waiters[i];
       unsigned int rnd = static_cast<unsigned int>(std::hash<std::thread::id>()(std::this_thread::get_id()));
       for (int j = 0; j < kEvents; j++) {
         unsigned idx = rand_reentrant(&rnd) % kQueues;

@@ -7,4 +7,4 @@ cwd="$(pwd)"
 export LD_LIBRARY_PATH=../../Frameworks
 export APPDIR=../..
 export QT_QPA_PLATFORM_PLUGIN_PATH=../../plugins/platforms
-exec "${cwd}/filmulator"
+exec "${cwd}/filmulator" "$@"
