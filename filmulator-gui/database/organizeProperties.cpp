@@ -143,9 +143,7 @@ bool OrganizeModel::isDateSelected(QString captureTimeIn)
 }
 
 QDate OrganizeModel::getSelectedDate()
-{
-  return QDateTime(minCaptureDate.addDays(1), QTime(23, 59, 59, 999), Qt::OffsetFromUTC, m_timeZone * 3600).date();
-}
+{ return QDateTime(minCaptureDate.addDays(1), QTime(23, 59, 59, 999), Qt::OffsetFromUTC, m_timeZone * 3600).date(); }
 
 QString OrganizeModel::getSelectedYMDString()
 {

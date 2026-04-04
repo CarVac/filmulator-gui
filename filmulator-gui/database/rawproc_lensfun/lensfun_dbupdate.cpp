@@ -86,9 +86,7 @@ std::string string_format(const std::string fmt, ...)
 
 // from https://stackoverflow.com/questions/8520560/get-a-file-name-from-a-path, Pixelchemist:
 std::string base_name(std::string const &path, std::string const &delims = "/\\")
-{
-  return path.substr(path.find_last_of(delims) + 1);
-}
+{ return path.substr(path.find_last_of(delims) + 1); }
 
 std::string remove_extension(std::string const &filename)
 {

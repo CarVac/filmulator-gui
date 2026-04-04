@@ -243,9 +243,7 @@ template<typename T> void createCheckerboard(matrix<T> &img, int rows, int cols,
 // Create neutral gray RGB patches (useful for white balance testing)
 // Creates a 18% gray image (in linear space: 0.18, or ~0.466 gamma-encoded)
 template<typename T> void createNeutralGray(matrix<T> &img, int height, int width, T grayLevel)
-{
-  createSolidRGB(img, height, width, grayLevel, grayLevel, grayLevel);
-}
+{ createSolidRGB(img, height, width, grayLevel, grayLevel, grayLevel); }
 
 }// namespace golden
 

@@ -311,9 +311,7 @@ void FilmImageProvider::updateHistRaw(const matrix<float> &image,
 }
 
 inline int FilmImageProvider::histIndex(float value, const float maximum)
-{
-  return max(0, min(127, int(127 * value / maximum)));
-}
+{ return max(0, min(127, int(127 * value / maximum))); }
 
 void FilmImageProvider::zeroHistogram(Histogram &hist)
 {

@@ -77,17 +77,11 @@ public:
 
   // for use with librtprocess
   T *operator[](const int index) const// use with indices
-  {
-    return ptr[index];
-  }
+  { return ptr[index]; }
   operator T **()// pointer to T**
-  {
-    return ptr;
-  }
+  { return ptr; }
   operator T *()// pointer to data
-  {
-    return data;
-  }
+  { return data; }
 
   // template <class U> //Never gets called if use matrix<U>
   matrix<T> &operator=(const matrix<T> &toCopy);
@@ -555,9 +549,7 @@ template<class T> double mean(matrix<T> &mat) { return mat.mean(); }
 template<class T> double variance(matrix<T> &mat) { return mat.variance(); }
 
 template<class T, class U> const matrix<T> operator+(const matrix<T> &mat1, const matrix<U> &mat2)
-{
-  return mat1.add(mat2);
-}
+{ return mat1.add(mat2); }
 
 template<class T, class U> const matrix<T> operator+(const U value, const matrix<T> &mat) { return mat.add(value); }
 
@@ -566,16 +558,12 @@ template<class T, class U> const matrix<T> operator+(const matrix<T> &mat, const
 template<class T, class U> const matrix<T> operator+=(matrix<T> &mat, const U value) { return mat.add_this(value); }
 
 template<class T, class U> const matrix<T> operator-(const matrix<T> &mat1, const matrix<U> &mat2)
-{
-  return mat1.subtract(mat2);
-}
+{ return mat1.subtract(mat2); }
 
 template<class T, class U> const matrix<T> operator-(const matrix<T> &mat, const U value) { return mat.subtact(value); }
 
 template<class T, class U> const matrix<T> operator%(const matrix<T> &mat1, const matrix<U> &mat2)
-{
-  return mat1.pointmult(mat2);
-}
+{ return mat1.pointmult(mat2); }
 
 template<class T, class U> const matrix<T> operator*(const U value, const matrix<T> &mat) { return mat.mult(value); }
 

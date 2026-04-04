@@ -39,13 +39,9 @@ public:
   Q_INVOKABLE float getHistFinalPoint(int index, int i) { return getHistogramPoint(finalHist, index, i, LogY::no); }
   Q_INVOKABLE float getHistRawPoint(int index, int i) { return getHistogramPoint(rawHist, index, i, LogY::yes); }
   Q_INVOKABLE float getHistPostFilmPoint(int index, int i)
-  {
-    return getHistogramPoint(postFilmHist, index, i, LogY::yes);
-  }
+  { return getHistogramPoint(postFilmHist, index, i, LogY::yes); }
   Q_INVOKABLE float getHistPreFilmPoint(int index, int i)
-  {
-    return getHistogramPoint(preFilmHist, index, i, LogY::yes);
-  }
+  { return getHistogramPoint(preFilmHist, index, i, LogY::yes); }
 
   void updateHistRaw(const matrix<float> &image,
     const float maximum[3],

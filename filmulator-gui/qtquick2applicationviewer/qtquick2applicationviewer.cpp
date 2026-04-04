@@ -62,9 +62,7 @@ void QtQuick2ApplicationViewer::setMainQmlFile(const QString &file)
 }
 
 void QtQuick2ApplicationViewer::addImportPath(const QString &path)
-{
-  engine()->addImportPath(QtQuick2ApplicationViewerPrivate::adjustPath(path));
-}
+{ engine()->addImportPath(QtQuick2ApplicationViewerPrivate::adjustPath(path)); }
 
 void QtQuick2ApplicationViewer::showExpanded()
 {

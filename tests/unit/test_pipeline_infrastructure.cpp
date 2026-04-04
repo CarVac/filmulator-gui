@@ -16,9 +16,7 @@ class IntMultiplierStage : public Pipeline::Stage<int, int, TestParams>
 {
 public:
   std::optional<int> process(const int &input, const TestParams &params, Pipeline::PipelineContext &) override
-  {
-    return input * params.multiplier;
-  }
+  { return input * params.multiplier; }
 };
 
 TEST_CASE("Pipeline Stage Infrastructure", "[pipeline]")
