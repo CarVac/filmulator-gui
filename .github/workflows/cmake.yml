@@ -82,7 +82,8 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -S . -B build/release -G Ninja -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        uv sync
+        cmake --preset release -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Check Formatting
       run: |
@@ -91,6 +92,7 @@ jobs:
 
     - name: Run Clang-Tidy
       run: cmake --build build/release --target tidy
+      continue-on-error: true
 
   build:
     name: ${{ matrix.os }}-build

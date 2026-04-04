@@ -5,7 +5,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 include(DefineCMakeDefaults)
 
-project(Filmulator VERSION 0.11.2)
+project(Filmulator VERSION 0.12.0)
 
 include(GNUInstallDirs)
 include(CompilerChecks.cmake)
@@ -326,7 +326,16 @@ qt5_import_qml_plugins(filmulator)
 add_subdirectory(filmulator-gui/qml)
 
 # Code formatting and linting
-find_program(CLANG_FORMAT "clang-format")
+find_program(UV_EXE uv)
+if(UV_EXE)
+    set(CLANG_FORMAT "uv" "run" "clang-format")
+    set(CLANG_TIDY "uv" "run" "clang-tidy")
+    message(STATUS "Using clang tools via uv (version 21.0 or newer)")
+else()
+    find_program(CLANG_FORMAT clang-format)
+    find_program(CLANG_TIDY clang-tidy)
+endif()
+
 if(CLANG_FORMAT)
     file(GLOB_RECURSE ALL_S_FILES 
         "filmulator-gui/*.cpp" 
@@ -336,8 +345,11 @@ if(CLANG_FORMAT)
         "tests/*.hpp"
         "tests/*.h"
     )
-    # Exclude third-party cJSON
-    list(REMOVE_ITEM ALL_S_FILES "${CMAKE_SOURCE_DIR}/filmulator-gui/database/cJSON.c")
+    # Exclude third-party directories
+    list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/database/cJSON.c")
+    list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/core/nlmeans/eigen/.*")
+    list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/Halide/.*")
+    list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/core/rawtherapee/.*")
     
     add_custom_target(
         format
@@ -347,7 +359,6 @@ if(CLANG_FORMAT)
     )
 endif()
 
-find_program(CLANG_TIDY "clang-tidy")
 if(CLANG_TIDY)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
     add_custom_target(

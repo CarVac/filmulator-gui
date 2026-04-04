@@ -4,76 +4,82 @@
 <context>
     <name>Edit</name>
     <message>
-        <location filename="../Edit.qml" line="182"/>
         <source>Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.
 
 Rate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.</source>
-        <translation>Selecione uma imagem para editar clicando duas vezes em uma foto na Fila de Trabalhos. Alterne entre as imagens com as setas direita e esquerda. 
+        <translation type="vanished">Selecione uma imagem para editar clicando duas vezes em uma foto na Fila de Trabalhos. Alterne entre as imagens com as setas direita e esquerda. 
 
 Avalie a imagem atual pressionando de 0 a 5 e X ou pressionando as teclas de seta para cima ou para baixo.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2067"/>
+        <location filename="../Edit.qml" line="2131"/>
         <source>Image Saved</source>
         <translation>Imagem Salva</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2215"/>
+        <location filename="../Edit.qml" line="2280"/>
         <source>Width: </source>
         <translation>Largura: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2225"/>
+        <location filename="../Edit.qml" line="2290"/>
         <source>Height: </source>
         <translation>Altura: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2235"/>
+        <location filename="../Edit.qml" line="2300"/>
         <source>H offset: </source>
         <translation>Deslocamento H: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2245"/>
+        <location filename="../Edit.qml" line="2310"/>
         <source>V offset: </source>
         <translation>Deslocamento V: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2255"/>
+        <location filename="../Edit.qml" line="2320"/>
         <source>Rotation: </source>
         <translation>Rotação: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2286"/>
+        <location filename="../Edit.qml" line="2351"/>
         <source>Error: </source>
         <translation>Erro: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2286"/>
+        <location filename="../Edit.qml" line="2351"/>
         <source> is not accessible.</source>
         <translation> não é acessível.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2368"/>
+        <location filename="../Edit.qml" line="2434"/>
         <source>No lens selected</source>
         <translation>Nenhuma lente selecionada</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2410"/>
+        <location filename="../Edit.qml" line="2476"/>
         <source>Reset selected lens back to default and sets search box back to EXIF-derived lens name.</source>
         <translation>Redefine a lente selecionada para o padrão e define a caixa de pesquisa de volta para o nome de lente derivado do EXIF.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2478"/>
+        <location filename="../Edit.qml" line="2508"/>
+        <source>There are no lenses matching the current search.
+
+You may need to download updated lens corrections in the Settings tab.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2560"/>
         <source>Search fit score: </source>
         <translation>Pontuação de ajuste de pesquisa: </translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2662"/>
+        <location filename="../Edit.qml" line="2744"/>
         <source>Remember preferred lens</source>
         <translation>Lembrar da lente preferida</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2663"/>
+        <location filename="../Edit.qml" line="2745"/>
         <source>Use the selected lens as default for all future photos taken with the same camera and lens combination.
 
 This also remembers the currently selected lens corrections.</source>
@@ -82,17 +88,17 @@ This also remembers the currently selected lens corrections.</source>
 Isso também memoriza as correções de lente atualmente selecionadas.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2679"/>
+        <location filename="../Edit.qml" line="2762"/>
         <source>Forget preferred lens</source>
         <translation>Apaga a lente preferida</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2680"/>
+        <location filename="../Edit.qml" line="2763"/>
         <source>Clear the default lens for photos taken with the same camera and lens combination.</source>
         <translation>Apaga a lente padrão para fotos tiradas com a mesma combinação de câmera e lente.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2703"/>
+        <location filename="../Edit.qml" line="2787"/>
         <source>Change the editor&apos;s background brightness between black, gray, and white.
 
 Shortcut: B</source>
@@ -101,33 +107,32 @@ Shortcut: B</source>
 Atalho: B</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2747"/>
+        <location filename="../Edit.qml" line="2833"/>
         <source>Cancel setting custom white balance. Shortcut: W</source>
         <translation>Cancela o ajuste de balanço de branco personalizado. Atalho:W</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2747"/>
         <source>Set a custom white balance based on where you click in the image.
 
 The white balance will be remembered and can be applied to other images taken by the same camera model.
 
 Shortcut: W</source>
-        <translation>Clique na imagem para ajustar o balanço de branco neste ponto.
+        <translation type="vanished">Clique na imagem para ajustar o balanço de branco neste ponto.
 O ajuste será memorizado e pode ser aplicado em outra imagens da mesma camera.
 Atalho:W</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2790"/>
+        <location filename="../Edit.qml" line="2878"/>
         <source>Click this to save your crop.</source>
         <translation>Clique aqui para salvar seu corte.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2790"/>
+        <location filename="../Edit.qml" line="2878"/>
         <source>Click this to begin cropping.</source>
         <translation>Clique aqui para começar a cortar.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2790"/>
+        <location filename="../Edit.qml" line="2878"/>
         <source>Hold Ctrl when dragging a corner to lock aspect ratio. Hold Ctrl while dragging an edge or the remaining image to move the crop without changing its size.
 
 Hold Shift while dragging a corner to snap the crop to the nearest common aspect ratio. Hold Shift while moving the crop to snap it to horizontal and or vertical center.
@@ -140,17 +145,17 @@ Segure a tecla Shift enquanto arrasta um canto para ajustar o corte à proporç�
 Atalho: C</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2859"/>
+        <location filename="../Edit.qml" line="2951"/>
         <source>Click this to apply the rotation.</source>
         <translation>Clique aqui para aplicar a rotação.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2859"/>
+        <location filename="../Edit.qml" line="2951"/>
         <source>Click this to begin leveling the image.</source>
         <translation>Clique aqui para começar a nivelar a imagem.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2859"/>
+        <location filename="../Edit.qml" line="2951"/>
         <source>Click to place the rotation guide on the image, then drag the guide lines to align them with whatever you want to be vertical or horizontal. You can reposition the rotation guide by dragging where the guide lines meet.
 
 Reset the rotation to zero by pressing &quot;Shift+L&quot; or double right clicking.
@@ -163,12 +168,21 @@ Redefina a rotação para zero pressionando &quot;Shift + L&quot; ou clicando du
 Atalho: L</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2836"/>
+        <location filename="../Edit.qml" line="2926"/>
         <source>Rotate image 90 degrees left.</source>
         <translation>Girar imagem 90 graus para a esquerda.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2314"/>
+        <location filename="../Edit.qml" line="244"/>
+        <source>Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.
+
+Rate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.
+
+When an image is loaded, you can zoom in or out by scrolling up or down, and you can pan around by clicking and dragging with the mouse.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2379"/>
         <source>Select the lens that was used in order to use lens corrections.
 
 Type the lens name in the box to the right. Normally it will only search lenses for the camera&apos;s mount, but if the first character is a backslash (&quot;</source>
@@ -177,7 +191,7 @@ Type the lens name in the box to the right. Normally it will only search lenses 
 Digite o nome da lente na caixa à direita. Normalmente, ele pesquisará apenas as lentes do suporte da câmera, mas se o primeiro caractere for uma barra invertida (&quot;</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2314"/>
+        <location filename="../Edit.qml" line="2379"/>
         <source>&quot;) then it will search lenses from all mounts.
 
 Double-click a lens to select it.</source>
@@ -186,7 +200,19 @@ Double-click a lens to select it.</source>
 Clique duas vezes em uma lente para selecioná-la.</translation>
     </message>
     <message>
-        <location filename="../Edit.qml" line="2912"/>
+        <location filename="../Edit.qml" line="2833"/>
+        <source>Set a custom white balance based on where you click in the image.
+
+Shortcut: W</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="2833"/>
+        <source>White balance picker not available for monochrome raw images.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Edit.qml" line="3006"/>
         <source>Rotate image 90 degrees right.</source>
         <translation>Girar imagem 90 graus para a direita.</translation>
     </message>
@@ -194,17 +220,32 @@ Clique duas vezes em uma lente para selecioná-la.</translation>
 <context>
     <name>EditTools</name>
     <message>
-        <location filename="../EditTools.qml" line="116"/>
+        <location filename="../EditTools.qml" line="117"/>
         <source>This is a histogram of the data in the raw file.</source>
         <translation>Este é um histograma dos dados no arquivo RAW.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="126"/>
+        <location filename="../EditTools.qml" line="128"/>
+        <source>Demosaic Method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="129"/>
+        <source>Switch this control on to reduce line-shaped noise artifacts at the expense of fine detail.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="129"/>
+        <source>Switch this control on to make noise less visible at the expense of fine detail.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="159"/>
         <source>Auto CA Correction</source>
         <translation>Correção automática de CA</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="127"/>
+        <location filename="../EditTools.qml" line="160"/>
         <source>Automatically correct directional color fringing. Use the lowest value needed because it can cause color shifts, but higher is stronger.
 
 Not available for non-Bayer photos.</source>
@@ -213,42 +254,109 @@ Not available for non-Bayer photos.</source>
 Não disponível para fotos não Bayer.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="165"/>
+        <location filename="../EditTools.qml" line="284"/>
+        <source>Store WB</source>
+        <comment>white balance; keep short</comment>
+        <translation type="unfinished">Memorizar WB</translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="285"/>
+        <source>Save the current white balance settings for later use with images from the same camera. They remain stored until Filmulator is closed, or until overwritten by clicking this button again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="303"/>
+        <source>Recall WB</source>
+        <comment>white balance; keep short</comment>
+        <translation type="unfinished">Recupera o WB</translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="382"/>
+        <source>Noise Reduction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="383"/>
+        <source>Enable the noise reduction tools to help remove grain and color splotches from the image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="414"/>
+        <source>NR Strength</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="415"/>
+        <source>General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled. This may cause speckles, so use Speckle NR to remove them.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="490"/>
+        <source>NR Gradients</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="491"/>
+        <source>Increase this control if the standard noise reduction is causing posterization or banding on gradients. If no banding is visible, increasing this will have no effect besides making noise reduction slower.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="527"/>
+        <source>Speckle NR Strength</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="528"/>
+        <source>Remove isolated image speckles. Higher values increase the effect, but can smear real image detail. When set to zero, speckle noise reduction is disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="564"/>
+        <source>Chroma NR Strength</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="565"/>
+        <source>Reduce color noise. Works in combination with the above standard NR. Higher values increase the effect, but add color smearing. When set to zero, chroma noise reduction is disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="599"/>
         <source>Profiled CA</source>
         <translation>CA com perfil</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="166"/>
+        <location filename="../EditTools.qml" line="600"/>
         <source>Correct directional color fringing based on a profile stored for this lens model.</source>
         <translation>A distorção de cor direcional correta com base em um perfil armazenado para este modelo de lente.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="205"/>
+        <location filename="../EditTools.qml" line="640"/>
         <source>Profiled Vignetting</source>
         <translation>Vinhetas com perfil</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="206"/>
+        <location filename="../EditTools.qml" line="641"/>
         <source>Correct vignetting based on a profile stored for this lens model.</source>
         <translation>Vinhetas corretas com base em um perfil armazenado para este modelo de lente.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="236"/>
+        <location filename="../EditTools.qml" line="672"/>
         <source>Profiled Distortion</source>
         <translation>Distorção do perfil</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="237"/>
+        <location filename="../EditTools.qml" line="673"/>
         <source>Correct geometric distortion based on a profile stored for this lens model.</source>
         <translation>Corrija a distorção geométrica com base em um perfil armazenado para este modelo de lente.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="267"/>
+        <location filename="../EditTools.qml" line="201"/>
         <source>Highlight Recovery</source>
         <translation>Recuperação de Destaque</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="268"/>
+        <location filename="../EditTools.qml" line="202"/>
         <source>Recover clipped highlights.
 
 0 clips after the preliminary white balance.
@@ -262,18 +370,18 @@ Não disponível para fotos não Bayer.</translation>
 2 permite a reconstrução de realce, que funciona melhor quando apenas um canal é cortado e quando a franja roxa não é um problema.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="343"/>
+        <location filename="../EditTools.qml" line="318"/>
         <source>Temperature</source>
         <translatorcomment>Should be color temperature</translatorcomment>
         <translation>Temperatura de cor</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="371"/>
+        <location filename="../EditTools.qml" line="350"/>
         <source>Tint</source>
         <translation>Matiz</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="344"/>
+        <location filename="../EditTools.qml" line="319"/>
         <source>Correct the image color for a light source of the indicated Kelvin temperature.
 
 The default value is the camera&apos;s chosen WB.</source>
@@ -282,34 +390,31 @@ The default value is the camera&apos;s chosen WB.</source>
 O valor padrão é o WB escolhido pela câmera.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="311"/>
         <source>Store WB</source>
         <comment>white balance</comment>
-        <translation>Memorizar WB</translation>
+        <translation type="vanished">Memorizar WB</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="312"/>
         <source>Save the current white balance settings for later use with images from the same camera. They remains stored until Filmulator is closed, or until overwritten with this button or the custom WB picker.</source>
-        <translation>Salva o ajuste de WB atual para ser aplicado em imagens da mesma camera. Fica na memória até que Filmlator seja fechado, ou ser sobrescrito por este botão ou pelo contagotas de ajuste de WB.</translation>
+        <translation type="vanished">Salva o ajuste de WB atual para ser aplicado em imagens da mesma camera. Fica na memória até que Filmlator seja fechado, ou ser sobrescrito por este botão ou pelo contagotas de ajuste de WB.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="329"/>
         <source>Recall WB</source>
         <comment>white balance</comment>
-        <translation type="unfinished">Recupera o WB</translation>
+        <translation type="obsolete">Recupera o WB</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="330"/>
+        <location filename="../EditTools.qml" line="304"/>
         <source>Apply the stored white balance settings.</source>
         <translation>Aplica o ajuste de WB da memória.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="330"/>
+        <location filename="../EditTools.qml" line="304"/>
         <source>No white balance has been stored for this camera.</source>
         <translation>Sem ajuste de WB para esta camera.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="372"/>
+        <location filename="../EditTools.qml" line="351"/>
         <source>Correct for a green/magenta tinted light source. Larger values are greener, and smaller values are magenta.
 
 The default value is the camera&apos;s chosen WB.</source>
@@ -318,51 +423,67 @@ The default value is the camera&apos;s chosen WB.</source>
 O valor padrão é o WB escolhido pela câmera.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="399"/>
+        <location filename="../EditTools.qml" line="238"/>
         <source>Exposure Compensation</source>
         <translation>Compensação de exposição</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="400"/>
+        <location filename="../EditTools.qml" line="239"/>
         <source>The amount the program should to over- or under-expose the &quot;film&quot; relative to the captured exposure. Analogous to exposure of film in-camera. Usually, adjust this until the pre-filmulator histogram uses the full width.</source>
         <translation>Para super ou subexpor o &quot;filme&quot; em relação à exposição na captura. Análogo à exposição do filme na câmera. Normalmente, ajuste para que o histograma ocupe a largura total.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="468"/>
+        <location filename="../EditTools.qml" line="742"/>
         <source>This is a histogram of the input to the film simulation.</source>
         <translation>Este é um histograma pré-filme, a entrada para a simulação de processamento do filme.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="478"/>
+        <location filename="../EditTools.qml" line="753"/>
         <source>Shadow Rolloff Point</source>
         <translation>Ponto de Atenuação de Sombra</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="479"/>
+        <location filename="../EditTools.qml" line="754"/>
         <source>This adjusts the contrast in the shadows of the image prior to the film simulation. Raising this darkens the image and makes it more contrasty.</source>
         <translation>Ajusta o contraste na sombra antes da simulação de filme. Valores maiores escurecem a imagem e aumentam o contraste.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="508"/>
+        <location filename="../EditTools.qml" line="786"/>
         <source>Highlight Rolloff Point</source>
         <translation>Ponto de Atenuação de Realces</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="509"/>
         <source>Sets the point above which the highlights gently stop getting brighter. This controls the saturation of the highlights, and only has a significant effect at high drama settings when the highlights get strongly darkened.
 If you have a photo with no highlight clipping and none of it extends beyond the right of the prefilm histogram, feel free to raise this all the way to 1.
 If you have highlight clipping and there are unpleasant color shifts, lower this to taste.</source>
-        <translation>Define o ponto acima do qual os destaques deixam de ficar mais claros. Isso controla a saturação dos realces e só tem um efeito significativo em configurações de alto Drama quando os realces ficam fortemente escurecidos.
+        <translation type="vanished">Define o ponto acima do qual os destaques deixam de ficar mais claros. Isso controla a saturação dos realces e só tem um efeito significativo em configurações de alto Drama quando os realces ficam fortemente escurecidos.
 Se você tiver uma foto sem recorte de realce e nenhuma delas ultrapassar a direita do histograma pré-filme, sinta-se à vontade para aumentá-la totalmente para 1.
 Se você tiver recorte de realce e houver mudanças de cores desagradáveis, diminua a gosto.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="538"/>
+        <location filename="../EditTools.qml" line="787"/>
+        <source>Sets the point above which the highlights gently stop getting brighter. This works together with Highlight Crosstalk to control saturation of the highlights.
+If you have a photo with no highlight clipping and none of it extends beyond the right of the prefilm histogram, feel free to raise this all the way to 1.
+If you have unpleasant color shifts from highlight clipping, or strong colors from LED lights, try lowering this and raising Highlight Crosstalk to taste.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="819"/>
+        <source>Highlight Crosstalk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="820"/>
+        <source>This desaturates highlights as they get brighter past the highlight rolloff point, reducing ugly highlight colors and making deeply saturated colors appear brighter and closer to white.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="850"/>
         <source>Film Area</source>
         <translation>Área do Filme</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="539"/>
+        <location filename="../EditTools.qml" line="851"/>
         <source>Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.
 Typically, when adjusting this, change it until the point where small adjustments make noticeable changes in the appearance of the image. That&apos;s usually in the vicinity of the best setting.</source>
         <translation>Simula o efeito do formato do filme na fotografia analógica.Os tamanhos maiores enfatizam detalhes finos e achatam o contraste; e tamanhos menores enfatizam o contraste local. .
@@ -370,312 +491,320 @@ Procure o ponto em que pequenos ajustes trazem mudanças perceptíveis na aparê
 Em formato Médio ou Grande, mantenha o controle deslizante Drama abaixo de 40 para evitar artefatos.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="568"/>
+        <location filename="../EditTools.qml" line="883"/>
         <source>Drama</source>
         <translation>Drama</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="569"/>
+        <location filename="../EditTools.qml" line="884"/>
         <source>Pulls down highlights to retain detail. This is the real &quot;filmy&quot; effect. This not only helps bring down bright highlights, but it can also rescue extremely saturated regions such as flowers.</source>
         <translation>Diminui os realces para reter os detalhes. Este é o verdadeiro efeito &quot;filme&quot;. Isso não apenas ajuda a diminuir os destaques brilhantes, mas também pode resgatar regiões extremamente saturadas, como flores.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="596"/>
+        <location filename="../EditTools.qml" line="914"/>
         <source>In case of emergency, break glass and press this button. This increases the filminess, in case 100 Drama was not enough for you.</source>
         <translation>Em caso de emergência, quebre o vidro e pressione este botão. Isso aumenta o efeito “filme”, caso o valor 100 em Drama não seja suficiente para você.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="597"/>
+        <location filename="../EditTools.qml" line="915"/>
         <source>Overdrive Mode</source>
         <translation>Modo Overdrive</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="665"/>
+        <location filename="../EditTools.qml" line="984"/>
         <source>This is a histogram of the output from the film simulation.</source>
         <translation>Este é um histograma do resultado da simulação do filme.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="675"/>
+        <location filename="../EditTools.qml" line="995"/>
         <source>Black Clipping Point</source>
         <translation>Ponto de Recorte Preto</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="676"/>
+        <location filename="../EditTools.qml" line="996"/>
         <source>This controls the threshold for crushing the shadows. You can see its position in the post-film histogram.</source>
         <translation>Isso controla o limite para achatar as sombras. Você pode ver sua posição no histograma pós-filme.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="706"/>
+        <location filename="../EditTools.qml" line="1027"/>
         <source>White Clipping Point</source>
         <translation>Ponto de Recorte Branco</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="707"/>
+        <location filename="../EditTools.qml" line="1028"/>
         <source>This controls the threshold for clipping the highlights. Vaguely analogous to adjusting exposure time in the darkroom. You can see its position in the post-film histogram.</source>
         <translation>Isso controla o limite para recortar os destaques. Vagamente análogo a ajustar o tempo de exposição na câmara escura. Você pode ver sua posição no histograma pós-filme.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="736"/>
+        <location filename="../EditTools.qml" line="1060"/>
         <source>Shadow Brightness</source>
         <translation>Brilho da Sombra</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="737"/>
+        <location filename="../EditTools.qml" line="1061"/>
         <source>This controls the brightness of the generally darker regions of the image.</source>
         <translation>Isso controla o brilho das regiões geralmente mais escuras da imagem.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="764"/>
+        <location filename="../EditTools.qml" line="1091"/>
         <source>Highlight Brightness</source>
         <translation>Brilho do Destaque</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="765"/>
+        <location filename="../EditTools.qml" line="1092"/>
         <source>This controls the brightness of the generally lighter regions of the image.</source>
         <translation>Controla o brilho das regiões geralmente mais claras da imagem.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="792"/>
+        <location filename="../EditTools.qml" line="1122"/>
         <source>Monochrome</source>
         <translation>Monocromático</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="793"/>
+        <location filename="../EditTools.qml" line="1123"/>
         <source>Turn this on to convert to black-and-white.</source>
         <translation>Ative para converter para preto e branco.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="823"/>
+        <location filename="../EditTools.qml" line="1155"/>
         <source>Vibrance</source>
         <translation>Vibração</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="824"/>
+        <location filename="../EditTools.qml" line="1156"/>
         <source>This adjusts the vividness of the less-saturated colors in the image.</source>
         <translation>Isso ajusta a vivacidade das cores menos saturadas da imagem.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="853"/>
+        <location filename="../EditTools.qml" line="1188"/>
         <source>Saturation</source>
         <translation>Saturação</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="854"/>
+        <location filename="../EditTools.qml" line="1189"/>
         <source>This adjusts the vividness of the entire image.</source>
         <translation>Isso ajusta a vivacidade de toda a imagem.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="883"/>
+        <location filename="../EditTools.qml" line="1221"/>
         <source>Red Weight</source>
         <translation>Peso Vermelho</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="884"/>
+        <location filename="../EditTools.qml" line="1222"/>
         <source>How much to weight the red channel when converting to monochrome.</source>
         <translation>Quanto valorizar o canal vermelho ao converter para monocromático.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="912"/>
+        <location filename="../EditTools.qml" line="1258"/>
         <source>Green Weight</source>
         <translation>Peso Verde</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="913"/>
+        <location filename="../EditTools.qml" line="1259"/>
         <source>How much to weight the green channel when converting to monochrome.</source>
         <translation>Quanto valorizar o canal verde ao converter para monocromático.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="941"/>
+        <location filename="../EditTools.qml" line="1295"/>
         <source>Blue Weight</source>
         <translation>Peso Azul</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="942"/>
+        <location filename="../EditTools.qml" line="1296"/>
         <source>How much to weight the blue channel when converting to monochrome.</source>
         <translation>Quanto valorizar o canal azul ao converter para monocromático.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1148"/>
+        <location filename="../EditTools.qml" line="1510"/>
         <source>Save TIFF</source>
         <translation>Salvar TIFF</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1149"/>
-        <location filename="../EditTools.qml" line="1168"/>
+        <location filename="../EditTools.qml" line="1511"/>
+        <location filename="../EditTools.qml" line="1531"/>
         <source>Finish cropping to save the result.</source>
         <translation>Conclua o corte para salvar o resultado.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1149"/>
-        <source>Save a TIFF to the directory containing the raw file.</source>
-        <translation>Salve um TIFF no diretório que contém o arquivo RAW.</translation>
+        <location filename="../EditTools.qml" line="1531"/>
+        <source>Save a JPEG to the directory containing the raw file. If you&apos;ve saved an output file before, it will be overwritten.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1149"/>
-        <location filename="../EditTools.qml" line="1168"/>
+        <source>Save a TIFF to the directory containing the raw file.</source>
+        <translation type="vanished">Salve um TIFF no diretório que contém o arquivo RAW.</translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="1511"/>
+        <location filename="../EditTools.qml" line="1531"/>
         <source>Finish leveling to save the result.</source>
         <translation>Finalize o ajuste de nivel para salvar o resultado.</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1167"/>
+        <location filename="../EditTools.qml" line="1511"/>
+        <source>Save a TIFF to the directory containing the raw file. If you&apos;ve saved an output file before, it will be overwritten.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="1530"/>
         <source>Save JPEG</source>
         <translation>Salvar JPEG</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="1168"/>
         <source>Save a JPEG to the directory containing the raw file.</source>
-        <translation>Salve um JPEG no diretório que contém o arquivo RAW.</translation>
+        <translation type="vanished">Salve um JPEG no diretório que contém o arquivo RAW.</translation>
     </message>
 </context>
 <context>
     <name>Import</name>
     <message>
-        <location filename="../Import.qml" line="31"/>
+        <location filename="../Import.qml" line="32"/>
         <source>Camera UTC Offset</source>
         <translation>Compensação UTC da câmera</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="32"/>
+        <location filename="../Import.qml" line="33"/>
         <source>Set this to the UTC offset of the camera in hours when it took the photos. Reminder: west is negative, east is positive.</source>
         <translation>Defina como o deslocamento UTC da câmera em horas quando ela tirou as fotos. Lembrete: o oeste é negativo, o leste é positivo.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="71"/>
+        <location filename="../Import.qml" line="73"/>
         <source>Import Directory</source>
         <translation>Importar diretório</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="72"/>
+        <location filename="../Import.qml" line="74"/>
         <source>Import from a directory and all subdirectories.</source>
         <translation>Importar de um diretório e de todos os subdiretórios.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="92"/>
+        <location filename="../Import.qml" line="95"/>
         <source>Import Files</source>
         <translation>Importar arquivos</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="93"/>
+        <location filename="../Import.qml" line="96"/>
         <source>Import one or more files.</source>
         <translation>Importe um ou mais arquivos.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="109"/>
+        <location filename="../Import.qml" line="113"/>
         <source>Source Directory</source>
         <translation>Diretório Fonte</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="110"/>
+        <location filename="../Import.qml" line="114"/>
         <source>Select or type in the directory containing photos to be imported.</source>
         <translation>Selecione ou digite o diretório que contém as fotos a serem importadas.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="111"/>
+        <location filename="../Import.qml" line="115"/>
         <source>Select the directory containing the photos to import. It will only import raw files.</source>
         <translation>Selecione o diretório que contém as fotos a serem importadas. Ele importará apenas arquivos raw.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="112"/>
+        <location filename="../Import.qml" line="116"/>
         <source>Choose a directory to import from.</source>
         <translation>Escolha um diretório de onde importar.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="131"/>
+        <location filename="../Import.qml" line="136"/>
         <source>Source Files</source>
         <translation>Arquivos Fonte</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="132"/>
+        <location filename="../Import.qml" line="137"/>
         <source>Select one or more files to import.</source>
         <translation>Selecione um ou mais arquivos para importar.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="133"/>
+        <location filename="../Import.qml" line="138"/>
         <source>Select the file(s) to import.</source>
         <translation>Selecione o (s) arquivo (s) para importar.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="134"/>
+        <location filename="../Import.qml" line="139"/>
         <source>Choose a valid file.</source>
         <translation>Escolha um arquivo válido.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="178"/>
+        <location filename="../Import.qml" line="184"/>
         <source>Copy to directory</source>
         <translation>Copiar para o diretório</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="179"/>
+        <location filename="../Import.qml" line="185"/>
         <source>When importing, copy files to a folder structure based on date and time of capture. This lets you create backup copies at the same time.</source>
         <translation>Ao importar, copie os arquivos para uma estrutura de pastas com base na data e hora da captura. Isso permite criar cópias de backup ao mesmo tempo.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="199"/>
+        <location filename="../Import.qml" line="206"/>
         <source>Import in place</source>
         <translation>Importar no local</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="200"/>
+        <location filename="../Import.qml" line="207"/>
         <source>Import files into the database without moving or copying them.</source>
         <translation>Importe arquivos para o banco de dados sem movê-los ou copiá-los.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="217"/>
+        <location filename="../Import.qml" line="225"/>
         <source>Local UTC Offset</source>
         <translation>Compensação UTC Local</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="218"/>
+        <location filename="../Import.qml" line="226"/>
         <source>Set this to the local UTC offset at the time and place of the photo&apos;s capture. This only affects what folders the photos are sorted into.</source>
         <translation>Defina como o deslocamento UTC local na hora e local da captura da foto. Isso afeta apenas as pastas nas quais as fotos são classificadas.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="243"/>
+        <location filename="../Import.qml" line="252"/>
         <source>Destination Directory</source>
         <translation>Diretório de destino</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="244"/>
+        <location filename="../Import.qml" line="253"/>
         <source>Select or type in the root directory of your photo file structure. If it doesn&apos;t exist, then it will be created.</source>
         <translation>Selecione ou digite o diretório raiz de sua estrutura de arquivo de foto. Se não existir, será criado.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="245"/>
+        <location filename="../Import.qml" line="254"/>
         <source>Select the destination root directory</source>
         <translation>Selecione o diretório raiz de destino</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="246"/>
+        <location filename="../Import.qml" line="255"/>
         <source>Choose a directory to move files to.</source>
         <translation>Escolha um diretório para o qual mover os arquivos.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="246"/>
+        <location filename="../Import.qml" line="255"/>
         <source>You do not have permissions to write in this directory. Please select another directory.</source>
         <translation>Você não tem permissão para escrever neste diretório. Selecione outro diretório.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="266"/>
+        <location filename="../Import.qml" line="276"/>
         <source>Backup Directory</source>
         <translation>Diretório de backup</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="267"/>
+        <location filename="../Import.qml" line="277"/>
         <source>Select or type in the root directory of your backup file structure. If it doesn&apos;t exist, then no backup copies will be made.</source>
         <translation>Selecione ou digite o diretório raiz de seu backup de arquivo de foto. Se não existir, será criado.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="268"/>
+        <location filename="../Import.qml" line="278"/>
         <source>Select the backup root directory</source>
         <translation>Selecione o diretório raiz de backup</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="285"/>
+        <location filename="../Import.qml" line="296"/>
         <source>Directory Structure</source>
         <translation>Estrutura de Diretório</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="286"/>
+        <location filename="../Import.qml" line="297"/>
         <source>Enter using y&apos;s, M&apos;s, and d&apos;s, slashes, and other punctuation the desired structure. You can use single quotes to include words in the structure. For example:
 &quot;/yyyy/MM/yyyy-MM-dd/&quot;
 &quot;/yyyy/&apos;Alaska&apos;/yyyy-MM-dd/&quot;</source>
@@ -684,18 +813,18 @@ Em formato Médio ou Grande, mantenha o controle deslizante Drama abaixo de 40 p
 &quot;/aaaa/&apos;Alasca&apos;/aaaa-MM-dd/&quot;</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="506"/>
+        <location filename="../Import.qml" line="525"/>
         <source>If a file is in the database but you don&apos;t know when it was taken, just re-import it with this setup to load it into the queue.</source>
         <translation>Se um arquivo está no banco de dados, mas você não sabe quando foi obtido, apenas importe-o novamente com esta configuração para carregá-lo na fila.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="303"/>
+        <location filename="../Import.qml" line="315"/>
         <source>Append unique identifier</source>
         <translation>Anexar identificador único</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="112"/>
-        <location filename="../Import.qml" line="134"/>
+        <location filename="../Import.qml" line="116"/>
+        <location filename="../Import.qml" line="139"/>
         <source>You may be importing in place from a memory card. The photos will be lost if you format the card.
 
 Double-click the error icon to proceed.</source>
@@ -703,81 +832,81 @@ Double-click the error icon to proceed.</source>
 Clique duplo no icone de erro para prosseguir.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="304"/>
+        <location filename="../Import.qml" line="316"/>
         <source>This is recommended if you have multiple cameras of the same brand.
 It appends an underscore and seven characters (derived from the file contents) to the filename, to prevent the same filename from being used twice in a folder.</source>
         <translation>Isso é recomendado se você tiver várias câmeras da mesma marca.
 Ele anexa um sublinhado e sete caracteres (derivados do conteúdo do arquivo) ao nome do arquivo, para evitar que o mesmo nome de arquivo seja usado duas vezes em uma pasta.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="326"/>
+        <location filename="../Import.qml" line="339"/>
         <source>Update file locations</source>
         <translation>Atualizar os locais dos arquivos</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="327"/>
+        <location filename="../Import.qml" line="340"/>
         <source>If you need to remove files from your main working directory, enable this switch and run it on your backup to change the associated file locations.</source>
         <translation>Se você precisar remover arquivos de seu diretório de trabalho principal, habilite esta opção e execute-a em seu backup para alterar os locais de arquivos associados.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="346"/>
+        <location filename="../Import.qml" line="360"/>
         <source>Enqueue imported photos</source>
         <translation>Enfileirar fotos importadas</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="347"/>
+        <location filename="../Import.qml" line="361"/>
         <source>As photos get imported, append them to the work queue.</source>
         <translation>Conforme as fotos são importadas, acrescente-as à fila de trabalho.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="369"/>
+        <location filename="../Import.qml" line="384"/>
         <source>Import</source>
         <translation>Importar</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="370"/>
+        <location filename="../Import.qml" line="385"/>
         <source>Start importing the selected file or folder. If importing is currently in progress, then the current file or folder will be imported after all current imports are complete.</source>
         <translation>Comece a importar o arquivo ou pasta selecionada. Se a importação estiver em andamento, o arquivo ou pasta atual será importado após a conclusão de todas as importações atuais.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="370"/>
+        <location filename="../Import.qml" line="385"/>
         <source>Correct the errors that are highlighted above before importing.</source>
         <translation>Corrija os erros destacados acima antes de importar.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="430"/>
+        <location filename="../Import.qml" line="446"/>
         <source>Common import scenarios:</source>
         <translation>Cenários de importação comuns:</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="438"/>
+        <location filename="../Import.qml" line="454"/>
         <source>Import new photos from a memory card</source>
         <comment>Put a line break in if it gets much longer</comment>
         <translation>Importar novas fotos de um cartão de memória</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="439"/>
+        <location filename="../Import.qml" line="455"/>
         <source>This setup will copy photos from a memory card to a destination directory, and load all newly imported photos into the queue.</source>
         <translation>Esta configuração irá copiar fotos de um cartão de memória para um diretório de destino e carregar todas as fotos recém-importadas na fila.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="461"/>
+        <location filename="../Import.qml" line="478"/>
         <source>Import existing photos</source>
         <translation>Importar fotos existentes</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="462"/>
+        <location filename="../Import.qml" line="479"/>
         <source>This setup will import photos that are already on your computer, and load all newly imported photos into the queue.</source>
         <translation>Esta configuração importará as fotos que já estão em seu computador e carregará todas as fotos recém-importadas na fila.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="482"/>
+        <location filename="../Import.qml" line="500"/>
         <source>Update locations of files that have moved</source>
         <comment>Put a line break in if it gets much longer</comment>
         <translation>Atualizar os locais dos arquivos que foram movidos</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="483"/>
+        <location filename="../Import.qml" line="501"/>
         <source>If a photo in the database has its raw file moved, use this setup to re-import the photo. It will not load anything into the queue.
 
 This is useful when you remove photos from your main directory and want to work from a backup location.</source>
@@ -786,7 +915,7 @@ This is useful when you remove photos from your main directory and want to work 
 Isso é útil quando você remove fotos do diretório principal e deseja trabalhar a partir de um local de backup.</translation>
     </message>
     <message>
-        <location filename="../Import.qml" line="505"/>
+        <location filename="../Import.qml" line="524"/>
         <source>Bring previously-imported files into the queue</source>
         <comment>Put a line break in if it gets much longer</comment>
         <translation>Traga os arquivos importados anteriormente para a fila</translation>
@@ -795,7 +924,7 @@ Isso é útil quando você remove fotos do diretório principal e deseja trabalh
 <context>
     <name>ImportDirEntry</name>
     <message>
-        <location filename="../gui_components/ImportDirEntry.qml" line="88"/>
+        <location filename="../gui_components/ImportDirEntry.qml" line="89"/>
         <source>Select a directory</source>
         <translation>Selecione um diretório</translation>
     </message>
@@ -803,12 +932,12 @@ Isso é útil quando você remove fotos do diretório principal e deseja trabalh
 <context>
     <name>ImportFileEntry</name>
     <message>
-        <location filename="../gui_components/ImportFileEntry.qml" line="90"/>
+        <location filename="../gui_components/ImportFileEntry.qml" line="91"/>
         <source>Select files</source>
         <translation>Selecionar arquivos</translation>
     </message>
     <message>
-        <location filename="../gui_components/ImportFileEntry.qml" line="90"/>
+        <location filename="../gui_components/ImportFileEntry.qml" line="91"/>
         <source>Select a file</source>
         <translation>Selecione um arquivo</translation>
     </message>
@@ -816,57 +945,57 @@ Isso é útil quando você remove fotos do diretório principal e deseja trabalh
 <context>
     <name>Organize</name>
     <message>
-        <location filename="../Organize.qml" line="48"/>
+        <location filename="../Organize.qml" line="49"/>
         <source>Time Zone</source>
         <translation>Fuso horário</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="49"/>
+        <location filename="../Organize.qml" line="50"/>
         <source>Controls when the day is divided for the date filters.</source>
         <translation>Controla quando o dia é dividido para os filtros de data.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="74"/>
+        <location filename="../Organize.qml" line="76"/>
         <source>Min Rating</source>
         <translation>Avaliação mínima</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="75"/>
+        <location filename="../Organize.qml" line="77"/>
         <source>Controls the minimum rating of images to display.</source>
         <translation>Controla a classificação mínima de imagens a serem exibidas.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="106"/>
+        <location filename="../Organize.qml" line="109"/>
         <source>Max Rating</source>
         <translation>Classificação máxima</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="107"/>
+        <location filename="../Organize.qml" line="110"/>
         <source>Controls the maximum rating of images to display.</source>
         <translation>Controla a classificação máxima das imagens a serem exibidas.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="137"/>
+        <location filename="../Organize.qml" line="141"/>
         <source>Enqueue All</source>
         <translation>Enfileirar tudo</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="138"/>
+        <location filename="../Organize.qml" line="142"/>
         <source>Puts every visible image in the work queue. If any is already there, it is left where it was.</source>
         <translation>Coloca todas as imagens visíveis na fila de trabalho. Se algum já estiver lá, será deixado onde estava.</translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="221"/>
+        <location filename="../Organize.qml" line="226"/>
         <source>Date: </source>
         <translation>Data: </translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="221"/>
+        <location filename="../Organize.qml" line="226"/>
         <source>Photos: </source>
         <translation>Fotos: </translation>
     </message>
     <message>
-        <location filename="../Organize.qml" line="655"/>
+        <location filename="../Organize.qml" line="660"/>
         <source>Double-click on the Date Histogram above to view photos from a given day. Shift-click or right-click to set a date range. Press right/left to switch days, and shift to select multiple days.</source>
         <translation>Clique duas vezes no Histograma de Data acima para visualizar as fotos de um determinado dia. Clique com a tecla Shift ou clique com o botão direito para definir um intervalo de datas. Pressione direita / esquerda para alternar entre os dias e Shift para selecionar vários dias.</translation>
     </message>
@@ -883,129 +1012,129 @@ unreadable</source>
 <context>
     <name>Queue</name>
     <message>
-        <location filename="../Queue.qml" line="271"/>
-        <location filename="../Queue.qml" line="327"/>
+        <location filename="../Queue.qml" line="273"/>
+        <location filename="../Queue.qml" line="330"/>
         <source>Are you sure?</source>
         <translation>Você tem certeza?</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="271"/>
-        <location filename="../Queue.qml" line="327"/>
+        <location filename="../Queue.qml" line="273"/>
+        <location filename="../Queue.qml" line="330"/>
         <source>...Wait a moment...</source>
         <translation>...Espere um momento...</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="310"/>
+        <location filename="../Queue.qml" line="312"/>
         <source>Forget marked photos</source>
         <translation>Esqueça as fotos marcadas</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="311"/>
+        <location filename="../Queue.qml" line="313"/>
         <source>Remove marked photos that are in the queue from the database. The files will not be deleted.</source>
         <translation>Remova do banco de dados as fotos marcadas que estão na fila. Os arquivos não serão excluídos.</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="373"/>
+        <location filename="../Queue.qml" line="376"/>
         <source>Clear entire queue</source>
         <translation>Limpar fila inteira</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="385"/>
+        <location filename="../Queue.qml" line="388"/>
         <source>Remove from queue</source>
         <translation>Remover da fila</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="398"/>
+        <location filename="../Queue.qml" line="401"/>
         <source>Copy all settings</source>
         <translation>Copiar todas os ajustes</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="399"/>
+        <location filename="../Queue.qml" line="402"/>
         <source>Copy the processing parameters from this image, until you switch images or change processing parameters.</source>
         <translation>Copie os parâmetros de processamento desta imagem, até mudar a imagem ou alterar os parâmetros de processamento.</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="415"/>
+        <location filename="../Queue.qml" line="419"/>
         <source>Paste settings</source>
         <translation>Colar ajustes</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="416"/>
+        <location filename="../Queue.qml" line="420"/>
         <source>If you copy and then do anything other than paste, pasting will not be available.</source>
         <translation>Se você copiar e depois fizer qualquer coisa diferente de colar, a colagem não estará disponível.</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="449"/>
+        <location filename="../Queue.qml" line="454"/>
         <source>X</source>
         <translation>X</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="450"/>
+        <location filename="../Queue.qml" line="455"/>
         <source>Mark this photo for forgetting or for deletion</source>
         <translation>Marque esta foto para esquecê-la ou para apagá-la</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="467"/>
+        <location filename="../Queue.qml" line="473"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="468"/>
+        <location filename="../Queue.qml" line="474"/>
         <source>Rate this 0 stars</source>
         <translation>Avalie com 0 estrelas</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="485"/>
+        <location filename="../Queue.qml" line="492"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="486"/>
+        <location filename="../Queue.qml" line="493"/>
         <source>Rate this 1 star</source>
         <translation>Avalie com 1 estrela</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="503"/>
+        <location filename="../Queue.qml" line="511"/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="504"/>
+        <location filename="../Queue.qml" line="512"/>
         <source>Rate this 2 stars</source>
         <translation>Avalie com 2 estrelas</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="521"/>
+        <location filename="../Queue.qml" line="530"/>
         <source>3</source>
         <translation>3</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="522"/>
+        <location filename="../Queue.qml" line="531"/>
         <source>Rate this 3 stars</source>
         <translation>Avalie com 3 estrelas</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="539"/>
+        <location filename="../Queue.qml" line="549"/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="540"/>
+        <location filename="../Queue.qml" line="550"/>
         <source>Rate this 4 stars</source>
         <translation>Avalie com 4 estrelas</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="557"/>
+        <location filename="../Queue.qml" line="568"/>
         <source>5</source>
         <translation>5</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="558"/>
+        <location filename="../Queue.qml" line="569"/>
         <source>Rate this 5 stars</source>
         <translation>Avalie com 5 estrelas</translation>
     </message>
     <message>
-        <location filename="../Queue.qml" line="768"/>
+        <location filename="../Queue.qml" line="780"/>
         <source>Work Queue is empty. Import new photos with the Import tab or load existing photos by double-clicking on them in the Organize tab.</source>
         <translation>A fila de trabalho está vazia. Importe novas fotos com a guia Importar ou carregue as fotos existentes clicando duas vezes nelas na guia Organizar.</translation>
     </message>
@@ -1013,12 +1142,27 @@ unreadable</source>
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../Settings.qml" line="25"/>
+        <location filename="../Settings.qml" line="27"/>
+        <source>Are you sure?</source>
+        <translation type="unfinished">Você tem certeza?</translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="27"/>
+        <source>...Wait a moment...</source>
+        <translation type="unfinished">...Espere um momento...</translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="86"/>
+        <source>Reset All Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings.qml" line="99"/>
         <source>User Interface Scale</source>
         <translation>Escala da interface do usuário</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="26"/>
+        <location filename="../Settings.qml" line="100"/>
         <source>This is a multiplier for the size of all controls in the program.
 
 This setting takes effect after applying settings and then restarting Filmulator.</source>
@@ -1027,12 +1171,12 @@ This setting takes effect after applying settings and then restarting Filmulator
 Esta configuração entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="52"/>
+        <location filename="../Settings.qml" line="127"/>
         <source>Use system language</source>
         <translation>Use a linguagem do sistema</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="53"/>
+        <location filename="../Settings.qml" line="128"/>
         <source>Turning this off will set the language to English.
 
 This setting takes effect after applying settings and then restarting Filmulator.</source>
@@ -1041,7 +1185,7 @@ This setting takes effect after applying settings and then restarting Filmulator
 Esta configuração entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="53"/>
+        <location filename="../Settings.qml" line="128"/>
         <source>Turning this off will let you select the interface language from a list.
 
 This setting takes effect after applying settings and then restarting Filmulator.</source>
@@ -1050,12 +1194,12 @@ This setting takes effect after applying settings and then restarting Filmulator
 Esta configuração entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="66"/>
+        <location filename="../Settings.qml" line="142"/>
         <source>Smooth editor image</source>
         <translation>Suavizar imagem no editor</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="67"/>
+        <location filename="../Settings.qml" line="143"/>
         <source>This enables mipmaps for the Filmulate tab&apos;s image view. It&apos;s recommended for noisy images where not mipmapping may cause patterns to appear at different zoom levels.
 
 It has slight impact on responsiveness for the last few tools, but it doesn&apos;t affect performance when zooming and panning. It also softens the image slightly, which may be undesireable.
@@ -1068,12 +1212,12 @@ Tem um leve impacto na capacidade de resposta das últimas ferramentas, mas não
 Isso é aplicado assim que você salva as configurações.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="80"/>
+        <location filename="../Settings.qml" line="157"/>
         <source>Reduce memory usage</source>
         <translation>Reduzir o uso de memória</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="81"/>
+        <location filename="../Settings.qml" line="158"/>
         <source>Warning: VERY SLOW!
 
 Enabling this turns off high-resolution caching in the editor. It will consume less memory but the full resolution image will recompute from the beginning for any edit you make.
@@ -1086,12 +1230,12 @@ Ativar isso desativa o cache de alta resolução no editor. Isso consumirá meno
 Esta configuração entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="94"/>
+        <location filename="../Settings.qml" line="172"/>
         <source>Render small preview first</source>
         <translation>Renderizar antes uma prévia pequena</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="95"/>
+        <location filename="../Settings.qml" line="173"/>
         <source>Enabling this causes the editor to process a small-size image before processing at full resolution, for better responsiveness. It will make it take longer before you can export an image, though.
 
 This takes effect after applying settings and restarting Filmulator.</source>
@@ -1100,12 +1244,12 @@ This takes effect after applying settings and restarting Filmulator.</source>
 Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="108"/>
+        <location filename="../Settings.qml" line="187"/>
         <source>Preview render resolution</source>
         <translation>Resolução de renderização da visualização</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="109"/>
+        <location filename="../Settings.qml" line="188"/>
         <source>When the small preview is active, the preview image will be processed at an image size with this value as the long dimension. The larger this is, the sharper the preview, but the longer it takes to generate.
 
 This takes effect after applying settings and restarting Filmulator.</source>
@@ -1114,140 +1258,140 @@ This takes effect after applying settings and restarting Filmulator.</source>
 Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="131"/>
+        <location filename="../Settings.qml" line="211"/>
         <source>Save Settings</source>
         <translation>Salvar configurações</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="132"/>
+        <location filename="../Settings.qml" line="212"/>
         <source>Apply settings and save for future use</source>
         <translation>Aplique as configurações e salve para uso futuro</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="181"/>
+        <location filename="../Settings.qml" line="265"/>
         <source>Check for lens correction updates</source>
         <translation>Verifique se há atualizações de correção de lente</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="198"/>
+        <location filename="../Settings.qml" line="282"/>
         <source>Checking database version.</source>
         <comment>lensfun database check</comment>
         <translation>Verificando versão do database.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="201"/>
+        <location filename="../Settings.qml" line="285"/>
         <source>Database unavailable from server.</source>
         <comment>lensfun database check</comment>
         <translation>Database não disponível no servidor.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="204"/>
+        <location filename="../Settings.qml" line="288"/>
         <source>No local database yet.</source>
         <comment>lensfun database check</comment>
         <translation>Sem database local.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="207"/>
+        <location filename="../Settings.qml" line="291"/>
         <source>Update available.</source>
         <comment>lensfun database check</comment>
         <translation>Atualização disponível.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="210"/>
+        <location filename="../Settings.qml" line="294"/>
         <source>Up to date.</source>
         <comment>lensfun database check</comment>
         <translation>Atualizado.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="233"/>
+        <location filename="../Settings.qml" line="317"/>
         <source>Check</source>
         <comment>Check for lensfun updates</comment>
         <translation>Verifica</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="256"/>
+        <location filename="../Settings.qml" line="340"/>
         <source>Update lens correction database</source>
         <translation>Atualizar banco de dados de correção de lente</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="273"/>
+        <location filename="../Settings.qml" line="357"/>
         <source>Updating database.</source>
         <comment>lensfun database update</comment>
         <translation>Atualização em andamento.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="276"/>
+        <location filename="../Settings.qml" line="360"/>
         <source>Success. Please restart.</source>
         <comment>lensfun database update</comment>
         <translation>Sucesso. Por favor reinicie.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="279"/>
+        <location filename="../Settings.qml" line="363"/>
         <source>Already up to date.</source>
         <comment>lensfun database update</comment>
         <translation>Já atualizado.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="282"/>
+        <location filename="../Settings.qml" line="366"/>
         <source>Unavailable from server.</source>
         <comment>lensfun database update</comment>
         <translation>Não disponível no servidor.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="285"/>
+        <location filename="../Settings.qml" line="369"/>
         <source>Failure (initialization)</source>
         <comment>lensfun database update</comment>
         <translation>Falha (inicialização)</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="288"/>
+        <location filename="../Settings.qml" line="372"/>
         <source>Failure (file)</source>
         <comment>lensfun database update</comment>
         <translation>Falha (arquivo)</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="291"/>
+        <location filename="../Settings.qml" line="375"/>
         <source>Failure (retrieve)</source>
         <comment>lensfun database update</comment>
         <translation>Falha (recuperar)</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="314"/>
+        <location filename="../Settings.qml" line="398"/>
         <source>Update</source>
         <comment>Update lensfun database</comment>
         <translation>Atualizar</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="344"/>
+        <location filename="../Settings.qml" line="428"/>
         <source>Download latest camera constants</source>
         <translation>Baixe as últimas constantes da câmera</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="360"/>
+        <location filename="../Settings.qml" line="444"/>
         <source>Download successful.</source>
         <comment>camconst.json update</comment>
         <translation>Baixado com sucesso.</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="363"/>
+        <location filename="../Settings.qml" line="447"/>
         <source>Failure (initialization)</source>
         <comment>camconst.json update</comment>
         <translation>Falha (inicialização)</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="366"/>
+        <location filename="../Settings.qml" line="450"/>
         <source>Failure (file)</source>
         <comment>camconst.json update</comment>
         <translation>Falha (arquivo)</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="369"/>
+        <location filename="../Settings.qml" line="453"/>
         <source>Failure (retrieve)</source>
         <comment>camconst.json update</comment>
         <translation>Falha (recuperar)</translation>
     </message>
     <message>
-        <location filename="../Settings.qml" line="391"/>
+        <location filename="../Settings.qml" line="475"/>
         <source>Download</source>
         <comment>Download new camconst.json</comment>
         <translation>Baixar</translation>
@@ -1256,12 +1400,25 @@ Isso entra em vigor após aplicar as configurações e reiniciar o Filmulator.</
 <context>
     <name>ToolSlider</name>
     <message>
-        <location filename="../gui_components/ToolSlider.qml" line="168"/>
         <source>Reset to default</source>
-        <translation>Restaurar ao padrão</translation>
+        <translation type="vanished">Restaurar ao padrão</translation>
     </message>
     <message>
-        <location filename="../gui_components/ToolSlider.qml" line="274"/>
+        <location filename="../gui_components/ToolSlider.qml" line="172"/>
+        <source>
+
+Right-click on the tool name to open a dial for more precise input.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gui_components/ToolSlider.qml" line="183"/>
+        <source>Reset to default.
+
+Double-right-clicking on the slider will also reset to default.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../gui_components/ToolSlider.qml" line="290"/>
         <source>Spin clockwise to raise the value.
 Spin counterclockwise to reduce the value.</source>
         <translation>Gire no sentido horário para aumentar o valor.
@@ -1271,7 +1428,7 @@ Gire no sentido anti-horário para reduzir o valor.</translation>
 <context>
     <name>ToolSwitch</name>
     <message>
-        <location filename="../gui_components/ToolSwitch.qml" line="107"/>
+        <location filename="../gui_components/ToolSwitch.qml" line="109"/>
         <source>Reset to default</source>
         <translation>Restaurar ao padrão</translation>
     </message>
@@ -1284,24 +1441,39 @@ Gire no sentido anti-horário para reduzir o valor.</translation>
         <translation>Filmulator</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="80"/>
+        <location filename="../main.qml" line="81"/>
         <source>Import</source>
         <translation>Importar</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="136"/>
+        <location filename="../main.qml" line="137"/>
         <source>Organize</source>
         <translation>Organizar</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="175"/>
+        <location filename="../main.qml" line="176"/>
         <source>Filmulate</source>
         <translation>Filmulate</translation>
     </message>
     <message>
-        <location filename="../main.qml" line="214"/>
+        <location filename="../main.qml" line="215"/>
         <source>Settings</source>
         <translation>Configurações</translation>
+    </message>
+    <message>
+        <location filename="../main.qml" line="324"/>
+        <source>Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main.qml" line="325"/>
+        <source>Make helpful tips show up only after a delay.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main.qml" line="325"/>
+        <source>Show helpful tips immediately when you hover over tools.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
