@@ -13,40 +13,39 @@
 namespace Eigen {
 
 namespace internal {
-template <typename _MatrixType>
-struct traits<CompleteOrthogonalDecomposition<_MatrixType> >
-    : traits<_MatrixType> {
-  enum { Flags = 0 };
-};
+  template<typename _MatrixType> struct traits<CompleteOrthogonalDecomposition<_MatrixType>> : traits<_MatrixType>
+  {
+    enum { Flags = 0 };
+  };
 
-}  // end namespace internal
+}// end namespace internal
 
 /** \ingroup QR_Module
-  *
-  * \class CompleteOrthogonalDecomposition
-  *
-  * \brief Complete orthogonal decomposition (COD) of a matrix.
-  *
-  * \param MatrixType the type of the matrix of which we are computing the COD.
-  *
-  * This class performs a rank-revealing complete orthogonal decomposition of a
-  * matrix  \b A into matrices \b P, \b Q, \b T, and \b Z such that
-  * \f[
-  *  \mathbf{A} \, \mathbf{P} = \mathbf{Q} \,
-  *                     \begin{bmatrix} \mathbf{T} &  \mathbf{0} \\
-  *                                     \mathbf{0} & \mathbf{0} \end{bmatrix} \, \mathbf{Z}
-  * \f]
-  * by using Householder transformations. Here, \b P is a permutation matrix,
-  * \b Q and \b Z are unitary matrices and \b T an upper triangular matrix of
-  * size rank-by-rank. \b A may be rank deficient.
-  *
-  * This class supports the \link InplaceDecomposition inplace decomposition \endlink mechanism.
-  * 
-  * \sa MatrixBase::completeOrthogonalDecomposition()
-  */
-template <typename _MatrixType>
-class CompleteOrthogonalDecomposition {
- public:
+ *
+ * \class CompleteOrthogonalDecomposition
+ *
+ * \brief Complete orthogonal decomposition (COD) of a matrix.
+ *
+ * \param MatrixType the type of the matrix of which we are computing the COD.
+ *
+ * This class performs a rank-revealing complete orthogonal decomposition of a
+ * matrix  \b A into matrices \b P, \b Q, \b T, and \b Z such that
+ * \f[
+ *  \mathbf{A} \, \mathbf{P} = \mathbf{Q} \,
+ *                     \begin{bmatrix} \mathbf{T} &  \mathbf{0} \\
+ *                                     \mathbf{0} & \mathbf{0} \end{bmatrix} \, \mathbf{Z}
+ * \f]
+ * by using Householder transformations. Here, \b P is a permutation matrix,
+ * \b Q and \b Z are unitary matrices and \b T an upper triangular matrix of
+ * size rank-by-rank. \b A may be rank deficient.
+ *
+ * This class supports the \link InplaceDecomposition inplace decomposition \endlink mechanism.
+ *
+ * \sa MatrixBase::completeOrthogonalDecomposition()
+ */
+template<typename _MatrixType> class CompleteOrthogonalDecomposition
+{
+public:
   typedef _MatrixType MatrixType;
   enum {
     RowsAtCompileTime = MatrixType::RowsAtCompileTime,
@@ -58,23 +57,19 @@ class CompleteOrthogonalDecomposition {
   typedef typename MatrixType::RealScalar RealScalar;
   typedef typename MatrixType::StorageIndex StorageIndex;
   typedef typename internal::plain_diag_type<MatrixType>::type HCoeffsType;
-  typedef PermutationMatrix<ColsAtCompileTime, MaxColsAtCompileTime>
-      PermutationType;
-  typedef typename internal::plain_row_type<MatrixType, Index>::type
-      IntRowVectorType;
+  typedef PermutationMatrix<ColsAtCompileTime, MaxColsAtCompileTime> PermutationType;
+  typedef typename internal::plain_row_type<MatrixType, Index>::type IntRowVectorType;
   typedef typename internal::plain_row_type<MatrixType>::type RowVectorType;
-  typedef typename internal::plain_row_type<MatrixType, RealScalar>::type
-      RealRowVectorType;
-  typedef HouseholderSequence<
-      MatrixType, typename internal::remove_all<
-                      typename HCoeffsType::ConjugateReturnType>::type>
-      HouseholderSequenceType;
+  typedef typename internal::plain_row_type<MatrixType, RealScalar>::type RealRowVectorType;
+  typedef HouseholderSequence<MatrixType,
+    typename internal::remove_all<typename HCoeffsType::ConjugateReturnType>::type>
+    HouseholderSequenceType;
   typedef typename MatrixType::PlainObject PlainObject;
 
- private:
+private:
   typedef typename PermutationType::Index PermIndexType;
 
- public:
+public:
   /**
    * \brief Default Constructor.
    *
@@ -91,7 +86,8 @@ class CompleteOrthogonalDecomposition {
    * \sa CompleteOrthogonalDecomposition()
    */
   CompleteOrthogonalDecomposition(Index rows, Index cols)
-      : m_cpqr(rows, cols), m_zCoeffs((std::min)(rows, cols)), m_temp(cols) {}
+    : m_cpqr(rows, cols), m_zCoeffs((std::min)(rows, cols)), m_temp(cols)
+  {}
 
   /** \brief Constructs a complete orthogonal decomposition from a given
    * matrix.
@@ -109,26 +105,23 @@ class CompleteOrthogonalDecomposition {
    *
    * \sa compute()
    */
-  template <typename InputType>
-  explicit CompleteOrthogonalDecomposition(const EigenBase<InputType>& matrix)
-      : m_cpqr(matrix.rows(), matrix.cols()),
-        m_zCoeffs((std::min)(matrix.rows(), matrix.cols())),
-        m_temp(matrix.cols())
+  template<typename InputType>
+  explicit CompleteOrthogonalDecomposition(const EigenBase<InputType> &matrix)
+    : m_cpqr(matrix.rows(), matrix.cols()), m_zCoeffs((std::min)(matrix.rows(), matrix.cols())), m_temp(matrix.cols())
   {
     compute(matrix.derived());
   }
 
   /** \brief Constructs a complete orthogonal decomposition from a given matrix
-    *
-    * This overloaded constructor is provided for \link InplaceDecomposition inplace decomposition \endlink when \c MatrixType is a Eigen::Ref.
-    *
-    * \sa CompleteOrthogonalDecomposition(const EigenBase&)
-    */
+   *
+   * This overloaded constructor is provided for \link InplaceDecomposition inplace decomposition \endlink when \c
+   * MatrixType is a Eigen::Ref.
+   *
+   * \sa CompleteOrthogonalDecomposition(const EigenBase&)
+   */
   template<typename InputType>
-  explicit CompleteOrthogonalDecomposition(EigenBase<InputType>& matrix)
-    : m_cpqr(matrix.derived()),
-      m_zCoeffs((std::min)(matrix.rows(), matrix.cols())),
-      m_temp(matrix.cols())
+  explicit CompleteOrthogonalDecomposition(EigenBase<InputType> &matrix)
+    : m_cpqr(matrix.derived()), m_zCoeffs((std::min)(matrix.rows(), matrix.cols())), m_temp(matrix.cols())
   {
     computeInPlace();
   }
@@ -143,11 +136,9 @@ class CompleteOrthogonalDecomposition {
    * \returns a solution.
    *
    */
-  template <typename Rhs>
-  inline const Solve<CompleteOrthogonalDecomposition, Rhs> solve(
-      const MatrixBase<Rhs>& b) const {
-    eigen_assert(m_cpqr.m_isInitialized &&
-                 "CompleteOrthogonalDecomposition is not initialized.");
+  template<typename Rhs> inline const Solve<CompleteOrthogonalDecomposition, Rhs> solve(const MatrixBase<Rhs> &b) const
+  {
+    eigen_assert(m_cpqr.m_isInitialized && "CompleteOrthogonalDecomposition is not initialized.");
     return Solve<CompleteOrthogonalDecomposition, Rhs>(*this, b.derived());
   }
 
@@ -156,7 +147,8 @@ class CompleteOrthogonalDecomposition {
 
   /** \returns the matrix \b Z.
    */
-  MatrixType matrixZ() const {
+  MatrixType matrixZ() const
+  {
     MatrixType Z = MatrixType::Identity(m_cpqr.cols(), m_cpqr.cols());
     applyZAdjointOnTheLeftInPlace(Z);
     return Z.adjoint();
@@ -165,7 +157,7 @@ class CompleteOrthogonalDecomposition {
   /** \returns a reference to the matrix where the complete orthogonal
    * decomposition is stored
    */
-  const MatrixType& matrixQTZ() const { return m_cpqr.matrixQR(); }
+  const MatrixType &matrixQTZ() const { return m_cpqr.matrixQR(); }
 
   /** \returns a reference to the matrix where the complete orthogonal
    * decomposition is stored.
@@ -178,10 +170,10 @@ class CompleteOrthogonalDecomposition {
    * matrixR().topLeftCorner(rank(), rank()).template triangularView<Upper>()
    * \endcode
    */
-  const MatrixType& matrixT() const { return m_cpqr.matrixQR(); }
+  const MatrixType &matrixT() const { return m_cpqr.matrixQR(); }
 
-  template <typename InputType>
-  CompleteOrthogonalDecomposition& compute(const EigenBase<InputType>& matrix) {
+  template<typename InputType> CompleteOrthogonalDecomposition &compute(const EigenBase<InputType> &matrix)
+  {
     // Compute the column pivoted QR factorization A P = Q R.
     m_cpqr.compute(matrix);
     computeInPlace();
@@ -189,9 +181,7 @@ class CompleteOrthogonalDecomposition {
   }
 
   /** \returns a const reference to the column permutation matrix */
-  const PermutationType& colsPermutation() const {
-    return m_cpqr.colsPermutation();
-  }
+  const PermutationType &colsPermutation() const { return m_cpqr.colsPermutation(); }
 
   /** \returns the absolute value of the determinant of the matrix of which
    * *this is the complete orthogonal decomposition. It has only linear
@@ -286,14 +276,14 @@ class CompleteOrthogonalDecomposition {
    *
    * For advanced uses only.
    */
-  inline const HCoeffsType& hCoeffs() const { return m_cpqr.hCoeffs(); }
+  inline const HCoeffsType &hCoeffs() const { return m_cpqr.hCoeffs(); }
 
   /** \returns a const reference to the vector of Householder coefficients
    * used to represent the factor \c Z.
    *
    * For advanced uses only.
    */
-  const HCoeffsType& zCoeffs() const { return m_zCoeffs; }
+  const HCoeffsType &zCoeffs() const { return m_zCoeffs; }
 
   /** Allows to prescribe a threshold to be used by certain methods, such as
    * rank(), who need to determine when pivots are to be considered nonzero.
@@ -314,7 +304,8 @@ class CompleteOrthogonalDecomposition {
    * If you want to come back to the default behavior, call
    * setThreshold(Default_t)
    */
-  CompleteOrthogonalDecomposition& setThreshold(const RealScalar& threshold) {
+  CompleteOrthogonalDecomposition &setThreshold(const RealScalar &threshold)
+  {
     m_cpqr.setThreshold(threshold);
     return *this;
   }
@@ -327,7 +318,8 @@ class CompleteOrthogonalDecomposition {
    *
    * See the documentation of setThreshold(const RealScalar&).
    */
-  CompleteOrthogonalDecomposition& setThreshold(Default_t) {
+  CompleteOrthogonalDecomposition &setThreshold(Default_t)
+  {
     m_cpqr.setThreshold(Default);
     return *this;
   }
@@ -360,42 +352,40 @@ class CompleteOrthogonalDecomposition {
    * with other factorization routines.
    * \returns \c Success
    */
-  ComputationInfo info() const {
+  ComputationInfo info() const
+  {
     eigen_assert(m_cpqr.m_isInitialized && "Decomposition is not initialized.");
     return Success;
   }
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
-  template <typename RhsType, typename DstType>
-  EIGEN_DEVICE_FUNC void _solve_impl(const RhsType& rhs, DstType& dst) const;
+  template<typename RhsType, typename DstType>
+  EIGEN_DEVICE_FUNC void _solve_impl(const RhsType &rhs, DstType &dst) const;
 #endif
 
- protected:
-  static void check_template_parameters() {
-    EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
-  }
+protected:
+  static void check_template_parameters() { EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar); }
 
   void computeInPlace();
 
   /** Overwrites \b rhs with \f$ \mathbf{Z}^* * \mathbf{rhs} \f$.
    */
-  template <typename Rhs>
-  void applyZAdjointOnTheLeftInPlace(Rhs& rhs) const;
+  template<typename Rhs> void applyZAdjointOnTheLeftInPlace(Rhs &rhs) const;
 
   ColPivHouseholderQR<MatrixType> m_cpqr;
   HCoeffsType m_zCoeffs;
   RowVectorType m_temp;
 };
 
-template <typename MatrixType>
-typename MatrixType::RealScalar
-CompleteOrthogonalDecomposition<MatrixType>::absDeterminant() const {
+template<typename MatrixType>
+typename MatrixType::RealScalar CompleteOrthogonalDecomposition<MatrixType>::absDeterminant() const
+{
   return m_cpqr.absDeterminant();
 }
 
-template <typename MatrixType>
-typename MatrixType::RealScalar
-CompleteOrthogonalDecomposition<MatrixType>::logAbsDeterminant() const {
+template<typename MatrixType>
+typename MatrixType::RealScalar CompleteOrthogonalDecomposition<MatrixType>::logAbsDeterminant() const
+{
   return m_cpqr.logAbsDeterminant();
 }
 
@@ -406,8 +396,7 @@ CompleteOrthogonalDecomposition<MatrixType>::logAbsDeterminant() const {
  * \sa class CompleteOrthogonalDecomposition,
  * CompleteOrthogonalDecomposition(const MatrixType&)
  */
-template <typename MatrixType>
-void CompleteOrthogonalDecomposition<MatrixType>::computeInPlace()
+template<typename MatrixType> void CompleteOrthogonalDecomposition<MatrixType>::computeInPlace()
 {
   check_template_parameters();
 
@@ -437,60 +426,48 @@ void CompleteOrthogonalDecomposition<MatrixType>::computeInPlace()
         // Given the API for Householder reflectors, it is more convenient if
         // we swap the leading parts of columns k and r-1 (zero-based) to form
         // the matrix X_k = [X(0:k, k), X(0:k, r:n)]
-        m_cpqr.m_qr.col(k).head(k + 1).swap(
-            m_cpqr.m_qr.col(rank - 1).head(k + 1));
+        m_cpqr.m_qr.col(k).head(k + 1).swap(m_cpqr.m_qr.col(rank - 1).head(k + 1));
       }
       // Construct Householder reflector Z(k) to zero out the last row of X_k,
       // i.e. choose Z(k) such that
       // [X(k, k), X(k, r:n)] * Z(k) = [beta, 0, .., 0].
       RealScalar beta;
-      m_cpqr.m_qr.row(k)
-          .tail(cols - rank + 1)
-          .makeHouseholderInPlace(m_zCoeffs(k), beta);
+      m_cpqr.m_qr.row(k).tail(cols - rank + 1).makeHouseholderInPlace(m_zCoeffs(k), beta);
       m_cpqr.m_qr(k, rank - 1) = beta;
       if (k > 0) {
         // Apply Z(k) to the first k rows of X_k
         m_cpqr.m_qr.topRightCorner(k, cols - rank + 1)
-            .applyHouseholderOnTheRight(
-                m_cpqr.m_qr.row(k).tail(cols - rank).transpose(), m_zCoeffs(k),
-                &m_temp(0));
+          .applyHouseholderOnTheRight(m_cpqr.m_qr.row(k).tail(cols - rank).transpose(), m_zCoeffs(k), &m_temp(0));
       }
       if (k != rank - 1) {
         // Swap X(0:k,k) back to its proper location.
-        m_cpqr.m_qr.col(k).head(k + 1).swap(
-            m_cpqr.m_qr.col(rank - 1).head(k + 1));
+        m_cpqr.m_qr.col(k).head(k + 1).swap(m_cpqr.m_qr.col(rank - 1).head(k + 1));
       }
     }
   }
 }
 
-template <typename MatrixType>
-template <typename Rhs>
-void CompleteOrthogonalDecomposition<MatrixType>::applyZAdjointOnTheLeftInPlace(
-    Rhs& rhs) const {
+template<typename MatrixType>
+template<typename Rhs>
+void CompleteOrthogonalDecomposition<MatrixType>::applyZAdjointOnTheLeftInPlace(Rhs &rhs) const
+{
   const Index cols = this->cols();
   const Index nrhs = rhs.cols();
   const Index rank = this->rank();
   Matrix<typename MatrixType::Scalar, Dynamic, 1> temp((std::max)(cols, nrhs));
   for (Index k = 0; k < rank; ++k) {
-    if (k != rank - 1) {
-      rhs.row(k).swap(rhs.row(rank - 1));
-    }
+    if (k != rank - 1) { rhs.row(k).swap(rhs.row(rank - 1)); }
     rhs.middleRows(rank - 1, cols - rank + 1)
-        .applyHouseholderOnTheLeft(
-            matrixQTZ().row(k).tail(cols - rank).adjoint(), zCoeffs()(k),
-            &temp(0));
-    if (k != rank - 1) {
-      rhs.row(k).swap(rhs.row(rank - 1));
-    }
+      .applyHouseholderOnTheLeft(matrixQTZ().row(k).tail(cols - rank).adjoint(), zCoeffs()(k), &temp(0));
+    if (k != rank - 1) { rhs.row(k).swap(rhs.row(rank - 1)); }
   }
 }
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
-template <typename _MatrixType>
-template <typename RhsType, typename DstType>
-void CompleteOrthogonalDecomposition<_MatrixType>::_solve_impl(
-    const RhsType& rhs, DstType& dst) const {
+template<typename _MatrixType>
+template<typename RhsType, typename DstType>
+void CompleteOrthogonalDecomposition<_MatrixType>::_solve_impl(const RhsType &rhs, DstType &dst) const
+{
   eigen_assert(rhs.rows() == this->rows());
 
   const Index rank = this->rank();
@@ -503,14 +480,10 @@ void CompleteOrthogonalDecomposition<_MatrixType>::_solve_impl(
   // Note that the matrix Q = H_0^* H_1^*... so its inverse is
   // Q^* = (H_0 H_1 ...)^T
   typename RhsType::PlainObject c(rhs);
-  c.applyOnTheLeft(
-      householderSequence(matrixQTZ(), hCoeffs()).setLength(rank).transpose());
+  c.applyOnTheLeft(householderSequence(matrixQTZ(), hCoeffs()).setLength(rank).transpose());
 
   // Solve T z = c(1:rank, :)
-  dst.topRows(rank) = matrixT()
-                          .topLeftCorner(rank, rank)
-                          .template triangularView<Upper>()
-                          .solve(c.topRows(rank));
+  dst.topRows(rank) = matrixT().topLeftCorner(rank, rank).template triangularView<Upper>().solve(c.topRows(rank));
 
   const Index cols = this->cols();
   if (rank < cols) {
@@ -527,36 +500,43 @@ void CompleteOrthogonalDecomposition<_MatrixType>::_solve_impl(
 
 namespace internal {
 
-template<typename DstXprType, typename MatrixType>
-struct Assignment<DstXprType, Inverse<CompleteOrthogonalDecomposition<MatrixType> >, internal::assign_op<typename DstXprType::Scalar,typename CompleteOrthogonalDecomposition<MatrixType>::Scalar>, Dense2Dense>
-{
-  typedef CompleteOrthogonalDecomposition<MatrixType> CodType;
-  typedef Inverse<CodType> SrcXprType;
-  static void run(DstXprType &dst, const SrcXprType &src, const internal::assign_op<typename DstXprType::Scalar,typename CodType::Scalar> &)
+  template<typename DstXprType, typename MatrixType>
+  struct Assignment<DstXprType,
+    Inverse<CompleteOrthogonalDecomposition<MatrixType>>,
+    internal::assign_op<typename DstXprType::Scalar, typename CompleteOrthogonalDecomposition<MatrixType>::Scalar>,
+    Dense2Dense>
   {
-    dst = src.nestedExpression().solve(MatrixType::Identity(src.rows(), src.rows()));
-  }
-};
+    typedef CompleteOrthogonalDecomposition<MatrixType> CodType;
+    typedef Inverse<CodType> SrcXprType;
+    static void run(DstXprType &dst,
+      const SrcXprType &src,
+      const internal::assign_op<typename DstXprType::Scalar, typename CodType::Scalar> &)
+    {
+      dst = src.nestedExpression().solve(MatrixType::Identity(src.rows(), src.rows()));
+    }
+  };
 
-} // end namespace internal
+}// end namespace internal
 
 /** \returns the matrix Q as a sequence of householder transformations */
-template <typename MatrixType>
+template<typename MatrixType>
 typename CompleteOrthogonalDecomposition<MatrixType>::HouseholderSequenceType
-CompleteOrthogonalDecomposition<MatrixType>::householderQ() const {
+  CompleteOrthogonalDecomposition<MatrixType>::householderQ() const
+{
   return m_cpqr.householderQ();
 }
 
 /** \return the complete orthogonal decomposition of \c *this.
-  *
-  * \sa class CompleteOrthogonalDecomposition
-  */
-template <typename Derived>
+ *
+ * \sa class CompleteOrthogonalDecomposition
+ */
+template<typename Derived>
 const CompleteOrthogonalDecomposition<typename MatrixBase<Derived>::PlainObject>
-MatrixBase<Derived>::completeOrthogonalDecomposition() const {
+  MatrixBase<Derived>::completeOrthogonalDecomposition() const
+{
   return CompleteOrthogonalDecomposition<PlainObject>(eval());
 }
 
-}  // end namespace Eigen
+}// end namespace Eigen
 
-#endif  // EIGEN_COMPLETEORTHOGONALDECOMPOSITION_H
+#endif// EIGEN_COMPLETEORTHOGONALDECOMPOSITION_H

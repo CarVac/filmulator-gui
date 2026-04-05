@@ -22,16 +22,12 @@
 
 wavelet_decomposition::~wavelet_decomposition()
 {
-    for(int i = 0; i <= lvltot; i++) {
-        if(wavelet_decomp[i] != nullptr) {
-            delete wavelet_decomp[i];
-        }
-    }
+  for (int i = 0; i <= lvltot; i++) {
+    if (wavelet_decomp[i] != nullptr) { delete wavelet_decomp[i]; }
+  }
 
-    delete[] wavfilt_anal;
-    delete[] wavfilt_synth;
+  delete[] wavfilt_anal;
+  delete[] wavfilt_synth;
 
-    if(coeff0) {
-        delete [] coeff0;
-    }
+  if (coeff0) { delete[] coeff0; }
 }

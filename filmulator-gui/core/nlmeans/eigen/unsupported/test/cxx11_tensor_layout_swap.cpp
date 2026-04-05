@@ -15,7 +15,7 @@ using Eigen::Tensor;
 
 static void test_simple_swap()
 {
-  Tensor<float, 3, ColMajor> tensor(2,3,7);
+  Tensor<float, 3, ColMajor> tensor(2, 3, 7);
   tensor.setRandom();
 
   Tensor<float, 3, RowMajor> tensor2 = tensor.swap_layout();
@@ -25,9 +25,7 @@ static void test_simple_swap()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      for (int k = 0; k < 7; ++k) {
-        VERIFY_IS_EQUAL(tensor(i,j,k), tensor2(k,j,i));
-      }
+      for (int k = 0; k < 7; ++k) { VERIFY_IS_EQUAL(tensor(i, j, k), tensor2(k, j, i)); }
     }
   }
 }
@@ -35,10 +33,10 @@ static void test_simple_swap()
 
 static void test_swap_as_lvalue()
 {
-  Tensor<float, 3, ColMajor> tensor(2,3,7);
+  Tensor<float, 3, ColMajor> tensor(2, 3, 7);
   tensor.setRandom();
 
-  Tensor<float, 3, RowMajor> tensor2(7,3,2);
+  Tensor<float, 3, RowMajor> tensor2(7, 3, 2);
   tensor2.swap_layout() = tensor;
   VERIFY_IS_EQUAL(tensor.dimension(0), tensor2.dimension(2));
   VERIFY_IS_EQUAL(tensor.dimension(1), tensor2.dimension(1));
@@ -46,9 +44,7 @@ static void test_swap_as_lvalue()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      for (int k = 0; k < 7; ++k) {
-        VERIFY_IS_EQUAL(tensor(i,j,k), tensor2(k,j,i));
-      }
+      for (int k = 0; k < 7; ++k) { VERIFY_IS_EQUAL(tensor(i, j, k), tensor2(k, j, i)); }
     }
   }
 }

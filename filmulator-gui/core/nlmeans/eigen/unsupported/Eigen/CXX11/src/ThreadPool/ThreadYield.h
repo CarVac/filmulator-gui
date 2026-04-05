@@ -17,4 +17,4 @@
 #define EIGEN_THREAD_YIELD() std::this_thread::yield()
 #endif
 
-#endif  // EIGEN_CXX11_THREADPOOL_THREAD_YIELD_H
+#endif// EIGEN_CXX11_THREADPOOL_THREAD_YIELD_H

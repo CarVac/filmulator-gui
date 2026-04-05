@@ -13,10 +13,9 @@
 
 using Eigen::Tensor;
 
-template<int DataLayout>
-static void test_simple_striding()
+template<int DataLayout> static void test_simple_striding()
 {
-  Tensor<float, 4, DataLayout> tensor(2,3,5,7);
+  Tensor<float, 4, DataLayout> tensor(2, 3, 5, 7);
   tensor.setRandom();
   array<ptrdiff_t, 4> strides;
   strides[0] = 1;
@@ -35,9 +34,7 @@ static void test_simple_striding()
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
       for (int k = 0; k < 5; ++k) {
-        for (int l = 0; l < 7; ++l) {
-          VERIFY_IS_EQUAL(tensor(i,j,k,l), no_stride(i,j,k,l));
-        }
+        for (int l = 0; l < 7; ++l) { VERIFY_IS_EQUAL(tensor(i, j, k, l), no_stride(i, j, k, l)); }
       }
     }
   }
@@ -57,19 +54,16 @@ static void test_simple_striding()
   for (int i = 0; i < 1; ++i) {
     for (int j = 0; j < 1; ++j) {
       for (int k = 0; k < 3; ++k) {
-        for (int l = 0; l < 3; ++l) {
-          VERIFY_IS_EQUAL(tensor(2*i,4*j,2*k,3*l), stride(i,j,k,l));
-        }
+        for (int l = 0; l < 3; ++l) { VERIFY_IS_EQUAL(tensor(2 * i, 4 * j, 2 * k, 3 * l), stride(i, j, k, l)); }
       }
     }
   }
 }
 
 
-template<int DataLayout>
-static void test_striding_as_lvalue()
+template<int DataLayout> static void test_striding_as_lvalue()
 {
-  Tensor<float, 4, DataLayout> tensor(2,3,5,7);
+  Tensor<float, 4, DataLayout> tensor(2, 3, 5, 7);
   tensor.setRandom();
   array<ptrdiff_t, 4> strides;
   strides[0] = 2;
@@ -83,9 +77,7 @@ static void test_striding_as_lvalue()
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
       for (int k = 0; k < 5; ++k) {
-        for (int l = 0; l < 7; ++l) {
-          VERIFY_IS_EQUAL(tensor(i,j,k,l), result(2*i,4*j,2*k,3*l));
-        }
+        for (int l = 0; l < 7; ++l) { VERIFY_IS_EQUAL(tensor(i, j, k, l), result(2 * i, 4 * j, 2 * k, 3 * l)); }
       }
     }
   }
@@ -101,9 +93,7 @@ static void test_striding_as_lvalue()
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
       for (int k = 0; k < 5; ++k) {
-        for (int l = 0; l < 7; ++l) {
-          VERIFY_IS_EQUAL(tensor(i,j,k,l), result2(2*i,4*j,2*k,3*l));
-        }
+        for (int l = 0; l < 7; ++l) { VERIFY_IS_EQUAL(tensor(i, j, k, l), result2(2 * i, 4 * j, 2 * k, 3 * l)); }
       }
     }
   }

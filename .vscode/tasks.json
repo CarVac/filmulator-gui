@@ -1,0 +1,59 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Format",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${command:cmake.buildDirectory}",
+                "--target",
+                "format"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${command:cmake.buildDirectory}"
+            ],
+            "group": "build",
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "Test",
+            "type": "shell",
+            "command": "ctest",
+            "args": [
+                "--test-dir",
+                "${command:cmake.buildDirectory}",
+                "--output-on-failure"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Format, Build and Test",
+            "dependsOn": [
+                "Format",
+                "Build",
+                "Test"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

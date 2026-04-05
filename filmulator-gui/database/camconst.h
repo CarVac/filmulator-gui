@@ -4,20 +4,24 @@
 #include <QString>
 
 enum camconst_status {
-    CAMCONST_DL_OK,
-    CAMCONST_DL_INITFAILED,
-    CAMCONST_DL_FOPENFAILED,
-    CAMCONST_DL_RETRIEVEFAILED,
-    CAMCONST_READ_OK,
-    CAMCONST_READ_NOENTRY,
-    CAMCONST_READ_FAILED
+  CAMCONST_DL_OK,
+  CAMCONST_DL_INITFAILED,
+  CAMCONST_DL_FOPENFAILED,
+  CAMCONST_DL_RETRIEVEFAILED,
+  CAMCONST_READ_OK,
+  CAMCONST_READ_NOENTRY,
+  CAMCONST_READ_FAILED
 };
 
 QString camconst_dir();
 
 camconst_status camconst_download();
 
-camconst_status camconst_read(const QString inputMakeModel, const float iso, const float fnumber, double whiteLevel[4], double blackLevel[4]);
+camconst_status camconst_read(const QString inputMakeModel,
+  const float iso,
+  const float fnumber,
+  double whiteLevel[4],
+  double blackLevel[4]);
 
 
-#endif // CAMCONST_H
+#endif// CAMCONST_H

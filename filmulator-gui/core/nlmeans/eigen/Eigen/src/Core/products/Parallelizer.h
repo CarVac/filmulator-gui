@@ -14,35 +14,30 @@ namespace Eigen {
 
 namespace internal {
 
-/** \internal */
-inline void manage_multi_threading(Action action, int* v)
-{
-  static EIGEN_UNUSED int m_maxThreads = -1;
+  /** \internal */
+  inline void manage_multi_threading(Action action, int *v)
+  {
+    static EIGEN_UNUSED int m_maxThreads = -1;
 
-  if(action==SetAction)
-  {
-    eigen_internal_assert(v!=0);
-    m_maxThreads = *v;
+    if (action == SetAction) {
+      eigen_internal_assert(v != 0);
+      m_maxThreads = *v;
+    } else if (action == GetAction) {
+      eigen_internal_assert(v != 0);
+#ifdef EIGEN_HAS_OPENMP
+      if (m_maxThreads > 0)
+        *v = m_maxThreads;
+      else
+        *v = omp_get_max_threads();
+#else
+      *v = 1;
+#endif
+    } else {
+      eigen_internal_assert(false);
+    }
   }
-  else if(action==GetAction)
-  {
-    eigen_internal_assert(v!=0);
-    #ifdef EIGEN_HAS_OPENMP
-    if(m_maxThreads>0)
-      *v = m_maxThreads;
-    else
-      *v = omp_get_max_threads();
-    #else
-    *v = 1;
-    #endif
-  }
-  else
-  {
-    eigen_internal_assert(false);
-  }
-}
 
-}
+}// namespace internal
 
 /** Must be call first when calling Eigen from multiple threads */
 inline void initParallel()
@@ -54,7 +49,7 @@ inline void initParallel()
 }
 
 /** \returns the max number of threads reserved for Eigen
-  * \sa setNbThreads */
+ * \sa setNbThreads */
 inline int nbThreads()
 {
   int ret;
@@ -63,101 +58,98 @@ inline int nbThreads()
 }
 
 /** Sets the max number of threads reserved for Eigen
-  * \sa nbThreads */
-inline void setNbThreads(int v)
-{
-  internal::manage_multi_threading(SetAction, &v);
-}
+ * \sa nbThreads */
+inline void setNbThreads(int v) { internal::manage_multi_threading(SetAction, &v); }
 
 namespace internal {
 
-template<typename Index> struct GemmParallelInfo
-{
-  GemmParallelInfo() : sync(-1), users(0), lhs_start(0), lhs_length(0) {}
+  template<typename Index> struct GemmParallelInfo
+  {
+    GemmParallelInfo() : sync(-1), users(0), lhs_start(0), lhs_length(0) {}
 
-  Index volatile sync;
-  int volatile users;
+    Index volatile sync;
+    int volatile users;
 
-  Index lhs_start;
-  Index lhs_length;
-};
+    Index lhs_start;
+    Index lhs_length;
+  };
 
-template<bool Condition, typename Functor, typename Index>
-void parallelize_gemm(const Functor& func, Index rows, Index cols, Index depth, bool transpose)
-{
-  // TODO when EIGEN_USE_BLAS is defined,
-  // we should still enable OMP for other scalar types
-#if !(defined (EIGEN_HAS_OPENMP)) || defined (EIGEN_USE_BLAS)
-  // FIXME the transpose variable is only needed to properly split
-  // the matrix product when multithreading is enabled. This is a temporary
-  // fix to support row-major destination matrices. This whole
-  // parallelizer mechanism has to be redisigned anyway.
-  EIGEN_UNUSED_VARIABLE(depth);
-  EIGEN_UNUSED_VARIABLE(transpose);
-  func(0,rows, 0,cols);
+  template<bool Condition, typename Functor, typename Index>
+  void parallelize_gemm(const Functor &func, Index rows, Index cols, Index depth, bool transpose)
+  {
+    // TODO when EIGEN_USE_BLAS is defined,
+    // we should still enable OMP for other scalar types
+#if !(defined(EIGEN_HAS_OPENMP)) || defined(EIGEN_USE_BLAS)
+    // FIXME the transpose variable is only needed to properly split
+    // the matrix product when multithreading is enabled. This is a temporary
+    // fix to support row-major destination matrices. This whole
+    // parallelizer mechanism has to be redisigned anyway.
+    EIGEN_UNUSED_VARIABLE(depth);
+    EIGEN_UNUSED_VARIABLE(transpose);
+    func(0, rows, 0, cols);
 #else
 
-  // Dynamically check whether we should enable or disable OpenMP.
-  // The conditions are:
-  // - the max number of threads we can create is greater than 1
-  // - we are not already in a parallel code
-  // - the sizes are large enough
+    // Dynamically check whether we should enable or disable OpenMP.
+    // The conditions are:
+    // - the max number of threads we can create is greater than 1
+    // - we are not already in a parallel code
+    // - the sizes are large enough
 
-  // compute the maximal number of threads from the size of the product:
-  // This first heuristic takes into account that the product kernel is fully optimized when working with nr columns at once.
-  Index size = transpose ? rows : cols;
-  Index pb_max_threads = std::max<Index>(1,size / Functor::Traits::nr);
+    // compute the maximal number of threads from the size of the product:
+    // This first heuristic takes into account that the product kernel is fully optimized when working with nr columns
+    // at once.
+    Index size = transpose ? rows : cols;
+    Index pb_max_threads = std::max<Index>(1, size / Functor::Traits::nr);
 
-  // compute the maximal number of threads from the total amount of work:
-  double work = static_cast<double>(rows) * static_cast<double>(cols) *
-      static_cast<double>(depth);
-  double kMinTaskSize = 50000;  // FIXME improve this heuristic.
-  pb_max_threads = std::max<Index>(1, std::min<Index>(pb_max_threads, work / kMinTaskSize));
+    // compute the maximal number of threads from the total amount of work:
+    double work = static_cast<double>(rows) * static_cast<double>(cols) * static_cast<double>(depth);
+    double kMinTaskSize = 50000;// FIXME improve this heuristic.
+    pb_max_threads = std::max<Index>(1, std::min<Index>(pb_max_threads, work / kMinTaskSize));
 
-  // compute the number of threads we are going to use
-  Index threads = std::min<Index>(nbThreads(), pb_max_threads);
+    // compute the number of threads we are going to use
+    Index threads = std::min<Index>(nbThreads(), pb_max_threads);
 
-  // if multi-threading is explicitely disabled, not useful, or if we already are in a parallel session,
-  // then abort multi-threading
-  // FIXME omp_get_num_threads()>1 only works for openmp, what if the user does not use openmp?
-  if((!Condition) || (threads==1) || (omp_get_num_threads()>1))
-    return func(0,rows, 0,cols);
+    // if multi-threading is explicitely disabled, not useful, or if we already are in a parallel session,
+    // then abort multi-threading
+    // FIXME omp_get_num_threads()>1 only works for openmp, what if the user does not use openmp?
+    if ((!Condition) || (threads == 1) || (omp_get_num_threads() > 1)) return func(0, rows, 0, cols);
 
-  Eigen::initParallel();
-  func.initParallelSession(threads);
+    Eigen::initParallel();
+    func.initParallelSession(threads);
 
-  if(transpose)
-    std::swap(rows,cols);
+    if (transpose) std::swap(rows, cols);
 
-  ei_declare_aligned_stack_constructed_variable(GemmParallelInfo<Index>,info,threads,0);
+    ei_declare_aligned_stack_constructed_variable(GemmParallelInfo<Index>, info, threads, 0);
 
-  #pragma omp parallel num_threads(threads)
-  {
-    Index i = omp_get_thread_num();
-    // Note that the actual number of threads might be lower than the number of request ones.
-    Index actual_threads = omp_get_num_threads();
+#pragma omp parallel num_threads(threads)
+    {
+      Index i = omp_get_thread_num();
+      // Note that the actual number of threads might be lower than the number of request ones.
+      Index actual_threads = omp_get_num_threads();
 
-    Index blockCols = (cols / actual_threads) & ~Index(0x3);
-    Index blockRows = (rows / actual_threads);
-    blockRows = (blockRows/Functor::Traits::mr)*Functor::Traits::mr;
+      Index blockCols = (cols / actual_threads) & ~Index(0x3);
+      Index blockRows = (rows / actual_threads);
+      blockRows = (blockRows / Functor::Traits::mr) * Functor::Traits::mr;
 
-    Index r0 = i*blockRows;
-    Index actualBlockRows = (i+1==actual_threads) ? rows-r0 : blockRows;
+      Index r0 = i * blockRows;
+      Index actualBlockRows = (i + 1 == actual_threads) ? rows - r0 : blockRows;
 
-    Index c0 = i*blockCols;
-    Index actualBlockCols = (i+1==actual_threads) ? cols-c0 : blockCols;
+      Index c0 = i * blockCols;
+      Index actualBlockCols = (i + 1 == actual_threads) ? cols - c0 : blockCols;
 
-    info[i].lhs_start = r0;
-    info[i].lhs_length = actualBlockRows;
+      info[i].lhs_start = r0;
+      info[i].lhs_length = actualBlockRows;
 
-    if(transpose) func(c0, actualBlockCols, 0, rows, info);
-    else          func(0, rows, c0, actualBlockCols, info);
-  }
+      if (transpose)
+        func(c0, actualBlockCols, 0, rows, info);
+      else
+        func(0, rows, c0, actualBlockCols, info);
+    }
 #endif
-}
+  }
 
-} // end namespace internal
+}// end namespace internal
 
-} // end namespace Eigen
+}// end namespace Eigen
 
-#endif // EIGEN_PARALLELIZER_H
+#endif// EIGEN_PARALLELIZER_H

@@ -95,6 +95,7 @@ Rectangle {
     }
     MouseArea {
         id: imageEnqueuer
+        objectName: "organizeDelegateMouseArea"
         anchors.fill: parent
         onClicked: root.selectImage()
         onDoubleClicked: {

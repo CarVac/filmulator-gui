@@ -14,12 +14,12 @@
 
 template<typename T> void test_umfpack_support_T()
 {
-  UmfPackLU<SparseMatrix<T, ColMajor> > umfpack_colmajor;
-  UmfPackLU<SparseMatrix<T, RowMajor> > umfpack_rowmajor;
-  
+  UmfPackLU<SparseMatrix<T, ColMajor>> umfpack_colmajor;
+  UmfPackLU<SparseMatrix<T, RowMajor>> umfpack_rowmajor;
+
   check_sparse_square_solving(umfpack_colmajor);
   check_sparse_square_solving(umfpack_rowmajor);
-  
+
   check_sparse_square_determinant(umfpack_colmajor);
   check_sparse_square_determinant(umfpack_rowmajor);
 }
@@ -27,6 +27,5 @@ template<typename T> void test_umfpack_support_T()
 void test_umfpack_support()
 {
   CALL_SUBTEST_1(test_umfpack_support_T<double>());
-  CALL_SUBTEST_2(test_umfpack_support_T<std::complex<double> >());
+  CALL_SUBTEST_2(test_umfpack_support_T<std::complex<double>>());
 }
-

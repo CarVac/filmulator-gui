@@ -1,4 +1,4 @@
-MatrixXf m = MatrixXf::Random(3,2);
+MatrixXf m = MatrixXf::Random(3, 2);
 cout << "Here is the matrix m:" << endl << m << endl;
 JacobiSVD<MatrixXf> svd(m, ComputeThinU | ComputeThinV);
 cout << "Its singular values are:" << endl << svd.singularValues() << endl;

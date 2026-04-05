@@ -23,10 +23,10 @@ static void test_assign()
 
   for (int i = 0; i < 6; ++i) {
     std::ostringstream s1;
-    s1 << "abc" << i*3;
+    s1 << "abc" << i * 3;
     data1[i] = s1.str();
     std::ostringstream s2;
-    s2 << "def" << i*5;
+    s2 << "def" << i * 5;
     data2[i] = s2.str();
   }
 
@@ -43,12 +43,12 @@ static void test_assign()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      VERIFY_IS_EQUAL(rslt1(i,j), data1[i+2*j]);
-      VERIFY_IS_EQUAL(rslt2(i,j), data2[i+2*j]);
-      VERIFY_IS_EQUAL(rslt3(i,j), data1[i+2*j]);
-      VERIFY_IS_EQUAL(rslt4(i,j), data2[i+2*j]);
-      VERIFY_IS_EQUAL(rslt5(i,j), data1[i+2*j]);
-      VERIFY_IS_EQUAL(rslt6(i,j), data2[i+2*j]);
+      VERIFY_IS_EQUAL(rslt1(i, j), data1[i + 2 * j]);
+      VERIFY_IS_EQUAL(rslt2(i, j), data2[i + 2 * j]);
+      VERIFY_IS_EQUAL(rslt3(i, j), data1[i + 2 * j]);
+      VERIFY_IS_EQUAL(rslt4(i, j), data2[i + 2 * j]);
+      VERIFY_IS_EQUAL(rslt5(i, j), data1[i + 2 * j]);
+      VERIFY_IS_EQUAL(rslt6(i, j), data2[i + 2 * j]);
     }
   }
 }
@@ -62,10 +62,10 @@ static void test_concat()
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
       std::ostringstream s1;
-      s1 << "abc" << i + j*2;
+      s1 << "abc" << i + j * 2;
       t1(i, j) = s1.str();
       std::ostringstream s2;
-      s2 << "def" << i*5 + j*32;
+      s2 << "def" << i * 5 + j * 32;
       t2(i, j) = s2.str();
     }
   }
@@ -76,8 +76,8 @@ static void test_concat()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      VERIFY_IS_EQUAL(result(i, j),   t1(i, j));
-      VERIFY_IS_EQUAL(result(i, j+3), t2(i, j));
+      VERIFY_IS_EQUAL(result(i, j), t1(i, j));
+      VERIFY_IS_EQUAL(result(i, j + 3), t2(i, j));
     }
   }
 }
@@ -89,7 +89,7 @@ static void test_slices()
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
       std::ostringstream s1;
-      s1 << "abc" << i + j*2;
+      s1 << "abc" << i + j * 2;
       data(i, j) = s1.str();
     }
   }
@@ -103,8 +103,8 @@ static void test_slices()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      VERIFY_IS_EQUAL(data(i, j),   t1(i, j));
-      VERIFY_IS_EQUAL(data(i, j+3), t2(i, j));
+      VERIFY_IS_EQUAL(data(i, j), t1(i, j));
+      VERIFY_IS_EQUAL(data(i, j + 3), t2(i, j));
     }
   }
 }
@@ -135,9 +135,7 @@ static void test_initialization()
 {
   Tensor<std::string, 2> a(2, 3);
   a.setConstant(std::string("foo"));
-  for (int i = 0; i < 2*3; ++i) {
-    VERIFY_IS_EQUAL(a(i), std::string("foo"));
-  }
+  for (int i = 0; i < 2 * 3; ++i) { VERIFY_IS_EQUAL(a(i), std::string("foo")); }
 }
 
 

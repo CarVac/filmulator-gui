@@ -118,6 +118,38 @@ Tools and features of interest:
 
 If you want the UI to appear larger on a high-pixel density display, use the User Interface Scale slider in the `Settings` tab to set a desired scale, save the setting, and then restart the program. While it cannot automatically read your display pixel density, this setting enables otherwise full HiDPI support.
 
+# Testing
+
+## E2E Tests
+
+The project uses Python-based E2E tests for the RAW pipeline. We use [**uv**](https://github.com/astral-sh/uv) to manage Python dependencies and the virtual environment.
+
+### Prerequisites
+
+Install `uv`:
+```bash
+curl -LsSf https://astral.ml/uv/install.sh | sh
+```
+
+### Running Tests
+
+To run the RAW pipeline E2E test:
+```bash
+uv run python tests/e2e/test_raw_pipeline.py
+```
+
+To preserve the output JPEG for analysis (e.g., if a test fails):
+```bash
+uv run python tests/e2e/test_raw_pipeline.py --keep-output
+```
+
+### Analyzing Differences
+
+If a test fails, you can use the diagnostic notebook to inspect pixel-wise differences:
+```bash
+uv run jupyter notebook tests/e2e/analyze_diff.ipynb
+```
+
 
 # Status
 

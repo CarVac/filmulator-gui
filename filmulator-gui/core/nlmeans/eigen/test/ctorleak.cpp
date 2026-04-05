@@ -1,6 +1,6 @@
 #include "main.h"
 
-#include <exception>  // std::exception
+#include <exception>// std::exception
 
 struct Foo
 {
@@ -12,19 +12,24 @@ struct Foo
   {
 #ifdef EIGEN_EXCEPTIONS
     // TODO: Is this the correct way to handle this?
-    if (Foo::object_count > Foo::object_limit) { std::cout << "\nThrow!\n"; throw Foo::Fail(); }
+    if (Foo::object_count > Foo::object_limit) {
+      std::cout << "\nThrow!\n";
+      throw Foo::Fail();
+    }
 #endif
-	  std::cout << '+';
+    std::cout << '+';
     ++Foo::object_count;
   }
 
   ~Foo()
   {
-	  std::cout << '-';
+    std::cout << '-';
     --Foo::object_count;
   }
 
-  class Fail : public std::exception {};
+  class Fail : public std::exception
+  {
+  };
 };
 
 Index Foo::object_count = 0;
@@ -38,31 +43,31 @@ void test_ctorleak()
   typedef Matrix<Foo, Dynamic, Dynamic> MatrixX;
   typedef Matrix<Foo, Dynamic, 1> VectorX;
   Foo::object_count = 0;
-  for(int i = 0; i < g_repeat; i++) {
-    Index rows = internal::random<Index>(2,EIGEN_TEST_MAX_SIZE), cols = internal::random<Index>(2,EIGEN_TEST_MAX_SIZE);
-    Foo::object_limit = internal::random<Index>(0, rows*cols - 2);
+  for (int i = 0; i < g_repeat; i++) {
+    Index rows = internal::random<Index>(2, EIGEN_TEST_MAX_SIZE),
+          cols = internal::random<Index>(2, EIGEN_TEST_MAX_SIZE);
+    Foo::object_limit = internal::random<Index>(0, rows * cols - 2);
     std::cout << "object_limit =" << Foo::object_limit << std::endl;
 #ifdef EIGEN_EXCEPTIONS
-    try
-    {
+    try {
 #endif
-    	std::cout <<       "\nMatrixX m(" << rows << ", " << cols << ");\n";
+      std::cout << "\nMatrixX m(" << rows << ", " << cols << ");\n";
       MatrixX m(rows, cols);
 #ifdef EIGEN_EXCEPTIONS
-      VERIFY(false);  // not reached if exceptions are enabled
+      VERIFY(false);// not reached if exceptions are enabled
+    } catch (const Foo::Fail &) { /* ignore */
     }
-    catch (const Foo::Fail&) { /* ignore */ }
 #endif
     VERIFY_IS_EQUAL(Index(0), Foo::object_count);
 
     {
-      Foo::object_limit = (rows+1)*(cols+1);
+      Foo::object_limit = (rows + 1) * (cols + 1);
       MatrixX A(rows, cols);
-      VERIFY_IS_EQUAL(Foo::object_count, rows*cols);
-      VectorX v=A.row(0);
-      VERIFY_IS_EQUAL(Foo::object_count, (rows+1)*cols);
+      VERIFY_IS_EQUAL(Foo::object_count, rows * cols);
+      VectorX v = A.row(0);
+      VERIFY_IS_EQUAL(Foo::object_count, (rows + 1) * cols);
       v = A.col(0);
-      VERIFY_IS_EQUAL(Foo::object_count, rows*(cols+1));
+      VERIFY_IS_EQUAL(Foo::object_count, rows * (cols + 1));
     }
     VERIFY_IS_EQUAL(Index(0), Foo::object_count);
   }

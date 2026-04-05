@@ -19,4 +19,4 @@
 #define EIGEN_THREAD_LOCAL static thread_local
 #endif
 
-#endif  // EIGEN_CXX11_THREADPOOL_THREAD_LOCAL_H
+#endif// EIGEN_CXX11_THREADPOOL_THREAD_LOCAL_H

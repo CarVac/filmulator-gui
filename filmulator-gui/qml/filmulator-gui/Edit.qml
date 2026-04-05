@@ -3045,6 +3045,7 @@ SlimSplitView {
     }
     EditTools {
         id: editTools
+        objectName: "editTools"
         uiScale: root.uiScale
         imageReady: root.imageReady
         previewReady: root.previewReady

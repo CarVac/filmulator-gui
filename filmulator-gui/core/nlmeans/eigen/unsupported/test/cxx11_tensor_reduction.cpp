@@ -8,14 +8,14 @@
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "main.h"
+#include <Eigen/CXX11/Tensor>
 #include <limits>
 #include <numeric>
-#include <Eigen/CXX11/Tensor>
 
 using Eigen::Tensor;
 
-template <int DataLayout>
-static void test_trivial_reductions() {
+template<int DataLayout> static void test_trivial_reductions()
+{
   {
     Tensor<float, 0, DataLayout> tensor;
     tensor.setRandom();
@@ -32,9 +32,7 @@ static void test_trivial_reductions() {
 
     Tensor<float, 1, DataLayout> result = tensor.sum(reduction_axis);
     VERIFY_IS_EQUAL(result.dimension(0), 7);
-    for (int i = 0; i < 7; ++i) {
-      VERIFY_IS_EQUAL(result(i), tensor(i));
-    }
+    for (int i = 0; i < 7; ++i) { VERIFY_IS_EQUAL(result(i), tensor(i)); }
   }
 
   {
@@ -46,15 +44,13 @@ static void test_trivial_reductions() {
     VERIFY_IS_EQUAL(result.dimension(0), 2);
     VERIFY_IS_EQUAL(result.dimension(1), 3);
     for (int i = 0; i < 2; ++i) {
-      for (int j = 0; j < 3; ++j) {
-        VERIFY_IS_EQUAL(result(i, j), tensor(i, j));
-      }
+      for (int j = 0; j < 3; ++j) { VERIFY_IS_EQUAL(result(i, j), tensor(i, j)); }
     }
   }
 }
 
-template <int DataLayout>
-static void test_simple_reductions() {
+template<int DataLayout> static void test_simple_reductions()
+{
   Tensor<float, 4, DataLayout> tensor(2, 3, 5, 7);
   tensor.setRandom();
   array<ptrdiff_t, 2> reduction_axis2;
@@ -68,9 +64,7 @@ static void test_simple_reductions() {
     for (int j = 0; j < 5; ++j) {
       float sum = 0.0f;
       for (int k = 0; k < 3; ++k) {
-        for (int l = 0; l < 7; ++l) {
-          sum += tensor(i, k, j, l);
-        }
+        for (int l = 0; l < 7; ++l) { sum += tensor(i, k, j, l); }
       }
       VERIFY_IS_APPROX(result(i, j), sum);
     }
@@ -100,9 +94,7 @@ static void test_simple_reductions() {
     for (int j = 0; j < 7; ++j) {
       float prod = 1.0f;
       for (int k = 0; k < 2; ++k) {
-        for (int l = 0; l < 5; ++l) {
-          prod *= tensor(k, i, l, j);
-        }
+        for (int l = 0; l < 5; ++l) { prod *= tensor(k, i, l, j); }
       }
       VERIFY_IS_APPROX(result(i, j), prod);
     }
@@ -132,9 +124,7 @@ static void test_simple_reductions() {
     for (int j = 0; j < 7; ++j) {
       float max_val = std::numeric_limits<float>::lowest();
       for (int k = 0; k < 2; ++k) {
-        for (int l = 0; l < 5; ++l) {
-          max_val = (std::max)(max_val, tensor(k, i, l, j));
-        }
+        for (int l = 0; l < 5; ++l) { max_val = (std::max)(max_val, tensor(k, i, l, j)); }
       }
       VERIFY_IS_APPROX(result(i, j), max_val);
     }
@@ -164,9 +154,7 @@ static void test_simple_reductions() {
     for (int j = 0; j < 7; ++j) {
       float min_val = (std::numeric_limits<float>::max)();
       for (int k = 0; k < 2; ++k) {
-        for (int l = 0; l < 3; ++l) {
-          min_val = (std::min)(min_val, tensor(k, l, i, j));
-        }
+        for (int l = 0; l < 3; ++l) { min_val = (std::min)(min_val, tensor(k, l, i, j)); }
       }
       VERIFY_IS_APPROX(result(i, j), min_val);
     }
@@ -225,13 +213,13 @@ static void test_simple_reductions() {
     Tensor<int, 1> ints(10);
     std::iota(ints.data(), ints.data() + ints.dimension(0), 0);
 
-    TensorFixedSize<bool, Sizes<> > all;
+    TensorFixedSize<bool, Sizes<>> all;
     all = ints.all();
     VERIFY(!all());
     all = (ints >= ints.constant(0)).all();
     VERIFY(all());
 
-    TensorFixedSize<bool, Sizes<> > any;
+    TensorFixedSize<bool, Sizes<>> any;
     any = (ints > ints.constant(10)).any();
     VERIFY(!any());
     any = (ints < ints.constant(1)).any();
@@ -240,8 +228,8 @@ static void test_simple_reductions() {
 }
 
 
-template <int DataLayout>
-static void test_reductions_in_expr() {
+template<int DataLayout> static void test_reductions_in_expr()
+{
   Tensor<float, 4, DataLayout> tensor(2, 3, 5, 7);
   tensor.setRandom();
   array<ptrdiff_t, 2> reduction_axis2;
@@ -256,9 +244,7 @@ static void test_reductions_in_expr() {
     for (int j = 0; j < 5; ++j) {
       float sum = 0.0f;
       for (int k = 0; k < 3; ++k) {
-        for (int l = 0; l < 7; ++l) {
-          sum += tensor(i, k, j, l);
-        }
+        for (int l = 0; l < 7; ++l) { sum += tensor(i, k, j, l); }
       }
       VERIFY_IS_APPROX(result(i, j), 1.0f - sum);
     }
@@ -266,8 +252,8 @@ static void test_reductions_in_expr() {
 }
 
 
-template <int DataLayout>
-static void test_full_reductions() {
+template<int DataLayout> static void test_full_reductions()
+{
   Tensor<float, 2, DataLayout> tensor(2, 3);
   tensor.setRandom();
   array<ptrdiff_t, 2> reduction_axis;
@@ -279,9 +265,7 @@ static void test_full_reductions() {
 
   float sum = 0.0f;
   for (int i = 0; i < 2; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      sum += tensor(i, j);
-    }
+    for (int j = 0; j < 3; ++j) { sum += tensor(i, j); }
   }
   VERIFY_IS_APPROX(result(0), sum);
 
@@ -290,26 +274,25 @@ static void test_full_reductions() {
 
   sum = 0.0f;
   for (int i = 0; i < 2; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      sum += tensor(i, j) * tensor(i, j);
-    }
+    for (int j = 0; j < 3; ++j) { sum += tensor(i, j) * tensor(i, j); }
   }
   VERIFY_IS_APPROX(result(), sqrtf(sum));
 }
 
-struct UserReducer {
+struct UserReducer
+{
   static const bool PacketAccess = false;
   UserReducer(float offset) : offset_(offset) {}
-  void reduce(const float val, float* accum) { *accum += val * val; }
+  void reduce(const float val, float *accum) { *accum += val * val; }
   float initialize() const { return 0; }
   float finalize(const float accum) const { return 1.0f / (accum + offset_); }
 
- private:
+private:
   const float offset_;
 };
 
-template <int DataLayout>
-static void test_user_defined_reductions() {
+template<int DataLayout> static void test_user_defined_reductions()
+{
   Tensor<float, 2, DataLayout> tensor(5, 7);
   tensor.setRandom();
   array<ptrdiff_t, 1> reduction_axis;
@@ -320,22 +303,18 @@ static void test_user_defined_reductions() {
   VERIFY_IS_EQUAL(result.dimension(0), 5);
   for (int i = 0; i < 5; ++i) {
     float expected = 10.0f;
-    for (int j = 0; j < 7; ++j) {
-      expected += tensor(i, j) * tensor(i, j);
-    }
+    for (int j = 0; j < 7; ++j) { expected += tensor(i, j) * tensor(i, j); }
     expected = 1.0f / expected;
     VERIFY_IS_APPROX(result(i), expected);
   }
 }
 
-template <int DataLayout>
-static void test_tensor_maps() {
+template<int DataLayout> static void test_tensor_maps()
+{
   int inputs[2 * 3 * 5 * 7];
-  TensorMap<Tensor<int, 4, DataLayout> > tensor_map(inputs, 2, 3, 5, 7);
-  TensorMap<Tensor<const int, 4, DataLayout> > tensor_map_const(inputs, 2, 3, 5,
-                                                                7);
-  const TensorMap<Tensor<const int, 4, DataLayout> > tensor_map_const_const(
-      inputs, 2, 3, 5, 7);
+  TensorMap<Tensor<int, 4, DataLayout>> tensor_map(inputs, 2, 3, 5, 7);
+  TensorMap<Tensor<const int, 4, DataLayout>> tensor_map_const(inputs, 2, 3, 5, 7);
+  const TensorMap<Tensor<const int, 4, DataLayout>> tensor_map_const_const(inputs, 2, 3, 5, 7);
 
   tensor_map.setRandom();
   array<ptrdiff_t, 2> reduction_axis;
@@ -344,16 +323,13 @@ static void test_tensor_maps() {
 
   Tensor<int, 2, DataLayout> result = tensor_map.sum(reduction_axis);
   Tensor<int, 2, DataLayout> result2 = tensor_map_const.sum(reduction_axis);
-  Tensor<int, 2, DataLayout> result3 =
-      tensor_map_const_const.sum(reduction_axis);
+  Tensor<int, 2, DataLayout> result3 = tensor_map_const_const.sum(reduction_axis);
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 5; ++j) {
       int sum = 0;
       for (int k = 0; k < 3; ++k) {
-        for (int l = 0; l < 7; ++l) {
-          sum += tensor_map(i, k, j, l);
-        }
+        for (int l = 0; l < 7; ++l) { sum += tensor_map(i, k, j, l); }
       }
       VERIFY_IS_EQUAL(result(i, j), sum);
       VERIFY_IS_EQUAL(result2(i, j), sum);
@@ -362,18 +338,18 @@ static void test_tensor_maps() {
   }
 }
 
-template <int DataLayout>
-static void test_static_dims() {
+template<int DataLayout> static void test_static_dims()
+{
   Tensor<float, 4, DataLayout> in(72, 53, 97, 113);
   Tensor<float, 2, DataLayout> out(72, 97);
   in.setRandom();
 
-#if !EIGEN_HAS_CONSTEXPR 
+#if !EIGEN_HAS_CONSTEXPR
   array<int, 2> reduction_axis;
   reduction_axis[0] = 1;
   reduction_axis[1] = 3;
 #else
-  Eigen::IndexList<Eigen::type2index<1>, Eigen::type2index<3> > reduction_axis;
+  Eigen::IndexList<Eigen::type2index<1>, Eigen::type2index<3>> reduction_axis;
 #endif
 
   out = in.maximum(reduction_axis);
@@ -382,17 +358,15 @@ static void test_static_dims() {
     for (int j = 0; j < 97; ++j) {
       float expected = -1e10f;
       for (int k = 0; k < 53; ++k) {
-        for (int l = 0; l < 113; ++l) {
-          expected = (std::max)(expected, in(i, k, j, l));
-        }
+        for (int l = 0; l < 113; ++l) { expected = (std::max)(expected, in(i, k, j, l)); }
       }
       VERIFY_IS_APPROX(out(i, j), expected);
     }
   }
 }
 
-template <int DataLayout>
-static void test_innermost_last_dims() {
+template<int DataLayout> static void test_innermost_last_dims()
+{
   Tensor<float, 4, DataLayout> in(72, 53, 97, 113);
   Tensor<float, 2, DataLayout> out(97, 113);
   in.setRandom();
@@ -404,7 +378,7 @@ static void test_innermost_last_dims() {
   reduction_axis[1] = 1;
 #else
   // This triggers the use of packets for ColMajor.
-  Eigen::IndexList<Eigen::type2index<0>, Eigen::type2index<1> > reduction_axis;
+  Eigen::IndexList<Eigen::type2index<0>, Eigen::type2index<1>> reduction_axis;
 #endif
 
   out = in.maximum(reduction_axis);
@@ -413,17 +387,15 @@ static void test_innermost_last_dims() {
     for (int j = 0; j < 113; ++j) {
       float expected = -1e10f;
       for (int k = 0; k < 53; ++k) {
-        for (int l = 0; l < 72; ++l) {
-          expected = (std::max)(expected, in(l, k, i, j));
-        }
+        for (int l = 0; l < 72; ++l) { expected = (std::max)(expected, in(l, k, i, j)); }
       }
       VERIFY_IS_APPROX(out(i, j), expected);
     }
   }
 }
 
-template <int DataLayout>
-static void test_innermost_first_dims() {
+template<int DataLayout> static void test_innermost_first_dims()
+{
   Tensor<float, 4, DataLayout> in(72, 53, 97, 113);
   Tensor<float, 2, DataLayout> out(72, 53);
   in.setRandom();
@@ -444,17 +416,15 @@ static void test_innermost_first_dims() {
     for (int j = 0; j < 53; ++j) {
       float expected = -1e10f;
       for (int k = 0; k < 97; ++k) {
-        for (int l = 0; l < 113; ++l) {
-          expected = (std::max)(expected, in(i, j, k, l));
-        }
+        for (int l = 0; l < 113; ++l) { expected = (std::max)(expected, in(i, j, k, l)); }
       }
       VERIFY_IS_APPROX(out(i, j), expected);
     }
   }
 }
 
-template <int DataLayout>
-static void test_reduce_middle_dims() {
+template<int DataLayout> static void test_reduce_middle_dims()
+{
   Tensor<float, 4, DataLayout> in(72, 53, 97, 113);
   Tensor<float, 2, DataLayout> out(72, 53);
   in.setRandom();
@@ -475,16 +445,15 @@ static void test_reduce_middle_dims() {
     for (int j = 0; j < 113; ++j) {
       float expected = -1e10f;
       for (int k = 0; k < 53; ++k) {
-        for (int l = 0; l < 97; ++l) {
-          expected = (std::max)(expected, in(i, k, l, j));
-        }
+        for (int l = 0; l < 97; ++l) { expected = (std::max)(expected, in(i, k, l, j)); }
       }
       VERIFY_IS_APPROX(out(i, j), expected);
     }
   }
 }
 
-void test_cxx11_tensor_reduction() {
+void test_cxx11_tensor_reduction()
+{
   CALL_SUBTEST(test_trivial_reductions<ColMajor>());
   CALL_SUBTEST(test_trivial_reductions<RowMajor>());
   CALL_SUBTEST(test_simple_reductions<ColMajor>());

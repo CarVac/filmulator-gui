@@ -16,69 +16,71 @@ template<typename MatrixType> struct Wrapper
 {
   MatrixType m_mat;
   inline Wrapper(const MatrixType &x) : m_mat(x) {}
-  inline operator const MatrixType& () const { return m_mat; }
-  inline operator MatrixType& () { return m_mat; }
+  inline operator const MatrixType &() const { return m_mat; }
+  inline operator MatrixType &() { return m_mat; }
 };
 
-template<typename MatrixType> void ctor_init1(const MatrixType& m)
+template<typename MatrixType> void ctor_init1(const MatrixType &m)
 {
   // Check logic in PlainObjectBase::_init1
   Index rows = m.rows();
   Index cols = m.cols();
 
-  MatrixType m0 = MatrixType::Random(rows,cols);
+  MatrixType m0 = MatrixType::Random(rows, cols);
 
-  VERIFY_EVALUATION_COUNT( MatrixType m1(m0), 1);
-  VERIFY_EVALUATION_COUNT( MatrixType m2(m0+m0), 1);
-  VERIFY_EVALUATION_COUNT( MatrixType m2(m0.block(0,0,rows,cols)) , 1);
+  VERIFY_EVALUATION_COUNT(MatrixType m1(m0), 1);
+  VERIFY_EVALUATION_COUNT(MatrixType m2(m0 + m0), 1);
+  VERIFY_EVALUATION_COUNT(MatrixType m2(m0.block(0, 0, rows, cols)), 1);
 
   Wrapper<MatrixType> wrapper(m0);
-  VERIFY_EVALUATION_COUNT( MatrixType m3(wrapper) , 1);
+  VERIFY_EVALUATION_COUNT(MatrixType m3(wrapper), 1);
 }
 
 
 void test_constructor()
 {
-  for(int i = 0; i < g_repeat; i++) {
-    CALL_SUBTEST_1( ctor_init1(Matrix<float, 1, 1>()) );
-    CALL_SUBTEST_1( ctor_init1(Matrix4d()) );
-    CALL_SUBTEST_1( ctor_init1(MatrixXcf(internal::random<int>(1,EIGEN_TEST_MAX_SIZE), internal::random<int>(1,EIGEN_TEST_MAX_SIZE))) );
-    CALL_SUBTEST_1( ctor_init1(MatrixXi(internal::random<int>(1,EIGEN_TEST_MAX_SIZE), internal::random<int>(1,EIGEN_TEST_MAX_SIZE))) );
+  for (int i = 0; i < g_repeat; i++) {
+    CALL_SUBTEST_1(ctor_init1(Matrix<float, 1, 1>()));
+    CALL_SUBTEST_1(ctor_init1(Matrix4d()));
+    CALL_SUBTEST_1(ctor_init1(
+      MatrixXcf(internal::random<int>(1, EIGEN_TEST_MAX_SIZE), internal::random<int>(1, EIGEN_TEST_MAX_SIZE))));
+    CALL_SUBTEST_1(ctor_init1(
+      MatrixXi(internal::random<int>(1, EIGEN_TEST_MAX_SIZE), internal::random<int>(1, EIGEN_TEST_MAX_SIZE))));
   }
   {
-    Matrix<Index,1,1> a(123);
+    Matrix<Index, 1, 1> a(123);
     VERIFY_IS_EQUAL(a[0], 123);
   }
   {
-    Matrix<Index,1,1> a(123.0);
+    Matrix<Index, 1, 1> a(123.0);
     VERIFY_IS_EQUAL(a[0], 123);
   }
   {
-    Matrix<float,1,1> a(123);
+    Matrix<float, 1, 1> a(123);
     VERIFY_IS_EQUAL(a[0], 123.f);
   }
   {
-    Array<Index,1,1> a(123);
+    Array<Index, 1, 1> a(123);
     VERIFY_IS_EQUAL(a[0], 123);
   }
   {
-    Array<Index,1,1> a(123.0);
+    Array<Index, 1, 1> a(123.0);
     VERIFY_IS_EQUAL(a[0], 123);
   }
   {
-    Array<float,1,1> a(123);
+    Array<float, 1, 1> a(123);
     VERIFY_IS_EQUAL(a[0], 123.f);
   }
   {
-    Array<Index,3,3> a(123);
+    Array<Index, 3, 3> a(123);
     VERIFY_IS_EQUAL(a(4), 123);
   }
   {
-    Array<Index,3,3> a(123.0);
+    Array<Index, 3, 3> a(123.0);
     VERIFY_IS_EQUAL(a(4), 123);
   }
   {
-    Array<float,3,3> a(123);
+    Array<float, 3, 3> a(123);
     VERIFY_IS_EQUAL(a(4), 123.f);
   }
 }

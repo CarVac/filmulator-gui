@@ -17,9 +17,9 @@ using Eigen::RowMajor;
 
 static void test_compound_assignment()
 {
-  Tensor<float, 3> mat1(2,3,7);
-  Tensor<float, 3> mat2(2,3,7);
-  Tensor<float, 3> mat3(2,3,7);
+  Tensor<float, 3> mat1(2, 3, 7);
+  Tensor<float, 3> mat2(2, 3, 7);
+  Tensor<float, 3> mat3(2, 3, 7);
 
   mat1.setRandom();
   mat2.setRandom();
@@ -28,15 +28,10 @@ static void test_compound_assignment()
 
   for (int i = 0; i < 2; ++i) {
     for (int j = 0; j < 3; ++j) {
-      for (int k = 0; k < 7; ++k) {
-        VERIFY_IS_APPROX(mat3(i,j,k), mat1(i,j,k) + mat2(i,j,k));
-      }
+      for (int k = 0; k < 7; ++k) { VERIFY_IS_APPROX(mat3(i, j, k), mat1(i, j, k) + mat2(i, j, k)); }
     }
   }
 }
 
 
-void test_cxx11_tensor_lvalue()
-{
-  CALL_SUBTEST(test_compound_assignment());
-}
+void test_cxx11_tensor_lvalue() { CALL_SUBTEST(test_compound_assignment()); }

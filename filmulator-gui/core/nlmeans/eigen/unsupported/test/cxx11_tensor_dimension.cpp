@@ -16,12 +16,12 @@ using Eigen::Tensor;
 
 static void test_dynamic_size()
 {
-  Eigen::DSizes<int, 3> dimensions(2,3,7);
+  Eigen::DSizes<int, 3> dimensions(2, 3, 7);
 
   VERIFY_IS_EQUAL((int)Eigen::internal::array_get<0>(dimensions), 2);
   VERIFY_IS_EQUAL((int)Eigen::internal::array_get<1>(dimensions), 3);
   VERIFY_IS_EQUAL((int)Eigen::internal::array_get<2>(dimensions), 7);
-  VERIFY_IS_EQUAL((int)dimensions.TotalSize(), 2*3*7);
+  VERIFY_IS_EQUAL((int)dimensions.TotalSize(), 2 * 3 * 7);
   VERIFY_IS_EQUAL((int)dimensions[0], 2);
   VERIFY_IS_EQUAL((int)dimensions[1], 3);
   VERIFY_IS_EQUAL((int)dimensions[2], 7);
@@ -29,22 +29,22 @@ static void test_dynamic_size()
 
 static void test_fixed_size()
 {
-  Eigen::Sizes<2,3,7> dimensions;
+  Eigen::Sizes<2, 3, 7> dimensions;
 
   VERIFY_IS_EQUAL((int)Eigen::internal::array_get<0>(dimensions), 2);
   VERIFY_IS_EQUAL((int)Eigen::internal::array_get<1>(dimensions), 3);
   VERIFY_IS_EQUAL((int)Eigen::internal::array_get<2>(dimensions), 7);
-  VERIFY_IS_EQUAL((int)dimensions.TotalSize(), 2*3*7);
+  VERIFY_IS_EQUAL((int)dimensions.TotalSize(), 2 * 3 * 7);
 }
 
 static void test_match()
 {
-  Eigen::DSizes<unsigned int, 3> dyn((unsigned int)2,(unsigned int)3,(unsigned int)7);
-  Eigen::Sizes<2,3,7> stat;
+  Eigen::DSizes<unsigned int, 3> dyn((unsigned int)2, (unsigned int)3, (unsigned int)7);
+  Eigen::Sizes<2, 3, 7> stat;
   VERIFY_IS_EQUAL(Eigen::dimensions_match(dyn, stat), true);
 
-  Eigen::DSizes<int, 3> dyn1(2,3,7);
-  Eigen::DSizes<int, 2> dyn2(2,3);
+  Eigen::DSizes<int, 3> dyn1(2, 3, 7);
+  Eigen::DSizes<int, 2> dyn2(2, 3);
   VERIFY_IS_EQUAL(Eigen::dimensions_match(dyn1, dyn2), false);
 }
 

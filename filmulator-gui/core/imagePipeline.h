@@ -2,8 +2,11 @@
 #define IMAGEPIPELINE_H
 #include "../ui/parameterManager.h"
 #include "interface.h"
+#include "myLibraw.h"
 #include <QMutex>
 #include <QMutexLocker>
+#include <lensfun/lensfun.h>
+#include <libraw/libraw.h>
 #include <rtprocess/librtprocess.h>
 
 enum Cache { HighCache, NoCache };
@@ -136,8 +139,7 @@ protected:
                  ParameterManager *paramManager, ImagePipeline *pipeline);
 
   // Callback for LibRaw cancellation
-  static int libraw_callback(void *data, enum LibRaw_progress p, int iteration,
-                             int expected);
+  static int progress_callback(void *callback_data, enum LibRaw_progress stage, int iteration, int expected);
 };
 
 #endif // IMAGEPIPELINE_H

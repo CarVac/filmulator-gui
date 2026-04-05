@@ -6,7 +6,7 @@ using Eigen::Tensor;
 
 static void test_single_voxel_patch()
 {
-  Tensor<float, 5> tensor(4,2,3,5,7);
+  Tensor<float, 5> tensor(4, 2, 3, 5, 7);
   tensor.setRandom();
   Tensor<float, 5, RowMajor> tensor_row_major = tensor.swap_layout();
 
@@ -88,8 +88,7 @@ static void test_entire_volume_patch()
                   const int eff_z = z - forward_pad_z + pz;
                   const int eff_y = y - forward_pad_y + py;
                   const int eff_x = x - forward_pad_x + px;
-                  if (eff_z >= 0 && eff_y >= 0 && eff_x >= 0 &&
-                      eff_z < patch_z && eff_y < patch_y && eff_x < patch_x) {
+                  if (eff_z >= 0 && eff_y >= 0 && eff_x >= 0 && eff_z < patch_z && eff_y < patch_y && eff_x < patch_x) {
                     expected = tensor(d, eff_z, eff_y, eff_x, b);
                     expected_row_major = tensor_row_major(b, eff_x, eff_y, eff_z, d);
                   }

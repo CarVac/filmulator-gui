@@ -16,11 +16,11 @@
 
 template<typename T> void test_pastix_T()
 {
-  PastixLLT< SparseMatrix<T, ColMajor>, Eigen::Lower > pastix_llt_lower;
-  PastixLDLT< SparseMatrix<T, ColMajor>, Eigen::Lower > pastix_ldlt_lower;
-  PastixLLT< SparseMatrix<T, ColMajor>, Eigen::Upper > pastix_llt_upper;
-  PastixLDLT< SparseMatrix<T, ColMajor>, Eigen::Upper > pastix_ldlt_upper;
-  PastixLU< SparseMatrix<T, ColMajor> > pastix_lu;
+  PastixLLT<SparseMatrix<T, ColMajor>, Eigen::Lower> pastix_llt_lower;
+  PastixLDLT<SparseMatrix<T, ColMajor>, Eigen::Lower> pastix_ldlt_lower;
+  PastixLLT<SparseMatrix<T, ColMajor>, Eigen::Upper> pastix_llt_upper;
+  PastixLDLT<SparseMatrix<T, ColMajor>, Eigen::Upper> pastix_ldlt_upper;
+  PastixLU<SparseMatrix<T, ColMajor>> pastix_lu;
 
   check_sparse_spd_solving(pastix_llt_lower);
   check_sparse_spd_solving(pastix_ldlt_lower);
@@ -37,11 +37,11 @@ template<typename T> void test_pastix_T()
   pastix_lu.dparm();
 }
 
-// There is no support for selfadjoint matrices with PaStiX. 
+// There is no support for selfadjoint matrices with PaStiX.
 // Complex symmetric matrices should pass though
 template<typename T> void test_pastix_T_LU()
 {
-  PastixLU< SparseMatrix<T, ColMajor> > pastix_lu;
+  PastixLU<SparseMatrix<T, ColMajor>> pastix_lu;
   check_sparse_square_solving(pastix_lu);
 }
 
@@ -49,6 +49,6 @@ void test_pastix_support()
 {
   CALL_SUBTEST_1(test_pastix_T<float>());
   CALL_SUBTEST_2(test_pastix_T<double>());
-  CALL_SUBTEST_3( (test_pastix_T_LU<std::complex<float> >()) );
-  CALL_SUBTEST_4(test_pastix_T_LU<std::complex<double> >());
-} 
+  CALL_SUBTEST_3((test_pastix_T_LU<std::complex<float>>()));
+  CALL_SUBTEST_4(test_pastix_T_LU<std::complex<double>>());
+}

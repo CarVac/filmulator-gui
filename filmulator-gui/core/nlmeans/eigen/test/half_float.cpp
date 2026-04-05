@@ -33,7 +33,7 @@ void test_conversion()
   VERIFY_IS_EQUAL(half(0.0f).x, 0x0000);
   VERIFY_IS_EQUAL(half(-0.0f).x, 0x8000);
   VERIFY_IS_EQUAL(half(65504.0f).x, 0x7bff);
-  VERIFY_IS_EQUAL(half(65536.0f).x, 0x7c00);  // Becomes infinity.
+  VERIFY_IS_EQUAL(half(65536.0f).x, 0x7c00);// Becomes infinity.
 
   // Denormals.
   VERIFY_IS_EQUAL(half(-5.96046e-08f).x, 0x8001);
@@ -68,7 +68,7 @@ void test_conversion()
   VERIFY_IS_APPROX(float(half(__half_raw(0x0002))), 1.19209e-07f);
 
   // NaNs and infinities.
-  VERIFY(!(numext::isinf)(float(half(65504.0f))));  // Largest finite number.
+  VERIFY(!(numext::isinf)(float(half(65504.0f))));// Largest finite number.
   VERIFY(!(numext::isnan)(float(half(0.0f))));
   VERIFY((numext::isinf)(float(half(__half_raw(0xfc00)))));
   VERIFY((numext::isnan)(float(half(__half_raw(0xfc01)))));
@@ -100,24 +100,32 @@ void test_conversion()
 
 void test_numtraits()
 {
-  std::cout << "epsilon       = " << NumTraits<half>::epsilon() << "  (0x" << std::hex << NumTraits<half>::epsilon().x << ")" << std::endl;
-  std::cout << "highest       = " << NumTraits<half>::highest() << "  (0x" << std::hex << NumTraits<half>::highest().x << ")" << std::endl;
-  std::cout << "lowest        = " << NumTraits<half>::lowest() << "  (0x" << std::hex << NumTraits<half>::lowest().x << ")" << std::endl;
-  std::cout << "min           = " << (std::numeric_limits<half>::min)() << "  (0x" << std::hex << half((std::numeric_limits<half>::min)()).x << ")" << std::endl;
-  std::cout << "denorm min    = " << (std::numeric_limits<half>::denorm_min)() << "  (0x" << std::hex << half((std::numeric_limits<half>::denorm_min)()).x << ")" << std::endl;
-  std::cout << "infinity      = " << NumTraits<half>::infinity() << "  (0x" << std::hex << NumTraits<half>::infinity().x << ")" << std::endl;
-  std::cout << "quiet nan     = " << NumTraits<half>::quiet_NaN() << "  (0x" << std::hex << NumTraits<half>::quiet_NaN().x << ")" << std::endl;
-  std::cout << "signaling nan = " << std::numeric_limits<half>::signaling_NaN() << "  (0x" << std::hex << std::numeric_limits<half>::signaling_NaN().x << ")" << std::endl;
+  std::cout << "epsilon       = " << NumTraits<half>::epsilon() << "  (0x" << std::hex << NumTraits<half>::epsilon().x
+            << ")" << std::endl;
+  std::cout << "highest       = " << NumTraits<half>::highest() << "  (0x" << std::hex << NumTraits<half>::highest().x
+            << ")" << std::endl;
+  std::cout << "lowest        = " << NumTraits<half>::lowest() << "  (0x" << std::hex << NumTraits<half>::lowest().x
+            << ")" << std::endl;
+  std::cout << "min           = " << (std::numeric_limits<half>::min)() << "  (0x" << std::hex
+            << half((std::numeric_limits<half>::min)()).x << ")" << std::endl;
+  std::cout << "denorm min    = " << (std::numeric_limits<half>::denorm_min)() << "  (0x" << std::hex
+            << half((std::numeric_limits<half>::denorm_min)()).x << ")" << std::endl;
+  std::cout << "infinity      = " << NumTraits<half>::infinity() << "  (0x" << std::hex << NumTraits<half>::infinity().x
+            << ")" << std::endl;
+  std::cout << "quiet nan     = " << NumTraits<half>::quiet_NaN() << "  (0x" << std::hex
+            << NumTraits<half>::quiet_NaN().x << ")" << std::endl;
+  std::cout << "signaling nan = " << std::numeric_limits<half>::signaling_NaN() << "  (0x" << std::hex
+            << std::numeric_limits<half>::signaling_NaN().x << ")" << std::endl;
 
   VERIFY(NumTraits<half>::IsSigned);
 
-  VERIFY_IS_EQUAL( std::numeric_limits<half>::infinity().x, half(std::numeric_limits<float>::infinity()).x );
-  VERIFY_IS_EQUAL( std::numeric_limits<half>::quiet_NaN().x, half(std::numeric_limits<float>::quiet_NaN()).x );
-  VERIFY_IS_EQUAL( std::numeric_limits<half>::signaling_NaN().x, half(std::numeric_limits<float>::signaling_NaN()).x );
-  VERIFY( (std::numeric_limits<half>::min)() > half(0.f) );
-  VERIFY( (std::numeric_limits<half>::denorm_min)() > half(0.f) );
-  VERIFY( (std::numeric_limits<half>::min)()/half(2) > half(0.f) );
-  VERIFY_IS_EQUAL( (std::numeric_limits<half>::denorm_min)()/half(2), half(0.f) );
+  VERIFY_IS_EQUAL(std::numeric_limits<half>::infinity().x, half(std::numeric_limits<float>::infinity()).x);
+  VERIFY_IS_EQUAL(std::numeric_limits<half>::quiet_NaN().x, half(std::numeric_limits<float>::quiet_NaN()).x);
+  VERIFY_IS_EQUAL(std::numeric_limits<half>::signaling_NaN().x, half(std::numeric_limits<float>::signaling_NaN()).x);
+  VERIFY((std::numeric_limits<half>::min)() > half(0.f));
+  VERIFY((std::numeric_limits<half>::denorm_min)() > half(0.f));
+  VERIFY((std::numeric_limits<half>::min)() / half(2) > half(0.f));
+  VERIFY_IS_EQUAL((std::numeric_limits<half>::denorm_min)() / half(2), half(0.f));
 }
 
 void test_arithmetic()
@@ -217,40 +225,40 @@ void test_trigonometric_functions()
   VERIFY_IS_APPROX(numext::cos(half(0.0f)), half(cosf(0.0f)));
   VERIFY_IS_APPROX(cos(half(0.0f)), half(cosf(0.0f)));
   VERIFY_IS_APPROX(numext::cos(half(EIGEN_PI)), half(cosf(EIGEN_PI)));
-  //VERIFY_IS_APPROX(numext::cos(half(EIGEN_PI/2)), half(cosf(EIGEN_PI/2)));
-  //VERIFY_IS_APPROX(numext::cos(half(3*EIGEN_PI/2)), half(cosf(3*EIGEN_PI/2)));
+  // VERIFY_IS_APPROX(numext::cos(half(EIGEN_PI/2)), half(cosf(EIGEN_PI/2)));
+  // VERIFY_IS_APPROX(numext::cos(half(3*EIGEN_PI/2)), half(cosf(3*EIGEN_PI/2)));
   VERIFY_IS_APPROX(numext::cos(half(3.5f)), half(cosf(3.5f)));
 
   VERIFY_IS_APPROX(numext::sin(half(0.0f)), half(sinf(0.0f)));
   VERIFY_IS_APPROX(sin(half(0.0f)), half(sinf(0.0f)));
   //  VERIFY_IS_APPROX(numext::sin(half(EIGEN_PI)), half(sinf(EIGEN_PI)));
-  VERIFY_IS_APPROX(numext::sin(half(EIGEN_PI/2)), half(sinf(EIGEN_PI/2)));
-  VERIFY_IS_APPROX(numext::sin(half(3*EIGEN_PI/2)), half(sinf(3*EIGEN_PI/2)));
+  VERIFY_IS_APPROX(numext::sin(half(EIGEN_PI / 2)), half(sinf(EIGEN_PI / 2)));
+  VERIFY_IS_APPROX(numext::sin(half(3 * EIGEN_PI / 2)), half(sinf(3 * EIGEN_PI / 2)));
   VERIFY_IS_APPROX(numext::sin(half(3.5f)), half(sinf(3.5f)));
 
   VERIFY_IS_APPROX(numext::tan(half(0.0f)), half(tanf(0.0f)));
   VERIFY_IS_APPROX(tan(half(0.0f)), half(tanf(0.0f)));
   //  VERIFY_IS_APPROX(numext::tan(half(EIGEN_PI)), half(tanf(EIGEN_PI)));
   //  VERIFY_IS_APPROX(numext::tan(half(EIGEN_PI/2)), half(tanf(EIGEN_PI/2)));
-  //VERIFY_IS_APPROX(numext::tan(half(3*EIGEN_PI/2)), half(tanf(3*EIGEN_PI/2)));
+  // VERIFY_IS_APPROX(numext::tan(half(3*EIGEN_PI/2)), half(tanf(3*EIGEN_PI/2)));
   VERIFY_IS_APPROX(numext::tan(half(3.5f)), half(tanf(3.5f)));
 }
 
 void test_array()
 {
-  typedef Array<half,1,Dynamic> ArrayXh;
-  Index size = internal::random<Index>(1,10);
-  Index i = internal::random<Index>(0,size-1);
+  typedef Array<half, 1, Dynamic> ArrayXh;
+  Index size = internal::random<Index>(1, 10);
+  Index i = internal::random<Index>(0, size - 1);
   ArrayXh a1 = ArrayXh::Random(size), a2 = ArrayXh::Random(size);
-  VERIFY_IS_APPROX( a1+a1, half(2)*a1 );
-  VERIFY( (a1.abs() >= half(0)).all() );
-  VERIFY_IS_APPROX( (a1*a1).sqrt(), a1.abs() );
+  VERIFY_IS_APPROX(a1 + a1, half(2) * a1);
+  VERIFY((a1.abs() >= half(0)).all());
+  VERIFY_IS_APPROX((a1 * a1).sqrt(), a1.abs());
 
-  VERIFY( ((a1.min)(a2) <= (a1.max)(a2)).all() );
+  VERIFY(((a1.min)(a2) <= (a1.max)(a2)).all());
   a1(i) = half(-10.);
-  VERIFY_IS_EQUAL( a1.minCoeff(), half(-10.) );
+  VERIFY_IS_EQUAL(a1.minCoeff(), half(-10.));
   a1(i) = half(10.);
-  VERIFY_IS_EQUAL( a1.maxCoeff(), half(10.) );
+  VERIFY_IS_EQUAL(a1.maxCoeff(), half(10.));
 
   std::stringstream ss;
   ss << a1;

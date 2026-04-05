@@ -23,23 +23,23 @@
 class LabImage final
 {
 private:
-    void allocLab(size_t w, size_t h);
+  void allocLab(size_t w, size_t h);
 
 public:
-    int W, H;
-    float * data;
-    float** L;
-    float** a;
-    float** b;
+  int W, H;
+  float *data;
+  float **L;
+  float **a;
+  float **b;
 
-    LabImage (int w, int h, bool initZero = false, bool multiThread = true);
-    LabImage (const LabImage& source, bool multiThread);
-    ~LabImage ();
+  LabImage(int w, int h, bool initZero = false, bool multiThread = true);
+  LabImage(const LabImage &source, bool multiThread);
+  ~LabImage();
 
-    //Copies image data in Img into this instance.
-    void CopyFrom(const LabImage *Img, bool multiThread = true);
-    void getPipetteData (float &L, float &a, float &b, int posX, int posY, int squareSize) const;
-    void deleteLab();
-    void reallocLab();
-    void clear(bool multiThread = false);
+  // Copies image data in Img into this instance.
+  void CopyFrom(const LabImage *Img, bool multiThread = true);
+  void getPipetteData(float &L, float &a, float &b, int posX, int posY, int squareSize) const;
+  void deleteLab();
+  void reallocLab();
+  void clear(bool multiThread = false);
 };

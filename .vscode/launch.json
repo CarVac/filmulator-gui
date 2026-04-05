@@ -1,0 +1,63 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Debug E2E Pipeline",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/e2e/test_raw_pipeline.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "FILMULATOR_BIN": "${workspaceFolder}/build/Filmulator.app/Contents/MacOS/filmulator",
+                "FILMULATOR_DB_DIR": "${workspaceFolder}/build/test_db"
+            }
+        },
+        {
+            "name": "Python: Debug E2E (External App)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/e2e/test_raw_pipeline.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--no-start"
+            ],
+            "env": {
+                "FILMULATOR_DB_DIR": "${workspaceFolder}/build/test_db"
+            }
+        },
+        {
+            "name": "C++: Debug Filmulator (MacOS)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Filmulator.app/Contents/MacOS/filmulator",
+            "args": [
+                "--test-mode"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "FILMULATOR_DB_DIR": "${workspaceFolder}/build/test_db"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Compound: Debug Application + Test",
+            "configurations": [
+                "C++: Debug Filmulator (MacOS)",
+                "Python: Debug E2E (External App)"
+            ]
+        }
+    ]
+}

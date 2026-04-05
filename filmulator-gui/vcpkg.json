@@ -1,0 +1,25 @@
+{
+    "name": "filmulator-gui",
+    "version": "0.11.1",
+    "description": "A Qt Quick GUI film emulator for RAW photo processing",
+    "homepage": "https://github.com/CarVac/filmulator-gui",
+    "license": "GPL-3.0-or-later",
+    "dependencies": [
+        {
+            "name": "qt5-base",
+            "default-features": true
+        },
+        "qt5-declarative",
+        "qt5-quickcontrols",
+        "qt5-quickcontrols2",
+        "exiv2",
+        "libraw",
+        "libjpeg-turbo",
+        "tiff",
+        "lensfun",
+        "curl",
+        "libarchive",
+        "librtprocess"
+    ],
+    "builtin-baseline": "25b458671af03578e6a34edd8f0d1ac85e084df4"
+}

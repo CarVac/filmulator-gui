@@ -13,22 +13,16 @@
 
 namespace Eigen {
 
-template <typename Environment>
-class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
- public:
+template<typename Environment> class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface
+{
+public:
   typedef typename Environment::Task Task;
   typedef RunQueue<Task, 1024> Queue;
 
   NonBlockingThreadPoolTempl(int num_threads, Environment env = Environment())
-      : env_(env),
-        threads_(num_threads),
-        queues_(num_threads),
-        coprimes_(num_threads),
-        waiters_(num_threads),
-        blocked_(0),
-        spinning_(0),
-        done_(false),
-        ec_(waiters_) {
+    : env_(env), threads_(num_threads), queues_(num_threads), coprimes_(num_threads), waiters_(num_threads),
+      blocked_(0), spinning_(0), done_(false), ec_(waiters_)
+  {
     waiters_.resize(num_threads);
 
     // Calculate coprimes of num_threads.
@@ -47,19 +41,16 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
         a = b;
         b = tmp % b;
       }
-      if (a == 1) {
-        coprimes_.push_back(i);
-      }
+      if (a == 1) { coprimes_.push_back(i); }
     }
-    for (int i = 0; i < num_threads; i++) {
-      queues_.push_back(new Queue());
-    }
+    for (int i = 0; i < num_threads; i++) { queues_.push_back(new Queue()); }
     for (int i = 0; i < num_threads; i++) {
       threads_.push_back(env_.CreateThread([this, i]() { WorkerLoop(i); }));
     }
   }
 
-  ~NonBlockingThreadPoolTempl() {
+  ~NonBlockingThreadPoolTempl()
+  {
     done_ = true;
     // Now if all threads block without work, they will start exiting.
     // But note that threads can continue to work arbitrary long,
@@ -71,17 +62,18 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
     for (size_t i = 0; i < threads_.size(); i++) delete queues_[i];
   }
 
-  void Schedule(std::function<void()> fn) {
+  void Schedule(std::function<void()> fn)
+  {
     Task t = env_.CreateTask(std::move(fn));
-    PerThread* pt = GetPerThread();
+    PerThread *pt = GetPerThread();
     if (pt->pool == this) {
       // Worker thread of this pool, push onto the thread's queue.
-      Queue* q = queues_[pt->thread_id];
+      Queue *q = queues_[pt->thread_id];
       t = q->PushFront(std::move(t));
     } else {
       // A free-standing thread (or worker of another pool), push onto a random
       // queue.
-      Queue* q = queues_[Rand(&pt->rand) % queues_.size()];
+      Queue *q = queues_[Rand(&pt->rand) % queues_.size()];
       t = q->PushBack(std::move(t));
     }
     // Note: below we touch this after making w available to worker threads.
@@ -94,16 +86,14 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
     if (!t.f)
       ec_.Notify(false);
     else
-      env_.ExecuteTask(t);  // Push failed, execute directly.
+      env_.ExecuteTask(t);// Push failed, execute directly.
   }
 
-  int NumThreads() const final {
-    return static_cast<int>(threads_.size());
-  }
+  int NumThreads() const final { return static_cast<int>(threads_.size()); }
 
-  int CurrentThreadId() const final {
-    const PerThread* pt =
-        const_cast<NonBlockingThreadPoolTempl*>(this)->GetPerThread();
+  int CurrentThreadId() const final
+  {
+    const PerThread *pt = const_cast<NonBlockingThreadPoolTempl *>(this)->GetPerThread();
     if (pt->pool == this) {
       return pt->thread_id;
     } else {
@@ -111,19 +101,20 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
     }
   }
 
- private:
+private:
   typedef typename Environment::EnvThread Thread;
 
-  struct PerThread {
-    constexpr PerThread() : pool(NULL), rand(0), thread_id(-1) { }
-    NonBlockingThreadPoolTempl* pool;  // Parent pool, or null for normal threads.
-    uint64_t rand;  // Random generator state.
-    int thread_id;  // Worker thread index in pool.
+  struct PerThread
+  {
+    constexpr PerThread() : pool(NULL), rand(0), thread_id(-1) {}
+    NonBlockingThreadPoolTempl *pool;// Parent pool, or null for normal threads.
+    uint64_t rand;// Random generator state.
+    int thread_id;// Worker thread index in pool.
   };
 
   Environment env_;
-  MaxSizeVector<Thread*> threads_;
-  MaxSizeVector<Queue*> queues_;
+  MaxSizeVector<Thread *> threads_;
+  MaxSizeVector<Queue *> queues_;
   MaxSizeVector<unsigned> coprimes_;
   MaxSizeVector<EventCount::Waiter> waiters_;
   std::atomic<unsigned> blocked_;
@@ -132,13 +123,14 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
   EventCount ec_;
 
   // Main worker thread loop.
-  void WorkerLoop(int thread_id) {
-    PerThread* pt = GetPerThread();
+  void WorkerLoop(int thread_id)
+  {
+    PerThread *pt = GetPerThread();
     pt->pool = this;
     pt->rand = std::hash<std::thread::id>()(std::this_thread::get_id());
     pt->thread_id = thread_id;
-    Queue* q = queues_[thread_id];
-    EventCount::Waiter* waiter = &waiters_[thread_id];
+    Queue *q = queues_[thread_id];
+    EventCount::Waiter *waiter = &waiters_[thread_id];
     for (;;) {
       Task t = q->PopFront();
       if (!t.f) {
@@ -151,40 +143,31 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
           // of the thread pool submit tasks is independent of the size of the
           // pool. Consider a time based limit instead.
           if (!spinning_ && !spinning_.exchange(true)) {
-            for (int i = 0; i < 1000 && !t.f; i++) {
-              t = Steal();
-            }
+            for (int i = 0; i < 1000 && !t.f; i++) { t = Steal(); }
             spinning_ = false;
           }
           if (!t.f) {
-            if (!WaitForWork(waiter, &t)) {
-              return;
-            }
+            if (!WaitForWork(waiter, &t)) { return; }
           }
         }
       }
-      if (t.f) {
-        env_.ExecuteTask(t);
-      }
+      if (t.f) { env_.ExecuteTask(t); }
     }
   }
 
   // Steal tries to steal work from other worker threads in best-effort manner.
-  Task Steal() {
-    PerThread* pt = GetPerThread();
+  Task Steal()
+  {
+    PerThread *pt = GetPerThread();
     const size_t size = queues_.size();
     unsigned r = Rand(&pt->rand);
     unsigned inc = coprimes_[r % coprimes_.size()];
     unsigned victim = r % size;
     for (unsigned i = 0; i < size; i++) {
       Task t = queues_[victim]->PopBack();
-      if (t.f) {
-        return t;
-      }
+      if (t.f) { return t; }
       victim += inc;
-      if (victim >= size) {
-        victim -= size;
-      }
+      if (victim >= size) { victim -= size; }
     }
     return Task();
   }
@@ -192,7 +175,8 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
   // WaitForWork blocks until new work is available (returns true), or if it is
   // time to exit (returns false). Can optionally return a task to execute in t
   // (in such case t.f != nullptr on return).
-  bool WaitForWork(EventCount::Waiter* waiter, Task* t) {
+  bool WaitForWork(EventCount::Waiter *waiter, Task *t)
+  {
     eigen_assert(!t->f);
     // We already did best-effort emptiness check in Steal, so prepare for
     // blocking.
@@ -234,31 +218,30 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
     return true;
   }
 
-  int NonEmptyQueueIndex() {
-    PerThread* pt = GetPerThread();
+  int NonEmptyQueueIndex()
+  {
+    PerThread *pt = GetPerThread();
     const size_t size = queues_.size();
     unsigned r = Rand(&pt->rand);
     unsigned inc = coprimes_[r % coprimes_.size()];
     unsigned victim = r % size;
     for (unsigned i = 0; i < size; i++) {
-      if (!queues_[victim]->Empty()) {
-        return victim;
-      }
+      if (!queues_[victim]->Empty()) { return victim; }
       victim += inc;
-      if (victim >= size) {
-        victim -= size;
-      }
+      if (victim >= size) { victim -= size; }
     }
     return -1;
   }
 
-  static EIGEN_STRONG_INLINE PerThread* GetPerThread() {
+  static EIGEN_STRONG_INLINE PerThread *GetPerThread()
+  {
     EIGEN_THREAD_LOCAL PerThread per_thread_;
-    PerThread* pt = &per_thread_;
+    PerThread *pt = &per_thread_;
     return pt;
   }
 
-  static EIGEN_STRONG_INLINE unsigned Rand(uint64_t* state) {
+  static EIGEN_STRONG_INLINE unsigned Rand(uint64_t *state)
+  {
     uint64_t current = *state;
     // Update the internal state
     *state = current * 6364136223846793005ULL + 0xda3e39cb94b95bdbULL;
@@ -269,6 +252,6 @@ class NonBlockingThreadPoolTempl : public Eigen::ThreadPoolInterface {
 
 typedef NonBlockingThreadPoolTempl<StlThreadEnvironment> NonBlockingThreadPool;
 
-}  // namespace Eigen
+}// namespace Eigen
 
-#endif  // EIGEN_CXX11_THREADPOOL_NONBLOCKING_THREAD_POOL_H
+#endif// EIGEN_CXX11_THREADPOOL_NONBLOCKING_THREAD_POOL_H

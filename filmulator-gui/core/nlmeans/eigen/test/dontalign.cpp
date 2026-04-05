@@ -16,8 +16,7 @@
 #include "main.h"
 #include <Eigen/Dense>
 
-template<typename MatrixType>
-void dontalign(const MatrixType& m)
+template<typename MatrixType> void dontalign(const MatrixType &m)
 {
   typedef typename MatrixType::Scalar Scalar;
   typedef Matrix<Scalar, MatrixType::RowsAtCompileTime, 1> VectorType;
@@ -26,20 +25,20 @@ void dontalign(const MatrixType& m)
   Index rows = m.rows();
   Index cols = m.cols();
 
-  MatrixType a = MatrixType::Random(rows,cols);
-  SquareMatrixType square = SquareMatrixType::Random(rows,rows);
+  MatrixType a = MatrixType::Random(rows, cols);
+  SquareMatrixType square = SquareMatrixType::Random(rows, rows);
   VectorType v = VectorType::Random(rows);
 
   VERIFY_IS_APPROX(v, square * square.colPivHouseholderQr().solve(v));
   square = square.inverse().eval();
   a = square * a;
-  square = square*square;
+  square = square * square;
   v = square * v;
   v = a.adjoint() * v;
   VERIFY(square.determinant() != Scalar(0));
 
   // bug 219: MapAligned() was giving an assert with EIGEN_DONT_ALIGN, because Map Flags were miscomputed
-  Scalar* array = internal::aligned_new<Scalar>(rows);
+  Scalar *array = internal::aligned_new<Scalar>(rows);
   v = VectorType::MapAligned(array, rows);
   internal::aligned_delete(array, rows);
 }

@@ -14,21 +14,19 @@
 template<typename MatrixType, int IsComplex = NumTraits<typename internal::traits<MatrixType>::Scalar>::IsComplex>
 struct processTriangularMatrix
 {
-  static void run(MatrixType&, MatrixType&, const MatrixType&)
-  { }
+  static void run(MatrixType &, MatrixType &, const MatrixType &) {}
 };
 
 // For real matrices, make sure none of the eigenvalues are negative.
-template<typename MatrixType>
-struct processTriangularMatrix<MatrixType,0>
+template<typename MatrixType> struct processTriangularMatrix<MatrixType, 0>
 {
-  static void run(MatrixType& m, MatrixType& T, const MatrixType& U)
+  static void run(MatrixType &m, MatrixType &T, const MatrixType &U)
   {
     const Index size = m.cols();
 
-    for (Index i=0; i < size; ++i) {
-      if (i == size - 1 || T.coeff(i+1,i) == 0)
-        T.coeffRef(i,i) = std::abs(T.coeff(i,i));
+    for (Index i = 0; i < size; ++i) {
+      if (i == size - 1 || T.coeff(i + 1, i) == 0)
+        T.coeffRef(i, i) = std::abs(T.coeff(i, i));
       else
         ++i;
     }
@@ -36,13 +34,12 @@ struct processTriangularMatrix<MatrixType,0>
   }
 };
 
-template <typename MatrixType, int IsComplex = NumTraits<typename internal::traits<MatrixType>::Scalar>::IsComplex>
+template<typename MatrixType, int IsComplex = NumTraits<typename internal::traits<MatrixType>::Scalar>::IsComplex>
 struct generateTestMatrix;
 
-template <typename MatrixType>
-struct generateTestMatrix<MatrixType,0>
+template<typename MatrixType> struct generateTestMatrix<MatrixType, 0>
 {
-  static void run(MatrixType& result, typename MatrixType::Index size)
+  static void run(MatrixType &result, typename MatrixType::Index size)
   {
     result = MatrixType::Random(size, size);
     RealSchur<MatrixType> schur(result);
@@ -51,17 +48,13 @@ struct generateTestMatrix<MatrixType,0>
   }
 };
 
-template <typename MatrixType>
-struct generateTestMatrix<MatrixType,1>
+template<typename MatrixType> struct generateTestMatrix<MatrixType, 1>
 {
-  static void run(MatrixType& result, typename MatrixType::Index size)
-  {
-    result = MatrixType::Random(size, size);
-  }
+  static void run(MatrixType &result, typename MatrixType::Index size) { result = MatrixType::Random(size, size); }
 };
 
-template <typename Derived, typename OtherDerived>
-typename Derived::RealScalar relerr(const MatrixBase<Derived>& A, const MatrixBase<OtherDerived>& B)
+template<typename Derived, typename OtherDerived>
+typename Derived::RealScalar relerr(const MatrixBase<Derived> &A, const MatrixBase<OtherDerived> &B)
 {
   return std::sqrt((A - B).cwiseAbs2().sum() / (std::min)(A.cwiseAbs2().sum(), B.cwiseAbs2().sum()));
 }

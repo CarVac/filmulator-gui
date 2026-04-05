@@ -21,17 +21,16 @@ int main(int argc, char *argv[])
   Mat m(100, 100);
   m.setRandom();
 
-  for(int a = 0; a < REPEAT; a++)
-  {
+  for (int a = 0; a < REPEAT; a++) {
     int r, c, nr, nc;
-    r = Eigen::internal::random<int>(0,10);
-    c = Eigen::internal::random<int>(0,10);
-    nr = Eigen::internal::random<int>(50,80);
-    nc = Eigen::internal::random<int>(50,80);
-    m.block(r,c,nr,nc) += Mat::Ones(nr,nc);
-    m.block(r,c,nr,nc) *= SCALAR(10);
-    m.block(r,c,nr,nc) -= Mat::constant(nr,nc,10);
-    m.block(r,c,nr,nc) /= SCALAR(10);
+    r = Eigen::internal::random<int>(0, 10);
+    c = Eigen::internal::random<int>(0, 10);
+    nr = Eigen::internal::random<int>(50, 80);
+    nc = Eigen::internal::random<int>(50, 80);
+    m.block(r, c, nr, nc) += Mat::Ones(nr, nc);
+    m.block(r, c, nr, nc) *= SCALAR(10);
+    m.block(r, c, nr, nc) -= Mat::constant(nr, nc, 10);
+    m.block(r, c, nr, nc) /= SCALAR(10);
   }
   cout << m[0] << endl;
   return 0;
