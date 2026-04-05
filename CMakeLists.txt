@@ -115,13 +115,6 @@ set(filmulator_CORE_SRCS
     filmulator-gui/core/exposure.cpp
     filmulator-gui/core/filmulate.cpp
     filmulator-gui/core/imagePipeline.cpp
-    filmulator-gui/core/pipeline/LoadStage.cpp
-    filmulator-gui/core/pipeline/DemosaicStage.cpp
-    filmulator-gui/core/pipeline/PostDemosaicStage.cpp
-    filmulator-gui/core/pipeline/NlmeansNRStage.cpp
-    filmulator-gui/core/pipeline/ImpulseNRStage.cpp
-    filmulator-gui/core/pipeline/ChromaNRStage.cpp
-    filmulator-gui/core/pipeline/PrefilmulationStage.cpp
     filmulator-gui/core/imload.cpp
     filmulator-gui/core/imread.cpp
     filmulator-gui/core/imreadJpeg.cpp

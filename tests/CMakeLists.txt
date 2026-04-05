@@ -7,7 +7,6 @@ set(UNIT_TEST_SOURCES
     main.cpp
     unit/test_curves.cpp
     unit/test_white_balance.cpp
-    unit/test_pipeline_infrastructure.cpp
     unit/test_nan_break.cpp
 )
 

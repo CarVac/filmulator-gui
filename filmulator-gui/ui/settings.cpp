@@ -318,27 +318,27 @@ void Settings::checkLensfunStatus()
 
   lf_db_return dbStatus = lensfun_dbcheck(2, dirstr.toStdString());
 
-  if (dbStatus == LENSFUN_DBCHECK_OK) {
+  if (dbStatus == LENSFUN_DBUPDATE_OK) {
     lensfunStatus = "success";
     emit lensfunStatusChanged();
   }
-  if (dbStatus == LENSFUN_DBCHECK_CURRENTVERSION) {
+  if (dbStatus == LENSFUN_DBUPDATE_CURRENTVERSION) {
     lensfunStatus = "uptodate";
     emit lensfunStatusChanged();
   }
-  if (dbStatus == LENSFUN_DBCHECK_NOVERSION) {
+  if (dbStatus == LENSFUN_DBUPDATE_NOVERSION) {
     lensfunStatus = "unavail";
     emit lensfunStatusChanged();
   }
-  if (dbStatus == LENSFUN_DBCHECK_RETRIEVE_INITFAILED) {
+  if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_INITFAILED) {
     lensfunStatus = "initfail";
     emit lensfunStatusChanged();
   }
-  if (dbStatus == LENSFUN_DBCHECK_RETRIEVE_FILEOPENFAILED) {
+  if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_FILEOPENFAILED) {
     lensfunStatus = "filefail";
     emit lensfunStatusChanged();
   }
-  if (dbStatus == LENSFUN_DBCHECK_RETRIEVE_RETRIEVEFAILED) {
+  if (dbStatus == LENSFUN_DBUPDATE_RETRIEVE_RETRIEVEFAILED) {
     lensfunStatus = "retrievefail";
     emit lensfunStatusChanged();
   }

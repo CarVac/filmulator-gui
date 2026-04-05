@@ -1,21 +1,15 @@
 #include "imagePipeline.h"
 #include "../database/camconst.h"
 #include "../database/exifFunctions.h"
+#include "debug_utils.h"
 #include "filmSim.hpp"
-#include "logging.h"
 #include "nlmeans/nlmeans.hpp"
 #include "rawtherapee/rt_routines.h"
 #include <QDir>
+#include <QFileInfo>
 #include <QStandardPaths>
-
-#include "debug_utils.h"
-#include "pipeline/ChromaNRStage.h"
-#include "pipeline/DemosaicStage.h"
-#include "pipeline/ImpulseNRStage.h"
-#include "pipeline/LoadStage.h"
-#include "pipeline/NlmeansNRStage.h"
-#include "pipeline/PostDemosaicStage.h"
-#include "pipeline/PrefilmulationStage.h"
+#include <iostream>
+#include <libraw/libraw.h>
 
 ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityIn)
 {
@@ -25,34 +19,30 @@ ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityI
   valid = Valid::none;
   filename = "";
 
-  // initialize lensfun db
+  //initialize lensfun db
   QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
   dirstr.append("/filmulator/version_1/");
-  // cout << "ImagePipeline lensfun dirstring: " << dirstr.toStdString() << endl;
+  cout << "ImagePipeline lensfun dirstring: " << dirstr.toStdString() << endl;
   QDir dir(dirstr);
   QStringList filters;
   filters << "*.xml";
   QFileInfoList fileList = dir.entryInfoList(filters, QDir::Files | QDir::NoDotAndDotDot);
 
-  // cout << "ImagePipeline initializing lensfun db" << endl;
+  cout << "ImagePipeline initializing lensfun db" << endl;
   ldb = lf_db_new();
   if (!ldb) { cout << "ImagePipeline lensfun failed to create database!" << endl; }
 
   foreach (const QFileInfo &fileInfo, fileList) {
     const QString filename = fileInfo.absoluteFilePath();
     const std::string stdstring = filename.toStdString();
-    // cout << "ImagePipeline lensfun loading file " << stdstring << endl;
     lfError loadError = ldb->Load(stdstring.c_str());
     if (loadError == LF_WRONG_FORMAT) {
-      cout << "ImagePipeline lensfun loading file " << stdstring << endl;
       cout << "ImagePipeline lensfun database wrong format!" << endl;
     } else if (loadError == LF_NO_DATABASE) {
-      cout << "ImagePipeline lensfun loading file " << stdstring << endl;
       cout << "ImagePipeline lensfun no database found!" << endl;
     } else if (loadError == LF_NO_ERROR) {
       // cout << "ImagePipeline lensfun database loaded" << endl;
     } else {
-      cout << "ImagePipeline lensfun loading file " << stdstring << endl;
       cout << "ImagePipeline lensfun what happened? " << loadError << endl;
     }
   }
@@ -69,16 +59,7 @@ ImagePipeline::ImagePipeline(Cache cacheIn, Histo histoIn, QuickQuality qualityI
   completionTimes[Valid::filmulation] = 50;
   completionTimes[Valid::blackwhite] = 10;
   completionTimes[Valid::colorcurve] = 10;
-  rCamMul = gCamMul = bCamMul = 1.0f;
-  rPreMul = gPreMul = bPreMul = 1.0f;
-  rUserMul = gUserMul = bUserMul = 1.0f;
-  maxValue = 65535.0f;
-  for (int i = 0; i < 3; ++i) colorMaxValue[i] = 65535.0f;
-  isSraw = isNikonSraw = isMonochrome = isCR3 = false;
-  resolution = 0;
-  progress = 0;
-  cropHeight = cropAspect = cropHoffset = cropVoffset = 0;
-  rotation = 0;
+  // completionTimes[Valid::filmlikecurve] = 10;
 }
 
 ImagePipeline::~ImagePipeline()
@@ -86,14 +67,13 @@ ImagePipeline::~ImagePipeline()
   if (ldb != NULL) { lf_db_destroy(ldb); }
 }
 
-// int ImagePipeline::libraw_callback(void *data, LibRaw_progress p, int
-// iteration, int expected) but we only need data.
-int ImagePipeline::libraw_callback(void *data, LibRaw_progress, int, int)
+// Callback for LibRaw cancellation
+int ImagePipeline::progress_callback(void *callback_data, enum LibRaw_progress stage, int iteration, int expected)
 {
   AbortStatus abort;
 
   // Recover the param_manager from the data
-  ParameterManager *pManager = static_cast<ParameterManager *>(data);
+  ParameterManager *pManager = static_cast<ParameterManager *>(callback_data);
   // See whether to abort or not.
   abort = pManager->claimDemosaicAbort();
   if (abort == AbortStatus::restart) {
@@ -124,9 +104,9 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     QString paramIndex = paramManager->getImageIndex();
     paramIndex.truncate(32);
     if (fileHash != paramIndex) {
-      FILM_WARN("processImage shuffle mismatch:  Requested Index: {}", fileHash.toStdString());
-      FILM_WARN("processImage shuffle mismatch:  Parameter Index: {}", paramIndex.toStdString());
-      FILM_WARN("processImage shuffle mismatch:  full pipeline?: {}", (quality == HighQuality));
+      cout << "processImage shuffle mismatch:  Requested Index: " << fileHash.toStdString() << endl;
+      cout << "processImage shuffle mismatch:  Parameter Index: " << paramIndex.toStdString() << endl;
+      cout << "processImage shuffle mismatch:  full pipeline?: " << (quality == HighQuality) << endl;
       valid = none;
     }
     fileID = paramIndex;
@@ -144,7 +124,7 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
   // If we are a high-res pipeline that's going to steal data, skip to
   // filmulation
   if (stealData) {
-    if (stealVictim == nullptr) { FILM_ERROR("stealVictim should not be null!"); }
+    if (stealVictim == nullptr) { cout << "stealVictim should not be null!" << endl; }
     valid = max(valid, prefilmulation);
     paramManager->setValid(valid);
   }
@@ -155,25 +135,19 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     // if something has been processed before, and we think it's valid
     // it had better be the same filename.
     if (paramManager->getFullFilename() != filename.toStdString()) {
-      FILM_WARN("processImage paramManager filename doesn't match pipeline filename");
-      FILM_WARN("processImage paramManager filename: {}", paramManager->getFullFilename());
-      FILM_WARN("processImage pipeline filename:     {}", filename.toStdString());
-      FILM_WARN("processImage setting validity to none due to filename");
+      cout << "processImage paramManager filename doesn't match pipeline "
+              "filename"
+           << endl;
+      cout << "processImage paramManager filename: " << paramManager->getFullFilename() << endl;
+      cout << "processImage pipeline filename:     " << filename.toStdString() << endl;
+      cout << "processImage setting validity to none due to filename" << endl;
       valid = none;
     }
   }
 
-  FILM_INFO("ImagePipeline::processImage valid: {}", (int)valid);
+  cout << "ImagePipeline::processImage valid: " << valid << endl;
 
   updateProgress(valid, 0.0f);
-  PipelineContext context;
-  context.interface = interface_in;
-  context.paramManager = paramManager;
-  context.cache = cache;
-  context.histo = histo;
-  context.quality = quality;
-  context.resolution = resolution;
-
   switch (valid) {
   case partload:
     [[fallthrough]];
@@ -181,71 +155,546 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
   {
     LoadParams loadParam;
     AbortStatus abort;
+    // See whether to abort or not, while grabbing the latest parameters.
     std::tie(valid, abort, loadParam) = paramManager->claimLoadParams();
-    if (abort == AbortStatus::restart) return emptyMatrix();
+    if (abort == AbortStatus::restart) {
+      cout << "ImagePipeline::processImage: aborted at the start" << endl;
+      return emptyMatrix();
+    }
 
-    LoadStage stage;
-    auto result = stage.process(loadParam.fullFilename, loadParam, context);
-
-    if (!result) return emptyMatrix();
-
-    RawImage &output = *result;
-
-    // Unpack Logic
     filename = QString::fromStdString(loadParam.fullFilename);
-    isCR3 = output.isCR3;
-    isSraw = output.isSraw;
-    isNikonSraw = output.isNikonSraw;
-    isMonochrome = output.isMonochrome;
-    bool isFloat = output.isFloat;
-    raw_image.swap(output.data);
 
-    if ((isSraw && !isMonochrome) || (output.isFloat && output.isSraw)) {// Use flags from output
-      raw_width = raw_image.nc() / 3;
-    } else {
-      raw_width = raw_image.nc();
-    }
-    raw_height = raw_image.nr();
+    isCR3 = false;
 
-    for (int i = 0; i < 2; ++i)
-      for (int j = 0; j < 2; ++j) cfa[i][j] = output.cfa[i][j];
-    for (int i = 0; i < 6; ++i)
-      for (int j = 0; j < 6; ++j) xtrans[i][j] = output.xtrans[i][j];
-    maxXtrans = output.maxXtrans;
+    isCR3 = QString::fromStdString(loadParam.fullFilename).endsWith(".cr3", Qt::CaseInsensitive);
+    const bool isDNG = QString::fromStdString(loadParam.fullFilename).endsWith(".dng", Qt::CaseInsensitive);
+    if (isCR3) { cout << "processImage this is a CR3!" << endl; }
 
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j) {
-        camToRGB[i][j] = output.camToRGB[i][j];
-        xyzToCam[i][j] = output.xyzToCam[i][j];
+    if (!loadParam.tiffIn && !loadParam.jpegIn) {
+      std::unique_ptr<MyLibRaw> libraw = std::unique_ptr<MyLibRaw>(new MyLibRaw());
+
+      // Open the file.
+      int libraw_error;
+#if (defined(_WIN32) || defined(__WIN32__))
+      const QString tempFilename = QString::fromStdString(loadParam.fullFilename);
+      std::wstring wstr = tempFilename.toStdWString();
+      libraw_error = libraw->open_file(wstr.c_str());
+#else
+      const char *cstr = loadParam.fullFilename.c_str();
+      libraw_error = libraw->open_file(cstr);
+#endif
+      if (libraw_error) {
+        cout << "processImage: Could not read input file!" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        return emptyMatrix();
       }
-    // Reconstruct camToRGB4
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 4; j++) {
-        camToRGB4[i][j] = camToRGB[i][j];
-        if (i == j)
-          camToRGB4[i][j] = 1;
-        else
-          camToRGB4[i][j] = 0;
-        if (j == 3) camToRGB4[i][j] = camToRGB4[i][1];
+
+      // Make abbreviations for brevity in accessing data.
+#define RSIZE libraw->imgdata.sizes
+#define PARAM libraw->imgdata.params
+#define IMAGE libraw->imgdata.image
+#define RAW libraw->imgdata.rawdata.raw_image
+#define RAW3 libraw->imgdata.rawdata.color3_image
+#define RAW4 libraw->imgdata.rawdata.color4_image
+#define RAWF libraw->imgdata.rawdata.float_image
+#define RAWF3 libraw->imgdata.rawdata.float3_image
+#define RAWF4 libraw->imgdata.rawdata.float4_image
+#define IDATA libraw->imgdata.idata
+#define LENS libraw->imgdata.lens
+#define MAKER libraw->imgdata.lens.makernotes
+#define OTHER libraw->imgdata.other
+#define SIZES libraw->imgdata.sizes
+#define OPTIONS libraw->imgdata.rawparams.options
+
+#ifndef WIN32
+      if (libraw->is_floating_point()) {
+        // tell libraw to not convert to int when unpacking.
+        OPTIONS = OPTIONS & ~LIBRAW_RAWOPTIONS_CONVERTFLOAT_TO_INT;
       }
+#endif// WIN32
+      // This makes IMAGE contains the sensel value and 3 blank values at every
+      // location.
+      libraw_error = libraw->unpack();
+      if (libraw_error) {
+        cout << "processImage: Could not read input file, or was canceled" << endl;
+        cout << "libraw error text: " << libraw_strerror(libraw_error) << endl;
+        return emptyMatrix();
+      }
+
+      bool needs_phase_one_free = false;
+      libraw_error = libraw->phaseone_fix(needs_phase_one_free);
+      if (libraw_error) {
+        cout << "processImage: MyLibRaw phaseone_fix failed?" << endl;
+        return emptyMatrix();
+      }
+
+      bool isFloat = libraw->have_fpdata();
+
+      // get dimensions
+      raw_width = RSIZE.width;
+      raw_height = RSIZE.height;
+      cout << "raw width:  " << raw_width << endl;
+      cout << "raw height: " << raw_height << endl;
+
+      int topmargin = RSIZE.top_margin;
+      int leftmargin = RSIZE.left_margin;
+      int full_width = RSIZE.raw_width;
+      // int full_height = RSIZE.raw_height;
+
+      // get color matrix
+      cout << "processImage filename (matrix): " << loadParam.fullFilename << endl;
+      for (int i = 0; i < 3; i++) {
+        cout << "processImage camToRGB matrix: ";
+        for (int j = 0; j < 3; j++) {
+          camToRGB[i][j] = libraw->imgdata.color.rgb_cam[i][j];
+          cout << camToRGB[i][j] << " ";
+        }
+        cout << endl;
+      }
+      if (!isDNG) {
+        for (int i = 0; i < 3; i++) {
+          cout << "processImage xyzToCam matrix: ";
+          for (int j = 0; j < 3; j++) {
+            xyzToCam[i][j] = libraw->imgdata.color.cam_xyz[i][j];
+            cout << xyzToCam[i][j] << " ";
+          }
+          cout << endl;
+        }
+      } else {// For Sigma fp and fp L cameras LibRaw doesn't report cam_xyz
+        cout << "processImage dng color matrix illuminant: " << libraw->imgdata.color.dng_color[0].illuminant << endl;
+        cout << "processImage dng color matrix illuminant: " << libraw->imgdata.color.dng_color[1].illuminant << endl;
+        int dngProfile = 1;
+        if (daylightScore(libraw->imgdata.color.dng_color[0].illuminant)
+            < daylightScore(libraw->imgdata.color.dng_color[1].illuminant)) {
+          dngProfile = 0;
+        }
+        cout << "processImage Using dng color matrix number " << dngProfile << endl;
+        for (int i = 0; i < 3; i++) {
+          cout << "processImage xyzToCam matrix: ";
+          for (int j = 0; j < 3; j++) {
+            xyzToCam[i][j] = libraw->imgdata.color.dng_color[dngProfile].colormatrix[i][j];
+            cout << xyzToCam[i][j] << " ";
+          }
+          cout << endl;
+        }
+      }
+      // LibRaw doesn't give a cam_xyz matrix from the Sigma fp's dng
+      // We must reconstruct cam_xyz from rgb_cam and the srgb-to-xyz d65 matrix
+      for (int i = 0; i < 3; i++) {
+        // cout << "camToRGB4: ";
+        for (int j = 0; j < 4; j++) {
+          camToRGB4[i][j] = libraw->imgdata.color.rgb_cam[i][j];
+          if (i == j) {
+            camToRGB4[i][j] = 1;
+          } else {
+            camToRGB4[i][j] = 0;
+          }
+          if (j == 3) { camToRGB4[i][j] = camToRGB4[i][1]; }
+          // cout << camToRGB4[i][j] << " ";
+        }
+        // cout << endl;
+      }
+      rCamMul = libraw->imgdata.color.cam_mul[0];
+      gCamMul = libraw->imgdata.color.cam_mul[1];
+      bCamMul = libraw->imgdata.color.cam_mul[2];
+      float minMult = min(min(rCamMul, gCamMul), bCamMul);
+      rCamMul /= minMult;
+      gCamMul /= minMult;
+      bCamMul /= minMult;
+      rPreMul = libraw->imgdata.color.pre_mul[0];
+      gPreMul = libraw->imgdata.color.pre_mul[1];
+      bPreMul = libraw->imgdata.color.pre_mul[2];
+      minMult = min(min(rPreMul, gPreMul), bPreMul);
+      rPreMul /= minMult;
+      gPreMul /= minMult;
+      bPreMul /= minMult;
+
+      // get black subtraction values
+      // for everything
+      float blackpoint = libraw->imgdata.color.black;
+      // some cameras have individual color channel subtraction.
+      // this seems to be an offset from the overall blackpoint
+      float rBlack = libraw->imgdata.color.cblack[0];
+      float gBlack = libraw->imgdata.color.cblack[1];
+      float bBlack = libraw->imgdata.color.cblack[2];
+      float g2Black = libraw->imgdata.color.cblack[3];
+      float maxChanBlack = max(rBlack, max(gBlack, max(bBlack, g2Black)));
+      // Still others have a matrix to subtract.
+      int blackRow = int(libraw->imgdata.color.cblack[4]);
+      int blackCol = int(libraw->imgdata.color.cblack[5]);
+
+      cout << "BLACKPOINT: ";
+      cout << blackpoint << endl;
+      cout << "color channel blackpoints" << endl;
+      cout << "R  blackpoint: " << rBlack << endl;
+      cout << "G  blackpoint: " << gBlack << endl;
+      cout << "B  blackpoint: " << bBlack << endl;
+      cout << "G2 blackpoint: " << g2Black << endl;
+      cout << "block-based blackpoint dimensions:" << endl;
+      cout << "blackpoint dim 1: " << libraw->imgdata.color.cblack[4] << endl;
+      cout << "blackpoint dim 2: " << libraw->imgdata.color.cblack[5] << endl;
+      double sumBlockBlackpoint = 0;
+      int count = 0;
+      if (blackRow > 0 && blackCol > 0) {
+        cout << "block-based blackpoint: " << endl;
+        for (int i = 0; i < blackRow; i++) {
+          for (int j = 0; j < blackCol; j++) {
+            sumBlockBlackpoint += libraw->imgdata.color.cblack[6 + i * blackCol + j];
+            count++;
+            cout << libraw->imgdata.color.cblack[6 + i * blackCol + j] << "  ";
+          }
+          cout << endl;
+        }
+      }
+      double meanBlockBlackpoint = 0;
+      if (count > 0) { meanBlockBlackpoint = sumBlockBlackpoint / count; }
+      cout << "Mean of block-based blackpoint: " << meanBlockBlackpoint << endl;
+
+      // get white saturation values
+      cout << "WHITE SATURATION ===================================" << endl;
+      cout << "data_maximum: " << libraw->imgdata.color.data_maximum << endl;
+      cout << "maximum: " << libraw->imgdata.color.maximum << endl;
+
+      // Calculate the white point based on the camera settings.
+      // This needs the black point subtracted, and a fudge factor to ensure
+      // clipping is hard and fast.
+      double camconstWhite[4];
+
+      // Some cameras have a black offset, as well, even if the black level is
+      // already specified.
+      double camconstBlack[4];
+
+      QString makeModel = IDATA.make;
+      makeModel.append(" ");
+      makeModel.append(IDATA.model);
+      bool camconstSuccess =
+        CAMCONST_READ_OK == camconst_read(makeModel, OTHER.iso_speed, OTHER.aperture, camconstWhite, camconstBlack);
+
+      cout << "is the file dng?: " << isDNG << endl;
+
+      // we only process with 3 channels later, so we merge the two green
+      // channels here...
+      camconstWhite[1] = min(camconstWhite[1], camconstWhite[3]);
+
+      double camconstWhiteMax = max(max(max(camconstWhite[0], camconstWhite[1]), camconstWhite[2]), camconstWhite[3]);
+      double camconstWhiteAvg = (camconstWhite[0] + camconstWhite[1] + camconstWhite[2] + camconstWhite[3]) / 4;
+      double camconstBlackAvg = (camconstBlack[0] + camconstBlack[1] + camconstBlack[2] + camconstBlack[3]) / 4;
+
+      // If the black levels are significantly different, we'll add them.
+      if (camconstBlackAvg != blackpoint && !isDNG)// dngs provide their own correct black level and we should
+                                                   // trust it
+      {
+        cout << "Black level discrepancy" << endl;
+        cout << "CamConst black: " << camconstBlackAvg << endl;
+        cout << "LibRaw black:   " << blackpoint << endl;
+        cout << "block black:    " << meanBlockBlackpoint << endl;
+        if (blackpoint != 0 && camconstSuccess) {
+          if (abs((camconstBlackAvg / blackpoint) - 1) < 0.5) {
+            // if they're within 50%, we want to replace the libraw one
+            blackpoint = camconstBlack[0];
+            rBlack = 0;
+            gBlack = camconstBlack[1] - camconstBlack[0];
+            bBlack = camconstBlack[2] - camconstBlack[0];
+            maxChanBlack = max(rBlack, max(gBlack, bBlack));
+          } else {
+            // Ignore if they're very different, this only applies to Panasonics
+            // and there's a better way
+          }
+        } else {
+          // if the libraw blackpoint is 0 then we replace it, unless there was
+          // a block-based blackpoint
+          if (meanBlockBlackpoint == 0 && camconstSuccess) {
+            blackpoint = camconstBlack[0];
+            rBlack = 0;
+            gBlack = camconstBlack[1] - camconstBlack[0];
+            bBlack = camconstBlack[2] - camconstBlack[0];
+            g2Black = camconstBlack[3] - camconstBlack[0];
+            maxChanBlack = max(rBlack, max(gBlack, max(bBlack, g2Black)));
+          }
+        }
+        cout << "new black: " << blackpoint << endl;
+      }
+
+      // Modern Nikons have camconst.json white levels specified as if they were
+      // 14-bit
+      //  even if the raw files are 12-bit-only, like the entry level cams
+      // So we need to detect if it's 12-bit and if the camconst specifies as
+      // 14-bit.
+      if ((QString(IDATA.make) == "Nikon") && (libraw->imgdata.color.maximum < 4096) && (camconstWhiteAvg >= 4096)) {
+        camconstWhite[0] = camconstWhite[0] * 4095 / 16383;
+        camconstWhite[1] = camconstWhite[1] * 4095 / 16383;
+        camconstWhite[2] = camconstWhite[2] * 4095 / 16383;
+        cout << "Nikon 12-bit camconst white clipping point: " << camconstWhite[0] << endl;
+      }
+
+      if (camconstSuccess && camconstWhiteAvg > 0 && !isDNG)// dngs provide their own correct whitepoint and we should
+                                                            // trust it over camconst
+      {
+        maxValue = camconstWhiteMax - blackpoint - maxChanBlack - meanBlockBlackpoint;
+        cout << "camconst r white clipping point: " << camconstWhite[0] << endl;
+        cout << "camconst g white clipping point: " << camconstWhite[1] << endl;
+        cout << "camconst b white clipping point: " << camconstWhite[2] << endl;
+        colorMaxValue[0] = camconstWhite[0] - blackpoint - maxChanBlack - meanBlockBlackpoint;
+        colorMaxValue[1] = camconstWhite[1] - blackpoint - maxChanBlack - meanBlockBlackpoint;
+        colorMaxValue[2] = camconstWhite[2] - blackpoint - maxChanBlack - meanBlockBlackpoint;
+      } else {
+        maxValue = libraw->imgdata.color.maximum - blackpoint - maxChanBlack - meanBlockBlackpoint;
+        cout << "libraw fallback or dng white clipping point: " << libraw->imgdata.color.maximum << endl;
+        colorMaxValue[0] = maxValue;
+        colorMaxValue[1] = maxValue;
+        colorMaxValue[2] = maxValue;
+      }
+      cout << "black-subtracted maximum: " << maxValue << endl;
+      cout << "fmaximum: " << libraw->imgdata.color.fmaximum << endl;
+      cout << "fnorm: " << libraw->imgdata.color.fnorm << endl;
+
+      // get color filter array
+      // if all the libraw.imgdata.idata.xtrans values are 0, it's bayer.
+      // bayer only for now
+      for (unsigned int i = 0; i < 2; i++) {
+        // cout << "bayer: ";
+        for (unsigned int j = 0; j < 2; j++) {
+          cfa[i][j] = unsigned(libraw->COLOR(int(i), int(j)));
+          if (cfa[i][j] == 3)// Auto CA correct doesn't like 0123 for RGBG; we
+                             // change it to 0121.
+          {
+            cfa[i][j] = 1;
+          }
+          // cout << cfa[i][j];
+        }
+        // cout << endl;
+      }
+
+      // get xtrans color filter array
+      maxXtrans = 0;
+      for (int i = 0; i < 6; i++) {
+        // cout << "xtrans: ";
+        for (int j = 0; j < 6; j++) {
+          xtrans[i][j] = uint(libraw->imgdata.idata.xtrans[i][j]);
+          maxXtrans = max(maxXtrans, int(libraw->imgdata.idata.xtrans[i][j]));
+          // cout << xtrans[i][j];
+        }
+        // cout << endl;
+      }
+
+      if (!isCR3)// we can't use exiv2 on CR3 yet
+      {
+        cout << "processImage exiv filename: " << loadParam.fullFilename << endl;
+        auto image = Exiv2::ImageFactory::open(loadParam.fullFilename);
+        assert(image.get() != 0);
+        image->readMetadata();
+        exifData = image->exifData();
+      } else {
+        // We need to fabricate fresh exif data from what libraw gives us
+        Exiv2::ExifData basicExifData;
+
+        basicExifData["Exif.Image.Orientation"] = uint16_t(1);
+        basicExifData["Exif.Image.ImageWidth"] = vibrance_saturation_image.nc() / 3;
+        basicExifData["Exif.Image.ImageLength"] = vibrance_saturation_image.nr();
+        basicExifData["Exif.Image.Make"] = IDATA.make;
+        basicExifData["Exif.Image.Model"] = IDATA.model;
+        basicExifData["Exif.Image.DateTime"] = exifDateTimeString(OTHER.timestamp);
+        basicExifData["Exif.Photo.DateTimeOriginal"] = exifDateTimeString(OTHER.timestamp);
+        basicExifData["Exif.Photo.DateTimeDigitized"] = exifDateTimeString(OTHER.timestamp);
+        basicExifData["Exif.Photo.ExposureTime"] = rationalTv(OTHER.shutter);
+        basicExifData["Exif.Photo.FNumber"] = rationalAvFL(OTHER.aperture);
+        basicExifData["Exif.Photo.ISOSpeed"] = int(round(OTHER.iso_speed));
+        basicExifData["Exif.Photo.FocalLength"] = rationalAvFL(OTHER.focal_len);
+
+        exifData = basicExifData;
+      }
+
+      raw_image.set_size(raw_height, raw_width);
+
+      // copy raw data
+      float rawMin = std::numeric_limits<float>::max();
+      float rawMax = std::numeric_limits<float>::min();
+      float rawRMax = std::numeric_limits<float>::min();
+      float rawGMax = std::numeric_limits<float>::min();
+      float rawBMax = std::numeric_limits<float>::min();
+
+      isSraw = libraw->is_sraw();
+
+      // Iridient X-Transformer creates full-color files that aren't sraw
+      // They have 6666 as the cfa and all 0 for xtrans
+      // However, Leica M Monochrom files are exactly the same!
+      // So we have to check if the white balance tag exists.
+      bool isWeird = (cfa[0][0] == 6 && cfa[0][1] == 6 && cfa[1][0] == 6 && cfa[1][1] == 6);
+      // cout << "is weird: " << isWeird << endl;
+      bool noWB = false;
+      if (!isCR3)// we can't use exiv2 on CR3 yet and no CR3 cameras are
+                 // monochrome
+      {
+        noWB = exifData["Exif.Photo.WhiteBalance"].toString().length() == 0;
+      }
+      // cout << "white balance: " << wb << endl;
+      isMonochrome = isWeird && noWB;
+      // Xiaomi monochrome identification
+      if (QString(IDATA.make).contains("Xiaomi") && QString(IDATA.model).contains("M2007J3SG")) {
+        isMonochrome = true;
+      }
+      // cout << "is monochrome: " << isMonochrome << endl;
+      isSraw = isSraw || (isWeird && !isMonochrome);
+      // cout << "is full color raw: " << isSraw << endl;
+
+      isNikonSraw = libraw->is_nikon_sraw();
+      if (isFloat && isSraw) {// floating point full-color-per-pixel raws
+        raw_image.set_size(raw_height, raw_width * 3);
+#pragma omp parallel for reduction(min : rawMin) reduction(max : rawMax) reduction(max : rawRMax) \
+  reduction(max : rawGMax) reduction(max : rawBMax)
+        for (int row = 0; row < raw_height; row++) {
+          // IMAGE is an (width*height) by 4 array, not width by height by 4.
+          int rowoffset = (row + topmargin) * full_width;
+          for (int col = 0; col < raw_width; col++) {
+            float tempBlackpoint = blackpoint;
+            if (blackRow > 0 && blackCol > 0) {
+              tempBlackpoint =
+                tempBlackpoint + libraw->imgdata.color.cblack[6 + (row % blackRow) * blackCol + col % blackCol];
+            }
+            // sraw comes from raw4 but only uses 3 channels
+            raw_image[row][col * 3] = min(RAWF4[rowoffset + col + leftmargin][0] - tempBlackpoint, colorMaxValue[0]);
+            rawMin = std::min(rawMin, raw_image[row][col * 3]);
+            rawMax = std::max(rawMax, raw_image[row][col * 3]);
+            rawRMax = std::max(rawRMax, raw_image[row][col * 3]);
+            raw_image[row][col * 3 + 1] =
+              min(RAWF4[rowoffset + col + leftmargin][1] - tempBlackpoint, colorMaxValue[1]);
+            rawMin = std::min(rawMin, raw_image[row][col * 3 + 1]);
+            rawMax = std::max(rawMax, raw_image[row][col * 3 + 1]);
+            rawGMax = std::max(rawGMax, raw_image[row][col * 3 + 1]);
+            raw_image[row][col * 3 + 2] =
+              min(RAWF4[rowoffset + col + leftmargin][2] - tempBlackpoint, colorMaxValue[2]);
+            rawMin = std::min(rawMin, raw_image[row][col * 3 + 2]);
+            rawMax = std::max(rawMax, raw_image[row][col * 3 + 2]);
+            rawBMax = std::max(rawBMax, raw_image[row][col * 3 + 2]);
+          }
+        }
+        SCAN_MATRIX_FOR_NAN(raw_image, "RawImageInput (Float/Sraw)");
+      } else if (isSraw) {// full-color-per-pixel integer raws
+        raw_image.set_size(raw_height, raw_width * 3);
+#pragma omp parallel for reduction(min : rawMin) reduction(max : rawMax) reduction(max : rawRMax) \
+  reduction(max : rawGMax) reduction(max : rawBMax)
+
+        for (int row = 0; row < raw_height; row++) {
+          // IMAGE is an (width*height) by 4 array, not width by height by 4.
+          int rowoffset = (row + topmargin) * full_width;
+          for (int col = 0; col < raw_width; col++) {
+            float tempBlackpoint = blackpoint;
+            if (blackRow > 0 && blackCol > 0) {
+              tempBlackpoint =
+                tempBlackpoint + libraw->imgdata.color.cblack[6 + (row % blackRow) * blackCol + col % blackCol];
+            }
+            // sraw comes from raw4 but only uses 3 channels
+            raw_image[row][col * 3] = min(RAW4[rowoffset + col + leftmargin][0] - tempBlackpoint, colorMaxValue[0]);
+            rawMin = std::min(rawMin, raw_image[row][col * 3]);
+            rawMax = std::max(rawMax, raw_image[row][col * 3]);
+            rawRMax = std::max(rawRMax, raw_image[row][col * 3]);
+            raw_image[row][col * 3 + 1] = min(RAW4[rowoffset + col + leftmargin][1] - tempBlackpoint, colorMaxValue[1]);
+            rawMin = std::min(rawMin, raw_image[row][col * 3 + 1]);
+            rawMax = std::max(rawMax, raw_image[row][col * 3 + 1]);
+            rawGMax = std::max(rawGMax, raw_image[row][col * 3 + 1]);
+            raw_image[row][col * 3 + 2] = min(RAW4[rowoffset + col + leftmargin][2] - tempBlackpoint, colorMaxValue[2]);
+            rawMin = std::min(rawMin, raw_image[row][col * 3 + 2]);
+            rawMax = std::max(rawMax, raw_image[row][col * 3 + 2]);
+            rawBMax = std::max(rawBMax, raw_image[row][col * 3 + 2]);
+          }
+        }
+        SCAN_MATRIX_FOR_NAN(raw_image, "RawImageInput (Sraw)");
+      } else if (isFloat) {// floating point one-color-per-pixel raws
+#pragma omp parallel for reduction(min : rawMin) reduction(max : rawMax) reduction(max : rawRMax) \
+  reduction(max : rawGMax) reduction(max : rawBMax)
+
+        for (int row = 0; row < raw_height; row++) {
+          // IMAGE is an (width*height) by 4 array, not width by height by 4.
+          int rowoffset = (row + topmargin) * full_width;
+          for (int col = 0; col < raw_width; col++) {
+            float tempBlackpoint = blackpoint;
+            float tempWhitepoint = maxValue;
+            int color = cfa[row % 2][col % 2];
+            if (color == 0) {
+              tempBlackpoint += rBlack;
+              tempWhitepoint = colorMaxValue[0];
+            }
+            if (color == 1) {
+              tempBlackpoint += gBlack;
+              tempWhitepoint = colorMaxValue[1];
+            }
+            if (color == 2) {
+              tempBlackpoint += bBlack;
+              tempWhitepoint = colorMaxValue[2];
+            }
+            if (color == 3) {
+              tempBlackpoint += g2Black;
+              tempWhitepoint = colorMaxValue[1];
+            }
+            if (blackRow > 0 && blackCol > 0) {
+              tempBlackpoint =
+                min(tempBlackpoint + libraw->imgdata.color.cblack[6 + (row % blackRow) * blackCol + col % blackCol],
+                  tempWhitepoint);
+            }
+            raw_image[row][col] = RAWF[rowoffset + col + leftmargin] - tempBlackpoint;
+            rawMin = std::min(rawMin, raw_image[row][col]);
+            rawMax = std::max(rawMax, raw_image[row][col]);
+            if (color == 0) { rawRMax = std::max(rawRMax, raw_image[row][col]); }
+            if (color == 1) { rawGMax = std::max(rawGMax, raw_image[row][col]); }
+            if (color == 2) { rawBMax = std::max(rawBMax, raw_image[row][col]); }
+            if (color == 3) { rawGMax = std::max(rawGMax, raw_image[row][col]); }
+          }
+        }
+        SCAN_MATRIX_FOR_NAN(raw_image, "RawImageInput (Float)");
+      } else {// normal one-color-per-pixel integer raws
+#pragma omp parallel for reduction(min : rawMin) reduction(max : rawMax) reduction(max : rawRMax) \
+  reduction(max : rawGMax) reduction(max : rawBMax)
+
+        for (int row = 0; row < raw_height; row++) {
+          // IMAGE is an (width*height) by 4 array, not width by height by 4.
+          int rowoffset = (row + topmargin) * full_width;
+          for (int col = 0; col < raw_width; col++) {
+            float tempBlackpoint = blackpoint;
+            float tempWhitepoint = maxValue;
+            int color = cfa[row % 2][col % 2];
+            if (color == 0) {
+              tempBlackpoint += rBlack;
+              tempWhitepoint = colorMaxValue[0];
+            }
+            if (color == 1) {
+              tempBlackpoint += gBlack;
+              tempWhitepoint = colorMaxValue[1];
+            }
+            if (color == 2) {
+              tempBlackpoint += bBlack;
+              tempWhitepoint = colorMaxValue[2];
+            }
+            if (color == 3) {
+              tempBlackpoint += g2Black;
+              tempWhitepoint = colorMaxValue[1];
+            }
+            if (blackRow > 0 && blackCol > 0) {
+              tempBlackpoint =
+                min(tempBlackpoint + libraw->imgdata.color.cblack[6 + (row % blackRow) * blackCol + col % blackCol],
+                  tempWhitepoint);
+            }
+            raw_image[row][col] = RAW[rowoffset + col + leftmargin] - tempBlackpoint;
+            rawMin = std::min(rawMin, raw_image[row][col]);
+            rawMax = std::max(rawMax, raw_image[row][col]);
+            if (color == 0) { rawRMax = std::max(rawRMax, raw_image[row][col]); }
+            if (color == 1) { rawGMax = std::max(rawGMax, raw_image[row][col]); }
+            if (color == 2) { rawBMax = std::max(rawBMax, raw_image[row][col]); }
+            if (color == 3) { rawGMax = std::max(rawGMax, raw_image[row][col]); }
+          }
+        }
+      }
+
+      // generate raw histogram
+      if (WithHisto == histo) {
+        histoInterface->updateHistRaw(raw_image, colorMaxValue, cfa, xtrans, maxXtrans, isSraw, isMonochrome);
+      }
+
+      cout << "max of raw_image: " << rawMax << endl;
+      cout << "min of raw_image: " << rawMin << endl;
+      cout << "max of raw red:   " << rawRMax << endl;
+      cout << "max of raw green: " << rawGMax << endl;
+      cout << "max of raw blue:  " << rawBMax << endl;
     }
-
-    exifData = output.exif;
-
-    rPreMul = output.rPreMul;
-    gPreMul = output.gPreMul;
-    bPreMul = output.bPreMul;
-    rCamMul = output.rCamMul;
-    gCamMul = output.gCamMul;
-    bCamMul = output.bCamMul;
-
-    rUserMul = rCamMul;
-    gUserMul = gCamMul;
-    bUserMul = bCamMul;
-
-    maxValue = output.maxValue;
-    for (int i = 0; i < 3; ++i) colorMaxValue[i] = output.colorMaxValue[i];
-
     valid = paramManager->markLoadComplete();
     updateProgress(valid, 0.0f);
     [[fallthrough]];
@@ -259,52 +708,184 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     AbortStatus abort;
     std::tie(valid, abort, loadParam, demosaicParam) = paramManager->claimDemosaicParams();
     if (abort == AbortStatus::restart) {
-      FILM_WARN("imagePipeline.cpp: aborted at demosaic");
+      cout << "imagePipeline.cpp: aborted at demosaic" << endl;
       return emptyMatrix();
     }
 
-    // Construct Input
-    RawImage input;
-    input.data.swap(raw_image);// Move logic
+    cout << "imagePipeline.cpp: Opening " << loadParam.fullFilename << endl;
 
-    // Copy Metadata
-    input.isSraw = isSraw;
-    input.isNikonSraw = isNikonSraw;
-    input.isMonochrome = isMonochrome;
-    input.isCR3 = isCR3;
-    input.maxXtrans = maxXtrans;
-    for (int i = 0; i < 2; ++i)
-      for (int j = 0; j < 2; ++j) input.cfa[i][j] = cfa[i][j];
-    for (int i = 0; i < 6; ++i)
-      for (int j = 0; j < 6; ++j) input.xtrans[i][j] = xtrans[i][j];
+    // Reads in the photo.
+    cout << "load start:" << timeDiff(timeRequested) << endl;
+    auto imload_time = std::chrono::steady_clock::now();
 
-    input.rPreMul = rPreMul;
-    input.gPreMul = gPreMul;
-    input.bPreMul = bPreMul;
-    input.rCamMul = rCamMul;
-    input.gCamMul = gCamMul;
-    input.bCamMul = bCamMul;
-    input.maxValue = maxValue;
-    for (int i = 0; i < 3; ++i) input.colorMaxValue[i] = colorMaxValue[i];
-
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j) {
-        input.camToRGB[i][j] = camToRGB[i][j];
-        input.xyzToCam[i][j] = xyzToCam[i][j];
+    if (loadParam.tiffIn) {
+      if (imread_tiff(loadParam.fullFilename, demosaiced_image, exifData)) {
+        cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
+        return emptyMatrix();
       }
-    // DemosaicStage doesn't seem to need camToRGB4 per my check.
+    } else if (loadParam.jpegIn) {
+      if (imread_jpeg(loadParam.fullFilename, demosaiced_image, exifData)) {
+        cerr << "Could not open image " << loadParam.fullFilename << "; Exiting..." << endl;
+        return emptyMatrix();
+      }
+    } else if (isSraw)// already demosaiced
+    {
+      // We just need to scale to 65535, and apply camera WB
+      float inputscale = maxValue;
+      float outputscale = 65535.0;
+      float scaleFactor = outputscale / inputscale;
+      demosaiced_image.set_size(raw_height, raw_width * 3);
+      if (isNikonSraw) {
+#pragma omp parallel for
+        for (int row = 0; row < raw_height; row++) {
+          for (int col = 0; col < raw_width * 3; col++) {
+            demosaiced_image(row, col) = raw_image(row, col) * scaleFactor;
+          }
+        }
+      } else {
+#pragma omp parallel for
+        for (int row = 0; row < raw_height; row++) {
+          for (int col = 0; col < raw_width * 3; col++) {
+            int color = col % 3;
+            demosaiced_image(row, col) = raw_image(row, col) * scaleFactor
+                                         * ((color == 0)   ? rPreMul
+                                            : (color == 1) ? gPreMul
+                                                           : bPreMul);
+          }
+        }
+      }
+    } else// raw
+    {
+      matrix<float> red(raw_height, raw_width);
+      matrix<float> green(raw_height, raw_width);
+      matrix<float> blue(raw_height, raw_width);
 
-    DemosaicStage stage;
-    auto result = stage.process(input, demosaicParam, context);
+      double initialGain = 1.0;
+      float inputscale = maxValue;
+      float outputscale = 65535.0;
+      const int border = 4;// used for amaze
+      std::function<bool(double)> setProg = [](double) -> bool { return false; };
 
-    input.data.swap(raw_image);// Restore raw_image
+      cout << "raw width:  " << raw_width << endl;
+      cout << "raw height: " << raw_height << endl;
 
-    if (!result) return emptyMatrix();
+      // before demosaic, you want to apply raw white balance
+      //======================================================================
+      // TODO: If the camera white balance disagrees with some sort of AWB by a
+      // *lot*, use an awb instead
+      //======================================================================
+      matrix<float> premultiplied(raw_height, raw_width);
 
-    RawImage &output = *result;
-    demosaiced_image.swap(output.data);
+      cout << "demosaic start" << timeDiff(timeRequested) << endl;
+      auto demosaic_time = std::chrono::steady_clock::now();
 
-    // Mark complete
+      if (maxXtrans > 0) {
+#pragma omp parallel for
+        for (int row = 0; row < raw_height; row++) {
+          for (int col = 0; col < raw_width; col++) {
+            uint color = xtrans[uint(row) % 6][uint(col) % 6];
+            premultiplied(row, col) = raw_image(row, col) * ((color == 0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
+          }
+        }
+        if (demosaicParam.demosaicMethod == 0) {
+          markesteijn_demosaic(
+            raw_width, raw_height, premultiplied, red, green, blue, xtrans, camToRGB4, setProg, 3, true);
+        } else {// if it's 1, use xtransfast
+          xtransfast_demosaic(raw_width, raw_height, premultiplied, red, green, blue, xtrans, setProg);
+        }
+        // there's no inputscale for markesteijn so we need to scale
+        float scaleFactor = outputscale / inputscale;
+#pragma omp parallel for
+        for (int row = 0; row < red.nr(); row++) {
+          for (int col = 0; col < red.nc(); col++) {
+            red(row, col) = red(row, col) * scaleFactor;
+            green(row, col) = green(row, col) * scaleFactor;
+            blue(row, col) = blue(row, col) * scaleFactor;
+          }
+        }
+      } else if (isMonochrome) {
+        float scaleFactor = outputscale / inputscale;
+        for (int row = 0; row < raw_height; row++) {
+          for (int col = 0; col < raw_width; col++) {
+            red(row, col) = raw_image(row, col) * scaleFactor;
+            green(row, col) = raw_image(row, col) * scaleFactor;
+            blue(row, col) = raw_image(row, col) * scaleFactor;
+          }
+        }
+      } else {
+#pragma omp parallel for
+        for (int row = 0; row < raw_height; row++) {
+          for (int col = 0; col < raw_width; col++) {
+            uint color = cfa[uint(row) & 1][uint(col) & 1];
+            premultiplied(row, col) = raw_image(row, col) * ((color == 0) ? rPreMul : (color == 1) ? gPreMul : bPreMul);
+          }
+        }
+        if (demosaicParam.caEnabled > 0) {
+          // we need to apply white balance and then remove it for Auto CA
+          // Correct to work properly
+          double fitparams[2][2][16];
+          CA_correct(0,
+            0,
+            raw_width,
+            raw_height,
+            true,
+            demosaicParam.caEnabled,
+            0.0,
+            0.0,
+            true,
+            premultiplied,
+            premultiplied,
+            cfa,
+            setProg,
+            fitparams,
+            false);
+        }
+
+        if (demosaicParam.demosaicMethod == 0) {
+          amaze_demosaic(raw_width,
+            raw_height,
+            0,
+            0,
+            raw_width,
+            raw_height,
+            premultiplied,
+            red,
+            green,
+            blue,
+            cfa,
+            setProg,
+            initialGain,
+            border,
+            inputscale,
+            outputscale);
+        } else {// if it's 1, use LMMSE
+          premultiplied.mult_this(1 / inputscale);
+          lmmse_demosaic(
+            raw_width, raw_height, premultiplied, red, green, blue, cfa, setProg, 3);// doesn't like inputs > 1
+          // igv_demosaic(raw_width, raw_height, premultiplied, red, green,
+          // blue, cfa, setProg);//doesn't like inputs > 1
+          red.mult_this(outputscale);
+          green.mult_this(outputscale);
+          blue.mult_this(outputscale);
+        }
+      }
+      premultiplied.set_size(0, 0);
+      cout << "demosaic end: " << timeDiff(demosaic_time) << endl;
+
+      demosaiced_image.set_size(raw_height, raw_width * 3);
+#pragma omp parallel for
+      for (int row = 0; row < raw_height; row++) {
+        for (int col = 0; col < raw_width; col++) {
+          demosaiced_image(row, col * 3) = red(row, col);
+          demosaiced_image(row, col * 3 + 1) = green(row, col);
+          demosaiced_image(row, col * 3 + 2) = blue(row, col);
+        }
+      }
+    }
+    cout << "load time: " << timeDiff(imload_time) << endl;
+
+    cout << "ImagePipeline::processImage: Demosaic complete." << endl;
+    SCAN_MATRIX_FOR_NAN(demosaiced_image, "DemosaicComplete");
     valid = paramManager->markDemosaicComplete();
     updateProgress(valid, 0.0f);
     [[fallthrough]];
@@ -316,49 +897,111 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     PostDemosaicParams postDemosaicParam;
     AbortStatus abort;
     std::tie(valid, abort, postDemosaicParam) = paramManager->claimPostDemosaicParams();
-    if (abort == AbortStatus::restart) return emptyMatrix();
+    if (abort == AbortStatus::restart) {
+      cout << "imagePipeline.cpp: aborted at demosaic" << endl;
+      return emptyMatrix();
+    }
 
-    // Construct Input
-    RawImage input;
-    input.data.swap(demosaiced_image);
+    // First thing after demosaic is to apply the user's white balance.
+    if (!isMonochrome) {
+      rawWhiteBalance(demosaiced_image,
+        post_demosaic_image,
+        postDemosaicParam.temperature,
+        postDemosaicParam.tint,
+        xyzToCam,
+        rPreMul,
+        gPreMul,
+        bPreMul,// undoes these
+        rUserMul,
+        gUserMul,
+        bUserMul);// used later for highlight recovery
 
-    input.rPreMul = rPreMul;
-    input.gPreMul = gPreMul;
-    input.bPreMul = bPreMul;
-    input.rUserMul = rUserMul;
-    input.gUserMul = gUserMul;
-    input.bUserMul = bUserMul;
-    input.rCamMul = rCamMul;
-    input.gCamMul = gCamMul;
-    input.bCamMul = bCamMul;
-    input.maxValue = maxValue;
-    for (int i = 0; i < 3; ++i) input.colorMaxValue[i] = colorMaxValue[i];
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j) input.xyzToCam[i][j] = xyzToCam[i][j];
-    input.isMonochrome = isMonochrome;
+      cout << "WB pre multiplier R: " << rPreMul << endl;
+      cout << "WB pre multiplier G: " << gPreMul << endl;
+      cout << "WB pre multiplier B: " << bPreMul << endl;
+      cout << "WB cam multiplier R: " << rCamMul << endl;
+      cout << "WB cam multiplier G: " << gCamMul << endl;
+      cout << "WB cam multiplier B: " << bCamMul << endl;
+      cout << "WB user multiplier R: " << rUserMul << endl;
+      cout << "WB user multiplier G: " << gUserMul << endl;
+      cout << "WB user multiplier B: " << bUserMul << endl;
+    } else {
+      post_demosaic_image = demosaiced_image;
+    }
 
-    PostDemosaicStage stage;
-    auto result = stage.process(input, postDemosaicParam, context);
+    // Recover highlights now
+    cout << "hlrecovery start:" << timeDiff(timeRequested) << endl;
+    std::chrono::steady_clock::time_point hlrecovery_time;
+    hlrecovery_time = std::chrono::steady_clock::now();
 
-    input.data.swap(demosaiced_image);// Restore
+    int height = post_demosaic_image.nr();
+    int width = post_demosaic_image.nc() / 3;
 
-    if (!result) return emptyMatrix();
+    // Now, recover highlights.
+    std::function<bool(double)> setProg = [](double) -> bool { return false; };
+    // And return it back to a single layer
+    if (postDemosaicParam.highlights >= 2 && !isMonochrome) {
+      // For highlight recovery, we need to split up the image into three
+      // separate layers.
+      matrix<float> rChannel(height, width), gChannel(height, width), bChannel(height, width);
 
-    RawImage &output = *result;
-    post_demosaic_image.swap(output.data);
+#pragma omp parallel for
+      for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+          rChannel(row, col) = post_demosaic_image(row, col * 3);
+          gChannel(row, col) = post_demosaic_image(row, col * 3 + 1);
+          bChannel(row, col) = post_demosaic_image(row, col * 3 + 2);
+        }
+      }
 
-    rUserMul = output.rUserMul;
-    gUserMul = output.gUserMul;
-    bUserMul = output.bUserMul;
+      // We applied the camMul camera multipliers before applying white balance.
+      // Now we need to calculate the channel max and the raw clip levels.
+      // Channel max:
+      const float chmax[3] = { rChannel.max(), gChannel.max(), bChannel.max() };
+      // Max clip point:
+      const float clmax[3] = { 65535.0f * rUserMul * colorMaxValue[0] / maxValue,
+        65535.0f * gUserMul * colorMaxValue[1] / maxValue,
+        65535.0f * bUserMul * colorMaxValue[2] / maxValue };
 
-    if (rUserMul == 0) rUserMul = 1;
-    if (gUserMul == 0) gUserMul = 1;
-    if (bUserMul == 0) bUserMul = 1;
+      HLRecovery_inpaint(width, height, rChannel, gChannel, bChannel, chmax, clmax, setProg);
+#pragma omp parallel for
+      for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+          post_demosaic_image(row, col * 3) = rChannel(row, col);
+          post_demosaic_image(row, col * 3 + 1) = gChannel(row, col);
+          post_demosaic_image(row, col * 3 + 2) = bChannel(row, col);
+        }
+      }
+    } else if (postDemosaicParam.highlights == 0 && !isMonochrome) {
+#pragma omp parallel for
+      for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+          post_demosaic_image(row, col * 3) = min(post_demosaic_image(row, col * 3), 65535.0f);
+          post_demosaic_image(row, col * 3 + 1) = min(post_demosaic_image(row, col * 3 + 1), 65535.0f);
+          post_demosaic_image(row, col * 3 + 2) = min(post_demosaic_image(row, col * 3 + 2), 65535.0f);
+        }
+      }
+    } else {// params = 1, or isMonochrome
+      // do nothing
+    }
+    cout << "hlrecovery duration: " << timeDiff(hlrecovery_time) << endl;
 
+    // Apply exposure compensation.
+    // This is ideally done before noise reduction so that you don't need
+    // dramatically different
+    //  thresholds for underexposed images.
+
+    const float expCompMult = pow(2, postDemosaicParam.exposureComp);
+
+#pragma omp parallel for
+    for (int row = 0; row < height; row++) {
+      for (int col = 0; col < width * 3; col++) {
+        post_demosaic_image(row, col) = post_demosaic_image(row, col) * expCompMult;
+      }
+    }
+
+    SCAN_MATRIX_FOR_NAN(post_demosaic_image, "PostDemosaicComplete");
     valid = paramManager->markPostDemosaicComplete();
-#ifdef ENABLE_NAN_TRAPPING
-    SCAN_MATRIX_FOR_NAN(post_demosaic_image, "post_demosaic_image");
-#endif
     updateProgress(valid, 0.0f);
     [[fallthrough]];
   }
@@ -369,33 +1012,100 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     NlmeansNRParams nrParam;
     AbortStatus abort;
     std::tie(valid, abort, nrParam) = paramManager->claimNlmeansNRParams();
-    if (abort == AbortStatus::restart) return emptyMatrix();
+    if (abort == AbortStatus::restart) {
+      cout << "imagePipeline aborted at nlmeans noise reduction" << endl;
+      return emptyMatrix();
+    }
 
-    // Construct Input
-    RawImage input;
-    input.data.swap(post_demosaic_image);
+    if (nrParam.nrEnabled && nrParam.nlStrength > 0) {
+      cout << "Luma NR preprocessing start: " << timeDiff(timeRequested) << endl;
+      matrix<float> denoised(post_demosaic_image.nr(), post_demosaic_image.nc());
+      matrix<float> preconditioned = post_demosaic_image;
 
-    input.rUserMul = rUserMul;
-    input.gUserMul = gUserMul;
-    input.bUserMul = bUserMul;
-    input.isMonochrome = isMonochrome;
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j) input.camToRGB[i][j] = camToRGB[i][j];
+      if (cache == NoCache) {
+        post_demosaic_image.set_size(0, 0);
+        cacheEmpty = true;
+      } else {
+        cacheEmpty = false;
+      }
 
-    NlmeansNRStage stage;
-    auto result = stage.process(input, nrParam, context);
+      // we don't want to apply nonexistent WB multipliers to monochrome images
+      const float rMulTemp = isMonochrome ? 1.0f : rUserMul;
+      const float gMulTemp = isMonochrome ? 1.0f : gUserMul;
+      const float bMulTemp = isMonochrome ? 1.0f : bUserMul;
 
-    input.data.swap(post_demosaic_image);// Restore
+#pragma omp parallel for
+      for (int row = 0; row < preconditioned.nr(); row++) {
+        for (int col = 0; col < preconditioned.nc(); col += 3) {
+          preconditioned(row, col + 0) =
+            sRGB_forward_gamma_unclipped(preconditioned(row, col + 0) / (rMulTemp * 65535.0f));
+          preconditioned(row, col + 1) =
+            sRGB_forward_gamma_unclipped(preconditioned(row, col + 1) / (gMulTemp * 65535.0f));
+          preconditioned(row, col + 2) =
+            sRGB_forward_gamma_unclipped(preconditioned(row, col + 2) / (bMulTemp * 65535.0f));
+        }
+      }
+      float offset = std::max(-preconditioned.min() + 0.001f, 0.001f);
+      float scale = std::max(preconditioned.max() + offset, 1.0f);
+#pragma omp parallel for
+      for (int row = 0; row < preconditioned.nr(); row++) {
+        for (int col = 0; col < preconditioned.nc(); col++) {
+          preconditioned(row, col) = (preconditioned(row, col) + offset) / scale;
+          if (isnan(preconditioned(row, col))) { preconditioned(row, col) = 0.0f; }
+        }
+      }
 
-    if (!result) return emptyMatrix();
-    RawImage &output = *result;
+      const int numClusters = nrParam.nlClusters;
+      const float clusterThreshold = nrParam.nlThresh;
+      const float strength = nrParam.nlStrength;
 
-    nlmeans_nr_image.swap(output.data);
+      cout << "Luma NR processing start: " << timeDiff(timeRequested) << endl;
+      auto nrTime = std::chrono::steady_clock::now();
 
+      if (kMeansNLMApprox(preconditioned,
+            numClusters,
+            clusterThreshold,
+            strength,
+            preconditioned.nr(),
+            preconditioned.nc() / 3,
+            denoised,
+            paramManager)) {
+        cout << "imagePipeline aborted at nlmeans noise reduction" << endl;
+        return emptyMatrix();
+      }
+      cout << "Nlmeans NR duration: " << timeDiff(nrTime) << endl;
+
+      // Undo the preconditioning
+#pragma omp parallel for
+      for (int row = 0; row < denoised.nr(); row++) {
+        for (int col = 0; col < denoised.nc(); col += 3) {
+          denoised(row, col + 0) =
+            sRGB_inverse_gamma_unclipped(scale * denoised(row, col + 0) - offset) * rMulTemp * 65535.0f;
+          denoised(row, col + 1) =
+            sRGB_inverse_gamma_unclipped(scale * denoised(row, col + 1) - offset) * gMulTemp * 65535.0f;
+          denoised(row, col + 2) =
+            sRGB_inverse_gamma_unclipped(scale * denoised(row, col + 2) - offset) * bMulTemp * 65535.0f;
+        }
+      }
+
+      raw_to_oklab(denoised, nlmeans_nr_image, camToRGB);
+      denoised.set_size(0, 0);
+    } else if (nrParam.nrEnabled) {
+      raw_to_oklab(post_demosaic_image, nlmeans_nr_image, camToRGB);
+
+      if (cache == NoCache) {
+        post_demosaic_image.set_size(0, 0);
+        cacheEmpty = true;
+      } else {
+        cacheEmpty = false;
+      }
+    }
+    // If noise reduction is not enabled, we'll completely skip copying so that
+    // the non-NR path is as fast as possible If we're not caching, we do not
+    // want to erase the input data unless it actually got used already.
+
+    SCAN_MATRIX_FOR_NAN(nlmeans_nr_image, "NlmeansNRComplete");
     valid = paramManager->markNlmeansNRComplete();
-#ifdef ENABLE_NAN_TRAPPING
-    SCAN_MATRIX_FOR_NAN(nlmeans_nr_image, "nlmeans_nr_image");
-#endif
     updateProgress(valid, 0.0f);
     [[fallthrough]];
   }
@@ -406,26 +1116,32 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     ImpulseNRParams nrParam;
     AbortStatus abort;
     std::tie(valid, abort, nrParam) = paramManager->claimImpulseNRParams();
-    if (abort == AbortStatus::restart) return emptyMatrix();
+    if (abort == AbortStatus::restart) {
+      cout << "imagePipeline aborted at impulse noise reduction" << endl;
+      return emptyMatrix();
+    }
 
-    RawImage input;
-    input.data.swap(nlmeans_nr_image);
-    input.isOklab = nrParam.nrEnabled;
+    if (nrParam.nrEnabled && nrParam.impulseThresh > 0) {
+      cout << "Impulse NR processing start: " << timeDiff(timeRequested) << endl;
+      auto nrTime = std::chrono::steady_clock::now();
 
-    ImpulseNRStage stage;
-    auto result = stage.process(input, nrParam, context);
+      const bool eraseNRInput = (cache == NoCache);
+      impulse_nr(nlmeans_nr_image, impulse_nr_image, nrParam.impulseThresh, 1.0, eraseNRInput);
 
-    input.data.swap(nlmeans_nr_image);// Restore
+      cout << "Impulse NR duration: " << timeDiff(nrTime) << endl;
+    } else if (nrParam.nrEnabled) {
+      impulse_nr_image = nlmeans_nr_image;
+    }
 
-    if (!result) return emptyMatrix();
-    RawImage &output = *result;
+    if (cache == NoCache) {
+      nlmeans_nr_image.set_size(0, 0);
+      cacheEmpty = true;
+    } else {
+      cacheEmpty = false;
+    }
 
-    impulse_nr_image.swap(output.data);
-
+    SCAN_MATRIX_FOR_NAN(impulse_nr_image, "ImpulseNRComplete");
     valid = paramManager->markImpulseNRComplete();
-#ifdef ENABLE_NAN_TRAPPING
-    SCAN_MATRIX_FOR_NAN(impulse_nr_image, "impulse_nr_image");
-#endif
     updateProgress(valid, 0.0f);
     [[fallthrough]];
   }
@@ -436,28 +1152,32 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     ChromaNRParams nrParam;
     AbortStatus abort;
     std::tie(valid, abort, nrParam) = paramManager->claimChromaNRParams();
-    if (abort == AbortStatus::restart) return emptyMatrix();
+    if (abort == AbortStatus::restart) {
+      cout << "imagePipeline aborted at chroma noise reduction" << endl;
+      return emptyMatrix();
+    }
 
-    RawImage input;
-    input.data.swap(impulse_nr_image);
-    input.isOklab = nrParam.nrEnabled;
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j) input.camToRGB[i][j] = camToRGB[i][j];
+    if (nrParam.nrEnabled && nrParam.chromaStrength > 0) {
+      cout << "Chroma NR processing start: " << timeDiff(timeRequested) << endl;
+      auto nrTime = std::chrono::steady_clock::now();
 
-    ChromaNRStage stage;
-    auto result = stage.process(input, nrParam, context);
+      const bool eraseNRInput = (cache == NoCache);
+      RGB_denoise(0, impulse_nr_image, chroma_nr_image, nrParam.chromaStrength, 0.0f, 0.0f, paramManager, eraseNRInput);
 
-    input.data.swap(impulse_nr_image);// Restore
+      cout << "Chroma NR duration: " << timeDiff(nrTime) << endl;
+    } else if (nrParam.nrEnabled) {
+      chroma_nr_image = impulse_nr_image;
+    }
+    paramManager->markChromaNRComplete();
 
-    if (!result) return emptyMatrix();
-    RawImage &output = *result;
-
-    chroma_nr_image.swap(output.data);
-
+    if (cache == NoCache) {
+      impulse_nr_image.set_size(0, 0);
+      cacheEmpty = true;
+    } else {
+      cacheEmpty = false;
+    }
+    SCAN_MATRIX_FOR_NAN(chroma_nr_image, "ChromaNRComplete");
     valid = paramManager->markChromaNRComplete();
-#ifdef ENABLE_NAN_TRAPPING
-    SCAN_MATRIX_FOR_NAN(chroma_nr_image, "chroma_nr_image");
-#endif
     updateProgress(valid, 0.0f);
     [[fallthrough]];
   }
@@ -466,52 +1186,250 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
   case nrchroma:// Do pre-filmulation work.
   {
     PrefilmParams prefilmParam;
-    FILM_DEBUG("imagePipeline beginning pre-filmulation");
+    cout << "imagePipeline beginning pre-filmulation" << endl;
     AbortStatus abort;
     std::tie(valid, abort, prefilmParam) = paramManager->claimPrefilmParams();
-    if (abort == AbortStatus::restart) return emptyMatrix();
-
-    RawImage input;
-    if (prefilmParam.nrEnabled) {
-      input.data.swap(chroma_nr_image);
-      input.isOklab = true;
-    } else {
-      input.data.swap(post_demosaic_image);
-      input.isOklab = false;
-    }
-    for (int i = 0; i < 3; ++i)
-      for (int j = 0; j < 3; ++j) input.camToRGB[i][j] = camToRGB[i][j];
-
-    PrefilmulationStage stage;
-    auto result = stage.process(input, prefilmParam, context);
-
-    if (prefilmParam.nrEnabled) {
-      input.data.swap(chroma_nr_image);
-    } else {
-      input.data.swap(post_demosaic_image);
+    if (abort == AbortStatus::restart) {
+      cout << "imagePipeline aborted at pre-filmulation" << endl;
+      return emptyMatrix();
     }
 
-    if (!result) return emptyMatrix();
-    RawImage &output = *result;
+    // Copy from the correct location if no NR
+    // If NR, then convert from oklab back to raw colors
+    // Then apply lensfun to raw colors
 
-    // Always save the full size image, so we can steal it later if needed.
-    pre_film_image.swap(output.data);
+    matrix<float> prefilm_input_image;
+    if (prefilmParam.nrEnabled) {
+      oklab_to_raw(chroma_nr_image, prefilm_input_image, camToRGB);
+      if (cache == NoCache) { chroma_nr_image.set_size(0, 0); }
+    } else {
+      prefilm_input_image = post_demosaic_image;
+    }
+    int height = prefilm_input_image.nr();
+    int width = prefilm_input_image.nc() / 3;
 
-#ifdef ENABLE_NAN_TRAPPING
-    {
-      float *pdata = pre_film_image;
-      if (pdata) {
-        float pmin = *std::min_element(pdata, pdata + pre_film_image.nr() * pre_film_image.nc());
-        float pmax = *std::max_element(pdata, pdata + pre_film_image.nr() * pre_film_image.nc());
-        FILM_TRACE("QuickPipe: pre_film_image min: {} max: {}", pmin, pmax);
+    // Lensfun processing
+    cout << "lensfun start" << endl;
+    QDir dir = QDir::home();
+    QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dirstr.append("/filmulator/version_2");
+    std::string stdstring = dirstr.toStdString();
+    ldb->Load(stdstring.c_str());
+
+    std::string camName = prefilmParam.cameraName.toStdString();
+    const lfCamera *camera = NULL;
+    const lfCamera **cameraList = ldb->FindCamerasExt(NULL, camName.c_str());
+
+    // Set up stuff for rotation.
+    // We expect rotation to be from -45 to +45
+    // But -50 will be the signal from the UI to disable it.
+    float rotationAngle = prefilmParam.rotationAngle * 3.1415926535 / 180;// convert degrees to radians
+    if (prefilmParam.rotationAngle <= -49) { rotationAngle = 0; }
+    cout << "cos rotationangle: " << cos(rotationAngle) << endl;
+    cout << "sin rotationangle: " << sin(rotationAngle) << endl;
+    bool lensfunGeometryCorrectionApplied = false;
+
+    if (cameraList) {
+      const float cropFactor = cameraList[0]->CropFactor;
+
+      QString tempLensName = prefilmParam.lensName;
+      if (tempLensName.length() > 0) {
+        if (tempLensName.front() == "\\") {
+          // if the lens name starts with a backslash, don't filter by camera
+          tempLensName.remove(0, 1);
+        } else {
+          // if it doesn't start with a backslash, filter by camera
+          camera = cameraList[0];
+        }
+      }
+      std::string lensName = tempLensName.toStdString();
+      const lfLens *lens = NULL;
+      const lfLens **lensList = NULL;
+      lensList = ldb->FindLenses(camera, NULL, lensName.c_str());
+      if (lensList) {
+        lens = lensList[0];
+
+        // Now we set up the modifier itself with the lens and processing flags
+        lfModifier *mod = new lfModifier(lens, cropFactor, width, height);
+
+        int flags = 0;
+        if (prefilmParam.lensfunCA && !isMonochrome) { flags |= LF_MODIFY_TCA; }
+        if (prefilmParam.lensfunVignetting) { flags |= LF_MODIFY_VIGNETTING; }
+        if (prefilmParam.lensfunDistortion) {
+          flags |= LF_MODIFY_DISTORTION | LF_MODIFY_SCALE;
+          cout << "Auto scale factor: " << mod->GetAutoScale(false) << endl;
+        }
+
+        float scale = (flags & LF_MODIFY_SCALE) ? mod->GetAutoScale(false) : 1.0f;
+        mod->Initialize(lens,
+          LF_PF_F32,
+          prefilmParam.focalLength,
+          prefilmParam.fnumber,
+          1000.0f,
+          scale,
+          LF_RECTILINEAR,
+          flags,
+          false);
+
+        // Now we actually perform the required processing.
+        // First is vignetting.
+        if (prefilmParam.lensfunVignetting) {
+          bool success = true;
+#pragma omp parallel for
+          for (int row = 0; row < height; row++) {
+            success = mod->ApplyColorModification(
+              prefilm_input_image[row], 0.0f, row, width, 1, LF_CR_3(RED, GREEN, BLUE), width);
+          }
+        }
+
+        // Next is CA, or distortion, or both.
+        if (prefilmParam.lensfunCA || prefilmParam.lensfunDistortion) {
+          // ApplySubpixelGeometryDistortion
+          lensfunGeometryCorrectionApplied = true;
+          bool success = true;
+          int listWidth = width * 2 * 3;
+
+          // Check how far out of bounds we go
+          float maxOvershootDistance = 1.0f;
+          float semiwidth = (width - 1) / 2.0f;
+          float semiheight = (height - 1) / 2.0f;
+#pragma omp parallel for reduction(max : maxOvershootDistance)
+          for (int row = 0; row < height; row++) {
+            float positionList[listWidth];
+            success = mod->ApplySubpixelGeometryDistortion(0.0f, row, width, 1, positionList);
+            if (success) {
+              for (int col = 0; col < width; col++) {
+                int listIndex = col * 2 * 3;// list index
+                for (int c = 0; c < 3; c++) {
+                  float coordX = positionList[listIndex + 2 * c] - semiwidth;
+                  float coordY = positionList[listIndex + 2 * c + 1] - semiheight;
+                  float rotatedX = coordX * cos(rotationAngle) - coordY * sin(rotationAngle);
+                  float rotatedY = coordX * sin(rotationAngle) + coordY * cos(rotationAngle);
+
+                  float overshoot = 1.0f;
+
+                  if (abs(rotatedX) > semiwidth) { overshoot = max(abs(rotatedX) / semiwidth, overshoot); }
+                  if (abs(rotatedY) > semiheight) { overshoot = max(abs(rotatedY) / semiheight, overshoot); }
+
+                  if (overshoot > maxOvershootDistance) { maxOvershootDistance = overshoot; }
+                }
+              }
+            }
+          }
+
+          pre_film_image.set_size(height, width * 3);
+#pragma omp parallel for
+          for (int row = 0; row < height; row++) {
+            float positionList[listWidth];
+            success = mod->ApplySubpixelGeometryDistortion(0.0f, row, width, 1, positionList);
+            if (success) {
+              for (int col = 0; col < width; col++) {
+                int listIndex = col * 2 * 3;// list index
+                for (int c = 0; c < 3; c++) {
+                  float coordX = positionList[listIndex + 2 * c] - semiwidth;
+                  float coordY = positionList[listIndex + 2 * c + 1] - semiheight;
+                  float rotatedX =
+                    (coordX * cos(rotationAngle) - coordY * sin(rotationAngle)) / maxOvershootDistance + semiwidth;
+                  float rotatedY =
+                    (coordX * sin(rotationAngle) + coordY * cos(rotationAngle)) / maxOvershootDistance + semiheight;
+                  int sX = max(0, min(width - 1, int(floor(rotatedX)))) * 3 + c;// startX
+                  int eX = max(0, min(width - 1, int(ceil(rotatedX)))) * 3 + c;// endX
+                  int sY = max(0, min(height - 1, int(floor(rotatedY))));// startY
+                  int eY = max(0, min(height - 1, int(ceil(rotatedY))));// endY
+                  float notUsed;
+                  float eWX = modf(rotatedX, &notUsed);// end weight X
+                  float eWY = modf(rotatedY, &notUsed);// end weight Y;
+                  float sWX = 1 - eWX;// start weight X
+                  float sWY = 1 - eWY;// start weight Y;
+                  pre_film_image(row, col * 3 + c) =
+                    prefilm_input_image(sY, sX) * sWY * sWX + prefilm_input_image(eY, sX) * eWY * sWX
+                    + prefilm_input_image(sY, eX) * sWY * eWX + prefilm_input_image(eY, eX) * eWY * eWX;
+                }
+              }
+            }
+          }
+        }// else {
+         // demosaiced image isn't populated
+         // if geometry wasn't changed, then we'll move stuff over later.
+        //}
+
+        if (mod != NULL) { delete mod; }
+      }
+      lf_free(lensList);
+    }
+    lf_free(cameraList);
+
+    cout << "after lensfun " << endl;
+
+    // also do rotations on non-corrected images
+    if (!lensfunGeometryCorrectionApplied) {
+      if (rotationAngle != 0.0f) {
+        float maxOvershootDistance = 1.0f;
+        float semiwidth = (width - 1) / 2.0f;
+        float semiheight = (height - 1) / 2.0f;
+
+        // check the four corners
+        for (int row = 0; row < height; row += height - 1) {
+          for (int col = 0; col < width; col += width - 1) {
+            float coordX = col - semiwidth;
+            float coordY = row - semiheight;
+            float rotatedX = coordX * cos(rotationAngle) - coordY * sin(rotationAngle);
+            float rotatedY = coordX * sin(rotationAngle) + coordY * cos(rotationAngle);
+
+            float overshoot = 1.0f;
+
+            if (abs(rotatedX) > semiwidth) { overshoot = max(abs(rotatedX) / semiwidth, overshoot); }
+            if (abs(rotatedY) > semiheight) { overshoot = max(abs(rotatedY) / semiheight, overshoot); }
+
+            if (overshoot > maxOvershootDistance) { maxOvershootDistance = overshoot; }
+          }
+        }
+
+        // Apply the rotation
+        pre_film_image.set_size(height, width * 3);
+
+        for (int row = 0; row < height; row++) {
+          for (int col = 0; col < width; col++) {
+            float coordX = col - semiwidth;
+            float coordY = row - semiheight;
+            float rotatedX =
+              (coordX * cos(rotationAngle) - coordY * sin(rotationAngle)) / maxOvershootDistance + semiwidth;
+            float rotatedY =
+              (coordX * sin(rotationAngle) + coordY * cos(rotationAngle)) / maxOvershootDistance + semiheight;
+            int sX = max(0, min(width - 1, int(floor(rotatedX)))) * 3;// startX
+            int eX = max(0, min(width - 1, int(ceil(rotatedX)))) * 3;// endX
+            int sY = max(0, min(height - 1, int(floor(rotatedY))));// startY
+            int eY = max(0, min(height - 1, int(ceil(rotatedY))));// endY
+            float notUsed;
+            float eWX = modf(rotatedX, &notUsed);// end weight X
+            float eWY = modf(rotatedY, &notUsed);// end weight Y;
+            float sWX = 1 - eWX;// start weight X
+            float sWY = 1 - eWY;// start weight Y;
+            for (int c = 0; c < 3; c++) {
+              pre_film_image(row, col * 3 + c) =
+                prefilm_input_image(sY, sX + c) * sWY * sWX + prefilm_input_image(eY, sX + c) * eWY * sWX
+                + prefilm_input_image(sY, eX + c) * sWY * eWX + prefilm_input_image(eY, eX + c) * eWY * eWX;
+            }
+          }
+        }
+      } else {
+        // if we never rotate and never use lensfun geometry correction, we need
+        // to move the image over
+        pre_film_image.swap(prefilm_input_image);
       }
     }
-#endif
 
+    // resize into a small image
     if (quality == LowQuality) {
+      cout << "thumbnail scale start:" << timeDiff(timeRequested) << endl;
+      auto downscale_time = std::chrono::steady_clock::now();
       downscale_and_crop(
         pre_film_image, pre_film_image_small, 0, 0, (pre_film_image.nc() / 3) - 1, pre_film_image.nr() - 1, 600, 600);
+      cout << "thumbnail scale end: " << timeDiff(downscale_time) << endl;
     } else if (quality == PreviewQuality) {
+      cout << "preview scale start:" << timeDiff(timeRequested) << endl;
+      auto downscale_time = std::chrono::steady_clock::now();
+      // Make previews have same even/oddness as the source image
       int paritywidth = resolution + resolution % 2 + (pre_film_image.nc() / 3) % 2;
       int parityheight = resolution + resolution % 2 + (pre_film_image.nr()) % 2;
       downscale_and_crop(pre_film_image,
@@ -522,17 +1440,25 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
         pre_film_image.nr() - 1,
         paritywidth,
         parityheight);
-    } else {
-      // High quality, we don't need the small image necessarily, but we can clear it or leave it.
-      // Let's clear it to save memory if we are doing full processing and don't need preview?
-      // Actually, existing logic cleared it. Use:
-      if (cache == NoCache) pre_film_image_small.set_size(0, 0);
+      cout << "preview scale end: " << timeDiff(downscale_time) << endl;
     }
 
+    if (WithHisto == histo) {
+      // grab crop and rotation parameters
+      CropParams cropParam = paramManager->claimCropParams();
+      cropHeight = cropParam.cropHeight;
+      cropAspect = cropParam.cropAspect;
+      cropHoffset = cropParam.cropHoffset;
+      cropVoffset = cropParam.cropVoffset;
+      rotation = cropParam.rotation;
+      histoInterface->updateHistPreFilm(
+        pre_film_image, 65535, rotation, cropHeight, cropAspect, cropHoffset, cropVoffset);
+    }
+
+    cout << "ImagePipeline::processImage: Prefilmulation complete." << endl;
+    SCAN_MATRIX_FOR_NAN(pre_film_image, "PrefilmComplete");
+
     valid = paramManager->markPrefilmComplete();
-#ifdef ENABLE_NAN_TRAPPING
-    SCAN_MATRIX_FOR_NAN(pre_film_image, "pre_film_image");
-#endif
     updateProgress(valid, 0.0f);
     [[fallthrough]];
   }
@@ -543,7 +1469,7 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
 
     matrix<float> film_input_image;
     if (stealData) {
-      FILM_DEBUG("imagePipeline stealing data");
+      cout << "imagePipeline stealing data" << endl;
       exifData = stealVictim->exifData;
       rCamMul = stealVictim->rCamMul;
       gCamMul = stealVictim->gCamMul;
@@ -572,38 +1498,13 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
       for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 4; j++) { camToRGB4[i][j] = stealVictim->camToRGB4[i][j]; }
       }
-      matrix<float> *sourceImage = &stealVictim->pre_film_image;
-      if (sourceImage->nr() == 0 && stealVictim->pre_film_image_small.nr() > 0) {
-        sourceImage = &stealVictim->pre_film_image_small;
-        FILM_DEBUG("Stealing from small image");
-      }
-
       if (!isMonochrome) {
-        FILM_DEBUG("Stealing: sourceImage sizes: {}x{}", sourceImage->nr(), sourceImage->nc());
-        float *sdata = *sourceImage;
-        if (sdata) {
-          float smin = *std::min_element(sdata, sdata + sourceImage->nr() * sourceImage->nc());
-          float smax = *std::max_element(sdata, sdata + sourceImage->nr() * sourceImage->nc());
-          FILM_DEBUG("Stealing: sourceImage min: {} max: {}", smin, smax);
-        } else {
-          FILM_ERROR("Stealing: sourceImage data is NULL");
-        }
-
-        FILM_DEBUG("Stealing: camToRGB[0][0]: {}", camToRGB[0][0]);
-
-        raw_to_sRGB(*sourceImage, film_input_image, camToRGB);
-
-        float *fdata = film_input_image;
-        if (fdata) {
-          float fmin = *std::min_element(fdata, fdata + film_input_image.nr() * film_input_image.nc());
-          float fmax = *std::max_element(fdata, fdata + film_input_image.nr() * film_input_image.nc());
-          FILM_DEBUG("Stealing: film_input_image min: {} max: {}", fmin, fmax);
-        }
+        raw_to_sRGB(stealVictim->pre_film_image, film_input_image, camToRGB);
       } else {
-        film_input_image = *sourceImage;
+        film_input_image = stealVictim->pre_film_image;
       }
     } else {
-      FILM_DEBUG("imagePipeline not stealing data");
+      cout << "imagePipeline not stealing data" << endl;
       if (quality == LowQuality || quality == PreviewQuality) {
         // grab shrunken image
         if (!isMonochrome) {
@@ -628,9 +1529,9 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
       }
     }
 
-    FILM_DEBUG("imagePipeline beginning filmulation");
-    FILM_DEBUG("imagePipeline image width:  {}", film_input_image.nc() / 3);
-    FILM_DEBUG("imagePipeline image height: {}", film_input_image.nr());
+    cout << "imagePipeline beginning filmulation" << endl;
+    cout << "imagePipeline image width:  " << film_input_image.nc() / 3 << endl;
+    cout << "imagePipeline image height: " << film_input_image.nr() << endl;
 
     // We don't need to check abort status out here, because
     // the filmulate function will do so inside its loop.
@@ -639,7 +1540,7 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     // Here we do the film simulation on the image...
     // If filmulate detects an abort, it returns true.
     if (filmulate(film_input_image, filmulated_image, paramManager, this)) {
-      FILM_WARN("imagePipeline aborted at filmulation");
+      cout << "imagePipeline aborted at filmulation" << endl;
       return emptyMatrix();
     }
 
@@ -675,7 +1576,8 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
         cropVoffset);
     }
 
-    FILM_INFO("ImagePipeline::processImage: Filmulation complete.");
+    cout << "ImagePipeline::processImage: Filmulation complete." << endl;
+    SCAN_MATRIX_FOR_NAN(filmulated_image, "FilmulationComplete");
 
     valid = paramManager->markFilmComplete();
     updateProgress(valid, 0.0f);
@@ -685,15 +1587,15 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     [[fallthrough]];
   case filmulation:// Do whitepoint_blackpoint
   {
-    FILM_DEBUG("imagePipeline beginning whitepoint blackpoint");
-    FILM_DEBUG("imagePipeline image width:  {}", filmulated_image.nc() / 3);
-    FILM_DEBUG("imagePipeline image height: {}", filmulated_image.nr());
+    cout << "imagePipeline beginning whitepoint blackpoint" << endl;
+    cout << "imagePipeline image width:  " << filmulated_image.nc() / 3 << endl;
+    cout << "imagePipeline image height: " << filmulated_image.nr() << endl;
 
     BlackWhiteParams blackWhiteParam;
     AbortStatus abort;
     std::tie(valid, abort, blackWhiteParam) = paramManager->claimBlackWhiteParams();
     if (abort == AbortStatus::restart) {
-      FILM_WARN("imagePipeline aborted at whitepoint blackpoint");
+      cout << "imagePipeline aborted at whitepoint blackpoint" << endl;
       return emptyMatrix();
     }
 
@@ -776,13 +1678,13 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     }
 
     matrix<float> cropped_image;
-    FILM_DEBUG("crop start: {}", timeDiff(timeRequested));
+    cout << "crop start:" << timeDiff(timeRequested) << endl;
     std::chrono::steady_clock::time_point crop_time;
     crop_time = std::chrono::steady_clock::now();
 
     downscale_and_crop(rotated_image, cropped_image, startX, startY, endX, endY, width, height);
 
-    FILM_DEBUG("crop end: {}", timeDiff(crop_time));
+    cout << "crop end: " << timeDiff(crop_time) << endl;
 
     rotated_image.set_size(0, 0);// clean up ram that's not needed anymore
 
@@ -799,7 +1701,7 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     [[fallthrough]];
   case blackwhite:// Do color_curve
   {
-    FILM_DEBUG("imagePipeline beginning dummy color curve");
+    cout << "imagePipeline beginning dummy color curve" << endl;
     // It's not gonna abort because we have no color curves yet..
     // Prepare LUT's for individual color processin.g
     lutR.setUnity();
@@ -822,13 +1724,13 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
     [[fallthrough]];
   case colorcurve:// Do film-like curve
   {
-    FILM_DEBUG("imagePipeline beginning film like curve");
+    cout << "imagePipeline beginning film like curve" << endl;
 
     FilmlikeCurvesParams curvesParam;
     AbortStatus abort;
     std::tie(valid, abort, curvesParam) = paramManager->claimFilmlikeCurvesParams();
     if (abort == AbortStatus::restart) {
-      FILM_WARN("imagePipeline aborted at color curve");
+      cout << "imagePipeline aborted at color curve" << endl;
       return emptyMatrix();
     }
 
@@ -863,7 +1765,7 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
   }
   default:// output
   {
-    FILM_DEBUG("imagePipeline beginning output");
+    cout << "imagePipeline beginning output" << endl;
     if (NoCache == cache) {
       // vibrance_saturation_image.set_size(0, 0);
       cacheEmpty = true;
@@ -879,7 +1781,7 @@ matrix<unsigned short> &ImagePipeline::processImage(ParameterManager *paramManag
   }
   }// End task switch
 
-  FILM_WARN("imagePipeline aborted at end");
+  cout << "imagePipeline aborted at end" << endl;
   return emptyMatrix();
 }
 
@@ -1100,9 +2002,9 @@ void ImagePipeline::sampleWB(const float xPos,
   red = rSum / (rUserMul * count);
   green = gSum / (gUserMul * count);
   blue = bSum / (bUserMul * count);
-  FILM_DEBUG("custom WB sampled r: {}", red);
-  FILM_DEBUG("custom WB sampled g: {}", green);
-  FILM_DEBUG("custom WB sampled b: {}", blue);
+  cout << "custom WB sampled r: " << red << endl;
+  cout << "custom WB sampled g: " << green << endl;
+  cout << "custom WB sampled b: " << blue << endl;
 }
 
 void ImagePipeline::clearInvalid(Valid validIn)
