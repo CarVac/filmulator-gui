@@ -240,7 +240,12 @@ jobs:
       uses: lukka/get-cmake@latest
 
     - name: Configure CMake
-      run: cmake --preset ${{ matrix.preset }} -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          export OpenMP_ROOT=$(brew --prefix libomp)
+        fi
+        cmake --preset ${{ matrix.preset }} -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
 
     - name: Print vcpkg ABI info
       if: always()
