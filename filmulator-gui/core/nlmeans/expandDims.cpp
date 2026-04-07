@@ -1,25 +1,22 @@
-#include <cstddef>
+#include "nlmeans.hpp"
 #include <algorithm>
 #include <cmath>
-#include "nlmeans.hpp"
+#include <cstddef>
 
-//Aguide is called p in the paper, W is called c_k, centers is called mu_k 
-void expandDims(float* __restrict const I, const int sizeX, const int sizeY, float* __restrict output) {
+// Aguide is called p in the paper, W is called c_k, centers is called mu_k
+void expandDims(float *__restrict const I, const int sizeX, const int sizeY, float *__restrict output) {
     constexpr int numChannels = 3;
-    int patchWidth = (2 * radius + 1);
-
+    int           patchWidth = (2 * radius + 1);
 
     std::vector<float> weightMat(patchWidth * patchWidth);
     for (int xPatch = -radius; xPatch < radius + 1; xPatch++) {
         for (int yPatch = -radius; yPatch < radius + 1; yPatch++) {
-            int xPatchIdx = xPatch + radius;
-            int yPatchIdx = yPatch + radius;
+            int   xPatchIdx = xPatch + radius;
+            int   yPatchIdx = yPatch + radius;
             float dist = float(xPatch * xPatch) + float(yPatch * yPatch);
             weightMat[yPatchIdx + xPatchIdx * patchWidth] = std::exp(-dist / radius);
         }
-
     }
-
 
     for (int xPatch = -radius; xPatch < radius + 1; xPatch++) {
         for (int yPatch = -radius; yPatch < radius + 1; yPatch++) {
@@ -27,13 +24,11 @@ void expandDims(float* __restrict const I, const int sizeX, const int sizeY, flo
                 for (int x = 0; x < sizeX; x++) {
                     for (int y = 0; y < sizeY; y++) {
 
-
                         int xPatchIdx = xPatch + radius;
                         int yPatchIdx = yPatch + radius;
 
                         int yRead = y + yPatch;
                         int xRead = x + xPatch;
-
 
                         float readVal = 0;
                         if (!((yRead < 0) | (yRead >= sizeY) | (xRead < 0) | (xRead >= sizeX))) {

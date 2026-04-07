@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of Filmulator.
  *
  * Copyright 2013 Omer Mano and Carlo Vaccari
@@ -20,27 +20,24 @@
 #define LUT_H
 
 #define MAXVAL 65536
+#include "interface.h"
 #include <algorithm>
 #include <functional>
-#include "interface.h"
 
 using namespace std;
 
-template <class numberType>
-class LUT
-{
-private:
+template<class numberType> class LUT {
+  private:
     numberType table[MAXVAL];
-    bool unity;
-    bool linear;
-    float slope;
-    float y_intercept;
-    float brightest;
-    float darkest;
-public:
-    void setLinear(float slope_in, float y_intercept_in,
-                   float brightest_in, float darkest_in)
-    {
+    bool       unity;
+    bool       linear;
+    float      slope;
+    float      y_intercept;
+    float      brightest;
+    float      darkest;
+
+  public:
+    void setLinear(float slope_in, float y_intercept_in, float brightest_in, float darkest_in) {
         linear = true;
         unity = false;
         slope = slope_in;
@@ -49,33 +46,24 @@ public:
         darkest = darkest_in;
     }
 
-    void setUnity()
-    {
+    void setUnity() {
         linear = false;
         unity = true;
     }
 
-    bool isUnity()
-    {
-        return unity;
-    }
+    bool isUnity() { return unity; }
 
-    void fill(std::function<numberType (unsigned short)> func)
-	{
+    void fill(std::function<numberType(unsigned short)> func) {
         linear = false;
         unity = false;
 
-        for(int i = 0; i < MAXVAL; i++)
-            table[i] = func(i);
-	}
-	
-    numberType operator[](unsigned short index)
-	{
-        if (unity)
-            return index;
-        if (linear)
-            return min(max((index*slope)+y_intercept,darkest),brightest);
+        for (int i = 0; i < MAXVAL; i++) { table[i] = func(i); }
+    }
+
+    numberType operator[](unsigned short index) {
+        if (unity) { return index; }
+        if (linear) { return min(max((index * slope) + y_intercept, darkest), brightest); }
         return table[index];
-	}
+    }
 };
-#endif //LUT_H
+#endif // LUT_H

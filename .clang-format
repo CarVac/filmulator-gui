@@ -1,5 +1,5 @@
 AccessModifierOffset: -2
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations:
   Enabled: true
@@ -7,7 +7,7 @@ AlignConsecutiveDeclarations:
   AcrossComments: false
 AlignEscapedNewlines: Left
 AlignOperands: true
-AlignTrailingComments: false
+AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: false
@@ -21,20 +21,20 @@ AlwaysBreakTemplateDeclarations: false
 BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:
-  AfterClass: true
-  AfterControlStatement: false
+  AfterClass: false
+  AfterControlStatement: Never
   AfterEnum: false
-  AfterFunction: true
+  AfterFunction: false
   AfterNamespace: false
   AfterObjCDeclaration: false
-  AfterStruct: true
+  AfterStruct: false
   AfterUnion: false
   BeforeCatch: false
   BeforeElse: false
   IndentBraces: false
   SplitEmptyFunction: false
-  SplitEmptyNamespace: true
-  SplitEmptyRecord: true
+  SplitEmptyNamespace: false
+  SplitEmptyRecord: false
 BreakAfterJavaFieldAnnotations: true
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Custom
@@ -89,7 +89,7 @@ SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
-SpacesBeforeTrailingComments: 0
+SpacesBeforeTrailingComments: 1
 SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInContainerLiterals: true

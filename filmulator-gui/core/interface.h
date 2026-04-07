@@ -2,7 +2,7 @@
 #define INTERFACE_H
 #include "matrix.hpp"
 
-enum LogY {no, yes};
+enum LogY { no, yes };
 
 struct Histogram {
     long long lHist[128];
@@ -18,22 +18,31 @@ struct Histogram {
     bool empty = true;
 };
 
-class Interface
-{
-public:
-    virtual void setProgress(float){}
-    virtual void updateHistRaw(const matrix<float>& /*image*/, const float /*maximum*/[3], unsigned /*cfa*/[2][2], unsigned /*xtrans*/[6][6], int /*maxXtrans*/, bool /*isRGB*/, bool /*isMonochrome*/){}
-    virtual void updateHistPreFilm(const matrix<float>& /*image*/, const float /*maximum*/,
+class Interface {
+  public:
+    virtual void setProgress(float) {}
+    virtual void updateHistRaw(const matrix<float> & /*image*/,
+                               const float /*maximum*/[3],
+                               unsigned /*cfa*/[2][2],
+                               unsigned /*xtrans*/[6][6],
+                               int /*maxXtrans*/,
+                               bool /*isRGB*/,
+                               bool /*isMonochrome*/) {}
+    virtual void updateHistPreFilm(const matrix<float> & /*image*/,
+                                   const float /*maximum*/,
                                    const int /*rotation*/,
-                                   const float /*cropHeight*/, const float /*cropAspect*/,
-                                   const float /*cropHoffset*/, const float /*cropVoffset*/){}
-    virtual void updateHistPostFilm(const matrix<float>& /*image*/, const float /*maximum*/,
+                                   const float /*cropHeight*/,
+                                   const float /*cropAspect*/,
+                                   const float /*cropHoffset*/,
+                                   const float /*cropVoffset*/) {}
+    virtual void updateHistPostFilm(const matrix<float> & /*image*/,
+                                    const float /*maximum*/,
                                     const int /*rotation*/,
-                                    const float /*cropHeight*/, const float /*cropAspect*/,
-                                    const float /*cropHoffset*/, const float /*cropVoffset*/){}
-    virtual void updateHistFinal(const matrix<unsigned short>& /*image*/){}
-
-
+                                    const float /*cropHeight*/,
+                                    const float /*cropAspect*/,
+                                    const float /*cropHoffset*/,
+                                    const float /*cropVoffset*/) {}
+    virtual void updateHistFinal(const matrix<unsigned short> & /*image*/) {}
 };
 
 #endif // INTERFACE_H

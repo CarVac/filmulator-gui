@@ -20,7 +20,7 @@
 #include <chrono>
 
 double timeDiff(std::chrono::steady_clock::time_point start) {
-  auto end = std::chrono::steady_clock::now();
-  std::chrono::duration<double> diff = end - start;
-  return diff.count();
+    auto                          end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    return diff.count();
 }

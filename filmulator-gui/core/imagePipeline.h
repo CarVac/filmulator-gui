@@ -11,133 +11,138 @@ enum Histo { WithHisto, NoHisto };
 enum QuickQuality { LowQuality, PreviewQuality, HighQuality };
 
 class ImagePipeline {
-public:
-  ImagePipeline(Cache, Histo, QuickQuality);
-  ~ImagePipeline();
+  public:
+    ImagePipeline(Cache, Histo, QuickQuality);
+    ~ImagePipeline();
 
-  // Loads and processes an image according to the 'params' structure,
-  // monitoring 'aborted' for cancellation.
-  matrix<unsigned short> &processImage(ParameterManager *paramManager,
-                                       Interface *histoInterface,
-                                       Exiv2::ExifData &exifOutput,
-                                       const QString fileHash,
-                                       ImagePipeline *stealVictim = nullptr);
+    // Loads and processes an image according to the 'params' structure,
+    // monitoring 'aborted' for cancellation.
+    matrix<unsigned short> &processImage(ParameterManager *paramManager,
+                                         Interface        *histoInterface,
+                                         Exiv2::ExifData  &exifOutput,
+                                         const QString     fileHash,
+                                         ImagePipeline    *stealVictim = nullptr);
 
-  // Returns the progress of the pipeline from 0, incomplete, to 1, complete.
-  float getProgress() { return progress; }
+    // Returns the progress of the pipeline from 0, incomplete, to 1, complete.
+    float getProgress() { return progress; }
 
-  // Returns a copy of the latest image, in a full color interleaved 16-bit per
-  // color format.
-  // TODO: remove this!
-  matrix<unsigned short> getLastImage();
+    // Returns a copy of the latest image, in a full color interleaved 16-bit per
+    // color format.
+    // TODO: remove this!
+    matrix<unsigned short> getLastImage();
 
-  // Lets the consumer turn cache on and off
-  void setCache(Cache cacheIn);
+    // Lets the consumer turn cache on and off
+    void setCache(Cache cacheIn);
 
-  // Erases invalid cached data ahead of time
-  void clearInvalid(Valid validIn);
+    // Erases invalid cached data ahead of time
+    void clearInvalid(Valid validIn);
 
-  // Variable relating to stealing the demosaiced data from another
-  // imagepipeline
-  bool stealData = false;
-  // ImagePipeline * stealVictim;
+    // Variable relating to stealing the demosaiced data from another
+    // imagepipeline
+    bool stealData = false;
+    // ImagePipeline * stealVictim;
 
-  // Method to straight up copy the data between imagepipelines
-  // This is used when copying preloaded pipeline data
-  void swapPipeline(ImagePipeline *copySource);
+    // Method to straight up copy the data between imagepipelines
+    // This is used when copying preloaded pipeline data
+    void swapPipeline(ImagePipeline *copySource);
 
-  // This is related to the above; if the image changes but the pipeline is
-  //  preloaded, we need to refresh the histograms
-  void rerunHistograms();
+    // This is related to the above; if the image changes but the pipeline is
+    //  preloaded, we need to refresh the histograms
+    void rerunHistograms();
 
-  // Sample the image and return the average level of each channel
-  void sampleWB(const float xPos,
-                const float yPos, // relative to the rotated and cropped image
-                const int rotation, const float cropHeight,
-                const float cropAspect, const float cropVoffset,
-                const float cropHoffset, float &red, float &green, float &blue);
+    // Sample the image and return the average level of each channel
+    void sampleWB(const float xPos,
+                  const float yPos, // relative to the rotated and cropped image
+                  const int   rotation,
+                  const float cropHeight,
+                  const float cropAspect,
+                  const float cropVoffset,
+                  const float cropHoffset,
+                  float      &red,
+                  float      &green,
+                  float      &blue);
 
-  // The resolution of a quick preview
-  int resolution;
+    // The resolution of a quick preview
+    int resolution;
 
-  // Lensfun database object
-  lfDatabase *ldb;
+    // Lensfun database object
+    lfDatabase *ldb;
 
-protected:
-  matrix<unsigned short> &emptyMatrix() { return empty; }
+  protected:
+    matrix<unsigned short> &emptyMatrix() { return empty; }
 
-  Cache cache;
-  bool cacheEmpty = false;
-  bool hasStartedProcessing = false;
-  Histo histo;
-  QuickQuality quality;
-  Interface *histoInterface;
+    Cache        cache;
+    bool         cacheEmpty = false;
+    bool         hasStartedProcessing = false;
+    Histo        histo;
+    QuickQuality quality;
+    Interface   *histoInterface;
 
-  QString filename;
-  QString fileID;
+    QString filename;
+    QString fileID;
 
-  Valid valid;
-  float progress;
+    Valid valid;
+    float progress;
 
-  LUT<unsigned short> lutR, lutG, lutB;
-  LUT<unsigned short> filmLikeLUT;
+    LUT<unsigned short> lutR, lutG, lutB;
+    LUT<unsigned short> filmLikeLUT;
 
-  std::chrono::steady_clock::time_point timeRequested;
+    std::chrono::steady_clock::time_point timeRequested;
 
-  // raw stuff
-  matrix<float> raw_image;
-  matrix<unsigned short> empty;
-  unsigned cfa[2][2];
-  unsigned xtrans[6][6];
-  int maxXtrans;
-  int raw_width, raw_height;
-  float camToRGB[3][3]; // rgb_cam from libraw
-  float xyzToCam[3][3]; // cam_xyz from libraw
-  float camToRGB4[3][4];
-  float rCamMul, gCamMul, bCamMul;    // wb used on the image by the camera
-  float rPreMul, gPreMul, bPreMul;    //"daylight" wb according to libraw
-  float rUserMul, gUserMul, bUserMul; // wb actually applied
-  float maxValue;
-  float colorMaxValue[3];
-  bool isSraw; // Actually we should set this for all full-color raws (including
-               // X-Transformer)
-  bool isNikonSraw;
-  bool isMonochrome;
-  bool isCR3;
+    // raw stuff
+    matrix<float>          raw_image;
+    matrix<unsigned short> empty;
+    unsigned               cfa[2][2];
+    unsigned               xtrans[6][6];
+    int                    maxXtrans;
+    int                    raw_width, raw_height;
+    float                  camToRGB[3][3]; // rgb_cam from libraw
+    float                  xyzToCam[3][3]; // cam_xyz from libraw
+    float                  camToRGB4[3][4];
+    float                  rCamMul, gCamMul, bCamMul;    // wb used on the image by the camera
+    float                  rPreMul, gPreMul, bPreMul;    //"daylight" wb according to libraw
+    float                  rUserMul, gUserMul, bUserMul; // wb actually applied
+    float                  maxValue;
+    float                  colorMaxValue[3];
+    bool                   isSraw; // Actually we should set this for all full-color raws (including X-Transformer)
+    bool                   isNikonSraw;
+    bool                   isMonochrome;
+    bool                   isCR3;
 
-  matrix<float> demosaiced_image;     // raw
-  matrix<float> post_demosaic_image;  // raw
-  matrix<float> nlmeans_nr_image;     // lab
-  matrix<float> impulse_nr_image;     // lab
-  matrix<float> chroma_nr_image;      // lab
-  matrix<float> pre_film_image;       // back to raw
-  matrix<float> pre_film_image_small; //
-  Exiv2::ExifData exifData;
-  Exiv2::ExifData basicExifData;  // for tiff writing
-  matrix<float> filmulated_image; // sRGB
-  matrix<unsigned short> contrast_image;
-  matrix<unsigned short> color_curve_image;
-  matrix<unsigned short> vibrance_saturation_image;
+    matrix<float>          demosaiced_image;    // raw
+    matrix<float>          post_demosaic_image; // raw
+    matrix<float>          nlmeans_nr_image;    // lab
+    matrix<float>          impulse_nr_image;    // lab
+    matrix<float>          chroma_nr_image;     // lab
+    matrix<float>          pre_film_image;      // back to raw
+    matrix<float>          pre_film_image_small;
+    Exiv2::ExifData        exifData;
+    Exiv2::ExifData        basicExifData;    // for tiff writing
+    matrix<float>          filmulated_image; // sRGB
+    matrix<unsigned short> contrast_image;
+    matrix<unsigned short> color_curve_image;
+    matrix<unsigned short> vibrance_saturation_image;
 
-  // Crop parameters for generating histograms properly according to the crop
-  float cropHeight;
-  float cropAspect;
-  float cropHoffset;
-  float cropVoffset;
-  int rotation;
+    // Crop parameters for generating histograms properly according to the crop
+    float cropHeight;
+    float cropAspect;
+    float cropHoffset;
+    float cropVoffset;
+    int   rotation;
 
-  // Internal functions for progress and time tracking.
-  vector<double> completionTimes;
-  void updateProgress(Valid valid, float CurrFractionCompleted);
+    // Internal functions for progress and time tracking.
+    vector<double> completionTimes;
+    void           updateProgress(Valid valid, float CurrFractionCompleted);
 
-  // The core filmulation. It needs to access ProcessingParameters, so it's
-  // here.
-  bool filmulate(matrix<float> &scaled_image, matrix<float> &output_density,
-                 ParameterManager *paramManager, ImagePipeline *pipeline);
+    // The core filmulation. It needs to access ProcessingParameters, so it's
+    // here.
+    bool filmulate(matrix<float>    &scaled_image,
+                   matrix<float>    &output_density,
+                   ParameterManager *paramManager,
+                   ImagePipeline    *pipeline);
 
-  // Callback for LibRaw cancellation
-  static int libraw_callback(void *data, enum LibRaw_progress p, int iteration,
-                             int expected);
+    // Callback for LibRaw cancellation
+    static int libraw_callback(void *data, enum LibRaw_progress p, int iteration, int expected);
 };
 
 #endif // IMAGEPIPELINE_H
