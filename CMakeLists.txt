@@ -292,6 +292,8 @@ if(CLANG_FORMAT)
     list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/core/nlmeans/eigen/.*")
     list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/Halide/.*")
     list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/core/rawtherapee/.*")
+    # Exclude filmulator.cpp
+    list(FILTER ALL_S_FILES EXCLUDE REGEX "filmulator-gui/core/filmulator.*")
     
     add_custom_target(
         format
