@@ -1,60 +1,47 @@
 #include "filmulatorDB.h"
+#include <QFile>
+#include <QStandardPaths>
 #include <QString>
 #include <QVariant>
 #include <iostream>
-#include <QStandardPaths>
-#include <QFile>
 
-DBSuccess setupDB(QSqlDatabase *db)
-{
-    QDir dir = QDir::home();
+DBSuccess setupDB(QSqlDatabase *db) {
+    QDir    dir = QDir::home();
     QString dirstr = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dirstr.append("/filmulator");
-    if (!dir.cd(dirstr))
-    {
-        if (!dir.mkpath(dirstr))
-        {
+    if (!dir.cd(dirstr)) {
+        if (!dir.mkpath(dirstr)) {
             std::cout << "Could not create database directory" << std::endl;
             return DBSuccess::failure;
-        }
-        else
-        {
+        } else {
             dir.cd(dirstr);
         }
     }
-    db -> setDatabaseName(dir.absoluteFilePath("filmulatorDB"));
-    //this should create the database if it doesn't already exist.
+    db->setDatabaseName(dir.absoluteFilePath("filmulatorDB"));
+    // this should create the database if it doesn't already exist.
 
-    if (db -> open())
-    {
-//        std::cout << "Database open!" << std::endl;
-        //Success
-    }
-    else
-    {
+    if (db->open()) {
+        // std::cout << "Database open!" << std::endl;
+        // Success
+    } else {
         std::cout << "what?!?!?!?" << std::endl;
         return DBSuccess::failure;
     }
 
     QSqlQuery query;
 
-    //Check the database version.
+    // Check the database version.
     query.exec("PRAGMA user_version;");
     query.next();
     const int oldVersion = query.value(0).toInt();
-    if (oldVersion == 0)
-    {
+    if (oldVersion == 0) {
         std::cout << "First initialization." << std::endl;
-    }
-    else if (oldVersion > 15)//=================================================================version check here!
-    {
+    } else if (oldVersion > 15) { //=================================================================version check here!
         std::cout << "Newer database format. Aborting." << std::endl;
         return DBSuccess::failure;
-    }
-    else if (oldVersion < 15)//============================================================version check here!
-    {
+    } else if (oldVersion < 15) { //============================================================version check here!
         std::cout << "Backing up old database" << std::endl;
-        QFile file(dir.absoluteFilePath("filmulatorDB"));
+        QFile   file(dir.absoluteFilePath("filmulatorDB"));
         QString name = "filmulatorDB_schema_";
         name.append(QString::number(oldVersion));
         file.copy(dir.absoluteFilePath(name));
@@ -249,109 +236,111 @@ DBSuccess setupDB(QSqlDatabase *db)
                   //                    1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 5
                   //0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
     // clang-format on
-    //Name of profile; must be unique.
+    // Name of profile; must be unique.
     query.bindValue(0, "Default");
-    //Initial Developer Concentration
-    query.bindValue(1, 1.0f); //initialDeveloperConcentration
-    //Thickness of developer reservoir
-    query.bindValue(2, 1000.0f); //reservoirThickness
-    //Thickness of active layer (not necessarily the same units as above. I think. Maybe. -CV)
-    query.bindValue(3, 0.1f); //activeLayerThickness
-    //Number of crystals per pixel that might become activated
-    query.bindValue(4, 500.0f); //crystalsPerPixel
-    //Initial radius for just-activated silver crystals
-    query.bindValue(5, 0.00001f); //initialCrystalRadius
-    //Initial surface density of silver salt crystals
-    query.bindValue(6, 1.0f); //initalSilverSaltDensity
-    //Rate constant for consumption of developer
-    query.bindValue(7, 2000000.0f); //developerConsumptionConst
-    //Proportionality constant for growth of silver crystals relative to consumption of developer
-    query.bindValue(8, 0.00001f); //crystalGrowthConst
-    //Rate constant for consumption of silver halides in the film layers
-    query.bindValue(9, 2000000.0f); //silverSaltConsumptionConst
-    //Total duration of the simulated development
-    query.bindValue(10, 100.0f); //totalDevelopmentTime
-    //Number of times the developer solution is mixed during the development process
-    query.bindValue(11, 1); //agitateCount
-    //Number of simulation steps for the development process
-    query.bindValue(12, 12); //developmentSteps
-    //Area of the simulated film
-    query.bindValue(13, 864.0f); //filmArea
-    //Constant that influences the extent of the diffusion; yes this is redundant.
-    query.bindValue(14, 0.2f); //sigmaConst
-    //Constant that affects the amount of layer-reservoir diffusion
-    query.bindValue(15, 0.2f); //layerMixConst
-    //Constant that affects the ratio of intra-layer and layer-reservoir diffusion; yes this is redundant.
-    query.bindValue(16, 20.0f); //layerTimeDivisor
-    //Constant that affects where the rolloff starts in exposure
-    query.bindValue(17, 51275); //rolloffBoundary
-    //Exposure compensation
-    query.bindValue(18, 0.0f); //exposureComp
-    //White clipping point
-    query.bindValue(19, 0.002f); //whitepoint
-    //Black clipping point
-    query.bindValue(20, 0.0f); //blackpoint
-    //Input value defining the general shadow region control point
-    query.bindValue(21, 0.25f); //shadowsX
-    //Output value defining the general shadow region control point
-    query.bindValue(22, 0.25f); //shadowsY
-    //Input value defining the general highlight region control point
-    query.bindValue(23, 0.75f); //highlightsX
-    //Output value defining the general highlight region control point
-    query.bindValue(24, 0.75f); //highlightsY
-    //dcraw highlight recovery parameter
-    query.bindValue(25, 0); //highlightRecovery
-    //Automatic CA correct switch
-    query.bindValue(26, -1); //caEnabled | -1 indicates use lens preferences
-    //Color temperature WB adjustment
-    query.bindValue(27, 5200.0f); //temperature
-    //Magenta/green tint WB adjustment
-    query.bindValue(28, 1.0f); //tint
-    //Saturation of less-saturated stuff
-    query.bindValue(29, 0.0f); //vibrance
-    //Saturation of whole image
-    query.bindValue(30, 0.0f); //saturation
-    //Whether the image is monochrome
-    query.bindValue(31, 0); //monochrome
-    //weighting for black and white conversion
-    query.bindValue(32, 0.21f); //bwRmult
-    query.bindValue(33, 0.78f); //bwGmult
-    query.bindValue(34, 0.07f); //bwBmult
-    //How much to offset the exposure tone curve to the right while maintaining the toe
-    query.bindValue(35, 0.0f); //toeBoundary
-    query.bindValue(36, "NoLens"); //lensfun lens
-    query.bindValue(37, -1); //lensfun CA - negative 1 indicates use preferences
-    query.bindValue(38, -1); //lensfun vignetting
-    query.bindValue(39, -1); //lensfun distortion
-    //fine rotation angle
-    query.bindValue(40, 0.0f); //rotationAngle
-    //where the ui point about which we adjust rotation is, relative to the image dimensions
-    query.bindValue(41, -1.f); //rotationPointX
-    query.bindValue(42, -1.f); //rotationPointY
-    //demosaic method
-    query.bindValue(43, 0);//aMaZE
-    //noise reduction
-    query.bindValue(44, 0);//nrEnabled - off
-    query.bindValue(45, 30);//nlClusters
-    query.bindValue(46, 1e-5f);//nlThresh
-    query.bindValue(47, 0);//nlStrength
-    query.bindValue(48, 0);//impulseStrength
-    query.bindValue(49, 0);//chromaStrength
-    query.bindValue(50, 0);//highlightCrosstalk
+    // Initial Developer Concentration
+    query.bindValue(1, 1.0f); // initialDeveloperConcentration
+    // Thickness of developer reservoir
+    query.bindValue(2, 1000.0f); // reservoirThickness
+    // Thickness of active layer (not necessarily the same units as above. I think. Maybe. -CV)
+    query.bindValue(3, 0.1f); // activeLayerThickness
+    // Number of crystals per pixel that might become activated
+    query.bindValue(4, 500.0f); // crystalsPerPixel
+    // Initial radius for just-activated silver crystals
+    query.bindValue(5, 0.00001f); // initialCrystalRadius
+    // Initial surface density of silver salt crystals
+    query.bindValue(6, 1.0f); // initalSilverSaltDensity
+    // Rate constant for consumption of developer
+    query.bindValue(7, 2000000.0f); // developerConsumptionConst
+    // Proportionality constant for growth of silver crystals relative to consumption of developer
+    query.bindValue(8, 0.00001f); // crystalGrowthConst
+    // Rate constant for consumption of silver halides in the film layers
+    query.bindValue(9, 2000000.0f); // silverSaltConsumptionConst
+    // Total duration of the simulated development
+    query.bindValue(10, 100.0f); // totalDevelopmentTime
+    // Number of times the developer solution is mixed during the development process
+    query.bindValue(11, 1); // agitateCount
+    // Number of simulation steps for the development process
+    query.bindValue(12, 12); // developmentSteps
+    // Area of the simulated film
+    query.bindValue(13, 864.0f); // filmArea
+    // Constant that influences the extent of the diffusion; yes this is redundant.
+    query.bindValue(14, 0.2f); // sigmaConst
+    // Constant that affects the amount of layer-reservoir diffusion
+    query.bindValue(15, 0.2f); // layerMixConst
+    // Constant that affects the ratio of intra-layer and layer-reservoir diffusion; yes this is redundant.
+    query.bindValue(16, 20.0f); // layerTimeDivisor
+    // Constant that affects where the rolloff starts in exposure
+    query.bindValue(17, 51275); // rolloffBoundary
+    // Exposure compensation
+    query.bindValue(18, 0.0f); // exposureComp
+    // White clipping point
+    query.bindValue(19, 0.002f); // whitepoint
+    // Black clipping point
+    query.bindValue(20, 0.0f); // blackpoint
+    // Input value defining the general shadow region control point
+    query.bindValue(21, 0.25f); // shadowsX
+    // Output value defining the general shadow region control point
+    query.bindValue(22, 0.25f); // shadowsY
+    // Input value defining the general highlight region control point
+    query.bindValue(23, 0.75f); // highlightsX
+    // Output value defining the general highlight region control point
+    query.bindValue(24, 0.75f); // highlightsY
+    // dcraw highlight recovery parameter
+    query.bindValue(25, 0); // highlightRecovery
+    // Automatic CA correct switch
+    query.bindValue(26, -1); // caEnabled | -1 indicates use lens preferences
+    // Color temperature WB adjustment
+    query.bindValue(27, 5200.0f); // temperature
+    // Magenta/green tint WB adjustment
+    query.bindValue(28, 1.0f); // tint
+    // Saturation of less-saturated stuff
+    query.bindValue(29, 0.0f); // vibrance
+    // Saturation of whole image
+    query.bindValue(30, 0.0f); // saturation
+    // Whether the image is monochrome
+    query.bindValue(31, 0); // monochrome
+    // weighting for black and white conversion
+    query.bindValue(32, 0.21f); // bwRmult
+    query.bindValue(33, 0.78f); // bwGmult
+    query.bindValue(34, 0.07f); // bwBmult
+    // How much to offset the exposure tone curve to the right while maintaining the toe
+    query.bindValue(35, 0.0f);     // toeBoundary
+    query.bindValue(36, "NoLens"); // lensfun lens
+    query.bindValue(37, -1);       // lensfun CA - negative 1 indicates use preferences
+    query.bindValue(38, -1);       // lensfun vignetting
+    query.bindValue(39, -1);       // lensfun distortion
+    // fine rotation angle
+    query.bindValue(40, 0.0f); // rotationAngle
+    // where the ui point about which we adjust rotation is, relative to the image dimensions
+    query.bindValue(41, -1.f); // rotationPointX
+    query.bindValue(42, -1.f); // rotationPointY
+    // demosaic method
+    query.bindValue(43, 0); // aMaZE
+    // noise reduction
+    query.bindValue(44, 0);     // nrEnabled - off
+    query.bindValue(45, 30);    // nlClusters
+    query.bindValue(46, 1e-5f); // nlThresh
+    query.bindValue(47, 0);     // nlStrength
+    query.bindValue(48, 0);     // impulseStrength
+    query.bindValue(49, 0);     // chromaStrength
+    query.bindValue(50, 0);     // highlightCrosstalk
 
-    //Well, orientation and crop obviously don't get presets.
+    // Well, orientation and crop obviously don't get presets.
     query.exec();
 
-    //Because older versions would erroneously overwrite the file usage count on setting a new location, we need to set them all to 1
-    //SELECT COUNT(*), FTfileID FROM FileTable INNER JOIN SearchTable WHERE STsourceHash=FTfileID GROUP BY FTfileID;
+    // Because older versions would erroneously overwrite the file usage count on setting a new location, we need to set
+    // them all to 1
 
-    //Update old versions of the database
+    // SELECT COUNT(*), FTfileID FROM FileTable INNER JOIN SearchTable WHERE STsourceHash=FTfileID GROUP BY FTfileID;
+
+    // Update old versions of the database
     QString versionString = ";";
 
-    query.exec("BEGIN TRANSACTION;");//begin a transaction
+    query.exec("BEGIN TRANSACTION;"); // begin a transaction
     switch (oldVersion) {
     case 0:
-        //Generate a list of 100000 integers for useful purposes
+        // Generate a list of 100000 integers for useful purposes
         /*
         query.exec("CREATE TABLE integers (i integer);");
         query.exec("INSERT INTO integers (i) VALUES (0);");
@@ -397,12 +386,13 @@ DBSuccess setupDB(QSqlDatabase *db)
         [[fallthrough]];
     case 2:
         query.exec("DROP TABLE QueueTable;");
-        query.exec("CREATE TABLE QueueTable ("
-                   "QTindex integer,"
-                   "QTprocessed bool,"
-                   "QTexported bool,"
-                   "QToutput bool,"
-                   "QTsearchID varchar unique);");
+        query.exec(
+          "CREATE TABLE QueueTable ("
+          "QTindex integer,"
+          "QTprocessed bool,"
+          "QTexported bool,"
+          "QToutput bool,"
+          "QTsearchID varchar unique);");
         versionString = "PRAGMA user_version = 3;";
         std::cout << "Upgrading from old db version 2" << std::endl;
         [[fallthrough]];
@@ -414,8 +404,9 @@ DBSuccess setupDB(QSqlDatabase *db)
         std::cout << "Upgrading from old db version 3" << std::endl;
         [[fallthrough]];
     case 4:
-        query.exec("ALTER TABLE SearchTable "
-                   "ADD COLUMN STimportStartTime integer;");
+        query.exec(
+          "ALTER TABLE SearchTable "
+          "ADD COLUMN STimportStartTime integer;");
         query.exec("UPDATE SearchTable SET STimportStartTime = STimportTime;");
         versionString = "PRAGMA user_version = 5;";
         std::cout << "Upgrading from old db version 4" << std::endl;
@@ -426,18 +417,21 @@ DBSuccess setupDB(QSqlDatabase *db)
         std::cout << "Upgrading from old db version 5" << std::endl;
         [[fallthrough]];
     case 6:
-        query.exec("ALTER TABLE SearchTable "
-                   "ADD COLUMN STthumbWritten bool;");
-        query.exec("ALTER TABLE SearchTable "
-                   "ADD COLUMN STbigThumbWritten bool;");
+        query.exec(
+          "ALTER TABLE SearchTable "
+          "ADD COLUMN STthumbWritten bool;");
+        query.exec(
+          "ALTER TABLE SearchTable "
+          "ADD COLUMN STbigThumbWritten bool;");
         query.exec("UPDATE SearchTable SET STthumbWritten = 1;");
         query.exec("UPDATE SearchTable SET STbigThumbWritten = 0;");
         versionString = "PRAGMA user_version = 7;";
         std::cout << "Upgrading from old db version 6" << std::endl;
         [[fallthrough]];
     case 7:
-        query.exec("ALTER TABLE QueueTable "
-                   "ADD COLUMN QTsortedIndex;");
+        query.exec(
+          "ALTER TABLE QueueTable "
+          "ADD COLUMN QTsortedIndex;");
         query.exec("UPDATE QueueTable SET QTsortedIndex = QTindex;");
         versionString = "PRAGMA user_version = 8;";
         std::cout << "Upgrading from old db version 7" << std::endl;
@@ -559,7 +553,7 @@ DBSuccess setupDB(QSqlDatabase *db)
         std::cout << "Upgrading from old db version 14" << std::endl;
     }
     query.exec(versionString);
-    query.exec("COMMIT TRANSACTION;");//finalize the transaction only after writing the version.
+    query.exec("COMMIT TRANSACTION;"); // finalize the transaction only after writing the version.
 
     return DBSuccess::success;
 }

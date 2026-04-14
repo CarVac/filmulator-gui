@@ -1,19 +1,17 @@
 #ifndef EXIFFUNCTIONS_H
 #define EXIFFUNCTIONS_H
 
+#include <QDateTime>
+#include <QString>
 #include <exiv2/exiv2.hpp>
 #include <lensfun/lensfun.h>
-#include <QString>
-#include <QDateTime>
 
 /*Returns the unix time of the capture*/
 QDateTime exifUtcTime(const std::string fullFilename, const int cameraTZ);
 
 /*Returns the configured directory string based on the capture-local date.*/
-QString exifLocalDateString(const std::string fullFilename,
-                             const int cameraTZ,
-                             const int importTZ,
-                             const QString dirConfig);
+QString
+  exifLocalDateString(const std::string fullFilename, const int cameraTZ, const int importTZ, const QString dirConfig);
 
 /*Returns yyyy:MM::dd hh:mm:ss from time_t*/
 std::string exifDateTimeString(qint64 time);

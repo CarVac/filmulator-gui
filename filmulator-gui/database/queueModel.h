@@ -2,19 +2,18 @@
 #define QUEUEMODEL_H
 
 #include "sqlModel.h"
-#include <QString>
 #include <QQueue>
+#include <QString>
 
 struct QueueOrder {
     QString searchID;
-    int visualIndex;
+    int     visualIndex;
 };
 
-class QueueModel : public SqlModel
-{
+class QueueModel : public SqlModel {
     Q_OBJECT
     Q_PROPERTY(int queueSize READ getQueueSize NOTIFY queueSizeChanged)
-public:
+  public:
     explicit QueueModel(QObject *parent = nullptr);
     Q_INVOKABLE void setQueueQuery();
     Q_INVOKABLE void clearQueue();
@@ -28,22 +27,22 @@ public:
     Q_INVOKABLE QString getPrev(const QString searchID);
 
     Q_INVOKABLE float getActivePosition(const QString searchID);
-    Q_INVOKABLE int getQueueSize(){return m_queueSize;}
+    Q_INVOKABLE int   getQueueSize() { return m_queueSize; }
 
-public slots:
+  public slots:
     Q_INVOKABLE void deQueue(const QString searchID);
     Q_INVOKABLE void enQueue(const QString searchID);
 
-protected:
+  protected:
     int maxIndex;
 
     int m_queueSize;
 
-    void resetIndex();
+    void      resetIndex();
     QSqlQuery modelQuery();
-    void emitChange() {emit queueChanged();}
+    void      emitChange() { emit queueChanged(); }
 
-signals:
+  signals:
     void queueChanged();
     void queueSizeChanged();
     void searchTableChanged();

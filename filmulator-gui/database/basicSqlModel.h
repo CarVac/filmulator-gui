@@ -7,21 +7,21 @@
 
 #include "sqlModel.h"
 
-class BasicSqlModel : public SqlModel
-{
+class BasicSqlModel : public SqlModel {
     Q_OBJECT
 
-public:
+  public:
     explicit BasicSqlModel(QObject *parent = 0);
     void setQuery(const QSqlQuery &query);
-    void signalChange() {emit basicSqlModelChanged();}
-signals:
+    void signalChange() { emit basicSqlModelChanged(); }
+
+  signals:
     void basicSqlModelChanged();
-protected:
+
+  protected:
     QSqlQuery m_modelQuery;
-    QSqlQuery modelQuery() {return m_modelQuery;}
-    void emitChange() {emit basicSqlModelChanged();}
+    QSqlQuery modelQuery() { return m_modelQuery; }
+    void      emitChange() { emit basicSqlModelChanged(); }
 };
 
 #endif // BASICSQLMODEL_H
-

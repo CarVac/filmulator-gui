@@ -1,75 +1,73 @@
 #ifndef IMPORTMODEL_H
 #define IMPORTMODEL_H
 
-#include "sqlModel.h"
-#include <QString>
-#include <exiv2/exiv2.hpp>
-#include <deque>
+#include "../ui/settings.h"
 #include "importWorker.h"
-#include <QThread>
+#include "sqlModel.h"
+#include <QDateTime>
 #include <QFileInfo>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QDateTime>
+#include <QString>
 #include <QStringList>
-#include "../ui/settings.h"
+#include <QThread>
+#include <deque>
+#include <exiv2/exiv2.hpp>
 
 struct importParams {
     QFileInfo fileInfoParam;
-    int importTZParam;
-    int cameraTZParam;
-    QString photoDirParam;
-    QString backupDirParam;
-    QString dirConfigParam;
+    int       importTZParam;
+    int       cameraTZParam;
+    QString   photoDirParam;
+    QString   backupDirParam;
+    QString   dirConfigParam;
     QDateTime importStartTimeParam;
-    bool appendHashParam;
-    bool importInPlace;
-    bool replaceLocation;
-    bool noThumbnail;
+    bool      appendHashParam;
+    bool      importInPlace;
+    bool      replaceLocation;
+    bool      noThumbnail;
 };
 
-enum Validity {
-    valid,
-    invalid
-};
+enum Validity { valid, invalid };
 
-class ImportModel : public SqlModel
-{
+class ImportModel : public SqlModel {
     Q_OBJECT
 
-    Q_PROPERTY(int importTZ      READ getImportTZ  WRITE setImportTZ  NOTIFY importTZChanged)
-    Q_PROPERTY(int cameraTZ      READ getCameraTZ  WRITE setCameraTZ  NOTIFY cameraTZChanged)
+    // clang-format off
+    Q_PROPERTY(int importTZ READ getImportTZ WRITE setImportTZ NOTIFY importTZChanged)
+    Q_PROPERTY(int cameraTZ READ getCameraTZ WRITE setCameraTZ NOTIFY cameraTZChanged)
 
     Q_PROPERTY(QString photoDir  READ getPhotoDir  WRITE setPhotoDir  NOTIFY photoDirChanged)
     Q_PROPERTY(QString backupDir READ getBackupDir WRITE setBackupDir NOTIFY backupDirChanged)
     Q_PROPERTY(QString dirConfig READ getDirConfig WRITE setDirConfig NOTIFY dirConfigChanged)
 
-    //Whether or not to enqueue the image in the editor queue upon loading.
-    Q_PROPERTY(bool enqueue    READ getEnqueue    WRITE setEnqueue    NOTIFY enqueueChanged)
-    //Whether or not to append a part of the image hash to the filename when copying
+    // Whether or not to enqueue the image in the editor queue upon loading.
+    Q_PROPERTY(bool enqueue READ getEnqueue WRITE setEnqueue NOTIFY enqueueChanged)
+    // Whether or not to append a part of the image hash to the filename when copying
     Q_PROPERTY(bool appendHash READ getAppendHash WRITE setAppendHash NOTIFY appendHashChanged)
 
-    Q_PROPERTY(float progress READ getProgress NOTIFY progressChanged)
+    Q_PROPERTY(float progress       READ getProgress     NOTIFY progressChanged)
     Q_PROPERTY(QString progressFrac READ getProgressFrac NOTIFY progressFracChanged)
-    Q_PROPERTY(bool invalidFile READ getInvalidFile NOTIFY invalidFileChanged)
+    Q_PROPERTY(bool invalidFile     READ getInvalidFile  NOTIFY invalidFileChanged)
+    // clang-format on
 
-public:
+  public:
     explicit ImportModel(QObject *parent = 0);
     Q_INVOKABLE bool pathContainsDCIM(const QString dir, const bool notDirectory);
     Q_INVOKABLE bool pathWritable(const QString dir);
-    Q_INVOKABLE void importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation, const int depth = 0);
-    Q_INVOKABLE Validity importFile(const QString name, const bool importInPlace, const bool replaceLocation, const bool onlyCheck);
-    Q_INVOKABLE QString importFileNow(const QString name, Settings * settingsObj);
-    Q_INVOKABLE void importFileList(const QString name, const bool importInPlace, const bool replaceLocation);
+    Q_INVOKABLE void
+      importDirectory_r(const QString dir, const bool importInPlace, const bool replaceLocation, const int depth = 0);
+    Q_INVOKABLE Validity    importFile(const QString name,
+                                       const bool    importInPlace,
+                                       const bool    replaceLocation,
+                                       const bool    onlyCheck);
+    Q_INVOKABLE QString     importFileNow(const QString name, Settings *settingsObj);
+    Q_INVOKABLE void        importFileList(const QString name, const bool importInPlace, const bool replaceLocation);
     Q_INVOKABLE QStringList getNameFilters();
 
-    //clean up threads before exiting
-    Q_INVOKABLE void exitWorker()
-    {
-        if (workerThread.isRunning())
-        {
-            workerThread.exit();
-        }
+    // clean up threads before exiting
+    Q_INVOKABLE void exitWorker() {
+        if (workerThread.isRunning()) { workerThread.exit(); }
     }
 
     void setImportTZ(const int offsetIn);
@@ -82,25 +80,25 @@ public:
     void setEnqueue(const bool enqueueIn);
     void setAppendHash(const bool appendHashIn);
 
-    int getImportTZ() {return importTZ/3600;}
-    int getCameraTZ() {return cameraTZ/3600;}
+    int getImportTZ() { return importTZ / 3600; }
+    int getCameraTZ() { return cameraTZ / 3600; }
 
-    QString getPhotoDir() {return photoDir;}
-    QString getBackupDir() {return backupDir;}
-    QString getDirConfig() {return dirConfig;}
+    QString getPhotoDir() { return photoDir; }
+    QString getBackupDir() { return backupDir; }
+    QString getDirConfig() { return dirConfig; }
 
-    bool getEnqueue() {return enqueue;}
-    bool getAppendHash() {return appendHash;}
+    bool getEnqueue() { return enqueue; }
+    bool getAppendHash() { return appendHash; }
 
-    float getProgress() {return progress;}
-    QString getProgressFrac() {return progressFrac;}
-    bool getInvalidFile() {return invalidFile;}
+    float   getProgress() { return progress; }
+    QString getProgressFrac() { return progressFrac; }
+    bool    getInvalidFile() { return invalidFile; }
 
-public slots:
+  public slots:
     void workerFinished(bool changedST);
     void enqueueRequested(const QString STsearchID);
 
-signals:
+  signals:
     void importTZChanged();
     void cameraTZChanged();
 
@@ -119,22 +117,22 @@ signals:
     void enqueueThis(const QString STsearchID);
 
     void workForWorker(const QFileInfo infoIn,
-                       const int importTZ,
-                       const int cameraTZ,
-                       const QString photoDir,
-                       const QString backupDir,
-                       const QString dirConfig,
+                       const int       importTZ,
+                       const int       cameraTZ,
+                       const QString   photoDir,
+                       const QString   backupDir,
+                       const QString   dirConfig,
                        const QDateTime importStartTime,
-                       const bool appendHash,
-                       const bool importInPlace,
-                       const bool replaceLocation,
-                       const bool noThumbnail);
+                       const bool      appendHash,
+                       const bool      importInPlace,
+                       const bool      replaceLocation,
+                       const bool      noThumbnail);
 
     void importChanged();
 
-protected:
+  protected:
     QSqlQuery modelQuery();
-    void emitChange() {emit importChanged();}
+    void      emitChange() { emit importChanged(); }
 
     int importTZ;
     int cameraTZ;
@@ -146,16 +144,16 @@ protected:
     bool enqueue;
     bool appendHash;
 
-    //For what is accepted on directory import
+    // For what is accepted on directory import
     QStringList rawNameFilters;
-    //For the file picker
+    // For the file picker
     QStringList dirNameFilters;
 
     std::deque<importParams> queue;
-    int maxQueue;
-    float progress = 1;
-    QString progressFrac = "Progress: 0/0";
-    bool invalidFile = false;
+    int                      maxQueue;
+    float                    progress = 1;
+    QString                  progressFrac = "Progress: 0/0";
+    bool                     invalidFile = false;
 
     QThread workerThread;
 
