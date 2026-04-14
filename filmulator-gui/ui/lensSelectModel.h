@@ -4,30 +4,32 @@
 #include <QAbstractTableModel>
 #include <lensfun/lensfun.h>
 
-class LensSelectModel : public QAbstractTableModel
-{
+class LensSelectModel : public QAbstractTableModel {
     Q_OBJECT
 
-public:
+  public:
     explicit LensSelectModel(QObject *parent = 0);
     ~LensSelectModel();
 
     QVariant data(const QModelIndex &index, int role) const;
+
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QHash<int,QByteArray> roleNames() const;
+
+    QHash<int, QByteArray> roleNames() const;
 
     Q_INVOKABLE void update(QString camera, QString lens);
 
-private:
-    QHash<int,QByteArray> m_roleNames;
+  private:
+    QHash<int, QByteArray> m_roleNames;
+
     int m_rowCount;
 
     lfDatabase *ldb;
+
     std::vector<QString> makerList;
     std::vector<QString> modelList;
-    std::vector<int> scoreList;
-
+    std::vector<int>     scoreList;
 };
 
 #endif // LENSSELECTMODEL_H
