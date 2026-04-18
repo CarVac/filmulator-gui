@@ -4,14 +4,6 @@
 <context>
     <name>Edit</name>
     <message>
-        <source>Select an image to edit by double-clicking on a photo in the Work Queue. Switch between images with the right and left arrow keys.
-
-Rate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.</source>
-        <translation type="vanished">Ein Bild zur Bearbeitung auswählen, indem Sie auf ein Foto in der Warteschlange doppelklicken. Wechseln zwischen den Bildern mit der rechten und linken Pfeiltaste.
-
-Bewerten des aktuellen Bildes durch Drücken der Tasten 0 bis 5 und X oder durch Drücken der Pfeiltasten nach oben oder unten.</translation>
-    </message>
-    <message>
         <location filename="../Edit.qml" line="2131"/>
         <source>Image Saved</source>
         <translation>Bild gespeichert</translation>
@@ -84,7 +76,9 @@ Doppelklick auf ein Objektiv, um es auszuwählen.</translation>
         <source>There are no lenses matching the current search.
 
 You may need to download updated lens corrections in the Settings tab.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kein passendes Objektiv in der Datenbank gefunden.
+
+Ein Update der Objektivkorrektur-Datenbank kann im Reiter &quot;Einstellungen&quot; durchgeführt werden.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2560"/>
@@ -127,19 +121,7 @@ Tastenkürzel: B</translation>
     <message>
         <location filename="../Edit.qml" line="2833"/>
         <source>Cancel setting custom white balance. Shortcut: W</source>
-        <translation>Eigene WB-Einstellung abbrechen. Kürzel: W</translation>
-    </message>
-    <message>
-        <source>Set a custom white balance based on where you click in the image.
-
-The white balance will be remembered and can be applied to other images taken by the same camera model.
-
-Shortcut: W</source>
-        <translation type="vanished">Legt einen benutzerdefinierten Weißabgleich fest, basierend darauf, wo Sie im Bild klicken.
-
-Der Weißabgleich wird gespeichert und kann auf andere Bilder angewendet werden, die mit demselben Kameramodell aufgenommen wurden.
-
-Tastenkürzel: W</translation>
+        <translation>Eigene Weißabgleich-Einstellung abbrechen. Kürzel: W</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2878"/>
@@ -149,7 +131,7 @@ Tastenkürzel: W</translation>
     <message>
         <location filename="../Edit.qml" line="2878"/>
         <source>Click this to begin cropping.</source>
-        <translation>Hierklicken, um Zuschnitt zu beginnen.</translation>
+        <translation>Hier klicken, um Zuschnitt zu beginnen.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2878"/>
@@ -160,7 +142,7 @@ Hold Shift while dragging a corner to snap the crop to the nearest common aspect
 Shortcut: C</source>
         <translation>Strg-Taste gedrückt halten, wenn Sie eine Ecke ziehen, um das Seitenverhältnis zu fixieren. Strg-Taste gedrückt halten, während Sie eine Kante oder das restliche Bild ziehen, um den Ausschnitt zu verschieben, ohne seine Größe zu ändern.
 
-Umschalttaste gedrückt halten, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende gemeinsame Seitenverhältnis zu fixieren. Umschalttaste gedrückt halten, während Sie den Ausschnitt bewegen, um ihn in der horizontalen und/oder vertikalen Mitte einzufangen.
+Umschalttaste gedrückt halten, während Sie eine Ecke ziehen, um den Ausschnitt auf das nächstliegende gebräuchliche Seitenverhältnis zu fixieren. Umschalttaste gedrückt halten, während Sie den Ausschnitt bewegen, um ihn in der horizontalen und/oder vertikalen Mitte einzurasten.
 
 Tastaturkürzel: C</translation>
     </message>
@@ -181,9 +163,9 @@ Tastaturkürzel: C</translation>
 Reset the rotation to zero by pressing &quot;Shift+L&quot; or double right clicking.
 
 Shortcut: L</source>
-        <translation>Klicken, um die Drehhilfslinie auf dem Bild zu platzieren, und dann Hilfslinien ziehen, um sie vertikal oder horizontal auszurichten. Sie können die Rotationshilfe neu positionieren, indem Sie an der Stelle ziehen, an der sich die Hilfslinien treffen.
+        <translation>Klicken, um die Drehhilfslinien auf dem Bild zu platzieren, und dann an den Hilfslinien ziehen, um sie vertikal oder horizontal auszurichten. Sie können die Rotationshilfe neu positionieren, indem Sie am Schnittpunkt der Hilfslinien ziehen.
 
-Rotation auf Null zurücksetzen mit &quot;Umschalt+L&quot; oder rechtem Doppelklick.
+Rotation auf null zurücksetzen mit &quot;Umschalt+L&quot; oder rechtem Doppelklick.
 
 Tastaturkürzel: L</translation>
     </message>
@@ -199,19 +181,25 @@ Tastaturkürzel: L</translation>
 Rate the current image by pressing 0 through 5 and X, or by pressing up or down arrow keys.
 
 When an image is loaded, you can zoom in or out by scrolling up or down, and you can pan around by clicking and dragging with the mouse.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ein Bild zur Bearbeitung auswählen, indem Sie auf ein Foto in der Warteschlange doppelklicken. Wechseln zwischen den Bildern mit der rechten und linken Pfeiltaste.
+
+Bewerten des aktuellen Bildes durch Drücken der Tasten 0 bis 5 und X oder durch Drücken der Pfeiltasten nach oben oder unten.
+
+Wenn ein Bild geladen ist, können Sie durch Scrollen mit der Maus ein- oder auszoomen, oder den Ausschnitt durch Klicken und Ziehen verändern.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2833"/>
         <source>Set a custom white balance based on where you click in the image.
 
 Shortcut: W</source>
-        <translation type="unfinished"></translation>
+        <translation>Legt einen benutzerdefinierten Weißabgleich (WA) fest, basierend darauf, wo Sie im Bild klicken.
+
+Tastenkürzel: W</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="2833"/>
         <source>White balance picker not available for monochrome raw images.</source>
-        <translation type="unfinished"></translation>
+        <translation>Weißabgleich ist für monochrome Raw-Bilder nicht verfügbar.</translation>
     </message>
     <message>
         <location filename="../Edit.qml" line="3006"/>
@@ -229,17 +217,18 @@ Shortcut: W</source>
     <message>
         <location filename="../EditTools.qml" line="128"/>
         <source>Demosaic Method</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>There is no standard translation for &quot;demosaic&quot; in German. Darktable uses the quite unusual term &quot;Entrastern&quot;. ART uses &quot;demosaicing&quot;, which is widely understood.</translatorcomment>
+        <translation>Demosaic Methode</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="129"/>
         <source>Switch this control on to reduce line-shaped noise artifacts at the expense of fine detail.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivieren Sie den Schalter, um linienförmige Rauschartefakte zu verringern (auf Kosten von feinen Details).</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="129"/>
         <source>Switch this control on to make noise less visible at the expense of fine detail.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivieren Sie den Schalter, um Rauschen zu verringern (auf Kosten von feinen Details).</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="159"/>
@@ -253,74 +242,88 @@ Shortcut: W</source>
 Not available for non-Bayer photos.</source>
         <translation>Automatische Korrektur der gerichteten Farbsäume. Verwenden Sie den niedrigsten benötigten Wert, da er Farbverschiebungen verursachen kann, aber höher ist stärkerer Effekt.
 
-Nicht verfügbar für Nicht-Bayer-Sensoren.</translation>
+Nur verfügbar für Bayer-Sensoren.</translation>
+    </message>
+    <message>
+        <location filename="../EditTools.qml" line="202"/>
+        <source>Recover clipped highlights.
+
+0 has no recovery. After white balance is applied, brighter channels get clipped.
+1 prevents red or blue channel clipping by white balance, useful when no raw color channels are clipped.
+2 enables highlight reconstruction, which estimates clipped raw channels based on the other channels. Works best when only one channel is clipped, and when purple fringing isn&apos;t a problem.</source>
+        <translatorcomment>Original translator: Very technical explanation. Perhaps a more understandable text would be helpful to users.</translatorcomment>
+        <translation>Abgeschnittene Lichter wiederherstellen.
+
+0 Keine Wiederherstellung. Lichter werden nach dem Weißabgleich beschnitten.
+1 Verhindert Beschneidung von Rot- oder Blaukanal durch den Weißabgleich, wenn keine RAW-Kanäle tatsächlich überbelichtet sind.
+2 Aktiviert Lichter-Wiederherstellung. Funktioniert am besten wenn nur ein Kanal übersteuert ist und kein lila Farbsaum auftritt.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="284"/>
         <source>Store WB</source>
         <comment>white balance; keep short</comment>
-        <translation type="unfinished">WB speichern</translation>
+        <translation>WA speichern</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="285"/>
         <source>Save the current white balance settings for later use with images from the same camera. They remain stored until Filmulator is closed, or until overwritten by clicking this button again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Den aktuellen Weißabgleich für spätere Verwendung mit Bildern von der gleichen Kamera speichern. Er bleibt gespeichert bis Filmulator geschlossen wird oder überschrieben wird, indem dieser Button erneut geklickt wird.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="303"/>
         <source>Recall WB</source>
         <comment>white balance; keep short</comment>
-        <translation type="unfinished">WB übernehmen</translation>
+        <translation>WA übernehmen</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="382"/>
         <source>Noise Reduction</source>
-        <translation type="unfinished"></translation>
+        <translation>Rausch-Reduktion</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="383"/>
         <source>Enable the noise reduction tools to help remove grain and color splotches from the image.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rauschreduktions-Werkzeuge aktivieren, um Körnung und Farbflecken im Bild zu reduzieren.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="414"/>
         <source>NR Strength</source>
-        <translation type="unfinished"></translation>
+        <translation>RR Stärke</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="415"/>
         <source>General-purpose noise reduction that reduces both brightness and color noise. When set to zero, this is disabled. This may cause speckles, so use Speckle NR to remove them.</source>
-        <translation type="unfinished"></translation>
+        <translation>Allgemeine Rauschreduktion für Helligkeits- und Farbrauschen. Kann Sprenkel erzeugen, in diesem Fall Sprenkel-RR verwenden. Bei null deaktiviert.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="490"/>
         <source>NR Gradients</source>
-        <translation type="unfinished"></translation>
+        <translation>RR Gradienten</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="491"/>
         <source>Increase this control if the standard noise reduction is causing posterization or banding on gradients. If no banding is visible, increasing this will have no effect besides making noise reduction slower.</source>
-        <translation type="unfinished"></translation>
+        <translation>Diesen Wert erhöhen, wenn die Rauschreduktion Posterisierung oder Banding in Verläufen verursacht. Wenn kein Banding sichtbar ist, hat die Erhöhung keinen Effekt sondern macht die Rauschreduktion nur langsamer.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="527"/>
         <source>Speckle NR Strength</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprenkel-RR Stärke</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="528"/>
         <source>Remove isolated image speckles. Higher values increase the effect, but can smear real image detail. When set to zero, speckle noise reduction is disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entfernt isolierte Sprenkel im Bild. Höhere Werte verstärken den Effekt, aber können Bilddetails verschmieren. Bei null deaktiviert.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="564"/>
         <source>Chroma NR Strength</source>
-        <translation type="unfinished"></translation>
+        <translation>Farb-RR Stärke</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="565"/>
         <source>Reduce color noise. Works in combination with the above standard NR. Higher values increase the effect, but add color smearing. When set to zero, chroma noise reduction is disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Farbrauschen reduzieren. Arbeitet in Kombination mit der allgemeinen Rauschreduktion. Höhere Werte verstärken den Effekt, verursachen aber Farbverschmierung. Bei null deaktiviert.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="599"/>
@@ -358,37 +361,9 @@ Nicht verfügbar für Nicht-Bayer-Sensoren.</translation>
         <translation>Lichter wiederherstellen</translation>
     </message>
     <message>
-        <location filename="../EditTools.qml" line="202"/>
-        <source>Recover clipped highlights.
-
-0 clips after the preliminary white balance.
-1 is useful if 0 has restricted the red or blue channels in situations where no raw color channels are clipped.
-2 enables highlight reconstruction, which works best when only one channel is clipped, and when purple fringing isn&apos;t a problem.</source>
-        <translatorcomment>Very technical explanation. Perhaps a more understandable text would be helpful to users.</translatorcomment>
-        <translation>Abgeschnittene Lichter wiederherstellen.
-
-0 schneidet nach dem vorläufigen Weißabgleich ab.
-1 ist nützlich, wenn 0 den Rot- oder Blaukanal in Situationen einschränkt, in denen keine Rohfarbkanäle beschnitten sind.
-2 ermöglicht die Spitzlichtrekonstruktion, die am besten funktioniert, wenn nur ein Kanal beschnitten ist und wenn violette Ränder kein Problem darstellen.</translation>
-    </message>
-    <message>
-        <source>Store WB</source>
-        <comment>white balance</comment>
-        <translation type="vanished">WB speichern</translation>
-    </message>
-    <message>
-        <source>Save the current white balance settings for later use with images from the same camera. They remains stored until Filmulator is closed, or until overwritten with this button or the custom WB picker.</source>
-        <translation type="vanished">Speichert die aktuellen Weißabgleichseinstellungen für die spätere Verwendung mit Bildern von derselben Kamera. Sie bleiben gespeichert, bis Filmulator geschlossen wird, oder bis sie mit dieser Schaltfläche oder dem benutzerdefinierten WB-Picker überschrieben werden.</translation>
-    </message>
-    <message>
-        <source>Recall WB</source>
-        <comment>white balance</comment>
-        <translation type="vanished">WB übernehmen</translation>
-    </message>
-    <message>
         <location filename="../EditTools.qml" line="304"/>
         <source>Apply the stored white balance settings.</source>
-        <translation>Gespeicherte WB-Einstellungen anwenden.</translation>
+        <translation>Gespeicherte Weißabgleich-Einstellungen anwenden.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="304"/>
@@ -442,8 +417,8 @@ Der Standardwert ist der von der Kamera gewählte Weißabgleich.</translation>
     <message>
         <location filename="../EditTools.qml" line="753"/>
         <source>Shadow Rolloff Point</source>
-        <translatorcomment>There is no German word for Rolloff.</translatorcomment>
-        <translation>Schatten-Rolloff</translation>
+        <translatorcomment>There is no exakt German word for Rolloff. &quot;Schwelle&quot; means threshold - is this what&apos;s meant with rolloff?</translatorcomment>
+        <translation>Schatten-Schwelle</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="754"/>
@@ -453,32 +428,28 @@ Der Standardwert ist der von der Kamera gewählte Weißabgleich.</translation>
     <message>
         <location filename="../EditTools.qml" line="786"/>
         <source>Highlight Rolloff Point</source>
-        <translation>Lichter-Rolloff</translation>
-    </message>
-    <message>
-        <source>Sets the point above which the highlights gently stop getting brighter. This controls the saturation of the highlights, and only has a significant effect at high drama settings when the highlights get strongly darkened.
-If you have a photo with no highlight clipping and none of it extends beyond the right of the prefilm histogram, feel free to raise this all the way to 1.
-If you have highlight clipping and there are unpleasant color shifts, lower this to taste.</source>
-        <translation type="vanished">Legt den Punkt fest, ab dem die Lichter allmählich aufhören, heller zu werden. Dies steuert die Sättigung der Lichter und hat bei hohen Drama-Einstellungen nur dann einen signifikanten Effekt, wenn die Lichter stark abgedunkelt werden.
-Wenn Sie ein Foto ohne Spitzlichtbeschneidung haben und keines davon über die rechte Seite des Vorfilm-Histogramms hinausragt, können Sie diesen Wert auf 1 erhöhen.
-Wenn Sie eine Spitzlichtbeschneidung haben und es unangenehme Farbverschiebungen gibt, senken Sie diesen nach Belieben.</translation>
+        <translatorcomment>See comment to Shadow Rolloff Point</translatorcomment>
+        <translation>Lichter-Schwelle</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="787"/>
         <source>Sets the point above which the highlights gently stop getting brighter. This works together with Highlight Crosstalk to control saturation of the highlights.
 If you have a photo with no highlight clipping and none of it extends beyond the right of the prefilm histogram, feel free to raise this all the way to 1.
 If you have unpleasant color shifts from highlight clipping, or strong colors from LED lights, try lowering this and raising Highlight Crosstalk to taste.</source>
-        <translation type="unfinished"></translation>
+        <translation>Setzt den Punkt ab dem die Lichter sanft gedeckelt werden, und kontrolliert zusammen mit der Lichter-Überblendung die Sättigung der Lichter.
+Wenn im Bild keine Lichter beschnitten sind und das Histogramm am Eingang der Filmsimulation nicht rechts anstößt, kann der Wert auf 1 erhöht werden.
+Wenn Farbverschiebungen aufgrund von Lichter-Beschnitt oder übersättigte Farben von LED-Beleuchtung auftreten, verringern Sie den Wert und passen Sie die Lichter-Überblendung nach Bedarf an.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="819"/>
         <source>Highlight Crosstalk</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>&quot;Überblendung&quot; is more like &quot;cross-fading&quot; (a purposeful process), whereas &quot;Übersprechen&quot; (crosstalk) in my world as an electrical engineer is an unintentional disturbance. </translatorcomment>
+        <translation>Lichter-Überblendung</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="820"/>
         <source>This desaturates highlights as they get brighter past the highlight rolloff point, reducing ugly highlight colors and making deeply saturated colors appear brighter and closer to white.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entsättigt die Lichter über dem Lichter-Rolloff-Punkt. Dadurch werden hässliche Farben in den Lichtern reduziert, sowie stark gesättigte Farben aufgehellt und näher an Weiß gebracht.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="850"/>
@@ -489,7 +460,7 @@ If you have unpleasant color shifts from highlight clipping, or strong colors fr
         <location filename="../EditTools.qml" line="851"/>
         <source>Larger sizes emphasize smaller details and flatten contrast; smaller sizes emphasize larger regional contrasts. This has the same effect as film size in real film. If venturing into Medium or Large Format, keep the Drama slider below 40 to prevent overcooking.
 Typically, when adjusting this, change it until the point where small adjustments make noticeable changes in the appearance of the image. That&apos;s usually in the vicinity of the best setting.</source>
-        <translation>Größere Formate betonen kleinere Details und schwächen den Kontrast ab; kleinere Formate betonen größere regionale Kontraste. Dies hat den gleichen Effekt wie die Filmgröße im Realfilm. Wenn Sie sich ins Mittel- oder Großformat wagen, halten Sie den Schieberegler Drama unter 40, um ein Überkochen zu verhindern.
+        <translation>Größere Formate betonen kleinere Details und schwächen den Kontrast ab; kleinere Formate betonen größere regionale Kontraste. Dies hat den gleichen Effekt wie die Filmgröße im realen Film. Wenn Sie sich ins Mittel- oder Großformat wagen, halten Sie den Schieberegler Drama unter 40, um ein Überkochen zu verhindern.
 Ändern Sie ihn in der Regel so lange, bis kleine Anpassungen das Erscheinungsbild des Fotos merklich verändern. Das ist normalerweise in der Nähe der besten Einstellung.</translation>
     </message>
     <message>
@@ -595,7 +566,7 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../EditTools.qml" line="1222"/>
         <source>How much to weight the red channel when converting to monochrome.</source>
-        <translation>Wie stark der rote Kanal bei der Umwandlung in Schwarz-Weiß zu gewichten ist.</translation>
+        <translation>Wie stark der rote Kanal bei der Umwandlung in Schwarz-Weiß gewichtet wird.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="1258"/>
@@ -605,7 +576,7 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../EditTools.qml" line="1259"/>
         <source>How much to weight the green channel when converting to monochrome.</source>
-        <translation>Wie stark der grüne Kanal bei der Umwandlung in Schwarz-Weiß zu gewichten ist.</translation>
+        <translation>Wie stark der grüne Kanal bei der Umwandlung in Schwarz-Weiß gewichtet wird.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="1295"/>
@@ -615,7 +586,7 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../EditTools.qml" line="1296"/>
         <source>How much to weight the blue channel when converting to monochrome.</source>
-        <translation>Wie stark der blaue Kanal bei der Umwandlung in Schwarz-Weiß zu gewichten ist.</translation>
+        <translation>Wie stark der blaue Kanal bei der Umwandlung in Schwarz-Weiß gewichtet wird.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="1510"/>
@@ -631,11 +602,7 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../EditTools.qml" line="1531"/>
         <source>Save a JPEG to the directory containing the raw file. If you&apos;ve saved an output file before, it will be overwritten.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save a TIFF to the directory containing the raw file.</source>
-        <translation type="vanished">Speichert ein TIFF in dem Verzeichnis, das die Rohdatei enthält.</translation>
+        <translation>Speichert ein JPEG-Bild in dem Verzeichnis, das die Raw-Datei enthält. Eine vorhandenes JPEG-Bild wird überschrieben.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="1511"/>
@@ -646,16 +613,12 @@ Typically, when adjusting this, change it until the point where small adjustment
     <message>
         <location filename="../EditTools.qml" line="1511"/>
         <source>Save a TIFF to the directory containing the raw file. If you&apos;ve saved an output file before, it will be overwritten.</source>
-        <translation type="unfinished"></translation>
+        <translation>Speichert ein TIFF-Bild in dem Verzeichnis, das die Raw-Datei enthält. Eine vorhandenes TIFF-Bild wird überschrieben.</translation>
     </message>
     <message>
         <location filename="../EditTools.qml" line="1530"/>
         <source>Save JPEG</source>
         <translation>JPEG speichern</translation>
-    </message>
-    <message>
-        <source>Save a JPEG to the directory containing the raw file.</source>
-        <translation type="vanished">Speichert ein JPEG in dem Verzeichnis, das die Rohdatei enthält.</translation>
     </message>
 </context>
 <context>
@@ -711,16 +674,12 @@ Typically, when adjusting this, change it until the point where small adjustment
         <translation>Wählen Sie ein Verzeichnis aus, aus dem importiert wird.</translation>
     </message>
     <message>
-        <source>You may be importing in place from a memory card. The photos will be lost if you format the card.</source>
-        <translation type="vanished">Möglicherweise importieren Sie auf einer Speicherkarte. Wenn Sie die Karte formatieren, gehen die Fotos verloren.</translation>
-    </message>
-    <message>
         <location filename="../Import.qml" line="116"/>
         <location filename="../Import.qml" line="139"/>
         <source>You may be importing in place from a memory card. The photos will be lost if you format the card.
 
 Double-click the error icon to proceed.</source>
-        <translation>Möglicherweise importieren Sie auf einer Speicherkarte. Die Fotos gehen beim Formatieren der Karte  verloren.
+        <translation>Möglicherweise importieren Sie auf einer Speicherkarte. Die Fotos gehen beim Formatieren der Karte verloren.
 
 Doppelklicken Sie auf das Fehlersymbol, um fortzufahren.</translation>
     </message>
@@ -914,7 +873,7 @@ Es hängt einen Unterstrich und sieben Zeichen (abgeleitet aus dem Dateiinhalt) 
         <source>If a photo in the database has its raw file moved, use this setup to re-import the photo. It will not load anything into the queue.
 
 This is useful when you remove photos from your main directory and want to work from a backup location.</source>
-        <translation>Wenn die Rohdatei eines Fotos in der Datenbank verschoben wurde, verwenden Sie diese Einstellung, um das Foto erneut zu importieren. Es wird nichts in die Warteschlange geladen.
+        <translation>Wenn die Raw-Datei eines Fotos in der Datenbank verschoben wurde, verwenden Sie diese Einstellung, um das Foto erneut zu importieren. Es wird nichts in die Warteschlange geladen.
 
 Dies ist nützlich, wenn Sie Fotos aus Ihrem Hauptverzeichnis entfernen und von einem Backup-Speicherort aus arbeiten möchten.</translation>
     </message>
@@ -1154,17 +1113,17 @@ nicht lesbar</translation>
     <message>
         <location filename="../Settings.qml" line="27"/>
         <source>Are you sure?</source>
-        <translation type="unfinished">Sind Sie sicher?</translation>
+        <translation>Sind Sie sicher?</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="27"/>
         <source>...Wait a moment...</source>
-        <translation type="unfinished">...Bitte einen Moment warten...</translation>
+        <translation>...Bitte einen Moment warten...</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="86"/>
         <source>Reset All Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle Einstellungen rücksetzen</translation>
     </message>
     <message>
         <location filename="../Settings.qml" line="99"/>
@@ -1410,22 +1369,22 @@ Dies tritt nach dem Anwenden der Einstellungen und dem Neustart von Filmulator i
 <context>
     <name>ToolSlider</name>
     <message>
-        <source>Reset to default</source>
-        <translation type="vanished">Auf Standardeinstellungen zurücksetzen</translation>
-    </message>
-    <message>
         <location filename="../gui_components/ToolSlider.qml" line="172"/>
         <source>
 
 Right-click on the tool name to open a dial for more precise input.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+
+Rechtsklick auf den Werkzeugnamen öffnet ein Wählrad für präzise Eingabe.</translation>
     </message>
     <message>
         <location filename="../gui_components/ToolSlider.qml" line="183"/>
         <source>Reset to default.
 
 Double-right-clicking on the slider will also reset to default.</source>
-        <translation type="unfinished"></translation>
+        <translation>Auf Standardwert rücksetzen.
+
+Doppelklick auf den Regler setzt auch auf den Standardwert zurück.</translation>
     </message>
     <message>
         <location filename="../gui_components/ToolSlider.qml" line="290"/>
@@ -1473,17 +1432,17 @@ Drehen Sie gegen den Uhrzeigersinn, um den Wert zu verringern.</translation>
     <message>
         <location filename="../main.qml" line="324"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>Hilfe</translation>
     </message>
     <message>
         <location filename="../main.qml" line="325"/>
         <source>Make helpful tips show up only after a delay.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hilfreiche Werkzeug-Tipps erst mit Verzögerung anzeigen.</translation>
     </message>
     <message>
         <location filename="../main.qml" line="325"/>
         <source>Show helpful tips immediately when you hover over tools.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hilfreiche Werkzeug-Tipps sofort beim Überfahren mit der Maus anzeigen.</translation>
     </message>
 </context>
 </TS>

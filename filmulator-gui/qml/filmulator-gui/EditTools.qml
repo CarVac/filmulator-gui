@@ -199,7 +199,7 @@ SlimSplitView {
                 ToolSlider {
                     id: highlightRecoverySlider
                     title: qsTr("Highlight Recovery")
-                    tooltipText: qsTr("Recover clipped highlights.\n\n0 clips after the preliminary white balance.\n1 is useful if 0 has restricted the red or blue channels in situations where no raw color channels are clipped.\n2 enables highlight reconstruction, which works best when only one channel is clipped, and when purple fringing isn't a problem.")
+                    tooltipText: qsTr("Recover clipped highlights.\n\n0 has no recovery. After white balance is applied, brighter channels get clipped.\n1 prevents red or blue channel clipping by white balance, useful when no raw color channels are clipped.\n2 enables highlight reconstruction, which estimates clipped raw channels based on the other channels. Works best when only one channel is clipped, and when purple fringing isn't a problem.")
                     minimumValue: 0
                     maximumValue: 2
                     stepSize: 1
