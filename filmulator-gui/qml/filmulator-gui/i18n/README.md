@@ -9,4 +9,5 @@ Testing (on Linux): LANG=de_DE.UTF-8 filmulator-gui
 
 Credits:
 de_DE: Luemmel at discuss.pixls.us
+de_DE: geni1105 at discuss.pixls.us
 pt_BR: Juliano Serra (Juliano_Serra at discuss.pixls.us)
