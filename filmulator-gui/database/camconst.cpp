@@ -140,13 +140,17 @@ camconst_status camconst_read(const QString inputMakeModel,
                 cJSON *makeModelItem;
                 cJSON_ArrayForEach(makeModelItem, makeModelList) {
                     const QString tempMakeModel = QString(makeModelItem->valuestring);
-                    if (tempMakeModel == inputMakeModel) { makeModel = tempMakeModel; }
+                    const QString lowerMakeModel = tempMakeModel.toLower();
+                    const QString lowerInputMakeModel = inputMakeModel.toLower();
+                    if (lowerMakeModel == lowerInputMakeModel) { makeModel = tempMakeModel; }
                 }
                 // makeModel = QString(cJSON_GetArrayItem(makeModelList, 0)->valuestring);
                 // TODO: make list of camera name synonyms, keep track of canonical name in a table
             } else {
                 const QString tempMakeModel = QString(makeModelList->valuestring);
-                if (tempMakeModel == inputMakeModel) { makeModel = tempMakeModel; }
+                const QString lowerMakeModel = tempMakeModel.toLower();
+                const QString lowerInputMakeModel = inputMakeModel.toLower();
+                if (lowerMakeModel == lowerInputMakeModel) { makeModel = tempMakeModel; }
             }
             if (makeModel == "") { continue; }
             // std::cout << "CamConst make and model: " << makeModel.toStdString() << std::endl;
