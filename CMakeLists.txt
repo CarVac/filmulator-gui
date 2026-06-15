@@ -239,6 +239,7 @@ target_link_libraries(filmulator
     
 if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES arm64)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
     file(COPY "${CMAKE_SOURCE_DIR}/filmulator-gui/resources/macos/filmulator-gui" DESTINATION "./Filmulator.app/Contents/MacOS" FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE WORLD_EXECUTE)
     file(COPY "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "./Filmulator.app/Contents/Resources")
     file(COPY "${CMAKE_SOURCE_DIR}/filmulator-gui/resources/macos/icon.icns" DESTINATION "./Filmulator.app/Contents/Resources")
