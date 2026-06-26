@@ -39,7 +39,7 @@ jobs:
       run: |
         sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
         sudo apt-get update
-        sudo apt-get build-dep -y qtbase6-dev
+        sudo apt-get build-dep -y qt6-base-dev
         sudo apt-get install -y \
           ninja-build \
           mold \
@@ -157,7 +157,7 @@ jobs:
       run: |
         sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
         sudo apt-get update
-        sudo apt-get build-dep -y qtbase6-dev
+        sudo apt-get build-dep -y qt6-base-dev
         # Remove unwanted database headers so Qt doesn't compile their sqldrivers and create dependencies
         sudo apt-get remove -y freetds-dev libsybdb5 unixodbc-dev libpq-dev libmysqlclient-dev || true
         sudo apt-get install -y \

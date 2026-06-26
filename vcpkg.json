@@ -9,7 +9,8 @@
             "name": "qtbase",
             "default-features": true,
             "features": [
-                "sqlite3plugin"
+                "sql",
+                "sql-sqlite"
             ]
         },
         "qtdeclarative",
