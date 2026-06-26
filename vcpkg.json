@@ -6,15 +6,13 @@
     "license": "GPL-3.0-or-later",
     "dependencies": [
         {
-            "name": "qt5-base",
+            "name": "qtbase",
             "default-features": true,
             "features": [
                 "sqlite3plugin"
             ]
         },
-        "qt5-declarative",
-        "qt5-quickcontrols",
-        "qt5-quickcontrols2",
+        "qtdeclarative",
         "exiv2",
         "libraw",
         "libjpeg-turbo",

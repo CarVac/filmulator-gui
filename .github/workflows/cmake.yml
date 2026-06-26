@@ -39,7 +39,7 @@ jobs:
       run: |
         sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
         sudo apt-get update
-        sudo apt-get build-dep -y qtbase5-dev
+        sudo apt-get build-dep -y qtbase6-dev
         sudo apt-get install -y \
           ninja-build \
           mold \
@@ -157,7 +157,7 @@ jobs:
       run: |
         sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
         sudo apt-get update
-        sudo apt-get build-dep -y qtbase5-dev
+        sudo apt-get build-dep -y qtbase6-dev
         # Remove unwanted database headers so Qt doesn't compile their sqldrivers and create dependencies
         sudo apt-get remove -y freetds-dev libsybdb5 unixodbc-dev libpq-dev libmysqlclient-dev || true
         sudo apt-get install -y \
@@ -447,12 +447,12 @@ jobs:
       run: |
         APP_BUNDLE="build/${{ matrix.preset }}/Filmulator.app"
         
-        # vcpkg doesn't include macdeployqt, so we install Qt5 via brew for the tool
-        echo "Installing Qt5 via Homebrew for macdeployqt..."
-        brew install qt@5
+        # vcpkg doesn't include macdeployqt, so we install Qt6 via brew for the tool
+        echo "Installing Qt6 via Homebrew for macdeployqt..."
+        brew install qt
         
         # Find macdeployqt from Homebrew Qt
-        MACDEPLOYQT=$(brew --prefix qt@5)/bin/macdeployqt
+        MACDEPLOYQT=$(brew --prefix qt)/bin/macdeployqt
         if [ ! -f "$MACDEPLOYQT" ]; then
           echo "macdeployqt not found at $MACDEPLOYQT"
           exit 1

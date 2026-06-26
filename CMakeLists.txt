@@ -20,14 +20,14 @@ set(CMAKE_AUTOMOC ON)
 # cmake_policy(SET CMP0071 OLD) //trying out new?
 cmake_policy(SET CMP0071 NEW)
 
-find_package(Qt5Core CONFIG REQUIRED)
-find_package(Qt5Widgets CONFIG REQUIRED)
-find_package(Qt5Quick CONFIG REQUIRED)
-find_package(Qt5Sql CONFIG REQUIRED)
-find_package(Qt5Qml CONFIG REQUIRED)
-find_package(Qt5QuickCompiler CONFIG REQUIRED)
-find_package(Qt5QmlImportScanner REQUIRED)
-# find_package(Qt5LinguistTools CONFIG REQUIRED)
+#find_package(Qt5Core CONFIG REQUIRED)
+#find_package(Qt5Widgets CONFIG REQUIRED)
+#find_package(Qt5Quick CONFIG REQUIRED)
+#find_package(Qt5Sql CONFIG REQUIRED)
+#find_package(Qt5Qml CONFIG REQUIRED)
+#find_package(Qt5QuickCompiler CONFIG REQUIRED)
+#find_package(Qt5QmlImportScanner REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Quick Sql Qml)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
@@ -200,11 +200,11 @@ endif()
 # Use modern CMake imported targets for proper include/link handling
 target_link_libraries(filmulator
     PRIVATE
-        Qt5::Core
-        Qt5::Sql
-        Qt5::Widgets
-        Qt5::Quick
-        Qt5::Qml
+        Qt::Core
+        Qt::Sql
+        Qt::Widgets
+        Qt::Quick
+        Qt::Qml
         Exiv2::exiv2lib       # exiv2 modern target
         libraw::raw_r         # libraw modern target
         JPEG::JPEG            # CMake built-in JPEG target
@@ -239,7 +239,6 @@ target_link_libraries(filmulator
     
 if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES arm64)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
     file(COPY "${CMAKE_SOURCE_DIR}/filmulator-gui/resources/macos/filmulator-gui" DESTINATION "./Filmulator.app/Contents/MacOS" FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE WORLD_EXECUTE)
     file(COPY "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "./Filmulator.app/Contents/Resources")
     file(COPY "${CMAKE_SOURCE_DIR}/filmulator-gui/resources/macos/icon.icns" DESTINATION "./Filmulator.app/Contents/Resources")
@@ -247,7 +246,7 @@ if(APPLE)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build")
     file(COPY "${CMAKE_SOURCE_DIR}/filmulator-gui/resources/macos/Info.plist.in" DESTINATION ".")
     set_source_files_properties(${CMAKE_SOURCE_DIR}/filmulator-gui/resources/macos/icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Filmulator.app/Contents/Resources")
-    # Copy QML directory to Resources - REMOVED, using qt5_import_qml_plugins instead
+    # Copy QML directory to Resources - REMOVED, using qt_import_qml_plugins instead
     install(TARGETS filmulator BUNDLE DESTINATION "${CMAKE_SOURCE_DIR}/build")
     set_target_properties(filmulator PROPERTIES MACOSX_BUNDLE TRUE MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/filmulator-gui/resources/macos/Info.plist.in")
 else()
@@ -264,7 +263,7 @@ if(UNIX)
     install(FILES "${CMAKE_SOURCE_DIR}/filmulator-gui/resources/linux/org.filmulator.Filmulator.metainfo.xml" DESTINATION share/metainfo)
 endif()
 
-qt5_import_qml_plugins(filmulator)
+qt_import_qml_plugins(filmulator)
 
 add_subdirectory(filmulator-gui/qml)
 
