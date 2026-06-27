@@ -54,8 +54,6 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
-      with:
-        modules: qtsql
 
     - name: Setup vcpkg (lukka/run-vcpkg)
       uses: lukka/run-vcpkg@v11
@@ -177,8 +175,6 @@ jobs:
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
-      with:
-        modules: qtsql
 
     - name: Install macOS Dependencies
       if: runner.os == 'macOS'
