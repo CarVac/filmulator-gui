@@ -137,8 +137,7 @@ set(filmulator_SRCS
     filmulator-gui/qtquick2applicationviewer/qtquick2applicationviewer.cpp
 )
 
-#qt5_add_resources(filmulator_RSCS
-qtquick_compiler_add_resources(filmulator_RSCS
+qt_add_resources(filmulator_RSCS
     filmulator-gui/qml.qrc
     filmulator-gui/resources/pixmaps.qrc
 )
@@ -172,7 +171,7 @@ target_compile_options(filmulator
 )
 
 set_target_properties(filmulator PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20 
     CXX_STANDARD_REQUIRED ON
 )
 
