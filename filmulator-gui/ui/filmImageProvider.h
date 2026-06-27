@@ -16,8 +16,7 @@
 #include <assert.h>
 
 class FilmImageProvider
-  : public QObject
-  , public QQuickImageProvider
+  : public QQuickImageProvider
   , public Interface {
     Q_OBJECT
 
