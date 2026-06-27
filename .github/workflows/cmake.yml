@@ -51,7 +51,8 @@ jobs:
           mono-complete \
           clang-tidy \
           clang-format \
-          tzdata
+          tzdata \
+          libxcb-cursor-dev
 
     - name: Setup vcpkg (lukka/run-vcpkg)
       uses: lukka/run-vcpkg@v11
@@ -169,7 +170,8 @@ jobs:
           automake \
           libtool \
           libltdl-dev \
-          mono-complete
+          mono-complete \
+          tzdata
 
     - name: Install macOS Dependencies
       if: runner.os == 'macOS'
