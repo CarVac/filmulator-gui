@@ -50,9 +50,12 @@ jobs:
           libltdl-dev \
           mono-complete \
           clang-tidy \
-          clang-format \
-          tzdata \
-          libxcb-cursor-dev
+          clang-format
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        modules: qtsql
 
     - name: Setup vcpkg (lukka/run-vcpkg)
       uses: lukka/run-vcpkg@v11
@@ -170,8 +173,12 @@ jobs:
           automake \
           libtool \
           libltdl-dev \
-          mono-complete \
-          tzdata
+          mono-complete
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        modules: qtsql
 
     - name: Install macOS Dependencies
       if: runner.os == 'macOS'

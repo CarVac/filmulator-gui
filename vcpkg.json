@@ -5,15 +5,6 @@
     "homepage": "https://github.com/CarVac/filmulator-gui",
     "license": "GPL-3.0-or-later",
     "dependencies": [
-        {
-            "name": "qtbase",
-            "default-features": true,
-            "features": [
-                "sql",
-                "sql-sqlite"
-            ]
-        },
-        "qtdeclarative",
         "exiv2",
         "libraw",
         "libjpeg-turbo",
