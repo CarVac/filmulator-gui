@@ -50,7 +50,8 @@ jobs:
           libltdl-dev \
           mono-complete \
           clang-tidy \
-          clang-format
+          clang-format \
+          tzdata
 
     - name: Setup vcpkg (lukka/run-vcpkg)
       uses: lukka/run-vcpkg@v11
