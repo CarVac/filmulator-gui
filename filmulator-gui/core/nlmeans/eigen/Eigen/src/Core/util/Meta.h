@@ -309,7 +309,7 @@ protected:
   */
 #if EIGEN_HAS_STD_RESULT_OF
 template<typename T> struct result_of {
-#if defined(__cplusplus) && __cplusplus >= 201703L
+#if (defined(__cplusplus) && __cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
   typedef typename std::invoke_result<T>::type type1;
 #else
   typedef typename std::result_of<T>::type type1;
