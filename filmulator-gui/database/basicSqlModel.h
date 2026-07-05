@@ -20,7 +20,8 @@ class BasicSqlModel : public SqlModel {
 
   protected:
     QSqlQuery m_modelQuery;
-    QSqlQuery modelQuery() { return m_modelQuery; }
+    // modelQuery isn't used so we make it return an empty query
+    QSqlQuery modelQuery() { return QSqlQuery(""); }
     void      emitChange() { emit basicSqlModelChanged(); }
 };
 
