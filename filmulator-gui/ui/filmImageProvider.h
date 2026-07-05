@@ -16,7 +16,7 @@
 #include <assert.h>
 
 class FilmImageProvider
-  : public QQuickImageProvider
+  : public QObject
   , public Interface {
     Q_OBJECT
 
@@ -169,6 +169,24 @@ class FilmImageProvider
 
   public slots:
     void thumbDoneWriting();
+};
+
+// We need a separate object to be a QQuickImageProvider because subclassing
+// both QObject and QQuickImageProvider doesn't seem to work sometimes.
+// This is only a passthrough.
+class FilmImageProviderProvider : public QQuickImageProvider {
+  protected:
+    FilmImageProvider *filmProvider;
+
+  public:
+    FilmImageProviderProvider(FilmImageProvider *provider)
+      : QQuickImageProvider(QQuickImageProvider::Image, QQuickImageProvider::ForceAsynchronousImageLoading) {
+        filmProvider = provider;
+    }
+    virtual ~FilmImageProviderProvider() = default;
+    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) {
+        return filmProvider->requestImage(id, size, requestedSize);
+    }
 };
 
 #endif // FILMIMAGEPROVIDER_H

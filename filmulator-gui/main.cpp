@@ -95,10 +95,11 @@ int main(int argc, char *argv[]) {
     // Prepare an image provider object.
     cout << QDateTime::currentDateTime().toString("hh:mm:ss.zzz ").toStdString() << "creating filmimageprovider"
          << endl;
-    FilmImageProvider *filmProvider = new FilmImageProvider(paramManager);
-    // Connect it as an image provider so that qml can get the photos
-    engine.addImageProvider(QLatin1String("filmy"), filmProvider);
-    // Connect it as a Q_OBJECT so that qml can run methods
+    FilmImageProvider         *filmProvider = new FilmImageProvider(paramManager);
+    FilmImageProviderProvider *imageProvider = new FilmImageProviderProvider(filmProvider);
+    // Connect the image provider as an image provider so that qml can get the photos
+    engine.addImageProvider(QLatin1String("filmy"), imageProvider);
+    // Connect the qobject side of it as a Q_OBJECT so that qml can run methods
     engine.rootContext()->setContextProperty("filmProvider", filmProvider);
 
     qRegisterMetaType<QFileInfo>();

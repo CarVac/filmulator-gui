@@ -10,8 +10,7 @@ using std::endl;
 #define TIMEOUT 0.1
 
 FilmImageProvider::FilmImageProvider(ParameterManager *manager)
-  : QQuickImageProvider(QQuickImageProvider::Image, QQuickImageProvider::ForceAsynchronousImageLoading),
-    pipeline(HighCache, WithHisto, HighQuality), quickPipe(HighCache, WithHisto, PreviewQuality),
+  : QObject(0), pipeline(HighCache, WithHisto, HighQuality), quickPipe(HighCache, WithHisto, PreviewQuality),
     nextQuickPipe(HighCache, NoHisto, PreviewQuality), prevQuickPipe(HighCache, NoHisto, PreviewQuality) {
 
     paramManager = manager;
