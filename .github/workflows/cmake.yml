@@ -245,6 +245,16 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
 
+    - name: Clear conflicting Qt environment (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        @('Qt5_DIR', 'Qt6_DIR', 'QTDIR', 'CMAKE_PREFIX_PATH') | ForEach-Object {
+            if (Test-Path "env:$_") {
+                Remove-Item "env:$_"
+            }
+        }
+
     - name: Configure CMake
       shell: bash
       run: |
