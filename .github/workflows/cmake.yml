@@ -245,6 +245,20 @@ jobs:
     - name: Setup CMake
       uses: lukka/get-cmake@latest
 
+    - name: Clear conflicting Qt environment (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        # The "Install Qt" step (jurplel/install-qt-action) exports QTDIR,
+        # Qt6_DIR and CMAKE_PREFIX_PATH into the environment. On Windows the
+        # build must resolve Qt from the vcpkg x64-mingw-dynamic triplet, so
+        # this host Qt contaminates the CMake configure and causes unresolved
+        # Qt symbols at link time. Blank the variables via GITHUB_ENV so they
+        # are cleared for the subsequent Configure CMake step.
+        @('Qt5_DIR', 'Qt6_DIR', 'QTDIR', 'CMAKE_PREFIX_PATH') | ForEach-Object {
+            "$_=" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+        }
+
     - name: Configure CMake
       shell: bash
       run: |
